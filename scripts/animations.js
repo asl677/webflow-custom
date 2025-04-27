@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create ScrollTrigger for this element
       const trigger = ScrollTrigger.create({
         trigger: element,
-        start: "top bottom+=100", // Start when element is 100px below viewport
+        start: "top bottom+=500", // Start when element is 100px below viewport
         end: "bottom top", // End when element leaves viewport
         once: false, // Allow animation to replay
         markers: false,
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.fromTo(element,
         {
           opacity: 0,
-          y: 30
+          y: 20
         },
         {
           opacity: 1,
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideElement(element) {
       gsap.to(element, {
         opacity: 0,
-        y: 30,
+        y: 20,
         duration: 0.4,
         ease: "power2.in",
         overwrite: true
