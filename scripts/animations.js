@@ -1,13 +1,10 @@
 // Add loading class to html element
-document.documentElement.classList.add('is-loading');
+if (!sessionStorage.getItem('pageLoaded')) {
+  document.documentElement.classList.add('is-loading');
+}
 
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Remove loading class once everything is ready
-  requestAnimationFrame(() => {
-    document.documentElement.classList.remove('is-loading');
-  });
-
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
@@ -20,8 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (link.hostname === window.location.hostname && !link.target) {
         link.addEventListener('click', function(e) {
-          e.preventDefault();
+          // Prevent navigation if clicking current page link
+          const isSamePage = link.pathname === window.location.pathname;
+          if (isSamePage) {
+            e.preventDefault();
+            return;
+          }
           
+          e.preventDefault();
           // Only fade the main content
           bodyWrapper.classList.add('fade-out');
           
@@ -72,6 +75,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     );
+  });
+});
+
+// Handle complete page load including cached resources
+window.addEventListener('load', function() {
+  // Remove loading class and set session flag
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove('is-loading');
+    sessionStorage.setItem('pageLoaded', 'true');
   });
 });
 
