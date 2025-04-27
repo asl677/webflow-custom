@@ -103,7 +103,6 @@ h1::selection, p::selection, a::selection, img::selection {
 .sticky-wrap p, 
 .sticky-wrap .heading, 
 .btn-show, 
-a,
 .flex-badge {
   opacity: 0;
 }

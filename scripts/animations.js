@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Select all text elements we want to animate (excluding navigation)
-  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, a, .flex-badge');
+  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge');
 
   // Create timeline for each text element
   textElements.forEach((element, index) => {
@@ -73,10 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
         ease: "power2.out",
         scrollTrigger: {
           trigger: element,
-          start: "top bottom-=50", 
-          end: "top center", // End animation when element reaches center of viewport
+          start: "top bottom", // Trigger as soon as element enters viewport
+          end: "top bottom-=200", // End animation shortly after entering
           toggleActions: "play none none reverse",
           markers: false,
+          once: false, // Allow animation to replay on scroll up
+          immediateRender: true // Render immediately if in view
         }
       }
     );
