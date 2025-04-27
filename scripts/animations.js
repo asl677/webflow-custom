@@ -75,8 +75,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // Force a ScrollTrigger refresh
     ScrollTrigger.refresh();
 
-    // Initial setup for elements
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video');
+    // Handle .reveal elements separately with more aggressive trigger settings
+    const revealElements = document.querySelectorAll('.reveal');
+    revealElements.forEach((element, index) => {
+      // Set initial state
+      gsap.set(element, {
+        opacity: 0,
+        y: 20,
+        visibility: 'visible'
+      });
+
+      // Create ScrollTrigger for reveal elements
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom-=150", // More aggressive trigger point
+        end: "bottom top",      // Continue until element leaves viewport
+        once: false,            // Allow multiple triggers
+        markers: false,
+        onEnter: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            overwrite: true
+          });
+        },
+        onLeave: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: -20,
+            duration: 0.4,
+            ease: "power2.in",
+            overwrite: true
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            overwrite: true
+          });
+        },
+        onLeaveBack: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: 20,
+            duration: 0.4,
+            ease: "power2.in",
+            overwrite: true
+          });
+        }
+      });
+    });
+
+    // Handle all other elements
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
     
     // Set initial states
     textElements.forEach(element => {
@@ -110,8 +166,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create ScrollTrigger for each text element
     textElements.forEach((element, index) => {
-      // Skip elements that are already visible or in navigation
-      if (element.style.opacity === '1' || element.closest('.navbar, .nav-menu')) return;
+      // Skip elements that are already visible, in navigation, or have .reveal class
+      if (element.style.opacity === '1' || 
+          element.closest('.navbar, .nav-menu') || 
+          element.classList.contains('reveal')) return;
       
       const trigger = ScrollTrigger.create({
         trigger: element,
@@ -137,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
           opacity: 1,
           y: 0,
           duration: 0.6,
-          delay: Math.min(index * 0.1, 0.2),
+          delay: Math.min(index * 0.05, 0.2),
           ease: "power2.out",
           overwrite: true
         });
@@ -152,6 +210,15 @@ document.addEventListener('DOMContentLoaded', function() {
         ScrollTrigger.refresh();
       }, 250);
     });
+
+    // Add scroll end detection for reliable ScrollTrigger refresh
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 150);
+    }, { passive: true });
   } else {
     // On mobile, make all elements visible without animations
     document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video').forEach(element => {
