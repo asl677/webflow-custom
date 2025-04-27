@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
           ease: "power2.out",
           scrollTrigger: {
             trigger: element,
-            start: "top 100", // Trigger as soon as element enters viewport
+            start: "top bottom", // Trigger as soon as element enters viewport
             end: "top bottom-=100", // End animation shortly after entering
             toggleActions: "play none none reverse",
             markers: false,
