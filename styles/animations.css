@@ -93,11 +93,33 @@ h1::selection, p::selection, a::selection, img::selection {
   transform: translateY(0);
 }
 
+/* Text element animations set opacity */
+.sticky-wrap h1, 
+.sticky-wrap h2, 
+.sticky-wrap h3, 
+.sticky-wrap h4, 
+.sticky-wrap h5, 
+.sticky-wrap h6, 
+.sticky-wrap p, 
+.sticky-wrap .heading, 
+.btn-show, 
+a,
+.flex-badge {
+  opacity: 0;
+}
+
 /* Text element animations */
-.heading.huge,
-.heading.large,
-.heading.small,
-h1, h2, h3, h4, h5, h6, p {
+.sticky-wrap h1, 
+.sticky-wrap h2, 
+.sticky-wrap h3, 
+.sticky-wrap h4, 
+.sticky-wrap h5, 
+.sticky-wrap h6, 
+.sticky-wrap p, 
+.sticky-wrap .heading, 
+.btn-show, 
+a,
+.flex-badge {
   will-change: transform, opacity;
 }
 
