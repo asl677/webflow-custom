@@ -1,7 +1,13 @@
-// Add loading class to html element
-if (!sessionStorage.getItem('pageLoaded')) {
-  document.documentElement.classList.add('is-loading');
-}
+// Run this as early as possible
+(function() {
+  // Initialize page transition
+  const bodyWrapper = document.querySelector('.sticky-wrap');
+  if (bodyWrapper) {
+    // Ensure initial state
+    bodyWrapper.style.opacity = '0';
+    bodyWrapper.style.visibility = 'hidden';
+  }
+})();
 
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {

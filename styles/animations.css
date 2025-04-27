@@ -4,18 +4,16 @@ html {
   color: var(--onyx);
 }
 
-/* Preloader to prevent FOUC */
-html.is-loading * {
-  visibility: hidden;
+/* Initial state to prevent FOUC */
+.sticky-wrap {
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
-html.is-loading::before {
-  visibility: visible;
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--onyx);
-  z-index: 9999;
+.sticky-wrap.page-loaded {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity 0.3s ease-out;
 }
 
 html::-webkit-scrollbar,
@@ -58,27 +56,24 @@ h1::selection, p::selection, a::selection, img::selection {
 }
 
 /* Page transition styles */
-.sticky-wrap {
-  opacity: 1;
-  visibility: hidden;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.sticky-wrap.page-loaded {
-  visibility: visible;
-}
-
 .sticky-wrap.fade-out {
-  opacity: 0;
+  opacity: 0 !important;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Keep navigation visible during transitions */
 .navbar,
 .nav-menu,
-.nav-link {
+.nav-link,
+.menu-link {
   transition: none !important;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* Menu link color */
+.menu-link {
+  color: var(--gainsboro) !important;
 }
 
 /* GSAP Animation Classes */
@@ -93,39 +88,12 @@ h1::selection, p::selection, a::selection, img::selection {
   transform: translateY(0);
 }
 
-/* Text element animations set opacity */
-.sticky-wrap h1, 
-.sticky-wrap h2, 
-.sticky-wrap h3, 
-.sticky-wrap h4, 
-.sticky-wrap h5, 
-.sticky-wrap h6, 
-.sticky-wrap p, 
-.sticky-wrap .heading, 
-.btn-show, 
-img,
-.flex-badge {
-  opacity: 0;
-}
-
 /* Text element animations */
-.sticky-wrap h1, 
-.sticky-wrap h2, 
-.sticky-wrap h3, 
-.sticky-wrap h4, 
-.sticky-wrap h5, 
-.sticky-wrap h6, 
-.sticky-wrap p, 
-.sticky-wrap .heading, 
-.btn-show, 
-a,
-.flex-badge {
+.heading.huge,
+.heading.large,
+.heading.small,
+h1, h2, h3, h4, h5, h6, p {
   will-change: transform, opacity;
-}
-
-/* Menu link color */
-.menu-link {
-  color: var(--gainsboro) !important;
 }
 
 /* Ensure content is visible by default */
