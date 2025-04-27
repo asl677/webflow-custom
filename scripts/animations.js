@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
           opacity: 1,
           y: 0,
           duration: 0.6,
-          delay: Math.min(index * 0.05, 0.2),
+          delay: Math.min(index * 0.1, 0.2),
           ease: "power2.out",
           overwrite: true
         });
