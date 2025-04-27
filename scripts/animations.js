@@ -1,8 +1,14 @@
 // Simple test to verify JavaScript is loading
 console.log('Custom JavaScript is loaded!');
 
+// Prevent FOUC
+document.body.style.opacity = '0';
+
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  // Show body once DOM is ready
+  document.body.classList.add('ready');
+  
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
@@ -12,11 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const links = document.querySelectorAll('a[href]');
 
     links.forEach(function(link) {
+      // Skip navigation links from transition effect
+      if (link.closest('.navbar, .nav-menu')) return;
+      
       if (link.hostname === window.location.hostname && !link.target) {
         link.addEventListener('click', function(e) {
           e.preventDefault();
+          
+          // Only fade the main content
           bodyWrapper.classList.remove('page-loaded');
           bodyWrapper.classList.add('fade-out');
+          
           setTimeout(function() {
             window.location = link.href;
           }, 600); // match CSS transition time
@@ -36,8 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
     gsap.registerPlugin(ScrollTrigger);
   }
 
-  // Select all text elements we want to animate
-  const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .heading');
+  // Select all text elements we want to animate (excluding navigation)
+  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading');
 
   // Create timeline for each text element
   textElements.forEach((element, index) => {

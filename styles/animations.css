@@ -32,12 +32,18 @@ body {
   scrollbar-width: none;
   scrollbar-color: transparent transparent;
   transition: opacity 1s ease;
+  opacity: 0;
+}
+
+body.ready {
+  opacity: 1;
 }
 
 body::-webkit-scrollbar {
   display: none;
 }
 
+/* Selection styles */
 h1::selection, p::selection, a::selection, img::selection {
   background: var(--gainsboro);
   color: var(--onyx);
@@ -55,6 +61,14 @@ h1::selection, p::selection, a::selection, img::selection {
 
 .sticky-wrap.fade-out {
   opacity: 0;
+}
+
+/* Keep navigation visible during transitions */
+.navbar,
+.nav-menu,
+.nav-link {
+  transition: none !important;
+  opacity: 1 !important;
 }
 
 /* GSAP Animation Classes */
