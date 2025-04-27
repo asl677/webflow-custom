@@ -2,12 +2,14 @@
 .gsap-animate {
   opacity: 0;
   transform: translateY(30px);
+  visibility: visible !important;
 }
 
 /* Additional animation classes */
 .heading.huge,
 .heading.large,
-.heading.small {
+.heading.small,
+h1, h2, h3, h4, h5, h6, p {
   will-change: transform, opacity;
 }
 

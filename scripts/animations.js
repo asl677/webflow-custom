@@ -11,28 +11,30 @@ window.addEventListener('DOMContentLoaded', function() {
     gsap.registerPlugin(ScrollTrigger);
   }
 
-  // Select all h1 elements
-  const headings = document.querySelectorAll('h1');
+  // Select all text elements we want to animate
+  const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .heading');
 
-  // Create a stagger animation for each heading
-  gsap.from(headings, {
-    opacity: 0,
-    y: 30,
-    duration: 1,
-    stagger: {
-      amount: 0.8,
-      ease: "power2.out"
-    },
-    scrollTrigger: {
-      trigger: "body",
-      start: "top 80%",
-      end: "bottom top",
-      toggleActions: "play none none reverse"
-    }
-  });
-
-  // Optional: Add custom class handling
-  headings.forEach(heading => {
-    heading.classList.add('gsap-animate');
+  // Create timeline for each text element
+  textElements.forEach((element, index) => {
+    gsap.fromTo(element, 
+      {
+        opacity: 0,
+        y: 30
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: index * 0.1, // Stagger based on index
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top bottom-=100",
+          end: "bottom top",
+          toggleActions: "play none none reverse",
+          markers: false, // Set to true for debugging
+        }
+      }
+    );
   });
 }); 
