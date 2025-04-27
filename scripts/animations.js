@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
   if (bodyWrapper) {
+    // Show content once DOM is ready
+    requestAnimationFrame(() => {
+      bodyWrapper.classList.add('page-loaded');
+    });
+
     const links = document.querySelectorAll('a[href]');
 
     links.forEach(function(link) {
@@ -48,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Select all text elements we want to animate (excluding navigation)
-  const textElements = document.querySelectorAll('.flex-badge, .sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show');
+  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge');
 
   // Create timeline for each text element
   textElements.forEach((element, index) => {
@@ -68,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ease: "power2.out",
         scrollTrigger: {
           trigger: element,
-          start: "top bottom-=300", // Trigger earlier, when element is 300px from bottom of viewport
+          start: "top bottom-=50", 
           end: "top center", // End animation when element reaches center of viewport
           toggleActions: "play none none reverse",
           markers: false,
