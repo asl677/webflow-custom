@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle all other elements
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, video');
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, video');
     
     // Set initial states
     textElements.forEach(element => {
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: true });
   } else {
     // On mobile, make all elements visible without animations
-    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video').forEach(element => {
+    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, video').forEach(element => {
       element.style.opacity = '1';
       element.style.transform = 'none';
       element.style.visibility = 'visible';

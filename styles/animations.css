@@ -21,9 +21,11 @@ html {
 .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, 
 .sticky-wrap p, .sticky-wrap .heading, 
 .btn-show, .flex-badge, .reveal, video {
-  /* visibility: visible; */
+  visibility: visible;
   will-change: transform, opacity;
 }
+
+img {opacity: 1 !important;}
 
 /* Scrollbar styles */
 html::-webkit-scrollbar,
