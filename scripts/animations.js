@@ -7,6 +7,8 @@
     // Force immediate application of initial styles
     bodyWrapper.style.opacity = '0';
     bodyWrapper.style.visibility = 'hidden';
+    // Add a class to prevent FOUC
+    document.documentElement.classList.add('is-loading');
   }
 })();
 
@@ -25,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
       onStart: () => {
         bodyWrapper.classList.remove('initial-load');
         bodyWrapper.classList.add('page-loaded');
+        document.documentElement.classList.remove('is-loading');
       }
     });
 
