@@ -1,49 +1,63 @@
-/* Test style to verify CSS is loading */
+/* Base styles and scrollbar customization */
+html {
+  scrollbar-width: none;
+  color: var(--onyx);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+::-webkit-scrollbar {
+  display: none !important;
+  scrollbar-width: none !important;
+}
+
+.scroll-container {
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+body, html, .body-wrapper {
+  overflow-y: visible;
+}
+
 body {
-  background-color: red !important;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+  overflow: scroll;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+  transition: opacity 1s ease;
 }
 
-/* GSAP Animation Classes */
-.gsap-animate {
+body::-webkit-scrollbar {
+  display: none;
+}
+
+h1::selection, p::selection, a::selection, img::selection {
+  background: var(--gainsboro);
+  color: var(--onyx);
+}
+
+/* Page transition styles */
+.sticky-wrap {
   opacity: 0;
-  transform: translateY(30px);
+  transition: opacity 0.5s ease-in-out;
 }
 
-/* Text element animations */
-.heading.huge,
-.heading.large,
-.heading.small,
-h1, h2, h3, h4, h5, h6, p {
-  will-change: transform, opacity;
-}
-
-/* Swup Page Transitions */
-.transition-fade {
-  transition: 0.4s;
+.sticky-wrap.page-loaded {
   opacity: 1;
 }
 
-html.is-animating .transition-fade {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* Optional: Smooth Scrolling */
-html.is-changing {
-  scroll-behavior: smooth;
-}
-
-/* Ensure content is visible by default */
-.transition-fade {
-  opacity: 1 !important;
-}
-
-/* Only apply initial opacity to elements we want to animate */
-[data-gsap="true"] {
+.sticky-wrap.fade-out {
   opacity: 0;
 }
 
-/* GSAP Animation Classes - temporarily commented out
+/* GSAP Animation Classes */
 .gsap-animate {
   opacity: 0;
   transform: translateY(30px);
@@ -54,4 +68,16 @@ html.is-changing {
   opacity: 1;
   transform: translateY(0);
 }
-*/ 
+
+/* Text element animations */
+.heading.huge,
+.heading.large,
+.heading.small,
+h1, h2, h3, h4, h5, h6, p {
+  will-change: transform, opacity;
+}
+
+/* Ensure content is visible by default */
+[data-gsap="true"] {
+  opacity: 0;
+} 

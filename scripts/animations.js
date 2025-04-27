@@ -2,71 +2,68 @@
 console.log('Custom JavaScript is loaded!');
 
 // Initialize animations when DOM is ready
-window.addEventListener('DOMContentLoaded', function() {
-  // Initialize Swup
-  const swup = new Swup({
-    animationSelector: '[class*="transition-"]',
-    containers: ["#swup"],
-    cache: true,
-    plugins: [new SwupScrollPlugin()],
-    animateHistoryBrowsing: true,
-  });
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize page transition
+  const bodyWrapper = document.querySelector('.sticky-wrap');
+  
+  if (bodyWrapper) {
+    bodyWrapper.classList.add('page-loaded');
 
-  // Function to initialize GSAP animations
-  function initGSAP() {
-    // Make sure GSAP is available
-    if (typeof gsap === 'undefined') {
-      console.error('GSAP not loaded');
-      return;
-    }
+    const links = document.querySelectorAll('a[href]');
 
-    // Register ScrollTrigger plugin
-    if (typeof gsap.ScrollTrigger !== 'undefined') {
-      gsap.registerPlugin(ScrollTrigger);
-    }
-
-    // Select all text elements we want to animate
-    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .heading');
-
-    // Create timeline for each text element
-    textElements.forEach((element, index) => {
-      // Add data attribute to mark element for animation
-      element.setAttribute('data-gsap', 'true');
-      
-      gsap.fromTo(element, 
-        {
-          opacity: 0,
-          y: 30
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: index * 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom-=100",
-            end: "bottom top",
-            toggleActions: "play none none reverse",
-          }
-        }
-      );
+    links.forEach(function(link) {
+      if (link.hostname === window.location.hostname && !link.target) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          bodyWrapper.classList.remove('page-loaded');
+          bodyWrapper.classList.add('fade-out');
+          setTimeout(function() {
+            window.location = link.href;
+          }, 600); // match CSS transition time
+        });
+      }
     });
   }
 
-  // Initialize GSAP on first load
-  initGSAP();
+  // Initialize GSAP animations
+  if (typeof gsap === 'undefined') {
+    console.error('GSAP not loaded');
+    return;
+  }
 
-  // Reinitialize GSAP after Swup page changes
-  swup.on('contentReplaced', function() {
-    // Kill all existing ScrollTriggers
-    if (typeof ScrollTrigger !== 'undefined') {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    }
+  // Register ScrollTrigger plugin
+  if (typeof gsap.ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+  }
+
+  // Select all text elements we want to animate
+  const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .heading');
+
+  // Create timeline for each text element
+  textElements.forEach((element, index) => {
+    // Add data attribute to mark element for animation
+    element.setAttribute('data-gsap', 'true');
     
-    // Reinitialize GSAP
-    initGSAP();
+    gsap.fromTo(element, 
+      {
+        opacity: 0,
+        y: 30
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        delay: index * 0.1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top bottom-=100",
+          end: "bottom top",
+          toggleActions: "play none none reverse",
+          markers: false,
+        }
+      }
+    );
   });
 });
 
