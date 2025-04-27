@@ -47,48 +47,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Initialize GSAP animations
-  if (typeof gsap === 'undefined') {
-    console.error('GSAP not loaded');
-    return;
-  }
+  // Check if we're on mobile
+  const isMobile = window.innerWidth < 768;
 
-  // Register ScrollTrigger plugin
-  if (typeof gsap.ScrollTrigger !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-  }
+  // Initialize GSAP animations only on desktop
+  if (!isMobile && typeof gsap !== 'undefined') {
+    // Register ScrollTrigger plugin
+    if (typeof gsap.ScrollTrigger !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger);
+    }
 
-  // Select all text elements we want to animate (excluding navigation)
-  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img');
+    // Select all text elements we want to animate (excluding navigation)
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
 
-  // Create timeline for each text element
-  textElements.forEach((element, index) => {
-    // Add data attribute to mark element for animation
-    element.setAttribute('data-gsap', 'true');
-    
-    gsap.fromTo(element, 
-      {
-        opacity: 0,
-        y: 30
-      },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        delay: index * 0.1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: element,
-          start: "top bottom", // Trigger as soon as element enters viewport
-          end: "top bottom-=200", // End animation shortly after entering
-          toggleActions: "play none none reverse",
-          markers: false,
-          once: false, // Allow animation to replay on scroll up
-          immediateRender: true // Render immediately if in view
+    // Create timeline for each text element
+    textElements.forEach((element, index) => {
+      // Add data attribute to mark element for animation
+      element.setAttribute('data-gsap', 'true');
+      
+      gsap.fromTo(element, 
+        {
+          opacity: 0,
+          y: 30
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: index * 0.1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom", // Trigger as soon as element enters viewport
+            end: "top bottom-=200", // End animation shortly after entering
+            toggleActions: "play none none reverse",
+            markers: false,
+            once: false, // Allow animation to replay on scroll up
+            immediateRender: true // Render immediately if in view
+          }
         }
-      }
-    );
-  });
+      );
+    });
+  } else {
+    // On mobile, make all elements visible immediately
+    document.querySelectorAll('[data-gsap="true"]').forEach(element => {
+      element.style.opacity = '1';
+      element.style.transform = 'none';
+    });
+  }
 });
 
 // Handle complete page load including cached resources

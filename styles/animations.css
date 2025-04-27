@@ -55,7 +55,7 @@ h1::selection, p::selection, a::selection, img::selection {
   color: var(--onyx);
 }
 
-/* Page transition styles */
+/* Page transition styles - these work on all devices */
 .sticky-wrap.fade-out {
   opacity: 0 !important;
   transition: opacity 0.5s ease-in-out;
@@ -76,27 +76,39 @@ h1::selection, p::selection, a::selection, img::selection {
   color: var(--gainsboro) !important;
 }
 
-/* GSAP Animation Classes */
-.gsap-animate {
-  opacity: 0;
-  transform: translateY(30px);
-  visibility: visible !important;
+/* GSAP Animation Classes - desktop only */
+@media (min-width: 768px) {
+  .gsap-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    visibility: visible !important;
+  }
+
+  .gsap-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Text element animations */
+  .heading.huge,
+  .heading.large,
+  .heading.small,
+  h1, h2, h3, h4, h5, h6, p {
+    will-change: transform, opacity;
+  }
+
+  /* Ensure content is visible by default */
+  [data-gsap="true"] {
+    opacity: 0;
+  }
 }
 
-.gsap-animate.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Text element animations */
-.heading.huge,
-.heading.large,
-.heading.small,
-h1, h2, h3, h4, h5, h6, p {
-  will-change: transform, opacity;
-}
-
-/* Ensure content is visible by default */
-[data-gsap="true"] {
-  opacity: 0;
+/* Mobile styles - disable GSAP animations but keep transitions */
+@media (max-width: 767px) {
+  [data-gsap="true"] {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    will-change: auto;
+  }
 } 
