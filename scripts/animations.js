@@ -75,58 +75,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Force a ScrollTrigger refresh
     ScrollTrigger.refresh();
 
-    // Handle .reveal elements with smoother animations
+    // Handle .reveal elements with simpler animations
     const revealElements = document.querySelectorAll('.reveal');
     revealElements.forEach((element) => {
-      // Set initial state
-      gsap.set(element, {
-        opacity: 0,
-        y: 20,
-        visibility: 'visible'
-      });
-
-      // Create ScrollTrigger for reveal elements
-      ScrollTrigger.create({
-        trigger: element,
-        start: "top bottom-=100",
-        end: "bottom top+=100",
-        onEnter: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power2.out",
-            overwrite: true
-          });
+      gsap.fromTo(element, 
+        {
+          opacity: 0,
+          y: 20,
+          visibility: 'visible'
         },
-        onLeave: () => {
-          gsap.to(element, {
-            opacity: 0,
-            y: -20,
-            duration: 0.6,
-            ease: "power2.in",
-            overwrite: true
-          });
-        },
-        onEnterBack: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power2.out",
-            overwrite: true
-          });
-        },
-        onLeaveBack: () => {
-          gsap.to(element, {
-            opacity: 0,
-            y: 20,
-            duration: 0.6,
-            ease: "power2.in",
-            overwrite: true
-          });
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom-=100",
+            end: "bottom top",
+            toggleActions: "play none none none",
+            once: true,
+            markers: false
+          }
         }
-      });
+      );
+    });
+
+    // Handle images separately
+    const imageElements = document.querySelectorAll('.sticky-wrap img');
+    imageElements.forEach((element) => {
+      // Skip images in navigation
+      if (element.closest('.navbar, .nav-menu')) return;
+
+      gsap.fromTo(element, 
+        {
+          opacity: 0,
+          y: 20,
+          visibility: 'visible'
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom",
+            end: "bottom top",
+            toggleActions: "play none none none",
+            once: true,
+            markers: false
+          }
+        }
+      );
     });
 
     // Handle all other elements
@@ -219,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: true });
   } else {
     // On mobile, make all elements visible without animations
-    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, video').forEach(element => {
+    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video').forEach(element => {
       element.style.opacity = '1';
       element.style.transform = 'none';
       element.style.visibility = 'visible';
