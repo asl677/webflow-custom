@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
           ease: "power2.out",
           scrollTrigger: {
             trigger: element,
-            start: "top bottom", // Trigger as soon as element enters viewport
-            end: "top bottom-=200", // End animation shortly after entering
+            start: "top 100", // Trigger as soon as element enters viewport
+            end: "top bottom-=100", // End animation shortly after entering
             toggleActions: "play none none reverse",
             markers: false,
             once: false, // Allow animation to replay on scroll up
