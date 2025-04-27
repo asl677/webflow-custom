@@ -3,18 +3,51 @@ body {
   background-color: red !important;
 }
 
-/* GSAP Animation Classes - temporarily commented out
+/* GSAP Animation Classes */
 .gsap-animate {
   opacity: 0;
   transform: translateY(30px);
-  visibility: visible !important;
 }
 
+/* Text element animations */
 .heading.huge,
 .heading.large,
 .heading.small,
 h1, h2, h3, h4, h5, h6, p {
   will-change: transform, opacity;
+}
+
+/* Swup Page Transitions */
+.transition-fade {
+  transition: 0.4s;
+  opacity: 1;
+}
+
+html.is-animating .transition-fade {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Optional: Smooth Scrolling */
+html.is-changing {
+  scroll-behavior: smooth;
+}
+
+/* Ensure content is visible by default */
+.transition-fade {
+  opacity: 1 !important;
+}
+
+/* Only apply initial opacity to elements we want to animate */
+[data-gsap="true"] {
+  opacity: 0;
+}
+
+/* GSAP Animation Classes - temporarily commented out
+.gsap-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  visibility: visible !important;
 }
 
 .gsap-animate.visible {
