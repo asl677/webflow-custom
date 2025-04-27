@@ -68,8 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ease: "power2.out",
         scrollTrigger: {
           trigger: element,
-          start: "top bottom-=100",
-          end: "bottom top",
+          start: "top bottom-=300", // Trigger earlier, when element is 300px from bottom of viewport
+          end: "top center", // End animation when element reaches center of viewport
           toggleActions: "play none none reverse",
           markers: false,
         }
