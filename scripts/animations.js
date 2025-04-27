@@ -51,7 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const isMobile = window.innerWidth < 768;
 
   // Initialize GSAP animations only on desktop
-  if (!isMobile && typeof gsap !== 'undefined') {
+  if (!isMobile) {
+    if (typeof gsap === 'undefined') {
+      console.error('GSAP not loaded');
+      return;
+    }
+
     // Register ScrollTrigger plugin
     if (typeof gsap.ScrollTrigger !== 'undefined') {
       gsap.registerPlugin(ScrollTrigger);
@@ -79,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
           scrollTrigger: {
             trigger: element,
             start: "top bottom", // Trigger as soon as element enters viewport
-            end: "top bottom-=100", // End animation shortly after entering
+            end: "top bottom-=200", // End animation shortly after entering
             toggleActions: "play none none reverse",
             markers: false,
             once: false, // Allow animation to replay on scroll up
@@ -89,8 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
       );
     });
   } else {
-    // On mobile, make all elements visible immediately
-    document.querySelectorAll('[data-gsap="true"]').forEach(element => {
+    // On mobile, just make sure all elements are visible without animations
+    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video').forEach(element => {
       element.style.opacity = '1';
       element.style.transform = 'none';
     });
