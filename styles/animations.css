@@ -20,7 +20,7 @@ html {
 .sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, 
 .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, 
 .sticky-wrap p, .sticky-wrap .heading, 
-.btn-show, .flex-badge, .reveal, video {
+.btn-show, .flex-badge, img, video {
   visibility: visible;
   will-change: transform, opacity;
 }
@@ -105,7 +105,7 @@ h1::selection, p::selection, a::selection, img::selection {
   .sticky-wrap .heading,
   .btn-show,
   .flex-badge,
-  .reveal,
+  img,
   video {
     opacity: 1 !important;
     transform: none !important;
