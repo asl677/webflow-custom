@@ -25,7 +25,7 @@ html {
   will-change: transform, opacity;
 }
 
-img {opacity: 1;}
+/* img {opacity: 1;} */
 
 /* Scrollbar styles */
 html::-webkit-scrollbar,

@@ -75,59 +75,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Force a ScrollTrigger refresh
     ScrollTrigger.refresh();
 
-    // Handle .reveal elements with simpler animations
-    const revealElements = document.querySelectorAll('.reveal');
-    revealElements.forEach((element) => {
-      gsap.fromTo(element, 
-        {
-          opacity: 0,
-          y: 20,
-          visibility: 'visible'
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom-=100",
-            end: "bottom top",
-            toggleActions: "play none none none",
-            once: true,
-            markers: false
-          }
-        }
-      );
-    });
+    // Handle .reveal elements and images with the same approach
+    const animatedElements = [...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.sticky-wrap img:not(.navbar img, .nav-menu img)')];
+    
+    animatedElements.forEach((element) => {
+      // Set initial state
+      gsap.set(element, {
+        opacity: 0,
+        y: 20,
+        visibility: 'visible'
+      });
 
-    // Handle images separately
-    const imageElements = document.querySelectorAll('.sticky-wrap img');
-    imageElements.forEach((element) => {
-      // Skip images in navigation
-      if (element.closest('.navbar, .nav-menu')) return;
-
-      gsap.fromTo(element, 
-        {
-          opacity: 0,
-          y: 20,
-          visibility: 'visible'
+      // Create ScrollTrigger
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom-=100",
+        onEnter: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            overwrite: true
+          });
         },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom",
-            end: "bottom top",
-            toggleActions: "play none none none",
-            once: true,
-            markers: false
-          }
-        }
-      );
+        once: true
+      });
     });
 
     // Handle all other elements
