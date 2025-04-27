@@ -1,9 +1,6 @@
 // Simple test to verify JavaScript is loading
 console.log('Custom JavaScript is loaded!');
 
-// Prevent FOUC
-document.body.style.opacity = '0';
-
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize page transition
