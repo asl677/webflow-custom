@@ -75,32 +75,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Force a ScrollTrigger refresh
     ScrollTrigger.refresh();
 
-    // Handle .reveal elements with toggleActions
+    // Handle .reveal elements with smoother animations
     const revealElements = document.querySelectorAll('.reveal');
     revealElements.forEach((element) => {
-      gsap.fromTo(element, 
-        {
-          opacity: 0,
-          y: 20
+      // Set initial state
+      gsap.set(element, {
+        opacity: 0,
+        y: 20,
+        visibility: 'visible'
+      });
+
+      // Create ScrollTrigger for reveal elements
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom-=100",
+        end: "bottom top+=100",
+        onEnter: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            overwrite: true
+          });
         },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom-=100",
-            end: "bottom top",
-            toggleActions: "play none none reverse",
-            markers: false,
-          }
+        onLeave: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: -20,
+            duration: 0.6,
+            ease: "power2.in",
+            overwrite: true
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            overwrite: true
+          });
+        },
+        onLeaveBack: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: 20,
+            duration: 0.6,
+            ease: "power2.in",
+            overwrite: true
+          });
         }
-      );
+      });
     });
 
     // Handle all other elements
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, video');
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, video');
     
     // Set initial states
     textElements.forEach(element => {
