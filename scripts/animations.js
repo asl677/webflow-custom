@@ -3,8 +3,10 @@
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   if (bodyWrapper) {
-    // Add class immediately instead of inline styles
     bodyWrapper.classList.add('initial-load');
+    // Force immediate application of initial styles
+    bodyWrapper.style.opacity = '0';
+    bodyWrapper.style.visibility = 'hidden';
   }
 })();
 
@@ -17,16 +19,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show content immediately
     bodyWrapper.classList.remove('initial-load');
     bodyWrapper.classList.add('page-loaded');
+    bodyWrapper.style.opacity = '1';
+    bodyWrapper.style.visibility = 'visible';
 
     const links = document.querySelectorAll('a[href]');
 
     links.forEach(function(link) {
-      // Skip navigation links from transition effect
       if (link.closest('.navbar, .nav-menu')) return;
       
       if (link.hostname === window.location.hostname && !link.target) {
         link.addEventListener('click', function(e) {
-          // Prevent navigation if clicking current page link
           const isSamePage = link.pathname === window.location.pathname;
           if (isSamePage) {
             e.preventDefault();
@@ -38,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
           
           setTimeout(function() {
             window.location = link.href;
-          }, 400); // Reduced from 600ms for faster transitions
+          }, 400);
         });
       }
     });
@@ -59,61 +61,70 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.registerPlugin(ScrollTrigger);
     }
 
+    // Force a ScrollTrigger refresh
+    ScrollTrigger.refresh();
+
     // Initial setup for elements
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video');
     
+    // Set initial states
+    textElements.forEach(element => {
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(15px)';
+      element.style.visibility = 'visible';
+    });
+
     // Immediately show elements above the fold
     textElements.forEach(element => {
-      if (element.getBoundingClientRect().top < window.innerHeight) {
-        element.style.opacity = '1';
-        element.style.transform = 'none';
+      const rect = element.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        gsap.to(element, {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "power2.out",
+          overwrite: true
+        });
       }
     });
 
-    // Create timeline for each text element
+    // Create ScrollTrigger for each text element
     textElements.forEach((element, index) => {
       // Skip elements that are already visible
       if (element.style.opacity === '1') return;
       
-      // Add data attribute to mark element for animation
-      element.setAttribute('data-gsap', 'true');
-      
-      // Create ScrollTrigger for this element
       const trigger = ScrollTrigger.create({
         trigger: element,
-        start: "top bottom-=100", // More aggressive trigger point
-        end: "bottom center",     // End when element reaches center
-        once: true,              // Animation plays once
+        start: "top bottom", // Trigger as soon as element enters viewport
+        end: "top center",   // End animation when element reaches center
+        once: true,
         markers: false,
-        onEnter: () => animateElement(element, index),
-        onEnterBack: () => animateElement(element, index)
+        onEnter: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            delay: Math.min(index * 0.05, 0.2),
+            ease: "power2.out",
+            overwrite: true
+          });
+        }
       });
 
-      // If element is already in view, animate it immediately
+      // If element is already in view, animate it
       if (trigger.isActive) {
-        animateElement(element, index);
+        gsap.to(element, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          delay: Math.min(index * 0.05, 0.2),
+          ease: "power2.out",
+          overwrite: true
+        });
       }
     });
 
-    // Animation function
-    function animateElement(element, index) {
-      gsap.fromTo(element,
-        {
-          opacity: 0,
-          y: 15  // Reduced from 20 for subtler animation
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,  // Faster animation
-          delay: Math.min(index * 0.05, 0.3),  // Cap the delay
-          ease: "power2.out",
-          overwrite: true
-        }
-      );
-    }
-
-    // Add resize handler to refresh ScrollTrigger
+    // Add resize handler
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
@@ -123,9 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   } else {
     // On mobile, make all elements visible without animations
-    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video').forEach(element => {
+    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video').forEach(element => {
       element.style.opacity = '1';
       element.style.transform = 'none';
+      element.style.visibility = 'visible';
     });
   }
 });
@@ -135,6 +147,10 @@ window.addEventListener('load', function() {
   requestAnimationFrame(() => {
     document.documentElement.classList.remove('is-loading');
     sessionStorage.setItem('pageLoaded', 'true');
+    // Force a final ScrollTrigger refresh after all content is loaded
+    if (typeof ScrollTrigger !== 'undefined') {
+      ScrollTrigger.refresh();
+    }
   });
 });
 
