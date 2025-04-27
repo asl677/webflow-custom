@@ -3,107 +3,99 @@
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   if (bodyWrapper) {
-    // Ensure initial state
-    bodyWrapper.style.opacity = '0';
-    bodyWrapper.style.visibility = 'hidden';
+    // Show content once loaded
+    requestAnimationFrame(() => {
+      bodyWrapper.style.opacity = '1';
+      bodyWrapper.style.visibility = 'visible';
+    });
   }
 })();
 
-// Initialize animations when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize page transition
-  const bodyWrapper = document.querySelector('.sticky-wrap');
-  
-  if (bodyWrapper) {
-    // Show content once DOM is ready
-    requestAnimationFrame(() => {
-      bodyWrapper.classList.add('page-loaded');
-    });
+// Initialize GSAP and SplitType animations
+function initAnimations() {
+    console.log('Initializing animations...');
 
-    const links = document.querySelectorAll('a[href]');
+    // Check if GSAP is available
+    if (typeof gsap !== 'undefined') {
+        // Register ScrollTrigger plugin
+        gsap.registerPlugin(ScrollTrigger);
 
-    links.forEach(function(link) {
-      // Skip navigation links from transition effect
-      if (link.closest('.navbar, .nav-menu')) return;
-      
-      if (link.hostname === window.location.hostname && !link.target) {
-        link.addEventListener('click', function(e) {
-          // Prevent navigation if clicking current page link
-          const isSamePage = link.pathname === window.location.pathname;
-          if (isSamePage) {
-            e.preventDefault();
-            return;
-          }
-          
-          e.preventDefault();
-          // Only fade the main content
-          bodyWrapper.classList.add('fade-out');
-          
-          setTimeout(function() {
-            window.location = link.href;
-          }, 600); // match CSS transition time
+        // Split text elements
+        const headings = document.querySelectorAll('h1, h2, h3');
+        const paragraphs = document.querySelectorAll('p');
+
+        // Split headings
+        headings.forEach(heading => {
+            const splitHeading = new SplitType(heading, {
+                types: 'lines, words, chars',
+                tagName: 'span'
+            });
+
+            // Animate heading characters
+            gsap.from(splitHeading.chars, {
+                opacity: 0,
+                y: 50,
+                duration: 0.8,
+                stagger: 0.02,
+                ease: "power4.out",
+                scrollTrigger: {
+                    trigger: heading,
+                    start: "top 80%",
+                    toggleActions: "play none none reverse"
+                }
+            });
         });
-      }
-    });
-  }
 
-  // Check if we're on mobile
-  const isMobile = window.innerWidth < 768;
+        // Split paragraphs
+        paragraphs.forEach(paragraph => {
+            const splitParagraph = new SplitType(paragraph, {
+                types: 'lines',
+                tagName: 'span'
+            });
 
-  // Initialize GSAP animations only on desktop
-  if (!isMobile && typeof gsap !== 'undefined') {
-    // Register ScrollTrigger plugin
-    if (typeof gsap.ScrollTrigger !== 'undefined') {
-      gsap.registerPlugin(ScrollTrigger);
+            // Animate paragraph lines
+            gsap.from(splitParagraph.lines, {
+                opacity: 0,
+                y: 20,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: paragraph,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        });
+
+        // Add any additional animations here
+        gsap.from('.fade-in', {
+            opacity: 0,
+            y: 30,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power2.out",
+            scrollTrigger: {
+                trigger: '.fade-in',
+                start: "top 85%",
+                toggleActions: "play none none reverse"
+            }
+        });
     }
+}
 
-    // Select all text elements we want to animate (excluding navigation)
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
-
-    // Create timeline for each text element
-    textElements.forEach((element, index) => {
-      // Add data attribute to mark element for animation
-      element.setAttribute('data-gsap', 'true');
-      
-      gsap.fromTo(element, 
-        {
-          opacity: 0,
-          y: 30
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: index * 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 100", // Trigger as soon as element enters viewport
-            end: "top bottom-=100", // End animation shortly after entering
-            toggleActions: "play none none reverse",
-            markers: false,
-            once: false, // Allow animation to replay on scroll up
-            immediateRender: true // Render immediately if in view
-          }
-        }
-      );
-    });
-  } else {
-    // On mobile, make all elements visible immediately
-    document.querySelectorAll('[data-gsap="true"]').forEach(element => {
-      element.style.opacity = '1';
-      element.style.transform = 'none';
-    });
-  }
+// Initialize animations when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initAnimations();
 });
 
 // Handle complete page load including cached resources
 window.addEventListener('load', function() {
-  // Remove loading class and set session flag
-  requestAnimationFrame(() => {
-    document.documentElement.classList.remove('is-loading');
-    sessionStorage.setItem('pageLoaded', 'true');
-  });
+    // Remove loading class and set session flag
+    requestAnimationFrame(() => {
+        document.documentElement.classList.remove('is-loading');
+        sessionStorage.setItem('pageLoaded', 'true');
+    });
 });
 
 /* GSAP code temporarily commented out
