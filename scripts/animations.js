@@ -62,6 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.registerPlugin(ScrollTrigger);
     }
 
+    // Refresh ScrollTrigger on page load to handle dynamic content
+    ScrollTrigger.refresh();
+
     // Select all text elements we want to animate (excluding navigation)
     const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
 
@@ -70,7 +73,28 @@ document.addEventListener('DOMContentLoaded', function() {
       // Add data attribute to mark element for animation
       element.setAttribute('data-gsap', 'true');
       
-      gsap.fromTo(element, 
+      // Create ScrollTrigger for this element
+      const trigger = ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom+=100", // Start when element is 100px below viewport
+        end: "bottom top", // End when element leaves viewport
+        once: false, // Allow animation to replay
+        markers: false,
+        onEnter: () => animateElement(element, index),
+        onEnterBack: () => animateElement(element, index),
+        onLeave: () => hideElement(element),
+        onLeaveBack: () => hideElement(element)
+      });
+
+      // If element is already visible, trigger animation
+      if (trigger.isActive) {
+        animateElement(element, index);
+      }
+    });
+
+    // Animation function
+    function animateElement(element, index) {
+      gsap.fromTo(element,
         {
           opacity: 0,
           y: 30
@@ -81,17 +105,25 @@ document.addEventListener('DOMContentLoaded', function() {
           duration: 0.8,
           delay: index * 0.1,
           ease: "power2.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom", // Trigger as soon as element enters viewport
-            end: "top bottom-=200", // End animation shortly after entering
-            toggleActions: "play none none reverse",
-            markers: false,
-            once: false, // Allow animation to replay on scroll up
-            immediateRender: true // Render immediately if in view
-          }
+          overwrite: true
         }
       );
+    }
+
+    // Hide function
+    function hideElement(element) {
+      gsap.to(element, {
+        opacity: 0,
+        y: 30,
+        duration: 0.4,
+        ease: "power2.in",
+        overwrite: true
+      });
+    }
+
+    // Add resize handler to refresh ScrollTrigger
+    window.addEventListener('resize', () => {
+      ScrollTrigger.refresh();
     });
   } else {
     // On mobile, just make sure all elements are visible without animations
