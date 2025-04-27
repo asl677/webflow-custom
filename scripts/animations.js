@@ -1,8 +1,13 @@
-// Simple test to verify JavaScript is loading
-console.log('Custom JavaScript is loaded!');
+// Add loading class to html element
+document.documentElement.classList.add('is-loading');
 
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  // Remove loading class once everything is ready
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove('is-loading');
+  });
+
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   

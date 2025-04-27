@@ -4,6 +4,20 @@ html {
   color: var(--onyx);
 }
 
+/* Preloader to prevent FOUC */
+html.is-loading * {
+  visibility: hidden;
+}
+
+html.is-loading::before {
+  visibility: visible;
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--onyx);
+  z-index: 9999;
+}
+
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 ::-webkit-scrollbar {
