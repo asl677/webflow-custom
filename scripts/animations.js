@@ -16,11 +16,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
   if (bodyWrapper) {
-    // Show content immediately
-    bodyWrapper.classList.remove('initial-load');
-    bodyWrapper.classList.add('page-loaded');
-    bodyWrapper.style.opacity = '1';
-    bodyWrapper.style.visibility = 'visible';
+    // Initial page load animation
+    gsap.to(bodyWrapper, {
+      opacity: 1,
+      visibility: 'visible',
+      duration: 0.6,
+      ease: "power2.out",
+      onStart: () => {
+        bodyWrapper.classList.remove('initial-load');
+        bodyWrapper.classList.add('page-loaded');
+      }
+    });
 
     const links = document.querySelectorAll('a[href]');
 
@@ -36,11 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           e.preventDefault();
-          bodyWrapper.classList.add('fade-out');
           
-          setTimeout(function() {
-            window.location = link.href;
-          }, 400);
+          // Animate out
+          gsap.to(bodyWrapper, {
+            opacity: 0,
+            duration: 0.4,
+            ease: "power2.in",
+            onComplete: () => {
+              window.location = link.href;
+            }
+          });
         });
       }
     });
@@ -69,29 +80,38 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set initial states
     textElements.forEach(element => {
+      // Skip elements that should be visible immediately (like navigation)
+      if (element.closest('.navbar, .nav-menu')) return;
+      
       element.style.opacity = '0';
       element.style.transform = 'translateY(15px)';
       element.style.visibility = 'visible';
     });
 
+    // Create a timeline for initial animations
+    const initialTimeline = gsap.timeline({
+      defaults: {
+        duration: 0.6,
+        ease: "power2.out"
+      }
+    });
+
     // Immediately show elements above the fold
-    textElements.forEach(element => {
+    textElements.forEach((element, index) => {
       const rect = element.getBoundingClientRect();
       if (rect.top < window.innerHeight) {
-        gsap.to(element, {
+        initialTimeline.to(element, {
           opacity: 1,
           y: 0,
-          duration: 0.4,
-          ease: "power2.out",
-          overwrite: true
-        });
+          delay: Math.min(index * 0.05, 0.2)
+        }, index * 0.05);
       }
     });
 
     // Create ScrollTrigger for each text element
     textElements.forEach((element, index) => {
-      // Skip elements that are already visible
-      if (element.style.opacity === '1') return;
+      // Skip elements that are already visible or in navigation
+      if (element.style.opacity === '1' || element.closest('.navbar, .nav-menu')) return;
       
       const trigger = ScrollTrigger.create({
         trigger: element,

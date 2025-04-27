@@ -6,18 +6,14 @@ html {
 
 /* Initial state to prevent FOUC */
 .sticky-wrap {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.4s ease-out;
-}
-
-.sticky-wrap.initial-load {
   opacity: 0;
   visibility: hidden;
+  will-change: opacity, visibility;
 }
 
-.sticky-wrap.fade-out {
-  opacity: 0;
+.sticky-wrap.page-loaded {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Remove default animation states from CSS - let GSAP handle them */
@@ -26,6 +22,7 @@ html {
 .sticky-wrap p, .sticky-wrap .heading, 
 .btn-show, .flex-badge, .reveal, img, video {
   visibility: visible;
+  will-change: transform, opacity;
 }
 
 /* Scrollbar styles */
@@ -68,32 +65,11 @@ h1::selection, p::selection, a::selection, img::selection {
   color: var(--onyx);
 }
 
-/* Page transition styles */
-.sticky-wrap.fade-out {
-  opacity: 0 !important;
-  transition: opacity 0.4s ease-in-out;
-}
-
-/* Keep navigation visible during transitions */
-.navbar,
-.nav-menu,
-.nav-link,
-.menu-link {
-  transition: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-/* Menu link color */
-.menu-link {
-  color: var(--gainsboro) !important;
-}
-
 /* GSAP Animation Classes - only on desktop */
 @media (min-width: 768px) {
   .gsap-animate {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(15px);
     visibility: visible !important;
   }
 
