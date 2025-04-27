@@ -75,21 +75,35 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.registerPlugin(ScrollTrigger);
     }
 
-    // Force a ScrollTrigger refresh
-    ScrollTrigger.refresh();
+    // Define our animation targets, being careful not to overlap
+    const revealElements = document.querySelectorAll('.reveal');
+    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading:not(.reveal .heading), .btn-show:not(.reveal .btn-show), .flex-badge:not(.reveal .flex-badge)');
+    const standaloneImages = document.querySelectorAll('.sticky-wrap img:not(.navbar img, .nav-menu img, .reveal img)');
 
-    // Handle .reveal elements and images with the same approach
-    const animatedElements = [...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.sticky-wrap img:not(.navbar img, .nav-menu img)')];
-    
-    animatedElements.forEach((element) => {
-      // Set initial state
-      gsap.set(element, {
-        opacity: 0,
-        y: 20,
-        visibility: 'visible'
+    // Set initial states
+    gsap.set([...revealElements, ...textElements, ...standaloneImages], {
+      opacity: 0,
+      y: 20
+    });
+
+    // Animate elements above the fold immediately
+    const elementsAboveFold = [...textElements].filter(element => {
+      const rect = element.getBoundingClientRect();
+      return rect.top < window.innerHeight;
+    });
+
+    if (elementsAboveFold.length) {
+      gsap.to(elementsAboveFold, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out"
       });
+    }
 
-      // Create ScrollTrigger
+    // Create ScrollTriggers for all elements
+    const createScrollTrigger = (element) => {
       ScrollTrigger.create({
         trigger: element,
         start: "top bottom-=100",
@@ -98,108 +112,31 @@ document.addEventListener('DOMContentLoaded', function() {
             opacity: 1,
             y: 0,
             duration: 0.8,
-            ease: "power2.out",
-            overwrite: true
+            ease: "power2.out"
           });
         },
         once: true
       });
-    });
+    };
 
-    // Handle all other elements
-    const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, img, video,.flex-badge');
-    
-    // Set initial states
-    textElements.forEach(element => {
-      // Skip elements that should be visible immediately (like navigation)
-      if (element.closest('.navbar, .nav-menu')) return;
-      
-      element.style.opacity = '0';
-      element.style.transform = 'translateY(15px)';
-      element.style.visibility = 'visible';
-    });
-
-    // Create a timeline for initial animations
-    const initialTimeline = gsap.timeline({
-      defaults: {
-        duration: 0.6,
-        ease: "power2.out"
+    // Apply ScrollTrigger to elements not already animated
+    [...revealElements, ...textElements, ...standaloneImages].forEach(element => {
+      if (!elementsAboveFold.includes(element)) {
+        createScrollTrigger(element);
       }
     });
 
-    // Immediately show elements above the fold
-    textElements.forEach((element, index) => {
-      const rect = element.getBoundingClientRect();
-      if (rect.top < window.innerHeight) {
-        initialTimeline.to(element, {
-          opacity: 1,
-          y: 0,
-          delay: Math.min(index * 0.05, 0.2)
-        }, index * 0.05);
-      }
-    });
-
-    // Create ScrollTrigger for each text element
-    textElements.forEach((element, index) => {
-      // Skip elements that are already visible or in navigation
-      if (element.style.opacity === '1' || 
-          element.closest('.navbar, .nav-menu') || 
-          element.classList.contains('reveal')) return;
-      
-      const trigger = ScrollTrigger.create({
-        trigger: element,
-        start: "top bottom", // Trigger as soon as element enters viewport
-        end: "top center",   // End animation when element reaches center
-        once: true,
-        markers: false,
-        onEnter: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            delay: Math.min(index * 0.05, 0.2),
-            ease: "power2.out",
-            overwrite: true
-          });
-        }
-      });
-
-      // If element is already in view, animate it
-      if (trigger.isActive) {
-        gsap.to(element, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          delay: Math.min(index * 0.05, 0.2),
-          ease: "power2.out",
-          overwrite: true
-        });
-      }
-    });
-
-    // Add resize handler
-    let resizeTimeout;
+    // Refresh ScrollTrigger on resize
     window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 250);
+      ScrollTrigger.refresh();
     });
-
-    // Add scroll end detection for reliable ScrollTrigger refresh
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 150);
-    }, { passive: true });
   } else {
-    // On mobile, make all elements visible without animations
-    document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, .reveal, img, video').forEach(element => {
-      element.style.opacity = '1';
-      element.style.transform = 'none';
-      element.style.visibility = 'visible';
+    // On mobile, make everything visible without animations
+    document.querySelectorAll('.reveal, .sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img').forEach(element => {
+      gsap.set(element, {
+        opacity: 1,
+        y: 0
+      });
     });
   }
 });
