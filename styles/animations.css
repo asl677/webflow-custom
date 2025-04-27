@@ -6,14 +6,28 @@ html {
 
 /* Initial state to prevent FOUC */
 .sticky-wrap {
-  opacity: 0 !important;
-  visibility: hidden !important;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease-out;
 }
 
-.sticky-wrap.page-loaded {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: opacity 0.3s ease-out;
+.sticky-wrap.initial-load {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sticky-wrap.fade-out {
+  opacity: 0;
+}
+
+/* Set initial state for animated elements */
+.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, 
+.sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, 
+.sticky-wrap p, .sticky-wrap .heading, 
+.btn-show, .flex-badge, img, video {
+  opacity: 0;
+  transform: translateY(15px);
+  will-change: opacity, transform;
 }
 
 html::-webkit-scrollbar,

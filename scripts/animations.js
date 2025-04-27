@@ -3,9 +3,8 @@
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   if (bodyWrapper) {
-    // Ensure initial state
-    bodyWrapper.style.opacity = '0';
-    bodyWrapper.style.visibility = 'hidden';
+    // Add class immediately instead of inline styles
+    bodyWrapper.classList.add('initial-load');
   }
 })();
 
@@ -15,10 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
   if (bodyWrapper) {
-    // Show content once DOM is ready
-    requestAnimationFrame(() => {
-      bodyWrapper.classList.add('page-loaded');
-    });
+    // Show content immediately
+    bodyWrapper.classList.remove('initial-load');
+    bodyWrapper.classList.add('page-loaded');
 
     const links = document.querySelectorAll('a[href]');
 
@@ -36,12 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           e.preventDefault();
-          // Only fade the main content
           bodyWrapper.classList.add('fade-out');
           
           setTimeout(function() {
             window.location = link.href;
-          }, 600); // match CSS transition time
+          }, 400); // Reduced from 600ms for faster transitions
         });
       }
     });
@@ -62,31 +59,37 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.registerPlugin(ScrollTrigger);
     }
 
-    // Refresh ScrollTrigger on page load to handle dynamic content
-    ScrollTrigger.refresh();
-
-    // Select all text elements we want to animate (excluding navigation)
+    // Initial setup for elements
     const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video');
+    
+    // Immediately show elements above the fold
+    textElements.forEach(element => {
+      if (element.getBoundingClientRect().top < window.innerHeight) {
+        element.style.opacity = '1';
+        element.style.transform = 'none';
+      }
+    });
 
     // Create timeline for each text element
     textElements.forEach((element, index) => {
+      // Skip elements that are already visible
+      if (element.style.opacity === '1') return;
+      
       // Add data attribute to mark element for animation
       element.setAttribute('data-gsap', 'true');
       
       // Create ScrollTrigger for this element
       const trigger = ScrollTrigger.create({
         trigger: element,
-        start: "top bottom+=500", // Start when element is 100px below viewport
-        end: "bottom top", // End when element leaves viewport
-        once: false, // Allow animation to replay
+        start: "top bottom-=100", // More aggressive trigger point
+        end: "bottom center",     // End when element reaches center
+        once: true,              // Animation plays once
         markers: false,
         onEnter: () => animateElement(element, index),
-        onEnterBack: () => animateElement(element, index),
-        onLeave: () => hideElement(element),
-        onLeaveBack: () => hideElement(element)
+        onEnterBack: () => animateElement(element, index)
       });
 
-      // If element is already visible, trigger animation
+      // If element is already in view, animate it immediately
       if (trigger.isActive) {
         animateElement(element, index);
       }
@@ -97,36 +100,29 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.fromTo(element,
         {
           opacity: 0,
-          y: 20
+          y: 15  // Reduced from 20 for subtler animation
         },
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
-          delay: index * 0.1,
+          duration: 0.6,  // Faster animation
+          delay: Math.min(index * 0.05, 0.3),  // Cap the delay
           ease: "power2.out",
           overwrite: true
         }
       );
     }
 
-    // Hide function
-    function hideElement(element) {
-      gsap.to(element, {
-        opacity: 0,
-        y: 20,
-        duration: 0.4,
-        ease: "power2.in",
-        overwrite: true
-      });
-    }
-
     // Add resize handler to refresh ScrollTrigger
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-      ScrollTrigger.refresh();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 250);
     });
   } else {
-    // On mobile, just make sure all elements are visible without animations
+    // On mobile, make all elements visible without animations
     document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img, video').forEach(element => {
       element.style.opacity = '1';
       element.style.transform = 'none';
@@ -134,9 +130,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Handle complete page load including cached resources
+// Handle complete page load
 window.addEventListener('load', function() {
-  // Remove loading class and set session flag
   requestAnimationFrame(() => {
     document.documentElement.classList.remove('is-loading');
     sessionStorage.setItem('pageLoaded', 'true');
