@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Select all text elements we want to animate (excluding navigation)
-  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge');
+  const textElements = document.querySelectorAll('.sticky-wrap h1, .sticky-wrap h2, .sticky-wrap h3, .sticky-wrap h4, .sticky-wrap h5, .sticky-wrap h6, .sticky-wrap p, .sticky-wrap .heading, .btn-show, .flex-badge, img');
 
   // Create timeline for each text element
   textElements.forEach((element, index) => {
