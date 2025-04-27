@@ -31,12 +31,6 @@ body {
   overflow: scroll;
   scrollbar-width: none;
   scrollbar-color: transparent transparent;
-  transition: opacity 1s ease;
-  opacity: 0;
-}
-
-body.ready {
-  opacity: 1;
 }
 
 body::-webkit-scrollbar {
@@ -51,12 +45,8 @@ h1::selection, p::selection, a::selection, img::selection {
 
 /* Page transition styles */
 .sticky-wrap {
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.sticky-wrap.page-loaded {
   opacity: 1;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .sticky-wrap.fade-out {

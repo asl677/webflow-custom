@@ -6,15 +6,10 @@ document.body.style.opacity = '0';
 
 // Initialize animations when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Show body once DOM is ready
-  document.body.classList.add('ready');
-  
   // Initialize page transition
   const bodyWrapper = document.querySelector('.sticky-wrap');
   
   if (bodyWrapper) {
-    bodyWrapper.classList.add('page-loaded');
-
     const links = document.querySelectorAll('a[href]');
 
     links.forEach(function(link) {
@@ -26,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
           e.preventDefault();
           
           // Only fade the main content
-          bodyWrapper.classList.remove('page-loaded');
           bodyWrapper.classList.add('fade-out');
           
           setTimeout(function() {
