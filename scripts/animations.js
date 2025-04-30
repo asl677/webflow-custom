@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gsap.set(textElements, {
       autoAlpha: 0,
       y: 10,
-      //visibility: 'visible' // Set visibility first
+      visibility: 'hidden' // Set visibility first
     });
   }
   
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gsap.set(mediaElements, {
       autoAlpha: 0,
       y: 20,
-      //visibility: 'visible', // Set visibility first
+      visibility: 'hidden', // Set visibility first
       className: "+=media-animate"
     });
   }
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ease: "power2.out",
       onComplete: function() {
         // Add visible class for CSS transitions
-        mediaElements.forEach(el => el.classList.add('visible'));
+        mediaElements.forEach(el => el.classList.add('hidden'));
       }
     }, "-=0.7"); // Start before text animations finish
   }
