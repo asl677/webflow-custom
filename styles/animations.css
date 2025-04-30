@@ -4,6 +4,10 @@ h1, h2, h3, p, a, img, video {
   overflow: hidden;
 }
 
+img {
+  visibility: hidden !important;
+}
+
 /* Exclude navigation links from animations */
 .nav a {
   opacity: 1 !important;
