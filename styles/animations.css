@@ -4,16 +4,6 @@ h1, h2, h3, p, a {
   overflow: hidden;
 }
 
-/* Keep navigation fixed during transitions */
-.nav, 
-.nav-menu,
-.nav-link,
-.nav-logo,
-.nav-container {
-  z-index: 9999;
-  position: relative;
-}
-
 /* Exclude navigation links from animations */
 .nav a {
   opacity: 1 !important;
