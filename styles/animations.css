@@ -6,6 +6,7 @@ h1, h2, h3, p, a, img, video {
 
 img {
   visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 /* Exclude navigation links from animations */
