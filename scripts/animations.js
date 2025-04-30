@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add visible class for CSS transitions
         mediaElements.forEach(el => el.classList.add('visible'));
       }
-    }, "-=0.7"); // Start before text animations finish
+    }, "-=0.1"); // Start before text animations finish
   }
   
   // Handle page transitions
