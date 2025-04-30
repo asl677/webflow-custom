@@ -6,56 +6,81 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Create black overlay to prevent flickering
+  const overlay = document.createElement('div');
+  overlay.className = 'page-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = '#000';
+  overlay.style.zIndex = '9999';
+  overlay.style.pointerEvents = 'none';
+  document.body.appendChild(overlay);
+
   // Select text elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a');
   
   // Select media elements
   const mediaElements = document.querySelectorAll('img, video');
   
-  // Set initial state for text elements
+  // Set elements to be immediately visible but with 0 opacity
   if (textElements.length > 0) {
     gsap.set(textElements, {
       autoAlpha: 0,
-      y: 10
+      y: 10,
+      visibility: 'visible' // Set visibility first
     });
-    
-    // First ensure visibility is set to visible, then animate opacity
-    gsap.set(textElements, { visibility: 'visible' });
-    
-    // Fade and slide in text elements on page load with stagger
-    gsap.to(textElements, {
+  }
+  
+  if (mediaElements.length > 0) {
+    gsap.set(mediaElements, {
+      autoAlpha: 0,
+      y: 20,
+      visibility: 'visible', // Set visibility first
+      className: "+=media-animate"
+    });
+  }
+  
+  // Create main timeline for all animations
+  const mainTl = gsap.timeline();
+  
+  // First fade out the overlay after a short delay
+  mainTl.to(overlay, {
+    autoAlpha: 0,
+    duration: 0.3,
+    delay: 0.3, // Wait for elements to be properly loaded
+    onComplete: () => {
+      // Remove overlay after animation
+      document.body.removeChild(overlay);
+    }
+  });
+  
+  // Then animate in text elements
+  if (textElements.length > 0) {
+    mainTl.to(textElements, {
       autoAlpha: 1,
       y: 0,
       duration: 0.8,
       stagger: 0.05,
       ease: "power2.out"
-    });
+    }, "-=0.1"); // Start slightly before overlay finishes
   }
   
-  // Set initial state for media elements
+  // Then animate in media elements
   if (mediaElements.length > 0) {
-    gsap.set(mediaElements, {
-      autoAlpha: 0,
-      y: 20,
-      className: "+=media-animate"
-    });
-    
-    // First ensure visibility is set to visible
-    gsap.set(mediaElements, { visibility: 'visible' });
-    
-    // Fade and slide in media elements with a slight delay after text
-    gsap.to(mediaElements, {
+    mainTl.to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
       duration: 1.2,
-      delay: 1,
       stagger: 0.05,
       ease: "power2.out",
       onComplete: function() {
         // Add visible class for CSS transitions
         mediaElements.forEach(el => el.classList.add('visible'));
       }
-    });
+    }, "-=0.7"); // Start before text animations finish
   }
   
   // Handle page transitions
@@ -70,6 +95,20 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const targetHref = link.href;
         
+        // Create black overlay for page exit
+        const exitOverlay = document.createElement('div');
+        exitOverlay.className = 'page-exit-overlay';
+        exitOverlay.style.position = 'fixed';
+        exitOverlay.style.top = '0';
+        exitOverlay.style.left = '0';
+        exitOverlay.style.width = '100%';
+        exitOverlay.style.height = '100%';
+        exitOverlay.style.backgroundColor = '#000';
+        exitOverlay.style.zIndex = '9999';
+        exitOverlay.style.opacity = '0';
+        exitOverlay.style.pointerEvents = 'none';
+        document.body.appendChild(exitOverlay);
+        
         // Create timeline for smooth exit animations
         const tl = gsap.timeline({
           onComplete: () => {
@@ -77,23 +116,20 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         });
         
-        // Animate text elements out
-        tl.to(textElements, {
+        // Animate text and media elements out
+        tl.to([textElements, mediaElements], {
           autoAlpha: 0,
           y: -10,
-          duration: 0.4,
+          duration: 0.3,
           stagger: 0.005,
+          ease: "power2.inOut"
+        })
+        // Fade in the black overlay last
+        .to(exitOverlay, {
+          opacity: 1,
+          duration: 0.2,
           ease: "power2.inOut"
         });
-        
-        // Animate media elements out with slight delay
-        tl.to(mediaElements, {
-          autoAlpha: 0,
-          y: -10,
-          duration: 0.5,
-          stagger: 0.005,
-          ease: "power2.inOut"
-        }, "-=0.05"); // Overlap with text animations
       });
     }
   });
