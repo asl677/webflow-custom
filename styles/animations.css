@@ -1,23 +1,61 @@
+/* Initial state to prevent flash on load */
+h1:not(.nav *):not(.navbar *), 
+h2:not(.nav *):not(.navbar *), 
+h3:not(.nav *):not(.navbar *), 
+p:not(.nav *):not(.navbar *), 
+a:not(.nav a):not(.navbar a):not(.nav-link):not(.menu-button),
+img:not(.nav img):not(.navbar img):not(.logo), 
+video:not(.nav video):not(.navbar video) {
+  opacity: 0;
+}
+
 /* Animation base classes */
-h1, h2, h3, p, a, img, video {
+h1:not(.nav *):not(.navbar *), 
+h2:not(.nav *):not(.navbar *), 
+h3:not(.nav *):not(.navbar *), 
+p:not(.nav *):not(.navbar *), 
+a:not(.nav a):not(.navbar a):not(.nav-link):not(.menu-button),
+img:not(.nav img):not(.navbar img):not(.logo), 
+video:not(.nav video):not(.navbar video) {
   will-change: transform, opacity;
 }
 
 /* Text elements */
-h1, h2, h3, p, a {
+h1:not(.nav *):not(.navbar *), 
+h2:not(.nav *):not(.navbar *), 
+h3:not(.nav *):not(.navbar *), 
+p:not(.nav *):not(.navbar *), 
+a:not(.nav a):not(.navbar a):not(.nav-link):not(.menu-button) {
   overflow: hidden;
 }
 
 /* Media elements */
-img, video {
-  will-change: transform, opacity, scale;
+img:not(.nav img):not(.navbar img):not(.logo), 
+video:not(.nav video):not(.navbar video) {
+  will-change: transform, opacity;
   transition: transform 0.4s ease-out;
 }
 
-/* Exclude navigation links from animations */
-.nav a {
+/* Ensure navigation is always visible */
+.nav, 
+.nav-bar, 
+.navbar, 
+.navigation, 
+.nav-menu, 
+.nav-link, 
+.nav-container, 
+.nav-logo, 
+.nav-button, 
+.menu-button,
+.nav *, 
+.navbar *,
+.nav-menu *,
+.navigation * {
   opacity: 1 !important;
+  visibility: visible !important;
   transform: none !important;
+  will-change: auto !important;
+  transition: none !important;
 }
 
 /* Animation classes */
@@ -28,7 +66,7 @@ img, video {
 
 .media-animate {
   opacity: 0;
-  transform: translateY(10px)
+  transform: translateY(30px) scale(0.95);
 }
 
 /* Visible states */
@@ -39,5 +77,18 @@ img, video {
 
 .media-animate.visible {
   opacity: 1;
-  transform: translateY(0)
+  transform: translateY(0) scale(1);
+}
+
+/* Add card-project to animations */
+.card-project {
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: translateY(30px) scale(0.95);
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.card-project.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
