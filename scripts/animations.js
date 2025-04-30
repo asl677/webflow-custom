@@ -1,3 +1,13 @@
+// Add loading class to HTML element immediately
+document.documentElement.classList.add('loading');
+
+// Create preloader div immediately
+const preloader = document.createElement('div');
+preloader.className = 'page-preloader';
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.appendChild(preloader);
+});
+
 // Wait for GSAP to be loaded
 document.addEventListener('DOMContentLoaded', function() {
   // Make sure GSAP is available
@@ -6,81 +16,100 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Create black overlay to prevent flickering
-  const overlay = document.createElement('div');
-  overlay.className = 'page-overlay';
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.backgroundColor = '#000';
-  overlay.style.zIndex = '999999';
-  overlay.style.pointerEvents = 'none';
-  document.body.appendChild(overlay);
-
   // Select text elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a');
   
   // Select media elements
   const mediaElements = document.querySelectorAll('img, video');
   
-  // Set elements to be immediately visible but with 0 opacity
-  if (textElements.length > 0) {
-    gsap.set(textElements, {
-      autoAlpha: 0,
-      y: 10,
-      visibility: 'visible' // Set visibility first
-    });
-  }
-  
-  if (mediaElements.length > 0) {
-    gsap.set(mediaElements, {
-      autoAlpha: 0,
-      y: 20,
-      visibility: 'visible', // Set visibility first
-      className: "+=media-animate"
-    });
-  }
-  
   // Create main timeline for all animations
-  const mainTl = gsap.timeline();
-  
-  // First fade out the overlay after a short delay
-  mainTl.to(overlay, {
-    autoAlpha: 0,
-    duration: 0.6,
-    delay: 1, // Wait for elements to be properly loaded
+  const mainTl = gsap.timeline({
     onComplete: () => {
-      // Remove overlay after animation
-      document.body.removeChild(overlay);
+      // Remove loading class when animations are complete
+      document.documentElement.classList.remove('loading');
     }
   });
   
-  // Then animate in text elements
-  if (textElements.length > 0) {
-    mainTl.to(textElements, {
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.8,
-      stagger: 0.05,
-      ease: "power2.out"
-    }, "-=0.1"); // Start slightly before overlay finishes
+  // Wait for images to load
+  let imagesLoaded = 0;
+  const imageElements = document.querySelectorAll('img');
+  const totalImages = imageElements.length;
+  
+  // If no images, proceed immediately
+  if (totalImages === 0) {
+    startAnimations();
+  } else {
+    // Wait for images to load before starting animations
+    imageElements.forEach(img => {
+      if (img.complete) {
+        imageLoaded();
+      } else {
+        img.addEventListener('load', imageLoaded);
+        img.addEventListener('error', imageLoaded); // Handle error too
+      }
+    });
   }
   
-  // Then animate in media elements
-  if (mediaElements.length > 0) {
-    mainTl.to(mediaElements, {
-      autoAlpha: 1, 
-      y: 0,
-      duration: 1.2,
-      stagger: 0.05,
-      ease: "power2.out",
-      onComplete: function() {
-        // Add visible class for CSS transitions
-        mediaElements.forEach(el => el.classList.add('visible'));
+  function imageLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded >= totalImages) {
+      startAnimations();
+    }
+  }
+  
+  function startAnimations() {
+    // First fade out the overlay
+    mainTl.to(preloader, {
+      autoAlpha: 0,
+      duration: 0.6,
+      onComplete: () => {
+        // Remove preloader after animation
+        if (preloader.parentNode) {
+          preloader.parentNode.removeChild(preloader);
+        }
       }
-    }, "-=0.7"); // Start before text animations finish
+    });
+    
+    // Set initial state for text elements
+    if (textElements.length > 0) {
+      gsap.set(textElements, {
+        autoAlpha: 0,
+        y: 10,
+        visibility: 'visible' // Ensure visibility is set
+      });
+      
+      // Then animate in text elements
+      mainTl.to(textElements, {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.05,
+        ease: "power2.out"
+      }, "-=0.1"); // Start slightly before overlay finishes
+    }
+    
+    // Set initial state for media elements
+    if (mediaElements.length > 0) {
+      gsap.set(mediaElements, {
+        autoAlpha: 0,
+        y: 20,
+        visibility: 'visible', // Ensure visibility is set
+        className: "+=media-animate"
+      });
+      
+      // Then animate in media elements
+      mainTl.to(mediaElements, {
+        autoAlpha: 1, 
+        y: 0,
+        duration: 1.2,
+        stagger: 0.05,
+        ease: "power2.out",
+        onComplete: function() {
+          // Add visible class for CSS transitions
+          mediaElements.forEach(el => el.classList.add('visible'));
+        }
+      }, "-=0.7"); // Start before text animations finish
+    }
   }
   
   // Handle page transitions
@@ -104,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         exitOverlay.style.width = '100%';
         exitOverlay.style.height = '100%';
         exitOverlay.style.backgroundColor = '#000';
-        exitOverlay.style.zIndex = '9999';
+        exitOverlay.style.zIndex = '9999999';
         exitOverlay.style.opacity = '0';
         exitOverlay.style.pointerEvents = 'none';
         document.body.appendChild(exitOverlay);
@@ -115,6 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location = targetHref;
           }
         });
+        
+        // Add loading class back to HTML
+        document.documentElement.classList.add('loading');
         
         // Animate text and media elements out
         tl.to([textElements, mediaElements], {
