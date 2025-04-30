@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   overlay.style.width = '100%';
   overlay.style.height = '100%';
   overlay.style.backgroundColor = '#000';
-  overlay.style.zIndex = '999999';
+  overlay.style.zIndex = '9999';
   overlay.style.pointerEvents = 'none';
   document.body.appendChild(overlay);
 
