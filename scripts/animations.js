@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (textElements.length > 0) {
     gsap.set(textElements, {
       opacity: 0,
-      y: 20
+      y: 10
     });
     
     // Fade and slide in text elements on page load with stagger
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
       opacity: 1,
       y: 0,
       duration: 0.8,
-      stagger: 0.1,
+      stagger: 0.05,
       ease: "power2.out"
     });
   }
@@ -33,8 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (mediaElements.length > 0) {
     gsap.set(mediaElements, {
       opacity: 0,
-      y: 30,
-      scale: 0.95,
+      y: 20,
       className: "+=media-animate"
     });
     
@@ -44,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
       y: 0,
       scale: 1,
       duration: 1.2,
-      delay: 0.3,
-      stagger: 0.15,
+      delay: 1,
+      stagger: 0.05,
       ease: "power2.out",
       onComplete: function() {
         // Add visible class for CSS transitions
@@ -88,12 +87,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Animate media elements out with slight delay
         tl.to(mediaElements, {
           opacity: 0,
-          y: -20,
-          scale: 0.95,
+          y: -10,
           duration: 0.4,
-          stagger: 0.05,
+          stagger: 0.005,
           ease: "power2.inOut"
-        }, "-=0.3"); // Overlap with text animations
+        }, "-=0.1"); // Overlap with text animations
       });
     }
   });

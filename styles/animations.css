@@ -28,7 +28,7 @@ img, video {
 
 .media-animate {
   opacity: 0;
-  transform: translateY(30px) scale(0.95);
+  transform: translateY(10px)
 }
 
 /* Visible states */
@@ -39,10 +39,5 @@ img, video {
 
 .media-animate.visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-/* Hover effects for media elements */
-img:hover, video:hover {
-  transform: scale(1.02);
+  transform: translateY(0)
 }
