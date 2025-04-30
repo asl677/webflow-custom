@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ease: "power2.out",
       onComplete: function() {
         // Add visible class for CSS transitions
-        mediaElements.forEach(el => el.classList.add('hidden'));
+        mediaElements.forEach(el => el.classList.add('visible'));
       }
     }, "-=0.7"); // Start before text animations finish
   }
