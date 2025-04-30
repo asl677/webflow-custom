@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   overlay.style.width = '100%';
   overlay.style.height = '100%';
   overlay.style.backgroundColor = '#000';
-  overlay.style.zIndex = '9999';
+  overlay.style.zIndex = '999999';
   overlay.style.pointerEvents = 'none';
   document.body.appendChild(overlay);
 
@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // First fade out the overlay after a short delay
   mainTl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.3,
-    delay: 0.3, // Wait for elements to be properly loaded
+    duration: 0.6,
+    delay: 1, // Wait for elements to be properly loaded
     onComplete: () => {
       // Remove overlay after animation
       document.body.removeChild(overlay);
