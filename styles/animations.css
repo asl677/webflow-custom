@@ -1,7 +1,17 @@
-/* Additional animation classes */
-h1, h2, h3, p, a {
+/* Animation base classes */
+h1, h2, h3, p, a, img, video {
   will-change: transform, opacity;
+}
+
+/* Text elements */
+h1, h2, h3, p, a {
   overflow: hidden;
+}
+
+/* Media elements */
+img, video {
+  will-change: transform, opacity, scale;
+  transition: transform 0.4s ease-out;
 }
 
 /* Exclude navigation links from animations */
@@ -10,13 +20,35 @@ h1, h2, h3, p, a {
   transform: none !important;
 }
 
-/* GSAP animation classes */
+/* Animation classes */
 .text-animate {
   opacity: 0;
   transform: translateY(20px);
 }
 
+.media-animate {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+/* Visible states */
 .text-animate.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.media-animate.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hover effects for media elements */
+img:hover, video:hover {
+  transform: scale(1.02);
+}
+
+/* Ensure nav elements remain fixed during transitions */
+.nav, .nav-bar, .nav-menu, .navbar, .navigation {
+  z-index: 9999;
+  position: relative;
 }
