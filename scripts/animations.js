@@ -15,13 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
   // Set initial state for text elements
   if (textElements.length > 0) {
     gsap.set(textElements, {
-      opacity: 0,
+      autoAlpha: 0,
       y: 10
     });
     
+    // First ensure visibility is set to visible, then animate opacity
+    gsap.set(textElements, { visibility: 'visible' });
+    
     // Fade and slide in text elements on page load with stagger
     gsap.to(textElements, {
-      opacity: 1,
+      autoAlpha: 1,
       y: 0,
       duration: 0.8,
       stagger: 0.05,
@@ -32,14 +35,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Set initial state for media elements
   if (mediaElements.length > 0) {
     gsap.set(mediaElements, {
-      opacity: 0,
+      autoAlpha: 0,
       y: 20,
       className: "+=media-animate"
     });
     
+    // First ensure visibility is set to visible
+    gsap.set(mediaElements, { visibility: 'visible' });
+    
     // Fade and slide in media elements with a slight delay after text
     gsap.to(mediaElements, {
-      opacity: 1,
+      autoAlpha: 1, 
       y: 0,
       duration: 1.2,
       delay: 1,
@@ -73,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Animate text elements out
         tl.to(textElements, {
-          opacity: 0,
+          autoAlpha: 0,
           y: -10,
           duration: 0.4,
           stagger: 0.005,
@@ -82,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Animate media elements out with slight delay
         tl.to(mediaElements, {
-          opacity: 0,
+          autoAlpha: 0,
           y: -10,
           duration: 0.5,
           stagger: 0.005,
