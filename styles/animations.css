@@ -46,9 +46,3 @@ img, video {
 img:hover, video:hover {
   transform: scale(1.02);
 }
-
-/* Ensure nav elements remain fixed during transitions */
-.nav, .nav-bar, .nav-menu, .navbar, .navigation {
-  z-index: 9999;
-  position: relative;
-}
