@@ -54,10 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Handle page transitions
   document.querySelectorAll('a[href]').forEach(link => {
-    // Skip navigation links by checking for nav class or parent with nav class
-    const isNavLink = link.closest('.nav') !== null;
-    
-    if (link.hostname === window.location.hostname && !link.target && !isNavLink) {
+    if (link.hostname === window.location.hostname && !link.target) {
       link.addEventListener('click', e => {
         // Skip for same-page links
         if (link.pathname === window.location.pathname) {
