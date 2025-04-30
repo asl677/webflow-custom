@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.8,
       stagger: 0.05,
       ease: "power2.out"
-    }, "-=0.1"); // Start slightly before overlay finishes
+    }, "-=0.5"); // Start slightly before overlay finishes
   }
   
   // Then animate in media elements
