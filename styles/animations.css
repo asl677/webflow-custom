@@ -1,14 +1,7 @@
-/* GSAP Animation Classes */
-.gsap-animate {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
 /* Additional animation classes */
-.heading.huge,
-.heading.large,
-.heading.small {
+h1, h2, h3, p, a {
   will-change: transform, opacity;
+  overflow: hidden;
 }
 
 /* Keep navigation fixed during transitions */
@@ -21,8 +14,19 @@
   position: relative;
 }
 
-/* Optional: Animation states */
-.gsap-animate.visible {
+/* Exclude navigation links from animations */
+.nav a {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* GSAP animation classes */
+.text-animate {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.text-animate.visible {
   opacity: 1;
   transform: translateY(0);
-} 
+}

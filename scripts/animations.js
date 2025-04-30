@@ -6,23 +6,27 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  const bodyWrapper = document.querySelector('.body-wrapper');
-  if (!bodyWrapper) return;
-
+  // Select text elements
+  const textElements = document.querySelectorAll('h1, h2, h3, p, a');
+  
+  // Skip if no elements found
+  if (textElements.length === 0) return;
+  
   // Set initial state
-  gsap.set(bodyWrapper, {
+  gsap.set(textElements, {
     opacity: 0,
-    y: 10
+    y: 20
   });
-
-  // Fade and slide in on page load
-  gsap.to(bodyWrapper, {
+  
+  // Fade and slide in text elements on page load with stagger
+  gsap.to(textElements, {
     opacity: 1,
     y: 0,
-    duration: 0.6,
+    duration: 0.8,
+    stagger: 0.1,
     ease: "power2.out"
   });
-
+  
   // Handle page transitions
   document.querySelectorAll('a[href]').forEach(link => {
     // Skip navigation links by checking for nav class or parent with nav class
@@ -38,12 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const targetHref = link.href;
         
-        // Fade and slide up on exit with longer duration
-        gsap.to(bodyWrapper, {
+        // Animate text elements out before navigation
+        gsap.to(textElements, {
           opacity: 0,
           y: -10,
-          duration: 0.8, // Increased duration
-          ease: "power2.inOut", // Smoother easing
+          duration: 0.6,
+          stagger: 0.05,
+          ease: "power2.inOut",
           onComplete: () => {
             window.location = targetHref;
           }
