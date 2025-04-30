@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gsap.set(textElements, {
       autoAlpha: 0,
       y: 10,
-      visibility: 'visible' // Set visibility first
+      //visibility: 'visible' // Set visibility first
     });
   }
   
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gsap.set(mediaElements, {
       autoAlpha: 0,
       y: 20,
-      visibility: 'visible', // Set visibility first
+      //visibility: 'visible', // Set visibility first
       className: "+=media-animate"
     });
   }
