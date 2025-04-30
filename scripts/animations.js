@@ -62,10 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
     mainTl.to(textElements, {
       autoAlpha: 1,
       y: 0,
-      duration: 0.8,
-      stagger: 0.05,
+      duration: 0.6,
+      stagger: 0.03,
       ease: "power2.out"
-    }, "-=0.5"); // Start slightly before overlay finishes
+    }, "-=0.1"); // Start slightly before overlay finishes
   }
   
   // Then animate in media elements
@@ -73,14 +73,14 @@ document.addEventListener('DOMContentLoaded', function() {
     mainTl.to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
-      duration: 1.2,
+      duration: 0.8,
       stagger: 0.05,
       ease: "power2.out",
       onComplete: function() {
         // Add visible class for CSS transitions
         mediaElements.forEach(el => el.classList.add('visible'));
       }
-    }, "-=0.1"); // Start before text animations finish
+    }, "-=0.4"); // Start before text animations finish
   }
   
   // Handle page transitions
