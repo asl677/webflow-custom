@@ -25,22 +25,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Handle page transitions
   document.querySelectorAll('a[href]').forEach(link => {
-    if (link.hostname === window.location.hostname && !link.target && !link.closest('.nav')) {
+    // Skip navigation links by checking for nav class or parent with nav class
+    const isNavLink = link.closest('.nav') !== null;
+    
+    if (link.hostname === window.location.hostname && !link.target && !isNavLink) {
       link.addEventListener('click', e => {
         // Skip for same-page links
         if (link.pathname === window.location.pathname) {
-          e.preventDefault();
           return;
         }
         
         e.preventDefault();
-        // Fade and slide up on exit
+        const targetHref = link.href;
+        
+        // Fade and slide up on exit with longer duration
         gsap.to(bodyWrapper, {
           opacity: 0,
           y: -10,
-          duration: 0.4,
-          ease: "power2.in",
-          onComplete: () => window.location = link.href
+          duration: 0.8, // Increased duration
+          ease: "power2.inOut", // Smoother easing
+          onComplete: () => {
+            window.location = targetHref;
+          }
         });
       });
     }

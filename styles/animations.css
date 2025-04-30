@@ -11,6 +11,16 @@
   will-change: transform, opacity;
 }
 
+/* Keep navigation fixed during transitions */
+.nav, 
+.nav-menu,
+.nav-link,
+.nav-logo,
+.nav-container {
+  z-index: 9999;
+  position: relative;
+}
+
 /* Optional: Animation states */
 .gsap-animate.visible {
   opacity: 1;
