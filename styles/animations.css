@@ -2,7 +2,6 @@
 h1, h2, h3, p, a, img, video {
   will-change: transform, opacity;
   overflow: hidden;
-  visibility: hidden !important;
 }
 
 /* Exclude navigation links from animations */
