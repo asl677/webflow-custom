@@ -46,6 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initial color setup
   updateThemeColors();
+  
+  // Function to hide scrollbars on any scrollable element
+  function hideScrollbars(element) {
+    if (!element) return;
+    
+    element.style.scrollbarWidth = 'none'; // Firefox
+    element.style.msOverflowStyle = 'none'; // IE and Edge
+    
+    // For dynamic elements, we need to add a class that has the webkit scrollbar style
+    element.classList.add('no-scrollbar');
+  }
 
   // DOM elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
@@ -110,6 +121,38 @@ document.addEventListener('DOMContentLoaded', function() {
       stagger: 0.05,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
     }, "-=0.5");
+  
+  // Apply to all current scrollable divs
+  document.querySelectorAll('.scrollable, [style*="overflow"]').forEach(hideScrollbars);
+  
+  // Create a MutationObserver to watch for new elements
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            // Check if the element is scrollable
+            const style = window.getComputedStyle(node);
+            if (style.overflow === 'auto' || style.overflow === 'scroll' || 
+                style.overflowY === 'auto' || style.overflowY === 'scroll') {
+              hideScrollbars(node);
+            }
+            
+            // Check children as well
+            if (node.querySelectorAll) {
+              node.querySelectorAll('.scrollable, [style*="overflow"]').forEach(hideScrollbars);
+            }
+          }
+        });
+      }
+    });
+  });
+  
+  // Start observing
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
   
   // Handle page transitions - simplified approach
   document.querySelectorAll('a[href]').forEach(link => {

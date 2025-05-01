@@ -18,6 +18,48 @@
   }
 }
 
+/* Hide scrollbars but keep scrolling functionality */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  background: transparent;
+}
+
+/* Ensure content is still scrollable */
+html, body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollable elements with hidden scrollbars */
+.scrollable {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.scrollable::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* For dynamically added elements that need hidden scrollbars */
+.no-scrollbar {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
 /* Additional animation classes */
 h1, h2, h3, p, a, img, video, .nav {
   will-change: transform, opacity;
