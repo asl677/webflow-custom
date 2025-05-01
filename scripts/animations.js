@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // DOM elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   const mediaElements = document.querySelectorAll('img, video');
+  const mobileDownElements = document.querySelectorAll('.mobile-down');
   
   // Create and inject overlay
   const overlay = document.createElement('div');
@@ -137,6 +138,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
+  // Setup for mobile-down elements - simple height animation
+  if (mobileDownElements.length > 0) {
+    mobileDownElements.forEach(el => {
+      // Just set initial state - height 0
+      gsap.set(el, { 
+        height: 0,
+        opacity: 0,
+        visibility: 'hidden'
+      });
+    });
+  }
+  
   // Create main timeline
   const mainTl = gsap.timeline();
   
@@ -162,7 +175,15 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.8,
       stagger: 0.05,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.5");
+    }, "-=0.5")
+    // Simple height animation for mobile-down elements
+    .to(mobileDownElements, {
+      height: "auto",
+      opacity: 1,
+      visibility: "visible",
+      duration: 0.8,
+      stagger: 0.05
+    }, "-=0.4");
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
@@ -255,11 +276,24 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       document.body.appendChild(exitOverlay);
       
+      // Elements to animate out
+      const elementsToAnimate = [textElements, mediaElements];
+      
+      // Handle mobile-down elements during exit
+      if (mobileDownElements.length > 0) {
+        gsap.to(mobileDownElements, {
+          height: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power2.inOut"
+        });
+      }
+      
       // Exit animation
       gsap.timeline({
         onComplete: () => window.location = targetHref
       })
-      .to([textElements, mediaElements], {
+      .to(elementsToAnimate, {
         autoAlpha: 0,
         y: -10,
         duration: 0.4,

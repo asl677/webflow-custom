@@ -23,7 +23,7 @@ html {
   overflow: scroll;
   overflow-x: hidden;
   -ms-overflow-style: none;  /* Internet Explorer and Edge */
-  scrollbar-width: none;  /* Firefox */
+  scrollbar-width: none !important;  /* Firefox */
 }
 ::-webkit-scrollbar {
   display: none;
@@ -113,4 +113,10 @@ body {
 .media-animate.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Mobile-down height animation */
+.mobile-down {
+  overflow: hidden;
+  will-change: height, opacity;
 }
