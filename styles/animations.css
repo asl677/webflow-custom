@@ -1,7 +1,7 @@
 /* CSS Variables for theming */
 :root {
-  --gainsboro: #DCDCDC;
-  --onyx: #202124;
+  --gainsboro: #fff;
+  --onyx: #000;
   
   /* Default light theme */
   --background-color: var(--gainsboro);

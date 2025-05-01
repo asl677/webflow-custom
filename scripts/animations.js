@@ -15,12 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Color theme variables
   const colors = {
     dark: {
-      background: '#202124', // onyx
-      text: '#DCDCDC'        // gainsboro
+      background: '#000', // onyx
+      text: '#fff'        // gainsboro
     },
     light: {
-      background: '#DCDCDC', // gainsboro
-      text: '#202124'        // onyx
+      background: '#fff', // gainsboro
+      text: '#000'        // onyx
     }
   };
 
