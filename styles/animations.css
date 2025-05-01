@@ -61,7 +61,7 @@ html, body {
 }
 
 /* Additional animation classes */
-h1, h2, h3, p, a, img, video, .nav {
+h1, h2, h3, p, a, img, video, .nav, .project-down {
   will-change: transform, opacity;
   overflow: hidden;
   color: var(--text-color);
