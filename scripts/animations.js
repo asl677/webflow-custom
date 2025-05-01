@@ -47,15 +47,57 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initial color setup
   updateThemeColors();
   
-  // Function to hide scrollbars on any scrollable element
+  // Function to hide scrollbars on specific elements (not sticky ones)
   function hideScrollbars(element) {
     if (!element) return;
     
+    // Skip elements with position:sticky or elements that might be containers for sticky elements
+    const style = window.getComputedStyle(element);
+    if (style.position === 'sticky' || 
+        element.querySelector('[style*="position: sticky"]') || 
+        element.querySelector('[style*="position:sticky"]') ||
+        element.classList.contains('sticky-element') ||
+        element.querySelector('.sticky-element')) {
+      console.log('Skipping scrollbar hiding for sticky element or container', element);
+      return;
+    }
+    
+    // If it's a scrollable container but not a sticky one, hide scrollbars
     element.style.scrollbarWidth = 'none'; // Firefox
     element.style.msOverflowStyle = 'none'; // IE and Edge
     
-    // For dynamic elements, we need to add a class that has the webkit scrollbar style
+    // For dynamic elements, use the CSS class to hide webkit scrollbars
     element.classList.add('no-scrollbar');
+  }
+  
+  // Function to properly handle scrollable areas that have sticky elements
+  function setupScrollableWithSticky(container) {
+    if (!container) return;
+    
+    // Check if this container has sticky elements
+    if (container.querySelector('[style*="position: sticky"]') || 
+        container.querySelector('[style*="position:sticky"]') ||
+        container.querySelector('.sticky-element')) {
+      
+      // Create a wrapper-content structure for proper scrolling with hidden scrollbars
+      if (!container.classList.contains('scrollable-wrapper')) {
+        // Only apply this transformation if it hasn't been done already
+        const content = document.createElement('div');
+        content.className = 'scrollable-content';
+        
+        // Move all children to the new content div
+        while (container.firstChild) {
+          content.appendChild(container.firstChild);
+        }
+        
+        // Add the content back to the container
+        container.appendChild(content);
+        container.classList.add('scrollable-wrapper');
+      }
+    } else {
+      // If no sticky elements, use the simple method
+      hideScrollbars(container);
+    }
   }
 
   // DOM elements
@@ -122,8 +164,23 @@ document.addEventListener('DOMContentLoaded', function() {
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
     }, "-=0.5");
   
-  // Apply to all current scrollable divs
-  document.querySelectorAll('.scrollable, [style*="overflow"]').forEach(hideScrollbars);
+  // Find and handle existing sticky elements
+  const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
+  stickyElements.forEach(el => {
+    el.classList.add('sticky-element');
+  });
+  
+  // Find and process scrollable containers with sticky elements
+  document.querySelectorAll('[style*="overflow: auto"], [style*="overflow:auto"], [style*="overflow-y: auto"], [style*="overflow-y:auto"], .scrollable').forEach(container => {
+    setupScrollableWithSticky(container);
+  });
+  
+  // Apply simple scrollbar hiding to general scrollable elements without stickies
+  document.querySelectorAll('[style*="overflow: scroll"], [style*="overflow:scroll"], [style*="overflow-y: scroll"], [style*="overflow-y:scroll"]').forEach(el => {
+    if (!el.querySelector('[style*="position: sticky"], [style*="position:sticky"], .sticky-element')) {
+      hideScrollbars(el);
+    }
+  });
   
   // Create a MutationObserver to watch for new elements
   const observer = new MutationObserver((mutations) => {
@@ -131,16 +188,30 @@ document.addEventListener('DOMContentLoaded', function() {
       if (mutation.addedNodes && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === 1) { // Element node
-            // Check if the element is scrollable
+            // Check if this is a sticky element
             const style = window.getComputedStyle(node);
-            if (style.overflow === 'auto' || style.overflow === 'scroll' || 
-                style.overflowY === 'auto' || style.overflowY === 'scroll') {
-              hideScrollbars(node);
+            if (style.position === 'sticky') {
+              node.classList.add('sticky-element');
+              return;
             }
             
-            // Check children as well
+            // Check if it's a scrollable container
+            if (style.overflow === 'auto' || style.overflow === 'scroll' || 
+                style.overflowY === 'auto' || style.overflowY === 'scroll') {
+              setupScrollableWithSticky(node);
+            }
+            
+            // Check children for scrollable and sticky elements
             if (node.querySelectorAll) {
-              node.querySelectorAll('.scrollable, [style*="overflow"]').forEach(hideScrollbars);
+              // Add sticky-element class to any sticky elements
+              node.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]').forEach(el => {
+                el.classList.add('sticky-element');
+              });
+              
+              // Process any scrollable containers
+              node.querySelectorAll('[style*="overflow: auto"], [style*="overflow:auto"], [style*="overflow-y: auto"], [style*="overflow-y:auto"], .scrollable').forEach(container => {
+                setupScrollableWithSticky(container);
+              });
             }
           }
         });
@@ -151,7 +222,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Start observing
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style', 'class']
   });
   
   // Handle page transitions - simplified approach

@@ -18,24 +18,39 @@
   }
 }
 
-/* Hide scrollbars but keep scrolling functionality */
-html, body {
+/* Hide scrollbars but keep scrolling functionality - refined approach */
+html {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
 
-html::-webkit-scrollbar, 
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
+html::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
   width: 0;
   background: transparent;
 }
 
-/* Ensure content is still scrollable */
-html, body {
-  overflow-y: auto;
-  overflow-x: hidden;
+/* Preserve proper stickiness for sticky elements */
+.sticky-element {
+  position: sticky !important;
+  top: 0; /* Default, can be customized based on needs */
+  z-index: 100; /* Ensure sticky elements appear above regular content */
+}
+
+/* Use a wrapper approach for scrollable elements to maintain sticky positioning */
+.scrollable-wrapper {
+  position: relative;
+  overflow: hidden; /* Hide scrollbars on the wrapper */
+}
+
+/* Scrollable content inside the wrapper */
+.scrollable-content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; /* Enable scrolling */
+  padding-right: 20px; /* Hide scrollbar by pushing it outside the container */
+  box-sizing: content-box; /* Ensure padding doesn't affect width */
+  margin-right: -20px; /* Compensate for the padding */
 }
 
 /* Custom scrollable elements with hidden scrollbars */
@@ -70,6 +85,8 @@ h1, h2, h3, p, a, img, video, .nav {
 body {
   background-color: var(--background-color);
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-y: auto; /* Keep scrolling enabled */
+  overflow-x: hidden;
 }
 
 /* Exclude navigation links from animations */
