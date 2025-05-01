@@ -1,13 +1,45 @@
+/* CSS Variables for theming */
+:root {
+  --gainsboro: #DCDCDC;
+  --onyx: #202124;
+  
+  /* Default light theme */
+  --background-color: var(--gainsboro);
+  --text-color: var(--onyx);
+  --overlay-color: var(--gainsboro);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: var(--onyx);
+    --text-color: var(--gainsboro);
+    --overlay-color: var(--onyx);
+  }
+}
+
 /* Additional animation classes */
 h1, h2, h3, p, a, img, video, .nav {
   will-change: transform, opacity;
   overflow: hidden;
+  color: var(--text-color);
+}
+
+body {
+  background-color: var(--background-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Exclude navigation links from animations */
 .nav a {
   opacity: 1 !important;
   transform: none !important;
+}
+
+/* Page overlay styling */
+.page-overlay,
+.page-exit-overlay {
+  background-color: var(--overlay-color) !important;
 }
 
 /* GSAP animation classes */
