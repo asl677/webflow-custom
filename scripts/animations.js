@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // First fade out the overlay after a short delay
   mainTl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.6,
+    duration: 0.5,
     delay: 1, // Wait for elements to be properly loaded
     onComplete: () => {
       // Remove overlay after animation
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6,
       stagger: 0.03,
       ease: "power2.out"
-    }, "-=0.1"); // Start slightly before overlay finishes
+    }, "-=0.3"); // Start slightly before overlay finishes
   }
   
   // Then animate in media elements
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add visible class for CSS transitions
         mediaElements.forEach(el => el.classList.add('visible'));
       }
-    }, "-=0.4"); // Start before text animations finish
+    }, "-=0.5"); // Start before text animations finish
   }
   
   // Handle page transitions
@@ -120,14 +120,14 @@ document.addEventListener('DOMContentLoaded', function() {
         tl.to([textElements, mediaElements], {
           autoAlpha: 0,
           y: -10,
-          duration: 0.3,
+          duration: 0.4,
           stagger: 0.005,
           ease: "power2.inOut"
         })
         // Fade in the black overlay last
         .to(exitOverlay, {
           opacity: 1,
-          duration: 0.2,
+          duration: 0.3,
           ease: "power2.inOut"
         });
       });
