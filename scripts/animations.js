@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.appendChild(overlay);
 
   // Select text elements
-  const textElements = document.querySelectorAll('h1, h2, h3, p, a');
+  const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   
   // Select media elements
   const mediaElements = document.querySelectorAll('img, video');

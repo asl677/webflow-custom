@@ -1,5 +1,5 @@
 /* Additional animation classes */
-h1, h2, h3, p, a, img, video {
+h1, h2, h3, p, a, img, video, .nav {
   will-change: transform, opacity;
   overflow: hidden;
 }
