@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Just set initial state - height 0
       gsap.set(el, { 
         height: 0,
+        y: 20,
         opacity: 0,
         visibility: 'hidden'
       });
@@ -167,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
       autoAlpha: 1,
       y: 0,
       stagger: 0.03
-    }, "-=0.5")
+    }, "-=0.3")
     // Animate media elements
     .to(mediaElements, {
       autoAlpha: 1, 
@@ -180,10 +181,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .to(mobileDownElements, {
       height: "auto",
       opacity: 1,
+      y: 0,
       visibility: "visible",
-      duration: 0.8,
+      duration: 1,
       stagger: 0.05
-    }, "-=0.3");
+    }, "-=0.4");
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
