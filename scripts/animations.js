@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // DOM elements
-  const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav, .project-down');
+  const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   const mediaElements = document.querySelectorAll('img, video');
   
   // Create and inject overlay
