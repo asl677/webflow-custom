@@ -152,40 +152,45 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Create main timeline
-  const mainTl = gsap.timeline();
+  const mainTl = gsap.timeline({
+    defaults: {
+      immediateRender: true // Ensures elements render right away
+    }
+  });
   
   // Animation sequence
   mainTl
     // Fade out overlay
     .to(overlay, {
       autoAlpha: 0,
-      duration: 0.5,
-      delay: 0.5,
+      duration: 0.3, // Faster fade
+      delay: 0.1, // Minimal delay
       onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
     })
-    // Animate text elements
+    // Animate text elements - run almost immediately
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.03
-    }, "-=0.2")
-    // Animate media elements
+      stagger: 0.02, // Faster stagger
+      duration: 0.5 // Faster duration
+    }, "-=0.28") // Start almost immediately
+    // Animate media elements - run in parallel with text
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
-      duration: 0.8,
-      stagger: 0.05,
+      duration: 0.5, // Faster duration
+      stagger: 0.03, // Faster stagger
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.10")
-    // Simple height animation for mobile-down elements
+    }, "-=0.45") // Run almost in parallel with text
+    // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
       opacity: 1,
       y: 0,
       visibility: "visible",
-      duration: 1,
-      stagger: 0.05
-    }, "-=0.5");
+      duration: 0.5, // Faster animation
+      stagger: 0.03 // Faster stagger
+    }, "-=0.5"); // Run in parallel with media elements
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
