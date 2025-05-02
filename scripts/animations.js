@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .to(overlay, {
       autoAlpha: 0,
       duration: 0.5,
-      delay: 1,
+      delay: 0.5,
       onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
     })
     // Animate text elements
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
       visibility: "visible",
       duration: 1,
       stagger: 0.05
-    }, "-=0.3");
+    }, "-=0.7");
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
