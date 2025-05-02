@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.8,
       stagger: 0.05,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.6")
+    }, "-=0.10")
     // Simple height animation for mobile-down elements
     .to(mobileDownElements, {
       height: "auto",
