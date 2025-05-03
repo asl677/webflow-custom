@@ -184,14 +184,14 @@ document.addEventListener('DOMContentLoaded', function() {
       stagger: 0.08, // Faster stagger
       duration: 0.5 // Faster animation
     }, "-=0.4") // Start during overlay fade
-    // Animate media elements - run in parallel with text
+    // Animate media elements - with minimal delay after overlay fade
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
       stagger: 0.08, // Faster stagger
       duration: 0.5, // Faster animation
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.4") // Start during overlay fade
+    }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
