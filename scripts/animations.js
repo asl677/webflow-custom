@@ -188,10 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
+      stagger: 0.08, // Faster stagger
       duration: 0.5, // Faster animation
-      stagger: 0.06, // Faster stagger
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.05") // Start immediately with text
+    }, "-=0.4") // Start during overlay fade
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
