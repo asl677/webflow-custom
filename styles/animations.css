@@ -100,6 +100,7 @@ body {
 .page-overlay,
 .page-exit-overlay {
   background-color: var(--overlay-color) !important;
+  z-index: 999999;
 }
 
 /* GSAP animation classes */

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const mobileDownElements = document.querySelectorAll('.mobile-down');
   
   // Delay in milliseconds (e.g., 2000 ms = 2 seconds)
-  const delay = 200;
+  const delay = 400;
 
   setTimeout(() => {
     const cards = document.querySelectorAll('.card-project');
