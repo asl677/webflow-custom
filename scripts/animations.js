@@ -105,6 +105,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const mediaElements = document.querySelectorAll('img, video');
   const mobileDownElements = document.querySelectorAll('.mobile-down');
   
+  // Delay in milliseconds (e.g., 2000 ms = 2 seconds)
+  const delay = 200;
+
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.card-project');
+    cards.forEach(card => {
+      card.style.opacity = '1';
+    });
+  }, delay);
+  
   // Create and inject overlay
   const overlay = document.createElement('div');
   Object.assign(overlay.style, {
@@ -163,34 +173,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fade out overlay
     .to(overlay, {
       autoAlpha: 0,
-      duration: 0.5, // Even faster fade
-      delay: 0.08, // Minimal delay
+      duration: 0.4, // Even faster fade
+      delay: 0.01, // Minimal delay
       onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
     })
-    // Animate text elements - run almost immediately
+    // Animate text elements - run immediately with overlay
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.08,
-      duration: 0.6
-    }, "-=0.2") // Start during overlay fade
+      stagger: 0.04, // Faster stagger
+      duration: 0.5 // Faster animation
+    }, "-=0.4") // Start during overlay fade
     // Animate media elements - run in parallel with text
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
-      duration: 0.6,
-      stagger: 0.03,
+      duration: 0.5, // Faster animation
+      stagger: 0.02, // Faster stagger
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.2") // Start at same time as text
+    }, "-=0.45") // Start sooner
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
       opacity: 1,
       y: 0,
       visibility: "visible",
-      duration: 0.6,
-      stagger: 0.02
-    }, "-=0.25"); // Start at same time as media elements
+      duration: 0.5, // Faster animation
+      stagger: 0.01 // Faster stagger
+    }, "-=0.45"); // Start much sooner
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
@@ -291,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gsap.to(mobileDownElements, {
           height: 0,
           opacity: 0,
-          duration: 0.6,
+          duration: 0.4, // Faster exit
           ease: "power2.inOut"
         });
       }
@@ -303,13 +313,13 @@ document.addEventListener('DOMContentLoaded', function() {
       .to(elementsToAnimate, {
         autoAlpha: 0,
         y: -10,
-        duration: 0.4,
-        stagger: 0.002,
+        duration: 0.3, // Faster exit
+        stagger: 0.001, // Minimal stagger
         ease: "power2.inOut"
       })
       .to(exitOverlay, {
         opacity: 1,
-        duration: 0.4,
+        duration: 0.3, // Faster fade
         ease: "power2.inOut"
       });
     });
