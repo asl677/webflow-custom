@@ -181,8 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.04, // Even faster stagger
-      duration: 0.4 // Even faster animation
+      stagger: 0.08, // Faster stagger
+      duration: 0.5 // Faster animation
     }, "-=0.4") // Start during overlay fade
     // Animate media elements - run in parallel with text
     .to(mediaElements, {
