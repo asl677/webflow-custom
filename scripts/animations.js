@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // DOM elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   const mediaElements = document.querySelectorAll('img, video');
-  const mobileDownElements = document.querySelectorAll('.mobile-down');
+  const mobileDownElements = document.querySelectorAll('.mobile-down, .card-project');
   
   // Create and inject overlay
   const overlay = document.createElement('div');
@@ -179,9 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
       autoAlpha: 1, 
       y: 0,
       duration: 0.6,
-      stagger: 0.04,
+      stagger: 0.03,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.35") // Start at same time as text
+    }, "-=0.25") // Start at same time as text
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
       visibility: "visible",
       duration: 0.6,
       stagger: 0.02
-    }, "-=0.35"); // Start at same time as media elements
+    }, "-=0.3"); // Start at same time as media elements
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gsap.to(mobileDownElements, {
           height: 0,
           opacity: 0,
-          duration: 0.5,
+          duration: 0.6,
           ease: "power2.inOut"
         });
       }
@@ -303,13 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
       .to(elementsToAnimate, {
         autoAlpha: 0,
         y: -10,
-        duration: 0.5,
-        stagger: 0.008,
+        duration: 0.4,
+        stagger: 0.002,
         ease: "power2.inOut"
       })
       .to(exitOverlay, {
         opacity: 1,
-        duration: 0.5,
+        duration: 0.4,
         ease: "power2.inOut"
       });
     });

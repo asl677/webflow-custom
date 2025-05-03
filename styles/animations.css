@@ -77,7 +77,7 @@ html {
 }
 
 /* Additional animation classes */
-h1, h2, h3, p, a, img, video, .nav, .mobile-down {
+h1, h2, h3, p, a, img, video, .nav, .mobile-down, .card-project {
   will-change: transform, opacity;
   overflow: hidden;
   color: var(--text-color);
