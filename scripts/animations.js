@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const mediaElements = document.querySelectorAll('img, video');
   const mobileDownElements = document.querySelectorAll('.mobile-down');
   
-  // Delay in milliseconds (e.g., 2000 ms = 2 seconds)
-  const delay = 400;
+  // Delay in milliseconds - very short for immediate visibility
+  const delay = 100;
 
   setTimeout(() => {
     const cards = document.querySelectorAll('.card-project');
@@ -181,8 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.08, // Faster stagger
-      duration: 0.5 // Faster animation
+      stagger: 0.04, // Even faster stagger
+      duration: 0.4 // Even faster animation
     }, "-=0.4") // Start during overlay fade
     // Animate media elements - run in parallel with text
     .to(mediaElements, {
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.5, // Faster animation
       stagger: 0.06, // Faster stagger
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.1") // Start sooner
+    }, "-=0.5") // Start immediately with text
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
