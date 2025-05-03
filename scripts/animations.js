@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.5, // Faster animation
       stagger: 0.06, // Faster stagger
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.5") // Start sooner
+    }, "-=0.1") // Start sooner
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
