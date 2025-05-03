@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // DOM elements
   const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   const mediaElements = document.querySelectorAll('img, video');
-  const mobileDownElements = document.querySelectorAll('.mobile-down, .card-project');
+  const mobileDownElements = document.querySelectorAll('.mobile-down');
   
   // Create and inject overlay
   const overlay = document.createElement('div');
