@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (textElements.length > 0) {
     gsap.set(textElements, {
       autoAlpha: 0,
-      y: 10,
+      y: 20,
       visibility: 'hidden'
     });
   }
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (mediaElements.length > 0) {
     gsap.set(mediaElements, {
       autoAlpha: 0,
-      y: 20,
+      y: 30,
       visibility: 'hidden',
       className: "+=media-animate"
     });
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Just set initial state - height 0
       gsap.set(el, { 
         height: 0,
-        y: 20,
+        y: 30,
         opacity: 0,
         visibility: 'hidden'
       });
@@ -163,23 +163,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fade out overlay
     .to(overlay, {
       autoAlpha: 0,
-      duration: 0.2, // Even faster fade
-      delay: 0.05, // Minimal delay
+      duration: 0.5, // Even faster fade
+      delay: 0.08, // Minimal delay
       onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
     })
     // Animate text elements - run almost immediately
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.01,
-      duration: 0.35
+      stagger: 0.08,
+      duration: 0.6
     }, "-=0.2") // Start during overlay fade
     // Animate media elements - run in parallel with text
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
-      duration: 0.35,
-      stagger: 0.02,
+      duration: 0.6,
+      stagger: 0.04,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
     }, "-=0.35") // Start at same time as text
     // Simple height animation for mobile-down - run immediately
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
       opacity: 1,
       y: 0,
       visibility: "visible",
-      duration: 0.35,
+      duration: 0.6,
       stagger: 0.02
     }, "-=0.35"); // Start at same time as media elements
   
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gsap.to(mobileDownElements, {
           height: 0,
           opacity: 0,
-          duration: 0.4,
+          duration: 0.5,
           ease: "power2.inOut"
         });
       }
@@ -303,13 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
       .to(elementsToAnimate, {
         autoAlpha: 0,
         y: -10,
-        duration: 0.4,
-        stagger: 0.005,
+        duration: 0.5,
+        stagger: 0.008,
         ease: "power2.inOut"
       })
       .to(exitOverlay, {
         opacity: 1,
-        duration: 0.3,
+        duration: 0.5,
         ease: "power2.inOut"
       });
     });
