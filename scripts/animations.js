@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (mediaElements.length > 0) {
     gsap.set(mediaElements, {
       autoAlpha: 0,
-      y: 30,
+      y: 40,
       visibility: 'hidden',
       className: "+=media-animate"
     });
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
       visibility: "visible",
       duration: 0.5, // Faster animation
       stagger: 0.01 // Faster stagger
-    }, "-=0.45"); // Start much sooner
+    }, "-=0.4"); // Start much sooner
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
