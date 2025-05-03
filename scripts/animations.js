@@ -163,34 +163,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fade out overlay
     .to(overlay, {
       autoAlpha: 0,
-      duration: 0.3, // Faster fade
-      delay: 0.1, // Minimal delay
+      duration: 0.2, // Even faster fade
+      delay: 0.05, // Minimal delay
       onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
     })
     // Animate text elements - run almost immediately
     .to(textElements, {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.02, // Faster stagger
-      duration: 0.5 // Faster duration
-    }, "-=0.28") // Start almost immediately
+      stagger: 0.01,
+      duration: 0.35
+    }, "-=0.2") // Start during overlay fade
     // Animate media elements - run in parallel with text
     .to(mediaElements, {
       autoAlpha: 1, 
       y: 0,
-      duration: 0.5, // Faster duration
-      stagger: 0.03, // Faster stagger
+      duration: 0.35,
+      stagger: 0.02,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.45") // Run almost in parallel with text
+    }, "-=0.35") // Start at same time as text
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
       opacity: 1,
       y: 0,
       visibility: "visible",
-      duration: 0.5, // Faster animation
-      stagger: 0.03 // Faster stagger
-    }, "-=0.5"); // Run in parallel with media elements
+      duration: 0.35,
+      stagger: 0.02
+    }, "-=0.35"); // Start at same time as media elements
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
