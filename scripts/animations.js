@@ -314,4 +314,47 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   });
+
+  // Function to animate headings with stagger
+  function animateHeadings() {
+    // Only animate the headings with stagger - direct approach
+    const headings = document.querySelectorAll('h1, h2, h3, .heading');
+    if (headings.length > 0) {
+      if (typeof SplitText !== 'undefined') {
+        // If SplitText is available, do character animation
+        headings.forEach(heading => {
+          // Wrap in try-catch to prevent any errors from breaking the page
+          try {
+            const split = new SplitText(heading, {type: "chars", charsClass: "char"});
+            heading.style.opacity = 1; // Make sure the container is visible
+            
+            // Immediately animate the characters
+            gsap.from(split.chars, {
+              opacity: 0,
+              y: 20,
+              duration: 0.8,
+              stagger: 0.03, // Clear stagger between characters
+              ease: "back.out",
+              delay: 0.1 // Small delay to ensure it runs after initial page load
+            });
+          } catch (e) {
+            console.warn('Could not split heading:', e);
+          }
+        });
+      } else {
+        // If SplitText is not available, just stagger the headings
+        gsap.from(headings, {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          stagger: 0.1, // Clear stagger between headings
+          ease: "back.out",
+          delay: 0.1
+        });
+      }
+    }
+  }
+  
+  // Run heading animation immediately
+  animateHeadings();
 }); 
