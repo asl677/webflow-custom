@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6,
       stagger: 0.03,
       onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-    }, "-=0.25") // Start at same time as text
+    }, "-=0.2") // Start at same time as text
     // Simple height animation for mobile-down - run immediately
     .to(mobileDownElements, {
       height: "auto",
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
       visibility: "visible",
       duration: 0.6,
       stagger: 0.02
-    }, "-=0.3"); // Start at same time as media elements
+    }, "-=0.25"); // Start at same time as media elements
   
   // Find and handle existing sticky elements
   const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
