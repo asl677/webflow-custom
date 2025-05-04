@@ -6,7 +6,7 @@
   /* Default light theme */
   --background-color: var(--gainsboro);
   --text-color: var(--onyx);
-  --overlay-color: var(--onyx); /* Default overlay for dark mode */
+  --overlay-color: var(--gainsboro);
 }
 
 /* Dark mode */
@@ -142,21 +142,4 @@ body {
 /* A parent wrapper class to apply when nesting elements inside containers with overflow */
 .overflow-hidden-container {
   overflow: hidden;
-}
-
-/* If user prefers light mode, override with this */
-@media (prefers-color-scheme: light) {
-  :root {
-    --overlay-color: var(--gainsboro) !important; /* Light mode overlay */
-  }
-  
-  body, .page-overlay, .page-exit-overlay {
-    background-color: var(--gainsboro) !important;
-  }
-  h1, h2, h3, p, a {
-    color: var(--onyx) !important;
-  }
-  .card-project, .nav, .mobile-down {
-    border: 1px dotted #aaa !important;
-  }
 }

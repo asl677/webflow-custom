@@ -17,6 +17,41 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6
     });
 
+    // Color theme variables
+    const colors = {
+      dark: {
+        background: '#000', // onyx
+        text: '#fff'        // gainsboro
+      },
+      light: {
+        background: '#fff', // gainsboro
+        text: '#000'        // onyx
+      }
+    };
+
+    // Detect preferred color scheme
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const defaultTheme = prefersDarkMode ? 'dark' : 'light';
+    
+    // Set current theme
+    let currentTheme = defaultTheme;
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      currentTheme = e.matches ? 'dark' : 'light';
+      updateThemeColors();
+    });
+
+    // Function to update colors based on theme
+    function updateThemeColors() {
+      const themeColors = colors[currentTheme];
+      document.documentElement.style.setProperty('--overlay-color', themeColors.background);
+      document.documentElement.style.setProperty('--text-color', themeColors.text);
+    }
+    
+    // Initial color setup
+    updateThemeColors();
+    
     // Function to hide scrollbars on specific elements (not sticky ones)
     function hideScrollbars(element) {
       if (!element) return;
@@ -74,23 +109,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
-    
-    // Try to use SplitText if available
-    if (typeof SplitText !== 'undefined') {
-      gsap.registerPlugin(SplitText);
-      
-      // split elements with the class "split" into lines
-      let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-      
-      // now animate the characters in a staggered fashion
-      gsap.from(split.lines, {
-        duration: 1.5, 
-        y: 50,       // animate from
-        autoAlpha: 0, // fade in
-        stagger: 0.12 // seconds between each
-      });
-    }
-    
+
+    gsap.registerPlugin(SplitText) 
+
+    // split elements with the class "split" into lines
+    let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
+
+    // now animate the characters in a staggered fashion
+    gsap.from(split.lines, {
+      duration: 1.5, 
+      y: 50,       // animate from
+      autoAlpha: 0, // fade in
+      stagger: 0.12 // seconds between each
+    });
+        
     // Delay in milliseconds - very short for immediate visibility
     const delay = 400;
 
@@ -109,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
       left: '0',
       width: '100%',
       height: '100%',
-      backgroundColor: 'var(--overlay-color)',
+      backgroundColor: 'var(--overlay-color, #000)',
       zIndex: '9999',
       pointerEvents: 'none'
     });
@@ -128,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mediaElements.length > 0) {
       gsap.set(mediaElements, {
         autoAlpha: 0,
-        y: 40,
+        y: 80,
         visibility: 'hidden',
         className: "+=media-animate"
       });
@@ -176,9 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
         autoAlpha: 1, 
         y: 0,
         stagger: 0.08, // Faster stagger
-        duration: 0.5, // Faster animation
+        duration: 0.8, // Faster animation
         onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-      }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
+      }, "<0.08") // Start after overlay starts fading, independent of text
       
       // Simple height animation for mobile-down - run immediately
       .to(mobileDownElements, {
@@ -186,9 +218,9 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 1,
         y: 0,
         visibility: "visible",
-        duration: 0.5, // Faster animation
+        duration: 0.8, // Faster animation
         stagger: 0.01 // Faster stagger
-      }, "-=0.4"); // Start much sooner
+      }, "<=0.08"); // Start much sooner
     
     // Find and handle existing sticky elements
     const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
@@ -274,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
           left: '0',
           width: '100%',
           height: '100%',
-          backgroundColor: 'var(--overlay-exit-color)',
+          backgroundColor: 'var(--overlay-color, #000)',
           zIndex: '9999',
           opacity: '0',
           pointerEvents: 'none'
