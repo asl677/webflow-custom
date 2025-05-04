@@ -306,15 +306,18 @@ document.addEventListener('DOMContentLoaded', function() {
           left: '0',
           width: '100%',
           height: '100%',
-          backgroundColor: 'var(--overlay-color, #000)',
+          backgroundColor: 'var(--overlay-color)',
           zIndex: '9999',
           opacity: '0',
           pointerEvents: 'none'
         });
         document.body.appendChild(exitOverlay);
         
+        // Get card projects for exit animation
+        const cardProjects = document.querySelectorAll('.card-project');
+        
         // Elements to animate out
-        const elementsToAnimate = [textElements, mediaElements];
+        const elementsToAnimate = [textElements, mediaElements, cardProjects];
         
         // Handle mobile-down elements during exit
         if (mobileDownElements.length > 0) {
