@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
       left: '0',
       width: '100%',
       height: '100%',
-      backgroundColor: 'var(--overlay-color)',
+      backgroundColor: window.matchMedia('(prefers-color-scheme: light)').matches ? 'var(--gainsboro)' : 'var(--onyx)',
       zIndex: '9999',
       pointerEvents: 'none'
     });
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
           left: '0',
           width: '100%',
           height: '100%',
-          backgroundColor: 'var(--overlay-color)',
+          backgroundColor: window.matchMedia('(prefers-color-scheme: light)').matches ? '#fff' : '#000',
           zIndex: '9999',
           opacity: '0',
           pointerEvents: 'none'
