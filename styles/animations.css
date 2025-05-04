@@ -147,16 +147,16 @@ body {
 /* If user prefers light mode, override with this */
 @media (prefers-color-scheme: light) {
   :root {
-    --overlay-color: var(--gainsboro); /* Light mode overlay */
+    --overlay-color: var(--gainsboro) !important; /* Light mode overlay */
   }
   
-  body {
-    background-color: var(--gainsboro);
+  body, .page-overlay, .page-exit-overlay {
+    background-color: var(--gainsboro) !important;
   }
   h1, h2, h3, p, a {
-    color: var(--onyx);
+    color: var(--onyx) !important;
   }
   .card-project, .nav, .mobile-down {
-    border: 1px dotted #aaa;
+    border: 1px dotted #aaa !important;
   }
 }
