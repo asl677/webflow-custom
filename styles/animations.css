@@ -143,3 +143,16 @@ body {
 .overflow-hidden-container {
   overflow: hidden;
 }
+
+/* If user prefers light mode, override with this */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: var(--gainsboro);
+  }
+  h1, h2, h3, p, a {
+    color: var(--onyx);
+  }
+  .card-project, .nav, .mobile-down {
+    border: 1px dotted #aaa;
+  }
+}
