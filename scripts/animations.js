@@ -105,107 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // DOM elements - all text elements except our special headings
-    const textElements = document.querySelectorAll('h1:not(.heading.large.bold.skinny), h2:not(.heading.large.bold.skinny), h3:not(.heading.large.bold.skinny), p, a, .nav');
+    // DOM elements
+    const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
-    
-    // Handle special headings with SplitText only if available
-    const specialHeadings = document.querySelectorAll('.heading.large.bold.skinny');
-    console.log('Found special headings:', specialHeadings.length);
-    
-    // Log each special heading for debugging
-    specialHeadings.forEach((heading, i) => {
-      console.log(`Special heading ${i+1}:`, heading.textContent.trim());
-    });
-    
-    let splitHeadings = [];
-    
-    // Check if SplitText is available and there are special headings
-    const hasSplitText = typeof SplitText !== 'undefined';
-    console.log('SplitText available:', hasSplitText);
-    
-    if (specialHeadings.length > 0) {
-      if (hasSplitText) {
-        try {
-          // If SplitText is available, use it
-          console.log('Using SplitText for line animations');
-          
-          // Make sure the headings are visible first
-          specialHeadings.forEach(heading => {
-            // Clear any previous transforms and ensure visibility for SplitText to work
-            gsap.set(heading, { 
-              clearProps: "all",
-              autoAlpha: 1,
-              visibility: "visible",
-              y: 0,
-              opacity: 1
-            });
-          });
-          
-          // Wait a tiny bit to ensure rendering
-          setTimeout(() => {
-            specialHeadings.forEach(heading => {
-              // Apply overflow hidden to container
-              gsap.set(heading, { overflow: 'hidden' });
-              
-              // Create a new SplitText instance
-              const split = new SplitText(heading, { 
-                type: "lines",
-                linesClass: "split-line"
-              });
-              
-              console.log(`Split into ${split.lines.length} lines:`, heading.textContent.trim());
-              
-              // Set initial state of each line
-              gsap.set(split.lines, { 
-                y: 100,
-                opacity: 0,
-                rotationX: -45
-              });
-              
-              splitHeadings.push(split);
-            });
-            
-            // Now animate the split lines
-            splitHeadings.forEach((split, index) => {
-              gsap.to(split.lines, {
-                duration: 0.8,
-                y: 0,
-                opacity: 1,
-                rotationX: 0,
-                stagger: 0.15,
-                ease: "power3.out",
-                delay: 0.1 + (index * 0.2)
-              });
-            });
-          }, 100);
-          
-        } catch (error) {
-          console.error('Error using SplitText:', error);
-          // Fallback in case of SplitText error
-          useFallbackAnimation();
-        }
-      } else {
-        // Fallback for when SplitText is not available
-        useFallbackAnimation();
-      }
-    }
-    
-    // Fallback animation function for special headings
-    function useFallbackAnimation() {
-      console.log('Using fallback animation for special headings');
-      gsap.set(specialHeadings, {
-        autoAlpha: 0,
-        y: 40,
-        visibility: 'hidden'
-      });
-      
-      // Try to load SplitText for future page loads
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js';
-      document.head.appendChild(script);
-    }
     
     // Delay in milliseconds - very short for immediate visibility
     const delay = 400;
@@ -286,20 +189,6 @@ document.addEventListener('DOMContentLoaded', function() {
         stagger: 0.08, // Faster stagger
         duration: 0.5 // Faster animation
       }, "-=0.4") // Start during overlay fade
-      
-      // Special headings animation if we're using the fallback (SplitText animations are handled separately)
-      .add(() => {
-        if (!hasSplitText && specialHeadings.length > 0) {
-          // Simple animation for headings without SplitText
-          gsap.to(specialHeadings, {
-            autoAlpha: 1,
-            y: 0,
-            stagger: 0.1,
-            duration: 0.6,
-            ease: "power2.out"
-          });
-        }
-      }, "-=0.5")
       
       // Animate media elements - with minimal delay after overlay fade
       .to(mediaElements, {
@@ -413,28 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Elements to animate out
         const elementsToAnimate = [textElements, mediaElements];
-        
-        // Handle special headings during exit
-        if (hasSplitText && splitHeadings.length > 0) {
-          // If we used SplitText, animate line by line
-          splitHeadings.forEach(split => {
-            gsap.to(split.lines, {
-              y: -100,
-              opacity: 0,
-              duration: 0.4,
-              stagger: 0.05,
-              ease: "power2.in"
-            });
-          });
-        } else if (specialHeadings.length > 0) {
-          // Simple animation for headings without SplitText
-          gsap.to(specialHeadings, {
-            autoAlpha: 0,
-            y: -30,
-            duration: 0.4,
-            ease: "power2.in"
-          });
-        }
         
         // Handle mobile-down elements during exit
         if (mobileDownElements.length > 0) {

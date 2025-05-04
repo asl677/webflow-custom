@@ -133,38 +133,6 @@ body {
   transition: opacity 0.5s, transform 0.5s;
 }
 
-/* Special styles for SplitText line animations */
-.heading.large.bold.skinny {
-  overflow: visible !important; /* Allow lines to be visible */
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block;
-  position: relative;
-  margin-bottom: 0.5em; /* Ensure some spacing */
-  perspective: 1000px; /* Add perspective for 3D effects */
-}
-
-.split-line {
-  overflow: visible !important; /* Allow content to be visible */
-  display: block !important;
-  position: relative;
-  visibility: visible !important;
-}
-
-.split-line > div {
-  transform-origin: center center;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-  display: block !important;
-  position: relative;
-}
-
-/* Ensure SplitText has space to work with */
-.heading.large.bold.skinny * {
-  visibility: inherit;
-}
-
 /* Project card styles - only show when loaded */
 .card-project {
   opacity: 0;

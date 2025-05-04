@@ -10,7 +10,6 @@ This directory contains custom CSS and JavaScript files for the Alex Lakas portf
    <!-- GSAP Library -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js"></script>
    
    <!-- Custom CSS -->
    <link rel="stylesheet" href="https://YOUR-HOSTING-URL/styles/animations.css">
@@ -21,14 +20,6 @@ This directory contains custom CSS and JavaScript files for the Alex Lakas portf
    <!-- Custom JavaScript -->
    <script src="https://YOUR-HOSTING-URL/scripts/animations.js"></script>
    ```
-
-## Special Animations
-
-### Line-by-Line Text Animation
-The `.heading.large.bold.skinny` class elements will animate line-by-line with a staggered effect.
-- Each line appears separately with a dramatic upward motion 
-- Lines are automatically identified and animated separately
-- Apply this class to headings that need special emphasis
 
 ## Hosting Options
 
