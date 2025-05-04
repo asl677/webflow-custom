@@ -110,18 +110,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
 
-     // Initialize SplitText
-      const split = new SplitText(".heading.large.bold.skinny", { type: "lines" });
+    gsap.registerPlugin(SplitText) 
 
-      // Animate each line with a stagger
-      gsap.from(split.lines, {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        ease: "power2.out",
-        stagger: 0.1
-      });
-    
+    // split elements with the class "split" into words and characters
+    let split = SplitText.create(".heading.large.bold.skinny", { type: "lines, chars" });
+
+    // now animate the characters in a staggered fashion
+    gsap.from(split.chars, {
+      duration: 1, 
+      y: 100,       // animate from 100px below
+      autoAlpha: 0, // fade in from opacity: 0 and visibility: hidden
+      stagger: 0.05 // 0.05 seconds between each
+    });
+        
     // Delay in milliseconds - very short for immediate visibility
     const delay = 400;
 
