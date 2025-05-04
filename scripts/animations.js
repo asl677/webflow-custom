@@ -6,17 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Check if SplitText is available
-  if (typeof SplitText === 'undefined') {
-    console.warn('SplitText plugin not detected. Loading from CDN...');
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js';
-    script.onload = initAnimations;
-    document.head.appendChild(script);
-    return; // Exit and wait for SplitText to load
-  }
-
-  // If SplitText is available, proceed with animations
+  // Initialize animations immediately, will check for SplitText inside
   initAnimations();
 
   // Main animation function
@@ -115,36 +105,55 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // DOM elements
+    // DOM elements - all text elements except our special headings
     const textElements = document.querySelectorAll('h1:not(.heading.large.bold.skinny), h2:not(.heading.large.bold.skinny), h3:not(.heading.large.bold.skinny), p, a, .nav');
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
     
-    // Select specific heading elements for line-by-line animation
+    // Handle special headings with SplitText only if available
     const specialHeadings = document.querySelectorAll('.heading.large.bold.skinny');
-    
-    // Initialize SplitText for line-by-line animation of special headings
     let splitHeadings = [];
-    if (specialHeadings.length > 0 && typeof SplitText !== 'undefined') {
-      splitHeadings = specialHeadings.map(heading => {
-        // Apply some CSS to ensure proper line wrapping
-        gsap.set(heading, { overflow: 'hidden' });
+    
+    // Check if SplitText is available and there are special headings
+    const hasSplitText = typeof SplitText !== 'undefined';
+    
+    if (specialHeadings.length > 0) {
+      if (hasSplitText) {
+        // If SplitText is available, use it
+        console.log('Using SplitText for line animations');
+        splitHeadings = specialHeadings.map(heading => {
+          // Apply some CSS to ensure proper line wrapping
+          gsap.set(heading, { overflow: 'hidden' });
+          
+          // Split the text by lines
+          return new SplitText(heading, { 
+            type: "lines",
+            linesClass: "split-line"
+          });
+        });
         
-        // Split the text by lines
-        return new SplitText(heading, { 
-          type: "lines",
-          linesClass: "split-line"
+        // Set initial state for each line of the special headings
+        splitHeadings.forEach(split => {
+          gsap.set(split.lines, { 
+            y: 100,
+            opacity: 0,
+            rotationX: -45
+          });
         });
-      });
-      
-      // Set initial state for each line of the special headings
-      splitHeadings.forEach(split => {
-        gsap.set(split.lines, { 
-          y: 100,
-          opacity: 0,
-          rotationX: -45
+      } else {
+        // Fallback for when SplitText is not available
+        console.log('SplitText not available, using fallback animation');
+        gsap.set(specialHeadings, {
+          autoAlpha: 0,
+          y: 40,
+          visibility: 'hidden'
         });
-      });
+        
+        // Try to load SplitText for future page loads
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js';
+        document.head.appendChild(script);
+      }
     }
     
     // Delay in milliseconds - very short for immediate visibility
@@ -226,20 +235,34 @@ document.addEventListener('DOMContentLoaded', function() {
         stagger: 0.08, // Faster stagger
         duration: 0.5 // Faster animation
       }, "-=0.4") // Start during overlay fade
-      // Animate special headings line by line with dramatic effect
+      
+      // Special headings animation - different depending on SplitText availability
       .add(() => {
-        splitHeadings.forEach((split, index) => {
-          gsap.to(split.lines, {
-            duration: 0.8,
-            y: 0,
-            opacity: 1,
-            rotationX: 0,
-            stagger: 0.15, // More pronounced stagger between lines
-            ease: "power3.out",
-            delay: index * 0.2 // Delay between different headings
+        if (hasSplitText && splitHeadings.length > 0) {
+          // If SplitText is available, animate line by line
+          splitHeadings.forEach((split, index) => {
+            gsap.to(split.lines, {
+              duration: 0.8,
+              y: 0,
+              opacity: 1,
+              rotationX: 0,
+              stagger: 0.15, // More pronounced stagger between lines
+              ease: "power3.out",
+              delay: index * 0.2 // Delay between different headings
+            });
           });
-        });
-      }, "-=0.5") // Start right after text elements begin
+        } else if (specialHeadings.length > 0) {
+          // Fallback animation when SplitText isn't available
+          gsap.to(specialHeadings, {
+            autoAlpha: 1,
+            y: 0,
+            stagger: 0.1,
+            duration: 0.6,
+            ease: "power2.out"
+          });
+        }
+      }, "-=0.5")
+      
       // Animate media elements - with minimal delay after overlay fade
       .to(mediaElements, {
         autoAlpha: 1, 
@@ -248,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         duration: 0.5, // Faster animation
         onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
       }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
+      
       // Simple height animation for mobile-down - run immediately
       .to(mobileDownElements, {
         height: "auto",
@@ -353,7 +377,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const elementsToAnimate = [textElements, mediaElements];
         
         // Handle special headings during exit
-        if (splitHeadings.length > 0) {
+        if (hasSplitText && splitHeadings.length > 0) {
+          // If we used SplitText, animate line by line
           splitHeadings.forEach(split => {
             gsap.to(split.lines, {
               y: -100,
@@ -362,6 +387,14 @@ document.addEventListener('DOMContentLoaded', function() {
               stagger: 0.05,
               ease: "power2.in"
             });
+          });
+        } else if (specialHeadings.length > 0) {
+          // Simple animation for headings without SplitText
+          gsap.to(specialHeadings, {
+            autoAlpha: 0,
+            y: -30,
+            duration: 0.4,
+            ease: "power2.in"
           });
         }
         
