@@ -34,43 +34,174 @@ document.addEventListener('DOMContentLoaded', function() {
     preloaderCounter.appendChild(counterText);
     document.body.appendChild(preloaderCounter);
     
-    // Counter animation timeline
-    const counterTl = gsap.timeline({
-      onComplete: () => {
-        // Start the main animations after counter is done
-        startMainAnimations();
-      }
-    });
+    // Track loading progress
+    let loadingProgress = 0;
+    let resourcesLoaded = 0;
+    let totalResources = 0;
     
-    // Fade in the counter first, then animate it
-    counterTl
-      .to(preloaderCounter, {
-        opacity: 1,
-        duration: 0.5,
-        ease: "power1.in"
-      })
-      .to(counterText, {
-        duration: 1.5,
-        ease: "power1.inOut",
-        innerText: 100,
-        snap: { innerText: 1 }, // Snap to integer values
-        onUpdate: () => {
-          // Add leading zeros for single digits
-          const value = parseInt(counterText.textContent);
-          if (value < 10) {
-            counterText.textContent = `0${value}`;
+    // Function to update the counter based on real loading progress
+    function updateCounter(progress) {
+      // Ensure progress is within bounds and round to whole number
+      const value = Math.min(100, Math.max(0, Math.round(progress)));
+      counterText.textContent = value < 10 ? `0${value}` : value.toString();
+      
+      // If we've reached 100%, trigger the fade out and main animations
+      if (value >= 100 && preloaderCounter.style.opacity !== '0') {
+        gsap.to(preloaderCounter, {
+          opacity: 0,
+          duration: 0.5,
+          onComplete: () => {
+            if (document.body.contains(preloaderCounter)) {
+              document.body.removeChild(preloaderCounter);
+            }
+            // Start the main animations
+            startMainAnimations();
           }
+        });
+      }
+    }
+    
+    // Collect all resources that need to be loaded
+    function collectResources() {
+      // Images (img tags and background-images)
+      const images = Array.from(document.querySelectorAll('img'));
+      const elementsWithBgImages = Array.from(document.querySelectorAll('[style*="background-image"]'));
+      
+      // Videos, iframes, audio, etc.
+      const videos = Array.from(document.querySelectorAll('video'));
+      const iframes = Array.from(document.querySelectorAll('iframe'));
+      const audios = Array.from(document.querySelectorAll('audio'));
+      
+      // Scripts and stylesheets
+      const scripts = Array.from(document.querySelectorAll('script[src]'));
+      const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+      
+      // Combine all resources for tracking
+      const allResources = [
+        ...images, 
+        ...videos, 
+        ...iframes, 
+        ...audios, 
+        ...scripts, 
+        ...stylesheets
+      ];
+      
+      // Filter out already loaded resources
+      const resourcesToLoad = allResources.filter(resource => {
+        if (resource.tagName === 'IMG' || resource.tagName === 'VIDEO') {
+          return !resource.complete;
         }
-      })
-      .to(preloaderCounter, {
-        opacity: 0,
-        duration: 0.5,
-        onComplete: () => {
-          if (document.body.contains(preloaderCounter)) {
-            document.body.removeChild(preloaderCounter);
+        return true; // Consider other resources not loaded yet
+      });
+      
+      // Add a baseline minimum of 5 resources to account for page parsing and rendering
+      totalResources = Math.max(5, resourcesToLoad.length);
+      
+      // Return the filtered resources
+      return resourcesToLoad;
+    }
+    
+    // Track loading of each resource
+    function trackResourceLoading(resources) {
+      // If no resources to track, simulate progress
+      if (resources.length === 0) {
+        simulateLoading();
+        return;
+      }
+      
+      // Track loading of each resource
+      resources.forEach(resource => {
+        if (resource.tagName === 'IMG' || resource.tagName === 'VIDEO') {
+          if (resource.complete) {
+            resourcesLoaded++;
+            updateProgressBasedOnResources();
+          } else {
+            resource.addEventListener('load', () => {
+              resourcesLoaded++;
+              updateProgressBasedOnResources();
+            });
+            resource.addEventListener('error', () => {
+              resourcesLoaded++;
+              updateProgressBasedOnResources();
+            });
           }
+        } else if (resource.tagName === 'LINK' || resource.tagName === 'SCRIPT') {
+          resource.addEventListener('load', () => {
+            resourcesLoaded++;
+            updateProgressBasedOnResources();
+          });
+          resource.addEventListener('error', () => {
+            resourcesLoaded++;
+            updateProgressBasedOnResources();
+          });
+        } else {
+          // For other elements, consider them loaded after a short delay
+          setTimeout(() => {
+            resourcesLoaded++;
+            updateProgressBasedOnResources();
+          }, 100);
         }
       });
+    }
+    
+    // Update progress based on loaded resources
+    function updateProgressBasedOnResources() {
+      loadingProgress = Math.min(100, Math.floor((resourcesLoaded / totalResources) * 100));
+      updateCounter(loadingProgress);
+    }
+    
+    // Fallback for simulating loading when no trackable resources
+    function simulateLoading() {
+      const duration = 2; // seconds
+      const interval = 20; // ms
+      const steps = (duration * 1000) / interval;
+      const increment = 100 / steps;
+      
+      const intervalId = setInterval(() => {
+        loadingProgress = Math.min(100, loadingProgress + increment);
+        updateCounter(loadingProgress);
+        
+        if (loadingProgress >= 100) {
+          clearInterval(intervalId);
+        }
+      }, interval);
+    }
+    
+    // Additional check to ensure we eventually reach 100%
+    function ensureCompletion() {
+      // After 5 seconds max, force completion at whatever progress we're at
+      setTimeout(() => {
+        if (loadingProgress < 100) {
+          // Rapidly finish the loading in 0.5 seconds
+          gsap.to({ progress: loadingProgress }, {
+            progress: 100,
+            duration: 0.5,
+            onUpdate: function() {
+              updateCounter(this.targets()[0].progress);
+            }
+          });
+        }
+      }, 5000);
+    }
+    
+    // Start the preloader sequence
+    function startPreloader() {
+      // Make preloader visible first
+      gsap.to(preloaderCounter, {
+        opacity: 1,
+        duration: 0.5,
+        ease: "power1.in",
+        onComplete: () => {
+          // Collect resources and start tracking
+          const resources = collectResources();
+          trackResourceLoading(resources);
+          ensureCompletion();
+        }
+      });
+    }
+    
+    // Start the preloader
+    startPreloader();
     
     // Function to start the main animations after preloader
     function startMainAnimations() {
