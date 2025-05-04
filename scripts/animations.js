@@ -208,9 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
         autoAlpha: 1, 
         y: 0,
         stagger: 0.08, // Faster stagger
-        duration: 0.5, // Faster animation
+        duration: 0.8, // Faster animation
         onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-      }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
+      }, "<0.08") // Start 0.05 seconds after overlay starts fading, independent of text
       
       // Simple height animation for mobile-down - run immediately
       .to(mobileDownElements, {
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         visibility: "visible",
         duration: 0.5, // Faster animation
         stagger: 0.01 // Faster stagger
-      }, "-=0.4"); // Start much sooner
+      }, "-=0.3"); // Start much sooner
     
     // Find and handle existing sticky elements
     const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
