@@ -8,50 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize animations immediately, will check for SplitText inside
   initAnimations();
-
-  // Main animation function
-  function initAnimations() {
-    // Set default animation parameters
-    gsap.defaults({
-      ease: "power2.out",
-      duration: 0.6
-    });
-
-    // Color theme variables
-    const colors = {
-      dark: {
-        background: '#000', // onyx
-        text: '#fff'        // gainsboro
-      },
-      light: {
-        background: '#fff', // gainsboro
-        text: '#000'        // onyx
-      }
-    };
-
-    // Detect preferred color scheme
-    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const defaultTheme = prefersDarkMode ? 'dark' : 'light';
-    
-    // Set current theme
-    let currentTheme = defaultTheme;
-    
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      currentTheme = e.matches ? 'dark' : 'light';
-      updateThemeColors();
-    });
-
-    // Function to update colors based on theme
-    function updateThemeColors() {
-      const themeColors = colors[currentTheme];
-      document.documentElement.style.setProperty('--overlay-color', themeColors.background);
-      document.documentElement.style.setProperty('--text-color', themeColors.text);
-    }
-    
-    // Initial color setup
-    updateThemeColors();
-    
     // Function to hide scrollbars on specific elements (not sticky ones)
     function hideScrollbars(element) {
       if (!element) return;
@@ -109,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
+    const cardProjects = document.querySelectorAll('.card-project');
 
     gsap.registerPlugin(SplitText) 
 
@@ -123,19 +80,6 @@ document.addEventListener('DOMContentLoaded', function() {
       stagger: 0.12 // seconds between each
     });
         
-    // Delay in milliseconds - very short for immediate visibility
-    const delay = 100;
-
-    // Set initial state for card projects
-    const cardProjects = document.querySelectorAll('.card-project');
-    if (cardProjects.length > 0) {
-      gsap.set(cardProjects, {
-        autoAlpha: 0,
-        y: 30,
-        visibility: 'hidden'
-      });
-    }
-    
     // Create and inject overlay
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
@@ -160,6 +104,15 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
+    if (cardProjects.length > 0) {
+      gsap.set(cardProjects, {
+        autoAlpha: 0,
+        y: 30,
+        opacity: 0,
+        visibility: 'hidden'
+      });
+    }
+
     if (mediaElements.length > 0) {
       gsap.set(mediaElements, {
         autoAlpha: 0,
@@ -324,9 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
           pointerEvents: 'none'
         });
         document.body.appendChild(exitOverlay);
-        
-        // Get card projects for exit animation
-        const cardProjects = document.querySelectorAll('.card-project');
         
         // Elements to animate out
         const elementsToAnimate = [textElements, mediaElements, cardProjects];
