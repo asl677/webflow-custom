@@ -19,10 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
     preloaderCounter.className = 'preloader-counter';
     Object.assign(preloaderCounter.style, {
       position: 'fixed',
-      top: '20px',
-      left: '20px',
+      top: '1vw',
+      left: '1vw',
       color: 'white',
-      fontSize: '2rem',
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
       zIndex: '10000',
       opacity: '0',
       visibility: 'visible'
@@ -45,10 +46,10 @@ document.addEventListener('DOMContentLoaded', function() {
     counterTl
       .to(preloaderCounter, {
         opacity: 1,
-        duration: 0.3
+        duration: 0.6
       })
       .to(counterText, {
-        duration: 1.2,
+        duration: 1.5,
         innerText: 100,
         snap: { innerText: 1 },
         onUpdate: () => {
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .to(preloaderCounter, {
         opacity: 0,
-        duration: 0.3,
+        duration: 0.5,
         onComplete: () => {
           if (document.body.contains(preloaderCounter)) {
             document.body.removeChild(preloaderCounter);
