@@ -118,9 +118,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // now animate the characters in a staggered fashion
     gsap.from(split.lines, {
       duration: 1, 
-      y: 100,       // animate from 100px below
+      y: 50,       // animate from 100px below
       autoAlpha: 0, // fade in from opacity: 0 and visibility: hidden
-      stagger: 0.05 // 0.05 seconds between each
+      stagger: 0.08 // 0.05 seconds between each
     });
         
     // Delay in milliseconds - very short for immediate visibility
