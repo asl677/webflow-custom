@@ -124,14 +124,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
         
     // Delay in milliseconds - very short for immediate visibility
-    const delay = 400;
+    const delay = 100;
 
-    setTimeout(() => {
-      const cards = document.querySelectorAll('.card-project');
-      cards.forEach(card => {
-        card.style.opacity = '1';
+    // Set initial state for card projects
+    const cardProjects = document.querySelectorAll('.card-project');
+    if (cardProjects.length > 0) {
+      gsap.set(cardProjects, {
+        autoAlpha: 0,
+        y: 30,
+        visibility: 'hidden'
       });
-    }, delay);
+    }
     
     // Create and inject overlay
     const overlay = document.createElement('div');
@@ -208,9 +211,18 @@ document.addEventListener('DOMContentLoaded', function() {
         autoAlpha: 1, 
         y: 0,
         stagger: 0.08, // Faster stagger
-        duration: 0.8, // Faster animation
+        duration: 0.5, // Faster animation
         onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-      }, "<0.08") // Start after overlay starts fading, independent of text
+      }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
+      
+      // Animate card projects with proper easing and duration
+      .to(cardProjects, {
+        autoAlpha: 1,
+        y: 0, 
+        stagger: 0.08,
+        duration: 0.5,
+        ease: "power2.out"
+      }, "<0.1") // Start slightly after media elements
       
       // Simple height animation for mobile-down - run immediately
       .to(mobileDownElements, {
@@ -218,9 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 1,
         y: 0,
         visibility: "visible",
-        duration: 0.8, // Faster animation
+        duration: 0.5, // Faster animation
         stagger: 0.01 // Faster stagger
-      }, "<=0.08"); // Start much sooner
+      }, "-=0.4"); // Start much sooner
     
     // Find and handle existing sticky elements
     const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
