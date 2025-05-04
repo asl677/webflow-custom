@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const mobileDownElements = document.querySelectorAll('.mobile-down');
   
   // Delay in milliseconds - very short for immediate visibility
-  const delay = 100;
+  const delay = 400;
 
   setTimeout(() => {
     const cards = document.querySelectorAll('.card-project');
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .to(elementsToAnimate, {
         autoAlpha: 0,
-        y: -10,
+        y: -20,
         duration: 0.3, // Faster exit
         stagger: 0.001, // Minimal stagger
         ease: "power2.inOut"
