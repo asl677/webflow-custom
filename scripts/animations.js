@@ -184,16 +184,24 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 5000);
     }
     
+    // Collect resources first before starting the animation
+    const resources = collectResources();
+    
+    // Start processing immediately with initial update
+    if (resources.length > 0) {
+      // Start loading tracking immediately
+      updateCounter(1); // Start at 1% immediately
+    }
+    
     // Start the preloader sequence
     function startPreloader() {
-      // Make preloader visible first
+      // Begin fade-in animation while simultaneously tracking resources
       gsap.to(preloaderCounter, {
         opacity: 1,
-        duration: 0.5,
+        duration: 0.4, // Slightly faster fade-in
         ease: "power1.in",
-        onComplete: () => {
-          // Collect resources and start tracking
-          const resources = collectResources();
+        onStart: () => {
+          // Start tracking resources immediately as counter fades in
           trackResourceLoading(resources);
           ensureCompletion();
         }
