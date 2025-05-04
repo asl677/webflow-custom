@@ -22,12 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
       top: '20px',
       left: '20px',
       color: 'white',
-      fontSize: '14px',
-      fontFamily: 'sans-serif',
+      fontSize: '2rem',
       zIndex: '10000',
-      opacity: '1',
-      fontWeight: '300',
-      letterSpacing: '1px'
+      opacity: '0', // Start hidden to fade in
+      visibility: 'visible'
     });
     
     // Create the counter text element
@@ -44,28 +42,35 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Animate the counter
-    counterTl.to(counterText, {
-      duration: 1.5,
-      ease: "power1.inOut",
-      innerText: 100,
-      snap: { innerText: 1 }, // Snap to integer values
-      onUpdate: () => {
-        // Add leading zeros for single digits
-        const value = parseInt(counterText.textContent);
-        if (value < 10) {
-          counterText.textContent = `0${value}`;
+    // Fade in the counter first, then animate it
+    counterTl
+      .to(preloaderCounter, {
+        opacity: 1,
+        duration: 0.5,
+        ease: "power1.in"
+      })
+      .to(counterText, {
+        duration: 1.5,
+        ease: "power1.inOut",
+        innerText: 100,
+        snap: { innerText: 1 }, // Snap to integer values
+        onUpdate: () => {
+          // Add leading zeros for single digits
+          const value = parseInt(counterText.textContent);
+          if (value < 10) {
+            counterText.textContent = `0${value}`;
+          }
         }
-      }
-    }).to(preloaderCounter, {
-      opacity: 0,
-      duration: 0.5,
-      onComplete: () => {
-        if (document.body.contains(preloaderCounter)) {
-          document.body.removeChild(preloaderCounter);
+      })
+      .to(preloaderCounter, {
+        opacity: 0,
+        duration: 0.5,
+        onComplete: () => {
+          if (document.body.contains(preloaderCounter)) {
+            document.body.removeChild(preloaderCounter);
+          }
         }
-      }
-    });
+      });
     
     // Function to start the main animations after preloader
     function startMainAnimations() {
@@ -186,7 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Setup for mobile-down elements - simple height animation
       if (mobileDownElements.length > 0) {
         mobileDownElements.forEach(el => {
-          // Just set initial state - height 0
+          // Apply inline styles directly to ensure they take effect
+          el.style.height = "0";
+          el.style.opacity = "0";
+          el.style.visibility = "hidden";
+          el.style.overflow = "hidden";
+          
+          // Also use GSAP set for good measure
           gsap.set(el, { 
             height: 0,
             y: 30,
@@ -216,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .to(textElements, {
           autoAlpha: 1,
           y: 0,
+          visibility: 'visible',
           stagger: 0.08, // Faster stagger
           duration: 0.5 // Faster animation
         }, "-=0.4") // Start during overlay fade
@@ -224,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .to(mediaElements, {
           autoAlpha: 1, 
           y: 0,
+          visibility: 'visible',
           stagger: 0.08, // Faster stagger
           duration: 0.5, // Faster animation
           onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
@@ -233,6 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .to(cardProjects, {
           autoAlpha: 1,
           y: 0, 
+          visibility: 'visible',
           stagger: 0.08,
           duration: 0.5,
           ease: "power2.out"
