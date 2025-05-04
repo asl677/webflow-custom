@@ -112,11 +112,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     gsap.registerPlugin(SplitText) 
 
-    // split elements with the class "split" into words and characters
-    let split = SplitText.create(".heading.large.bold.skinny", { type: "lines, chars" });
+    // split elements with the class "split" into lines
+    let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
 
     // now animate the characters in a staggered fashion
-    gsap.from(split.chars, {
+    gsap.from(split.lines, {
       duration: 1, 
       y: 100,       // animate from 100px below
       autoAlpha: 0, // fade in from opacity: 0 and visibility: hidden
