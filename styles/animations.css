@@ -121,3 +121,43 @@ body {
   overflow: hidden;
   will-change: height, opacity;
 }
+
+/* Media element animation base */
+.media-animate {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: opacity, transform;
+}
+
+.media-animate.visible {
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+/* Special styles for SplitText line animations */
+.heading.large.bold.skinny {
+  overflow: hidden;
+  visibility: visible !important;
+}
+
+.split-line {
+  overflow: hidden;
+  display: block;
+}
+
+.split-line > div {
+  transform-origin: center center;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Project card styles - only show when loaded */
+.card-project {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+/* A parent wrapper class to apply when nesting elements inside containers with overflow */
+.overflow-hidden-container {
+  overflow: hidden;
+}
