@@ -109,6 +109,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
+
+     // Initialize SplitText
+      const split = new SplitText(".heading.large.bold.skinny", { type: "lines" });
+
+      // Animate each line with a stagger
+      gsap.from(split.lines, {
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        ease: "power2.out",
+        stagger: 0.1
+      });
     
     // Delay in milliseconds - very short for immediate visibility
     const delay = 400;
