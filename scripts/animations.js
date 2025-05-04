@@ -6,8 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Initialize animations immediately, will check for SplitText inside
-  initAnimations();
+  // Initialize animations immediately
+  function initAnimations() {
+    // Set default animation parameters
+    gsap.defaults({
+      ease: "power2.out",
+      duration: 0.6
+    });
+
     // Function to hide scrollbars on specific elements (not sticky ones)
     function hideScrollbars(element) {
       if (!element) return;
@@ -66,12 +72,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mediaElements = document.querySelectorAll('img, video');
     const mobileDownElements = document.querySelectorAll('.mobile-down');
     const cardProjects = document.querySelectorAll('.card-project');
-
-    gsap.registerPlugin(SplitText) 
-
+    
+    gsap.registerPlugin(SplitText); 
+    
     // split elements with the class "split" into lines
     let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-
+    
     // now animate the characters in a staggered fashion
     gsap.from(split.lines, {
       duration: 1.5, 
@@ -79,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
       autoAlpha: 0, // fade in
       stagger: 0.12 // seconds between each
     });
-        
+      
     // Create and inject overlay
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
@@ -88,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
       left: '0',
       width: '100%',
       height: '100%',
-      backgroundColor: 'var(--overlay-color, #000)',
+      backgroundColor: 'var(--overlay-color)',
       zIndex: '9999',
       pointerEvents: 'none'
     });
@@ -112,11 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
         visibility: 'hidden'
       });
     }
-
+    
     if (mediaElements.length > 0) {
       gsap.set(mediaElements, {
         autoAlpha: 0,
-        y: 80,
+        y: 40,
         visibility: 'hidden',
         className: "+=media-animate"
       });
@@ -310,4 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
+  
+  // Call the function to initialize animations
+  initAnimations();
 }); 
