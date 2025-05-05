@@ -21,10 +21,10 @@
 /* Preloader styling */
 .preloader-counter {
   position: fixed;
-  top: 1vw;
-  left: 1vw;
+  top: 2vw;
+  left: 2vw;
   color: white;
-  font-size: 2rem;
+  font-size: 4rem;
   font-weight: bold;
   z-index: 10000;
   opacity: 0;
