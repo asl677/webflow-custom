@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const exitTl = gsap.timeline({
             onComplete: () => window.location = targetHref,
             defaults: {
-              duration: 0.25,
+              duration: 0.4,
               ease: "power2.inOut"
             }
           });
@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (textElements.length > 0) {
             exitTl.to(textElements, {
               autoAlpha: 0,
-              y: -10
+              y: -20
             }, 0); // Start at the beginning of the timeline
           }
 
@@ -371,14 +371,14 @@ document.addEventListener('DOMContentLoaded', function() {
           // Fade out card projects - run unconditionally
           exitTl.to('.card-project', {
             autoAlpha: 0,
-            y: -10
+            y: 0
           }, 0); // Start at the beginning of the timeline
 
           // Fade in the exit overlay as the last step
           exitTl.to(exitOverlay, {
             opacity: 1,
-            duration: 0.3
-          }, 0.1); // Very small delay
+            duration: 0.4
+          }, 0); 
         });
       });
     }
