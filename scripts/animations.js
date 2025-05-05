@@ -35,41 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     preloaderCounter.appendChild(counterText);
     document.body.appendChild(preloaderCounter);
     
-    // Simple animation timeline for the counter
-    const counterTl = gsap.timeline({
-      onComplete: () => {
-        startMainAnimations();
-      }
-    });
-    
-    // Animate the counter with a simple, reliable approach
-    counterTl
-      .to(preloaderCounter, {
-        opacity: 1,
-        duration: 0.6
-      })
-      .to(counterText, {
-        duration: 1.5,
-        innerText: 100,
-        snap: { innerText: 1 },
-        onUpdate: () => {
-          const value = parseInt(counterText.textContent);
-          if (value < 10) {
-            counterText.textContent = `0${value}`;
-          }
-        }
-      })
-      .to(preloaderCounter, {
-        opacity: 0,
-        duration: 0.5,
-        onComplete: () => {
-          if (document.body.contains(preloaderCounter)) {
-            document.body.removeChild(preloaderCounter);
-          }
-        }
-      });
-    
-    // Function to start the main animations after preloader
+    // Function to start the main animations
     function startMainAnimations() {
       // Function to hide scrollbars on specific elements (not sticky ones)
       function hideScrollbars(element) {
@@ -204,6 +170,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
+      // Make preloader visible first
+      gsap.set(preloaderCounter, {
+        autoAlpha: 0,
+        y: 0,
+        visibility: 'visible'
+      });
+      
       // Create main timeline
       const mainTl = gsap.timeline({
         defaults: {
@@ -211,8 +184,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
+      // Preloader animation
+      const preloaderTl = gsap.timeline();
+      
+      // Animate the counter separately but within the main timeline
+      preloaderTl
+        .to(preloaderCounter, {
+          autoAlpha: 1,
+          duration: 0.6,
+          ease: "power1.in"
+        })
+        .to(counterText, {
+          duration: 1.5,
+          innerText: 100,
+          snap: { innerText: 1 },
+          onUpdate: () => {
+            const value = parseInt(counterText.textContent);
+            if (value < 10) {
+              counterText.textContent = `0${value}`;
+            }
+          }
+        });
+      
       // Animation sequence
       mainTl
+        // First run the preloader animation
+        .add(preloaderTl)
+        
         // Fade out overlay
         .to(overlay, {
           autoAlpha: 0,
@@ -220,7 +218,8 @@ document.addEventListener('DOMContentLoaded', function() {
           delay: 0.01, // Minimal delay
           onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
         })
-        // Animate text elements - run immediately with overlay
+        
+        // Animate text elements including the preloader - run immediately with overlay
         .to(textElements, {
           autoAlpha: 1,
           y: 0,
@@ -382,6 +381,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     }
+    
+    // Start the animations
+    startMainAnimations();
   }
   
   // Call the function to initialize animations
