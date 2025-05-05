@@ -188,8 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fade out overlay
         .to(overlay, {
           autoAlpha: 0,
-          duration: 0.4, // Even faster fade
-          delay: 0.01, // Minimal delay
+          duration: 0.2, // Faster fade
+          delay: 0, // No delay
           onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
         })
         
@@ -198,29 +198,29 @@ document.addEventListener('DOMContentLoaded', function() {
           autoAlpha: 1,
           y: 0,
           visibility: 'visible',
-          stagger: 0.08, // Faster stagger
-          duration: 0.5 // Faster animation
-        }, "-=0.4") // Start during overlay fade
+          stagger: 0.04, // Faster stagger
+          duration: 0.3 // Faster animation
+        }, 0) // Start at the very beginning
         
-        // Animate media elements - with minimal delay after overlay fade
+        // Animate media elements - start immediately
         .to(mediaElements, {
           autoAlpha: 1, 
           y: 0,
           visibility: 'visible',
-          stagger: 0.08, // Faster stagger
-          duration: 0., // Faster animation
+          stagger: 0.04, // Faster stagger
+          duration: 0., // Very fast animation
           onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-        }, "<0.03") // Start after overlay starts fading, independent of text
+        }, 0) // Start at the very beginning
         
-        // Animate card projects with proper easing and duration
+        // Animate card projects with proper easing and duration - start immediately
         .to(cardProjects, {
           autoAlpha: 1,
           y: 0, 
           visibility: 'visible',
-          stagger: 0.08,
-          duration: 0.5,
+          stagger: 0.04,
+          duration: 0.3,
           ease: "power2.out"
-        }, "<0.1") // Start slightly after media elements
+        }, 0) // Start at the very beginning
         
         // Simple height animation for mobile-down - run immediately
         .to(mobileDownElements, {
@@ -228,9 +228,9 @@ document.addEventListener('DOMContentLoaded', function() {
           opacity: 1,
           y: 0,
           visibility: "visible",
-          duration: 0.5, // Faster animation
+          duration: 0.3, // Faster animation
           stagger: 0.01 // Faster stagger
-        }, "-=0.4"); // Start much sooner
+        }, 0); // Start at the very beginning
       
       // Find and handle existing sticky elements
       const stickyElements = document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]');
@@ -337,16 +337,18 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Handle different element types separately to ensure they all fade out properly
           const exitTl = gsap.timeline({
-            onComplete: () => window.location = targetHref
+            onComplete: () => window.location = targetHref,
+            defaults: {
+              duration: 0.25,
+              ease: "power2.inOut"
+            }
           });
           
           // Handle mobile-down elements during exit
           if (mobileDownElements.length > 0) {
             exitTl.to(mobileDownElements, {
               height: 0,
-              opacity: 0,
-              duration: 0.4,
-              ease: "power2.inOut"
+              opacity: 0
             }, 0); // Start at the beginning of the timeline
           }
 
@@ -354,9 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (textElements.length > 0) {
             exitTl.to(textElements, {
               autoAlpha: 0,
-              y: -10,
-              duration: 0.4,
-              ease: "power2.inOut"
+              y: -10
             }, 0); // Start at the beginning of the timeline
           }
 
@@ -364,26 +364,21 @@ document.addEventListener('DOMContentLoaded', function() {
           if (mediaElements.length > 0) {
             exitTl.to(mediaElements, {
               autoAlpha: 0,
-              y: -10,
-              duration: 0.4,
-              ease: "power2.inOut"
+              y: -10
             }, 0); // Start at the beginning of the timeline
           }
           
           // Fade out card projects - run unconditionally
           exitTl.to('.card-project', {
             autoAlpha: 0,
-            y: -10,
-            duration: 0.3,
-            ease: "power2.inOut"
+            y: -10
           }, 0); // Start at the beginning of the timeline
 
           // Fade in the exit overlay as the last step
           exitTl.to(exitOverlay, {
             opacity: 1,
-            duration: 0.8,
-            ease: "power2.inOut"
-          });
+            duration: 0.3
+          }, 0.1); // Very small delay
         });
       });
     }
