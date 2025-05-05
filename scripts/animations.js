@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Hide mobile-down elements IMMEDIATELY
+  document.querySelectorAll('.mobile-down').forEach(el => {
+    el.style.height = "0";
+    el.style.opacity = "0";
+    el.style.visibility = "hidden";
+    el.style.overflow = "hidden";
+  });
+
   // Initialize animations immediately
   function initAnimations() {
     // Set default animation parameters
@@ -38,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let totalResources = 0;
     let loadedResources = 0;
     let preloaderActive = false;
-    let resourcesLoading = false;
+    let animationInProgress = false;
     
     // Find all resources that need loading
     function countResources() {
@@ -52,28 +60,55 @@ document.addEventListener('DOMContentLoaded', function() {
         video.getAttribute('data-size') === 'large' || 
         video.hasAttribute('preload'));
       
+      console.log(`Found ${loadingImages.length} loading images and ${loadingVideos.length} loading videos`);
+      
       // Calculate total resources
       totalResources = loadingImages.length + loadingVideos.length;
       loadedResources = 0;
       
+      // If no resources or very few, force at least a brief animation
       return totalResources > 0;
+    }
+    
+    // Simulate counting progress based on time for more reliable animation
+    function simulateProgress(duration) {
+      animationInProgress = true;
+      
+      // Create a timeline for smoother counting
+      const countTl = gsap.timeline({
+        onComplete: () => {
+          finishPreloaderAnimation();
+          animationInProgress = false;
+        }
+      });
+      
+      // Animate from 1 to 9
+      countTl.to(counterText, {
+        duration: duration,
+        innerText: 9,
+        snap: { innerText: 1 },
+        ease: "power1.in"
+      });
     }
     
     // Setup resource tracking
     function setupResourceTracking() {
       if (totalResources === 0) return;
       
+      // Start a simulated counter for better visual effect
+      simulateProgress(1.5);
+      
       // Track image loading
       document.querySelectorAll('img').forEach(img => {
         if (!img.complete) {
           img.addEventListener('load', () => {
             loadedResources++;
-            updatePreloader();
+            // We won't update the counter here as the animation handles it
           });
           
           img.addEventListener('error', () => {
             loadedResources++;
-            updatePreloader();
+            // We won't update the counter here as the animation handles it
           });
         }
       });
@@ -83,31 +118,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (video.getAttribute('data-size') === 'large' || video.hasAttribute('preload')) {
           video.addEventListener('canplaythrough', () => {
             loadedResources++;
-            updatePreloader();
+            // We won't update the counter here as the animation handles it
           });
           
           video.addEventListener('error', () => {
             loadedResources++;
-            updatePreloader();
+            // We won't update the counter here as the animation handles it
           });
         }
       });
-    }
-    
-    // Update the preloader based on actual loaded resources
-    function updatePreloader() {
-      if (totalResources === 0) return;
-      
-      // Calculate progress percentage
-      const progress = Math.min(Math.ceil((loadedResources / totalResources) * 9), 9);
-      
-      // Update counter with single digit
-      counterText.textContent = progress;
-      
-      // If complete, finish the preloader animation
-      if (loadedResources >= totalResources) {
-        finishPreloaderAnimation();
-      }
     }
     
     // Complete the preloader animation
@@ -133,49 +152,27 @@ document.addEventListener('DOMContentLoaded', function() {
       document.body.appendChild(preloaderCounter);
       preloaderActive = true;
       
-      // Setup a minimum preloader time (1-9 counter)
-      const tl = gsap.timeline();
-      
       // Fade in the preloader
-      tl.to(preloaderCounter, {
+      gsap.to(preloaderCounter, {
         autoAlpha: 1,
-        duration: 0.3
+        duration: 0.3,
+        onComplete: () => {
+          // After fade in, start tracking resources
+          setupResourceTracking();
+        }
       });
-      
-      // Setup resource tracking
-      setupResourceTracking();
-      
-      // If nothing is actually loading, run a brief animation
-      if (totalResources === 0 || document.readyState === 'complete') {
-        tl.to(counterText, {
-          duration: 0.6,
-          innerText: 9,
-          snap: { innerText: 1 }
-        });
-        
-        tl.to(preloaderCounter, {
-          autoAlpha: 0,
-          duration: 0.3,
-          onComplete: () => {
-            if (document.body.contains(preloaderCounter)) {
-              document.body.removeChild(preloaderCounter);
-            }
-            startMainAnimations();
-          }
-        });
-      }
       
       // Add a fallback in case resource loading gets stuck
       setTimeout(() => {
-        if (preloaderActive) {
+        if (preloaderActive && !animationInProgress) {
           console.log("Preloader fallback triggered");
-          finishPreloaderAnimation();
+          simulateProgress(0.8); // Quick simulation to finish
         }
-      }, 3000); // 3 second fallback
+      }, 1500); // Shorter fallback timeout
     }
     
     // Check if preloader is needed
-    resourcesLoading = countResources();
+    const resourcesLoading = countResources();
     
     // Start either preloader or skip to animations depending on loading state
     if (resourcesLoading && document.readyState !== 'complete') {
@@ -307,10 +304,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Setup for mobile-down elements - simple height animation
+      // Setup for mobile-down elements - ensure they're fully hidden before animation
       if (mobileDownElements.length > 0) {
         mobileDownElements.forEach(el => {
-          // Apply inline styles directly to ensure they take effect
+          // Force inline styles directly to ensure they take effect
           el.style.height = "0";
           el.style.opacity = "0";
           el.style.visibility = "hidden";
@@ -509,4 +506,5 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Call the function to initialize animations
   initAnimations();
-}); // Force update: Sat May 4 17:22:17 PDT 2025
+}); 
+// Force update: Sat May 4 17:22:17 PDT 2025
