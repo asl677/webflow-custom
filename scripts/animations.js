@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6
     });
     
-    // Create preloader counter
+    // Create preloader counter (but don't append to DOM yet)
     const preloaderCounter = document.createElement('div');
     preloaderCounter.className = 'preloader-counter';
     Object.assign(preloaderCounter.style, {
@@ -33,7 +33,88 @@ document.addEventListener('DOMContentLoaded', function() {
     const counterText = document.createElement('span');
     counterText.textContent = '0';
     preloaderCounter.appendChild(counterText);
-    document.body.appendChild(preloaderCounter);
+    
+    // Check if we need preloader 
+    let needsPreloader = false;
+    
+    // Quick check for page loading state
+    const checkLoading = () => {
+      // Check if page is still loading
+      if (document.readyState !== 'complete') {
+        return true;
+      }
+      
+      // Check for unloaded images
+      const images = Array.from(document.querySelectorAll('img'));
+      const unloadedImages = images.filter(img => !img.complete);
+      
+      // Check for large videos
+      const videos = Array.from(document.querySelectorAll('video'));
+      const largeVideos = videos.filter(video => 
+        video.getAttribute('data-size') === 'large' || 
+        video.hasAttribute('preload'));
+      
+      // If any unloaded images or videos, preloader needed
+      return unloadedImages.length > 0 || largeVideos.length > 0;
+    };
+    
+    // Determine if we need preloader
+    needsPreloader = checkLoading();
+    
+    // Start either preloader or skip to animations depending on page state
+    if (needsPreloader) {
+      console.log("Page resources still loading, showing preloader");
+      // Add preloader to DOM now that we need it
+      document.body.appendChild(preloaderCounter);
+      
+      // Start the preloader sequence, which will call startMainAnimations when done
+      startPreloader();
+    } else {
+      console.log("Page already loaded, skipping preloader");
+      // Skip preloader and go straight to main animations
+      startMainAnimations();
+    }
+    
+    // Preloader animation function
+    function startPreloader() {
+      // Preloader animation
+      const preloaderTl = gsap.timeline({
+        onComplete: () => {
+          // Remove from DOM when counting is complete
+          if (document.body.contains(preloaderCounter)) {
+            document.body.removeChild(preloaderCounter);
+          }
+          // Move to main animations
+          startMainAnimations();
+        }
+      });
+      
+      // Faster preloader for quick-loading pages
+      const duration = 1.0; // Faster duration
+      
+      // Animate the counter
+      preloaderTl
+        .to(preloaderCounter, {
+          autoAlpha: 1,
+          duration: 0.4, // Faster fade-in
+          ease: "power1.in"
+        })
+        .to(counterText, {
+          duration: duration,
+          innerText: 100,
+          snap: { innerText: 1 },
+          onUpdate: () => {
+            const value = parseInt(counterText.textContent);
+            if (value < 10) {
+              counterText.textContent = `0${value}`;
+            }
+          }
+        })
+        .to(preloaderCounter, {
+          autoAlpha: 0,
+          duration: 0.4 // Faster fade-out
+        });
+    }
     
     // Function to start the main animations
     function startMainAnimations() {
@@ -99,15 +180,18 @@ document.addEventListener('DOMContentLoaded', function() {
       gsap.registerPlugin(SplitText); 
       
       // split elements with the class "split" into lines
-      let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-      
-      // now animate the characters in a staggered fashion
-      gsap.from(split.lines, {
-        duration: 1.5, 
-        y: 50,       // animate from
-        autoAlpha: 0, // fade in
-        stagger: 0.12 // seconds between each
-      });
+      let splitElements = document.querySelectorAll(".heading.large.bold.skinny");
+      if (splitElements.length > 0) {
+        let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
+        
+        // now animate the characters in a staggered fashion
+        gsap.from(split.lines, {
+          duration: 1.5, 
+          y: 50,       // animate from
+          autoAlpha: 0, // fade in
+          stagger: 0.12 // seconds between each
+        });
+      }
         
       // Create and inject overlay
       const overlay = document.createElement('div');
@@ -170,13 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Make preloader visible first
-      gsap.set(preloaderCounter, {
-        autoAlpha: 0,
-        y: 0,
-        visibility: 'visible'
-      });
-      
       // Create main timeline
       const mainTl = gsap.timeline({
         defaults: {
@@ -184,43 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Preloader animation
-      const preloaderTl = gsap.timeline();
-      
-      // Animate the counter separately but within the main timeline
-      preloaderTl
-        .to(preloaderCounter, {
-          autoAlpha: 1,
-          duration: 0.6,
-          ease: "power1.in"
-        })
-        .to(counterText, {
-          duration: 1.5,
-          innerText: 100,
-          snap: { innerText: 1 },
-          onUpdate: () => {
-            const value = parseInt(counterText.textContent);
-            if (value < 10) {
-              counterText.textContent = `0${value}`;
-            }
-          }
-        })
-        .to(preloaderCounter, {
-          autoAlpha: 0,
-          duration: 0.5,
-          onComplete: () => {
-            // Remove from DOM when counting is complete
-            if (document.body.contains(preloaderCounter)) {
-              document.body.removeChild(preloaderCounter);
-            }
-          }
-        });
-      
       // Animation sequence
       mainTl
-        // First run the preloader animation
-        .add(preloaderTl)
-        
         // Fade out overlay
         .to(overlay, {
           autoAlpha: 0,
@@ -378,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
           })
           .to(elementsToAnimate, {
             autoAlpha: 0,
-            y: -20,
+            y: -10,
             duration: 0.3, // Faster exit
             stagger: 0.001, // Minimal stagger
             ease: "power2.inOut"
@@ -391,9 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     }
-    
-    // Start the animations
-    startMainAnimations();
   }
   
   // Call the function to initialize animations
