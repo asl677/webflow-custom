@@ -22,9 +22,16 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6
     });
     
+    // Create preloader overlay
+    const preloaderOverlay = document.createElement('div');
+    preloaderOverlay.className = 'preloader-overlay';
+    preloaderOverlay.style.opacity = "0";
+    
     // Create preloader counter (but don't append to DOM yet)
     const preloaderCounter = document.createElement('div');
     preloaderCounter.className = 'preloader-counter';
+    preloaderCounter.style.opacity = "0";
+    preloaderCounter.style.visibility = "hidden";
     
     // Create the counter text element
     const counterText = document.createElement('span');
@@ -55,8 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
       totalResources = loadingImages.length + loadingVideos.length;
       loadedResources = 0;
       
-      // If no resources or very few, force at least a brief animation
-      return totalResources > 0;
+      // Force preloader if at least one resource needs loading,
+      // or if document isn't complete yet - this ensures we always show the preloader
+      // when there are resources loading or page is still loading
+      return totalResources > 0 || document.readyState !== 'complete';
     }
     
     // Simulate counting progress based on time for more reliable animation
@@ -122,34 +131,59 @@ document.addEventListener('DOMContentLoaded', function() {
     function finishPreloaderAnimation() {
       if (!preloaderActive) return;
       
-      // Fade out the preloader
-      gsap.to(preloaderCounter, {
-        autoAlpha: 0,
-        duration: 0.6,
+      // Fade out the preloader overlay and counter
+      const tl = gsap.timeline({
         onComplete: () => {
+          // Remove preloader elements
           if (document.body.contains(preloaderCounter)) {
             document.body.removeChild(preloaderCounter);
+          }
+          if (document.body.contains(preloaderOverlay)) {
+            document.body.removeChild(preloaderOverlay);
           }
           startMainAnimations();
         }
       });
+      
+      tl.to(preloaderCounter, {
+        autoAlpha: 0,
+        duration: 0.4
+      });
+      
+      tl.to(preloaderOverlay, {
+        opacity: 0,
+        duration: 0.6
+      }, "-=0.2");
     }
     
     // Start preloader function
     function startPreloader() {
-      // Add preloader to DOM
+      // Add preloader elements to DOM
+      document.body.appendChild(preloaderOverlay);
       document.body.appendChild(preloaderCounter);
       preloaderActive = true;
       
-      // Fade in the preloader
-      gsap.to(preloaderCounter, {
-        autoAlpha: 1,
-        duration: 0.6,
-        onComplete: () => {
-          // After fade in, start tracking resources
-          setupResourceTracking();
-        }
-      });
+      // Force the browser to recognize the elements before animating
+      // This helps ensure the animation works properly
+      setTimeout(() => {
+        // Fade in the preloader overlay and counter
+        const tl = gsap.timeline({
+          onComplete: () => {
+            // After fade in, start tracking resources
+            setupResourceTracking();
+          }
+        });
+        
+        tl.to(preloaderOverlay, {
+          opacity: 1,
+          duration: 0.4
+        });
+        
+        tl.to(preloaderCounter, {
+          autoAlpha: 1,
+          duration: 0.4
+        }, "-=0.2");
+      }, 10);
       
       // Add a fallback in case resource loading gets stuck
       setTimeout(() => {
@@ -157,18 +191,18 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log("Preloader fallback triggered");
           simulateProgress(0.8); // Quick simulation to finish
         }
-      }, 1500); // Shorter fallback timeout
+      }, 2500); // Longer fallback timeout
     }
     
     // Check if preloader is needed
     const resourcesLoading = countResources();
     
     // Start either preloader or skip to animations depending on loading state
-    if (resourcesLoading && document.readyState !== 'complete') {
-      console.log("Resources loading, showing preloader");
+    if (resourcesLoading) {
+      console.log("Resources loading or page not complete, showing preloader");
       startPreloader();
     } else {
-      console.log("No resources loading, skipping preloader");
+      console.log("No resources loading and page complete, skipping preloader");
       startMainAnimations();
     }
     
