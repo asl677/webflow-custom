@@ -26,12 +26,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const preloaderOverlay = document.createElement('div');
     preloaderOverlay.className = 'preloader-overlay';
     preloaderOverlay.style.opacity = "0";
+    preloaderOverlay.style.position = "fixed";
+    preloaderOverlay.style.top = "0";
+    preloaderOverlay.style.left = "0";
+    preloaderOverlay.style.width = "100%";
+    preloaderOverlay.style.height = "100%";
+    preloaderOverlay.style.backgroundColor = "#000";
+    preloaderOverlay.style.zIndex = "9999";
+    preloaderOverlay.style.pointerEvents = "none";
     
     // Create preloader counter (but don't append to DOM yet)
     const preloaderCounter = document.createElement('div');
     preloaderCounter.className = 'preloader-counter';
     preloaderCounter.style.opacity = "0";
     preloaderCounter.style.visibility = "hidden";
+    preloaderCounter.style.position = "fixed";
+    preloaderCounter.style.top = "2vw";
+    preloaderCounter.style.left = "2vw";
+    preloaderCounter.style.color = "white";
+    preloaderCounter.style.fontSize = "4rem";
+    preloaderCounter.style.fontWeight = "bold";
+    preloaderCounter.style.zIndex = "10000";
+    preloaderCounter.style.pointerEvents = "none";
     
     // Create the counter text element
     const counterText = document.createElement('span');
@@ -158,13 +174,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Start preloader function
     function startPreloader() {
+      // Set initial styles for preloader elements
+      preloaderOverlay.style.opacity = "1"; // Make immediately visible
+      preloaderCounter.style.opacity = "1";
+      preloaderCounter.style.visibility = "visible";
+      
       // Add preloader elements to DOM
       document.body.appendChild(preloaderOverlay);
       document.body.appendChild(preloaderCounter);
       preloaderActive = true;
       
+      // Start tracking resources
+      setupResourceTracking();
+      
+      /* 
+      // Original animation code - commented out for direct visibility
       // Force the browser to recognize the elements before animating
-      // This helps ensure the animation works properly
       setTimeout(() => {
         // Fade in the preloader overlay and counter
         const tl = gsap.timeline({
@@ -184,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
           duration: 0.4
         }, "-=0.2");
       }, 10);
+      */
       
       // Add a fallback in case resource loading gets stuck
       setTimeout(() => {
@@ -197,14 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if preloader is needed
     const resourcesLoading = countResources();
     
-    // Start either preloader or skip to animations depending on loading state
-    if (resourcesLoading) {
-      console.log("Resources loading or page not complete, showing preloader");
-      startPreloader();
-    } else {
-      console.log("No resources loading and page complete, skipping preloader");
-      startMainAnimations();
-    }
+    // Always show preloader for testing
+    console.log("Forcing preloader to show for testing");
+    startPreloader();
     
     // Function to start the main animations
     function startMainAnimations() {
@@ -498,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
           })
           .to(exitOverlay, {
             opacity: 1,
-            duration: 0.3, // Faster fade
+            duration: 0.6, // Faster fade
             ease: "power2.inOut"
           });
         });
