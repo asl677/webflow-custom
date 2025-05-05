@@ -372,21 +372,13 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Special handling for card projects - we need to ensure they're visible first
           if (cardProjects.length > 0) {
-            // Force visibility first to ensure they can be animated
-            cardProjects.forEach(card => {
-              card.style.cssText = "opacity: 1 !important; visibility: visible !important; display: block !important; transform: translateY(0) !important; pointer-events: auto !important;";
-              card.classList.add('exiting');
-            });
-            
-            // Then add to timeline with a slight delay to ensure they're rendered
+            // Instead of forcing visibility with cssText, just animate them like other elements
             exitTl.to(cardProjects, {
-              opacity: 0,
               autoAlpha: 0,
               y: -10,
-              stagger: 0.05,
-              duration: 0.7,
+              duration: 0.5,
               ease: "power2.inOut"
-            }, 0.15); // Slightly longer delay to ensure visibility
+            }, 0); // Start at the beginning of the timeline, just like other elements
           }
 
           // Fade in the exit overlay as the last step
