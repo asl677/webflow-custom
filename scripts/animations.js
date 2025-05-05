@@ -356,22 +356,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 0); // Start at the beginning of the timeline
           }
           
-          // Specifically target card projects to ensure they fade out
+          // Special handling for card projects - we need to ensure they're visible first
           if (cardProjects.length > 0) {
+            // Force visibility first to ensure they can be animated
+            // cardProjects.forEach(card => {
+            //   card.style.cssText = "opacity: 1 !important; visibility: visible !important; display: block !important; transform: translateY(0) !important;";
+            //   card.classList.add('exiting');
+            // });
+            
+            // Then add to timeline with a slight delay to ensure they're rendered
             exitTl.to(cardProjects, {
               opacity: 0,
               autoAlpha: 0,
               y: -10,
-              duration: 0.6,
-              ease: "power2.inOut",
-              onStart: () => {
-                // Force immediate style change to ensure animation works
-                cardProjects.forEach(card => {
-                  card.style.visibility = "hidden";
-                  card.style.opacity = "0";
-                });
-              }
-            }, 0); // Start at the beginning of the timeline
+              stagger: 0.05,
+              duration: 0.7,
+              ease: "power2.inOut"
+            }, 0.1); // Start slightly after the timeline begins for better visual effect
           }
 
           // Fade in the exit overlay as the last step
