@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Immediately hide elements that should start hidden 
+  // Especially card-projects to prevent flickering
+  document.querySelectorAll('.card-project').forEach(el => {
+    el.style.opacity = "0";
+    el.style.visibility = "hidden";
+    el.style.transform = "translateY(10px)";
+  });
+
   // Hide mobile-down elements IMMEDIATELY
   document.querySelectorAll('.mobile-down').forEach(el => {
     el.style.height = "0";
@@ -22,214 +30,98 @@ document.addEventListener('DOMContentLoaded', function() {
       duration: 0.6
     });
     
-    // Create preloader overlay
-    const preloaderOverlay = document.createElement('div');
-    preloaderOverlay.className = 'preloader-overlay';
-    preloaderOverlay.style.opacity = "0";
-    preloaderOverlay.style.position = "fixed";
-    preloaderOverlay.style.top = "0";
-    preloaderOverlay.style.left = "0";
-    preloaderOverlay.style.width = "100%";
-    preloaderOverlay.style.height = "100%";
-    preloaderOverlay.style.backgroundColor = "#000";
-    preloaderOverlay.style.zIndex = "9999";
-    preloaderOverlay.style.pointerEvents = "none";
+    // Track active state
+    let animationsActive = false;
     
-    // Create preloader counter (but don't append to DOM yet)
-    const preloaderCounter = document.createElement('div');
-    preloaderCounter.className = 'preloader-counter';
-    preloaderCounter.style.opacity = "0";
-    preloaderCounter.style.visibility = "hidden";
-    preloaderCounter.style.position = "fixed";
-    preloaderCounter.style.top = "2vw";
-    preloaderCounter.style.left = "2vw";
-    preloaderCounter.style.color = "white";
-    preloaderCounter.style.fontSize = "4rem";
-    preloaderCounter.style.fontWeight = "bold";
-    preloaderCounter.style.zIndex = "10000";
-    preloaderCounter.style.pointerEvents = "none";
+    // DOM elements
+    const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
+    const mediaElements = document.querySelectorAll('img, video');
+    const mobileDownElements = document.querySelectorAll('.mobile-down');
+    const cardProjects = document.querySelectorAll('.card-project');
     
-    // Create the counter text element
-    const counterText = document.createElement('span');
-    counterText.textContent = '1';
-    preloaderCounter.appendChild(counterText);
+    gsap.registerPlugin(SplitText); 
     
-    // Track loaded resources
-    let totalResources = 0;
-    let loadedResources = 0;
-    let preloaderActive = false;
-    let animationInProgress = false;
-    
-    // Find all resources that need loading
-    function countResources() {
-      // Get all images and videos
-      const images = Array.from(document.querySelectorAll('img'));
-      const videos = Array.from(document.querySelectorAll('video'));
+    // split elements with the class "split" into lines
+    let splitElements = document.querySelectorAll(".heading.large.bold.skinny");
+    if (splitElements.length > 0) {
+      let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
       
-      // Only count incomplete images and videos with data-size="large"
-      const loadingImages = images.filter(img => !img.complete);
-      const loadingVideos = videos.filter(video => 
-        video.getAttribute('data-size') === 'large' || 
-        video.hasAttribute('preload'));
-      
-      console.log(`Found ${loadingImages.length} loading images and ${loadingVideos.length} loading videos`);
-      
-      // Calculate total resources
-      totalResources = loadingImages.length + loadingVideos.length;
-      loadedResources = 0;
-      
-      // Force preloader if at least one resource needs loading,
-      // or if document isn't complete yet - this ensures we always show the preloader
-      // when there are resources loading or page is still loading
-      return totalResources > 0 || document.readyState !== 'complete';
-    }
-    
-    // Simulate counting progress based on time for more reliable animation
-    function simulateProgress(duration) {
-      animationInProgress = true;
-      
-      // Create a timeline for smoother counting
-      const countTl = gsap.timeline({
-        onComplete: () => {
-          finishPreloaderAnimation();
-          animationInProgress = false;
-        }
-      });
-      
-      // Animate from 1 to 9
-      countTl.to(counterText, {
-        duration: duration,
-        innerText: 9,
-        snap: { innerText: 1 },
-        ease: "power1.in"
+      // now animate the characters in a staggered fashion
+      gsap.from(split.lines, {
+        duration: 1.5, 
+        y: 50,       // animate from
+        autoAlpha: 0, // fade in
+        stagger: 0.12 // seconds between each
       });
     }
+      
+    // Create and inject overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'page-overlay';
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.backgroundColor = "#000";
+    overlay.style.zIndex = "9999";
+    overlay.style.pointerEvents = "none";
+    document.body.appendChild(overlay);
     
-    // Setup resource tracking
-    function setupResourceTracking() {
-      if (totalResources === 0) return;
-      
-      // Start a simulated counter for better visual effect
-      simulateProgress(1.5);
-      
-      // Track image loading
-      document.querySelectorAll('img').forEach(img => {
-        if (!img.complete) {
-          img.addEventListener('load', () => {
-            loadedResources++;
-            // We won't update the counter here as the animation handles it
-          });
-          
-          img.addEventListener('error', () => {
-            loadedResources++;
-            // We won't update the counter here as the animation handles it
-          });
-        }
-      });
-      
-      // Track video loading (basic)
-      document.querySelectorAll('video').forEach(video => {
-        if (video.getAttribute('data-size') === 'large' || video.hasAttribute('preload')) {
-          video.addEventListener('canplaythrough', () => {
-            loadedResources++;
-            // We won't update the counter here as the animation handles it
-          });
-          
-          video.addEventListener('error', () => {
-            loadedResources++;
-            // We won't update the counter here as the animation handles it
-          });
-        }
-      });
-    }
-    
-    // Complete the preloader animation
-    function finishPreloaderAnimation() {
-      if (!preloaderActive) return;
-      
-      // Fade out the preloader overlay and counter
-      const tl = gsap.timeline({
-        onComplete: () => {
-          // Remove preloader elements
-          if (document.body.contains(preloaderCounter)) {
-            document.body.removeChild(preloaderCounter);
-          }
-          if (document.body.contains(preloaderOverlay)) {
-            document.body.removeChild(preloaderOverlay);
-          }
-          startMainAnimations();
-        }
-      });
-      
-      tl.to(preloaderCounter, {
+    // Set initial states
+    if (textElements.length > 0) {
+      gsap.set(textElements, {
         autoAlpha: 0,
-        duration: 0.4
+        y: 20,
+        visibility: 'hidden'
       });
-      
-      tl.to(preloaderOverlay, {
+    }
+    
+    if (cardProjects.length > 0) {
+      gsap.set(cardProjects, {
+        autoAlpha: 0,
+        y: 10,
         opacity: 0,
-        duration: 0.6
-      }, "-=0.2");
+        visibility: 'hidden'
+      });
     }
     
-    // Start preloader function
-    function startPreloader() {
-      // Set initial styles for preloader elements
-      preloaderOverlay.style.opacity = "1"; // Make immediately visible
-      preloaderCounter.style.opacity = "1";
-      preloaderCounter.style.visibility = "visible";
-      
-      // Add preloader elements to DOM
-      document.body.appendChild(preloaderOverlay);
-      document.body.appendChild(preloaderCounter);
-      preloaderActive = true;
-      
-      // Start tracking resources
-      setupResourceTracking();
-      
-      /* 
-      // Original animation code - commented out for direct visibility
-      // Force the browser to recognize the elements before animating
-      setTimeout(() => {
-        // Fade in the preloader overlay and counter
-        const tl = gsap.timeline({
-          onComplete: () => {
-            // After fade in, start tracking resources
-            setupResourceTracking();
-          }
-        });
-        
-        tl.to(preloaderOverlay, {
-          opacity: 1,
-          duration: 0.4
-        });
-        
-        tl.to(preloaderCounter, {
-          autoAlpha: 1,
-          duration: 0.4
-        }, "-=0.2");
-      }, 10);
-      */
-      
-      // Add a fallback in case resource loading gets stuck
-      setTimeout(() => {
-        if (preloaderActive && !animationInProgress) {
-          console.log("Preloader fallback triggered");
-          simulateProgress(0.8); // Quick simulation to finish
-        }
-      }, 2500); // Longer fallback timeout
+    if (mediaElements.length > 0) {
+      gsap.set(mediaElements, {
+        autoAlpha: 0,
+        y: 70,
+        visibility: 'hidden',
+        className: "+=media-animate"
+      });
     }
     
-    // Check if preloader is needed
-    const resourcesLoading = countResources();
+    // Setup for mobile-down elements - ensure they're fully hidden before animation
+    if (mobileDownElements.length > 0) {
+      mobileDownElements.forEach(el => {
+        // Force inline styles directly to ensure they take effect
+        el.style.height = "0";
+        el.style.opacity = "0";
+        el.style.visibility = "hidden";
+        el.style.overflow = "hidden";
+        
+        // Also use GSAP set for good measure
+        gsap.set(el, { 
+          height: 0,
+          y: 30,
+          opacity: 0,
+          visibility: 'hidden'
+        });
+      });
+    }
     
-    // Always show preloader for testing
-    console.log("Forcing preloader to show for testing");
-    startPreloader();
+    // Start main animations
+    startMainAnimations();
     
     // Function to start the main animations
     function startMainAnimations() {
-      preloaderActive = false;
+      // Prevent multiple calls
+      if (animationsActive) return;
+      animationsActive = true;
       
       // Function to hide scrollbars on specific elements (not sticky ones)
       function hideScrollbars(element) {
@@ -282,79 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
           // If no sticky elements, use the simple method
           hideScrollbars(container);
         }
-      }
-
-      // DOM elements
-      const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
-      const mediaElements = document.querySelectorAll('img, video');
-      const mobileDownElements = document.querySelectorAll('.mobile-down');
-      const cardProjects = document.querySelectorAll('.card-project');
-      
-      gsap.registerPlugin(SplitText); 
-      
-      // split elements with the class "split" into lines
-      let splitElements = document.querySelectorAll(".heading.large.bold.skinny");
-      if (splitElements.length > 0) {
-        let split = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-        
-        // now animate the characters in a staggered fashion
-        gsap.from(split.lines, {
-          duration: 1.5, 
-          y: 50,       // animate from
-          autoAlpha: 0, // fade in
-          stagger: 0.12 // seconds between each
-        });
-      }
-        
-      // Create and inject overlay
-      const overlay = document.createElement('div');
-      overlay.className = 'page-overlay';
-      document.body.appendChild(overlay);
-      
-      // Set initial states
-      if (textElements.length > 0) {
-        gsap.set(textElements, {
-          autoAlpha: 0,
-          y: 20,
-          visibility: 'hidden'
-        });
-      }
-      
-      if (cardProjects.length > 0) {
-        gsap.set(cardProjects, {
-          autoAlpha: 0,
-          y: 10,
-          opacity: 0,
-          visibility: 'hidden'
-        });
-      }
-      
-      if (mediaElements.length > 0) {
-        gsap.set(mediaElements, {
-          autoAlpha: 0,
-          y: 70,
-          visibility: 'hidden',
-          className: "+=media-animate"
-        });
-      }
-      
-      // Setup for mobile-down elements - ensure they're fully hidden before animation
-      if (mobileDownElements.length > 0) {
-        mobileDownElements.forEach(el => {
-          // Force inline styles directly to ensure they take effect
-          el.style.height = "0";
-          el.style.opacity = "0";
-          el.style.visibility = "hidden";
-          el.style.overflow = "hidden";
-          
-          // Also use GSAP set for good measure
-          gsap.set(el, { 
-            height: 0,
-            y: 30,
-            opacity: 0,
-            visibility: 'hidden'
-          });
-        });
       }
       
       // Create main timeline
@@ -491,6 +310,15 @@ document.addEventListener('DOMContentLoaded', function() {
           // Create exit overlay
           const exitOverlay = document.createElement('div');
           exitOverlay.className = 'page-exit-overlay';
+          exitOverlay.style.position = "fixed";
+          exitOverlay.style.top = "0";
+          exitOverlay.style.left = "0";
+          exitOverlay.style.width = "100%";
+          exitOverlay.style.height = "100%";
+          exitOverlay.style.backgroundColor = "#000";
+          exitOverlay.style.zIndex = "9999";
+          exitOverlay.style.opacity = "0";
+          exitOverlay.style.pointerEvents = "none";
           document.body.appendChild(exitOverlay);
           
           // Elements to animate out
@@ -519,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
           })
           .to(exitOverlay, {
             opacity: 1,
-            duration: 0.6, // Faster fade
+            duration: 0.3, // Faster fade
             ease: "power2.inOut"
           });
         });
@@ -530,4 +358,4 @@ document.addEventListener('DOMContentLoaded', function() {
   // Call the function to initialize animations
   initAnimations();
 }); 
-// Force update: Sat May 4 17:22:17 PDT 2025
+// Force update: Sat May 4 23:00:00 PDT 2025

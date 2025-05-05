@@ -18,32 +18,6 @@
   }
 }
 
-/* Preloader styling */
-.preloader-counter {
-  position: fixed;
-  top: 2vw;
-  left: 2vw;
-  color: white;
-  font-size: 4rem;
-  font-weight: bold;
-  z-index: 10000;
-  visibility: visible;
-  will-change: opacity, visibility;
-  pointer-events: none;
-}
-
-/* Add preloader overlay */
-.preloader-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  z-index: 9999;
-  pointer-events: none;
-}
-
 /* Hide scrollbars but keep scrolling functionality - refined approach */
 html {
   overflow: scroll;
@@ -152,6 +126,15 @@ body {
   transform: translateY(0);
 }
 
+/* Mobile-down height animation */
+.mobile-down {
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  will-change: height, opacity, visibility;
+}
+
 /* Media element animation base */
 .media-animate {
   backface-visibility: hidden;
@@ -165,9 +148,9 @@ body {
 
 /* Project card styles - only show when loaded */
 .card-project {
-  opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(10px) !important;
   transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
@@ -184,15 +167,6 @@ body {
 /* Dynamic classes added by JS */
 .media-visible {
   visibility: visible !important;
-}
-
-/* Mobile-down elements */
-.mobile-down {
-  height: 0;
-  opacity: 0;
-  visibility: hidden;
-  overflow: hidden;
-  will-change: height, opacity, visibility;
 }
 
 @media (min-width: 768px) {
