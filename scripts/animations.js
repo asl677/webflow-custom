@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
               opacity: 0,
               autoAlpha: 0,
               y: -10,
-              duration: 0.5,
+              duration: 0.6,
               ease: "power2.inOut",
               onStart: () => {
                 // Force immediate style change to ensure animation works
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Fade in the exit overlay as the last step
           exitTl.to(exitOverlay, {
             opacity: 1,
-            duration: 0.3,
+            duration: 0.8,
             ease: "power2.inOut"
           });
         });
