@@ -27,7 +27,6 @@
   font-size: 4rem;
   font-weight: bold;
   z-index: 10000;
-  opacity: 0;
   visibility: visible;
   will-change: opacity, visibility;
 }

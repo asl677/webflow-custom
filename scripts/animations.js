@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (mediaElements.length > 0) {
         gsap.set(mediaElements, {
           autoAlpha: 0,
-          y: 40,
+          y: 70,
           visibility: 'hidden',
           className: "+=media-animate"
         });
