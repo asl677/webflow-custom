@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (cardProjects.length > 0) {
         gsap.set(cardProjects, {
           autoAlpha: 0,
-          y: 30,
+          y: 10,
           opacity: 0,
           visibility: 'hidden'
         });
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
           .to(elementsToAnimate, {
             autoAlpha: 0,
             y: -10,
-            duration: 0.3, // Faster exit
+            duration: 0.6, // Faster exit
             stagger: 0.001, // Minimal stagger
             ease: "power2.inOut"
           })
