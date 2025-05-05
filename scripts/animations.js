@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cardProjects.length > 0) {
       gsap.set(cardProjects, {
         autoAlpha: 0,
-        y: 10,
+        y: 90,
         opacity: 0,
         visibility: 'hidden'
       });
