@@ -437,4 +437,4 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Call the function to initialize animations
   initAnimations();
-}); 
+}); // Force update: Sun May  4 17:23:45 PDT 2025
