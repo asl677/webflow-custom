@@ -370,15 +370,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 0); // Start at the beginning of the timeline
           }
           
-          // Special handling for card projects - we need to ensure they're visible first
+          // Fade out media elements
           if (cardProjects.length > 0) {
-            // Instead of forcing visibility with cssText, just animate them like other elements
             exitTl.to(cardProjects, {
               autoAlpha: 0,
               y: -10,
               duration: 0.5,
               ease: "power2.inOut"
-            }, 0); // Start at the beginning of the timeline, just like other elements
+            }, 0); // Start at the beginning of the timeline
           }
 
           // Fade in the exit overlay as the last step
