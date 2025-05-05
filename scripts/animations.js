@@ -296,16 +296,32 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       // Handle page transitions - simplified approach
-      document.querySelectorAll('a[href]').forEach(link => {
+      const allLinks = document.querySelectorAll('a[href]');
+      console.log('Found ' + allLinks.length + ' links to attach exit animations to');
+      
+      allLinks.forEach(link => {
         // Only handle internal links
         if (link.hostname !== window.location.hostname || link.target) return;
         
-        link.addEventListener('click', e => {
+        // Check if link is in a sticky container
+        const isInSticky = link.closest('.sticky-element, [style*="position: sticky"], [style*="position:sticky"], .sticky-wrap, .navbar, .nav, header, [class*="sticky"]') !== null;
+        
+        if (isInSticky) {
+          console.log('Found sticky link:', link.href);
+        }
+        
+        // Remove any existing listeners to prevent duplicates
+        const newLink = link.cloneNode(true);
+        link.parentNode.replaceChild(newLink, link);
+        
+        newLink.addEventListener('click', e => {
           // Skip same-page links
-          if (link.pathname === window.location.pathname) return;
+          if (newLink.pathname === window.location.pathname || newLink.getAttribute('href').startsWith('#')) return;
+          
+          console.log('Exit animation triggered for:', newLink.href, isInSticky ? '(sticky link)' : '');
           
           e.preventDefault();
-          const targetHref = link.href;
+          const targetHref = newLink.href;
           
           // Create exit overlay
           const exitOverlay = document.createElement('div');
@@ -359,10 +375,10 @@ document.addEventListener('DOMContentLoaded', function() {
           // Special handling for card projects - we need to ensure they're visible first
           if (cardProjects.length > 0) {
             // Force visibility first to ensure they can be animated
-            // cardProjects.forEach(card => {
-            //   card.style.cssText = "opacity: 1 !important; visibility: visible !important; display: block !important; transform: translateY(0) !important;";
-            //   card.classList.add('exiting');
-            // });
+            cardProjects.forEach(card => {
+              card.style.cssText = "opacity: 1 !important; visibility: visible !important; display: block !important; transform: translateY(0) !important; pointer-events: auto !important;";
+              card.classList.add('exiting');
+            });
             
             // Then add to timeline with a slight delay to ensure they're rendered
             exitTl.to(cardProjects, {
@@ -372,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
               stagger: 0.05,
               duration: 0.7,
               ease: "power2.inOut"
-            }, 0.1); // Start slightly after the timeline begins for better visual effect
+            }, 0.15); // Slightly longer delay to ensure visibility
           }
 
           // Fade in the exit overlay as the last step
