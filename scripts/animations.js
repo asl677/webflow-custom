@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fade out the preloader
       gsap.to(preloaderCounter, {
         autoAlpha: 0,
-        duration: 0.3,
+        duration: 0.6,
         onComplete: () => {
           if (document.body.contains(preloaderCounter)) {
             document.body.removeChild(preloaderCounter);
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fade in the preloader
       gsap.to(preloaderCounter, {
         autoAlpha: 1,
-        duration: 0.3,
+        duration: 0.6,
         onComplete: () => {
           // After fade in, start tracking resources
           setupResourceTracking();
