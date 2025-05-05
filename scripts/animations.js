@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // DOM elements
-      const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav, .preloader-counter');
+      const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
       const mediaElements = document.querySelectorAll('img, video');
       const mobileDownElements = document.querySelectorAll('.mobile-down');
       const cardProjects = document.querySelectorAll('.card-project');
@@ -204,6 +204,16 @@ document.addEventListener('DOMContentLoaded', function() {
               counterText.textContent = `0${value}`;
             }
           }
+        })
+        .to(preloaderCounter, {
+          autoAlpha: 0,
+          duration: 0.5,
+          onComplete: () => {
+            // Remove from DOM when counting is complete
+            if (document.body.contains(preloaderCounter)) {
+              document.body.removeChild(preloaderCounter);
+            }
+          }
         });
       
       // Animation sequence
@@ -219,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
           onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
         })
         
-        // Animate text elements including the preloader - run immediately with overlay
+        // Animate text elements - run immediately with overlay
         .to(textElements, {
           autoAlpha: 1,
           y: 0,
