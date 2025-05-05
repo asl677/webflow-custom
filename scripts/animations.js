@@ -208,9 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
           y: 0,
           visibility: 'visible',
           stagger: 0.08, // Faster stagger
-          duration: 0.5, // Faster animation
+          duration: 0., // Faster animation
           onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
-        }, "<0.05") // Start 0.05 seconds after overlay starts fading, independent of text
+        }, "<0.03") // Start after overlay starts fading, independent of text
         
         // Animate card projects with proper easing and duration
         .to(cardProjects, {
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
             exitTl.to(mediaElements, {
               autoAlpha: 0,
               y: -10,
-              duration: 0.5,
+              duration: 0.4,
               ease: "power2.inOut"
             }, 0); // Start at the beginning of the timeline
           }
@@ -374,8 +374,8 @@ document.addEventListener('DOMContentLoaded', function() {
           if (cardProjects.length > 0) {
             exitTl.to(cardProjects, {
               autoAlpha: 0,
-              y: -10,
-              duration: 0.5,
+              y: 0,
+              duration: 0.4,
               ease: "power2.inOut"
             }, 0); // Start at the beginning of the timeline
           }
