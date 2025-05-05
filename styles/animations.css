@@ -166,8 +166,8 @@ body {
 /* Project card styles - only show when loaded */
 .card-project {
   opacity: 0;
-  visibility: hidden;
   transform: translateY(10px);
+  will-change: opacity;
   transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
