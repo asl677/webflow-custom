@@ -134,7 +134,7 @@ body {
 }
 
 /* Project card styles - only show when loaded */
-.card-project {
+.card-project, .preloader-counter {
   opacity: 0;
   transition: opacity 0.5s ease-out;
 }

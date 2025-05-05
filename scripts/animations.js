@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
       const mediaElements = document.querySelectorAll('img, video');
       const mobileDownElements = document.querySelectorAll('.mobile-down');
-      const cardProjects = document.querySelectorAll('.card-project');
+      const cardProjects = document.querySelectorAll('.card-project, .preloader-counter');
       
       gsap.registerPlugin(SplitText); 
       
