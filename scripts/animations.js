@@ -310,18 +310,16 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log('Found sticky link:', link.href);
         }
         
-        // Remove any existing listeners to prevent duplicates
-        const newLink = link.cloneNode(true);
-        link.parentNode.replaceChild(newLink, link);
-        
-        newLink.addEventListener('click', e => {
+        // DON'T clone and replace links - it breaks their display
+        // Instead, attach event listener directly to original link
+        link.addEventListener('click', e => {
           // Skip same-page links
-          if (newLink.pathname === window.location.pathname || newLink.getAttribute('href').startsWith('#')) return;
+          if (link.pathname === window.location.pathname || link.getAttribute('href')?.startsWith('#')) return;
           
-          console.log('Exit animation triggered for:', newLink.href, isInSticky ? '(sticky link)' : '');
+          console.log('Exit animation triggered for:', link.href, isInSticky ? '(sticky link)' : '');
           
           e.preventDefault();
-          const targetHref = newLink.href;
+          const targetHref = link.href;
           
           // Create exit overlay
           const exitOverlay = document.createElement('div');
