@@ -367,8 +367,8 @@ document.addEventListener('DOMContentLoaded', function() {
               onStart: () => {
                 // Force immediate style change to ensure animation works
                 cardProjects.forEach(card => {
-                  card.style.visibility = "visible";
-                  card.style.opacity = "1";
+                  card.style.visibility = "hidden";
+                  card.style.opacity = "0";
                 });
               }
             }, 0); // Start at the beginning of the timeline
