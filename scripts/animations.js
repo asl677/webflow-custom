@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mediaElements.length > 0) {
       gsap.set(mediaElements, {
         autoAlpha: 0,
-        y: 70,
+        y: 50,
         visibility: 'hidden',
         className: "+=media-animate"
       });
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
             exitTl.to(textElements, {
               autoAlpha: 0,
               y: -10,
-              duration: 0.5,
+              duration: 0.4,
               ease: "power2.inOut"
             }, 0); // Start at the beginning of the timeline
           }
@@ -370,16 +370,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 0); // Start at the beginning of the timeline
           }
           
-          // Fade out media elements
-          if (cardProjects.length > 0) {
-            exitTl.to(cardProjects, {
-              autoAlpha: 0,
-              height: 0,
-              y: 0,
-              duration: 0.4,
-              ease: "power2.inOut"
-            }, 0); // Start at the beginning of the timeline
-          }
+          // Fade out card projects - run unconditionally
+          exitTl.to('.card-project', {
+            autoAlpha: 0,
+            y: -10,
+            duration: 0.3,
+            ease: "power2.inOut"
+          }, 0); // Start at the beginning of the timeline
 
           // Fade in the exit overlay as the last step
           exitTl.to(exitOverlay, {
