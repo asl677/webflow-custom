@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
       top: '1vw',
       left: '1vw',
       color: 'white',
-      fontSize: '1.5rem',
+      fontSize: '2rem', // Larger font for single digit
       fontWeight: 'bold',
       zIndex: '10000',
       opacity: '0',
@@ -31,93 +31,165 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create the counter text element
     const counterText = document.createElement('span');
-    counterText.textContent = '0';
+    counterText.textContent = '1';
     preloaderCounter.appendChild(counterText);
     
-    // Check if we need preloader 
-    let needsPreloader = false;
+    // Track loaded resources
+    let totalResources = 0;
+    let loadedResources = 0;
+    let preloaderActive = false;
+    let resourcesLoading = false;
     
-    // Quick check for page loading state
-    const checkLoading = () => {
-      // Check if page is still loading
-      if (document.readyState !== 'complete') {
-        return true;
-      }
-      
-      // Check for unloaded images
+    // Find all resources that need loading
+    function countResources() {
+      // Get all images and videos
       const images = Array.from(document.querySelectorAll('img'));
-      const unloadedImages = images.filter(img => !img.complete);
-      
-      // Check for large videos
       const videos = Array.from(document.querySelectorAll('video'));
-      const largeVideos = videos.filter(video => 
+      
+      // Only count incomplete images and videos with data-size="large"
+      const loadingImages = images.filter(img => !img.complete);
+      const loadingVideos = videos.filter(video => 
         video.getAttribute('data-size') === 'large' || 
         video.hasAttribute('preload'));
       
-      // If any unloaded images or videos, preloader needed
-      return unloadedImages.length > 0 || largeVideos.length > 0;
-    };
-    
-    // Determine if we need preloader
-    needsPreloader = checkLoading();
-    
-    // Start either preloader or skip to animations depending on page state
-    if (needsPreloader) {
-      console.log("Page resources still loading, showing preloader");
-      // Add preloader to DOM now that we need it
-      document.body.appendChild(preloaderCounter);
+      // Calculate total resources
+      totalResources = loadingImages.length + loadingVideos.length;
+      loadedResources = 0;
       
-      // Start the preloader sequence, which will call startMainAnimations when done
-      startPreloader();
-    } else {
-      console.log("Page already loaded, skipping preloader");
-      // Skip preloader and go straight to main animations
-      startMainAnimations();
+      return totalResources > 0;
     }
     
-    // Preloader animation function
-    function startPreloader() {
-      // Preloader animation
-      const preloaderTl = gsap.timeline({
-        onComplete: () => {
-          // Remove from DOM when counting is complete
-          if (document.body.contains(preloaderCounter)) {
-            document.body.removeChild(preloaderCounter);
-          }
-          // Move to main animations
-          startMainAnimations();
+    // Setup resource tracking
+    function setupResourceTracking() {
+      if (totalResources === 0) return;
+      
+      // Track image loading
+      document.querySelectorAll('img').forEach(img => {
+        if (!img.complete) {
+          img.addEventListener('load', () => {
+            loadedResources++;
+            updatePreloader();
+          });
+          
+          img.addEventListener('error', () => {
+            loadedResources++;
+            updatePreloader();
+          });
         }
       });
       
-      // Faster preloader for quick-loading pages
-      const duration = 1.0; // Faster duration
+      // Track video loading (basic)
+      document.querySelectorAll('video').forEach(video => {
+        if (video.getAttribute('data-size') === 'large' || video.hasAttribute('preload')) {
+          video.addEventListener('canplaythrough', () => {
+            loadedResources++;
+            updatePreloader();
+          });
+          
+          video.addEventListener('error', () => {
+            loadedResources++;
+            updatePreloader();
+          });
+        }
+      });
+    }
+    
+    // Update the preloader based on actual loaded resources
+    function updatePreloader() {
+      if (totalResources === 0) return;
       
-      // Animate the counter
-      preloaderTl
-        .to(preloaderCounter, {
-          autoAlpha: 1,
-          duration: 0.4, // Faster fade-in
-          ease: "power1.in"
-        })
-        .to(counterText, {
-          duration: duration,
-          innerText: 100,
-          snap: { innerText: 1 },
-          onUpdate: () => {
-            const value = parseInt(counterText.textContent);
-            if (value < 10) {
-              counterText.textContent = `0${value}`;
-            }
+      // Calculate progress percentage
+      const progress = Math.min(Math.ceil((loadedResources / totalResources) * 9), 9);
+      
+      // Update counter with single digit
+      counterText.textContent = progress;
+      
+      // If complete, finish the preloader animation
+      if (loadedResources >= totalResources) {
+        finishPreloaderAnimation();
+      }
+    }
+    
+    // Complete the preloader animation
+    function finishPreloaderAnimation() {
+      if (!preloaderActive) return;
+      
+      // Fade out the preloader
+      gsap.to(preloaderCounter, {
+        autoAlpha: 0,
+        duration: 0.3,
+        onComplete: () => {
+          if (document.body.contains(preloaderCounter)) {
+            document.body.removeChild(preloaderCounter);
           }
-        })
-        .to(preloaderCounter, {
-          autoAlpha: 0,
-          duration: 0.4 // Faster fade-out
+          startMainAnimations();
+        }
+      });
+    }
+    
+    // Start preloader function
+    function startPreloader() {
+      // Add preloader to DOM
+      document.body.appendChild(preloaderCounter);
+      preloaderActive = true;
+      
+      // Setup a minimum preloader time (1-9 counter)
+      const tl = gsap.timeline();
+      
+      // Fade in the preloader
+      tl.to(preloaderCounter, {
+        autoAlpha: 1,
+        duration: 0.3
+      });
+      
+      // Setup resource tracking
+      setupResourceTracking();
+      
+      // If nothing is actually loading, run a brief animation
+      if (totalResources === 0 || document.readyState === 'complete') {
+        tl.to(counterText, {
+          duration: 0.6,
+          innerText: 9,
+          snap: { innerText: 1 }
         });
+        
+        tl.to(preloaderCounter, {
+          autoAlpha: 0,
+          duration: 0.3,
+          onComplete: () => {
+            if (document.body.contains(preloaderCounter)) {
+              document.body.removeChild(preloaderCounter);
+            }
+            startMainAnimations();
+          }
+        });
+      }
+      
+      // Add a fallback in case resource loading gets stuck
+      setTimeout(() => {
+        if (preloaderActive) {
+          console.log("Preloader fallback triggered");
+          finishPreloaderAnimation();
+        }
+      }, 3000); // 3 second fallback
+    }
+    
+    // Check if preloader is needed
+    resourcesLoading = countResources();
+    
+    // Start either preloader or skip to animations depending on loading state
+    if (resourcesLoading && document.readyState !== 'complete') {
+      console.log("Resources loading, showing preloader");
+      startPreloader();
+    } else {
+      console.log("No resources loading, skipping preloader");
+      startMainAnimations();
     }
     
     // Function to start the main animations
     function startMainAnimations() {
+      preloaderActive = false;
+      
       // Function to hide scrollbars on specific elements (not sticky ones)
       function hideScrollbars(element) {
         if (!element) return;
@@ -437,4 +509,4 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Call the function to initialize animations
   initAnimations();
-}); // Force update: Sun May  4 17:23:45 PDT 2025
+}); // Force update: Sat May 4 17:22:17 PDT 2025
