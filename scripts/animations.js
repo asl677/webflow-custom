@@ -125,10 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // DOM elements
-      const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav');
+      const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav, .preloader-counter');
       const mediaElements = document.querySelectorAll('img, video');
       const mobileDownElements = document.querySelectorAll('.mobile-down');
-      const cardProjects = document.querySelectorAll('.card-project, .preloader-counter');
+      const cardProjects = document.querySelectorAll('.card-project');
       
       gsap.registerPlugin(SplitText); 
       
