@@ -25,17 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create preloader counter (but don't append to DOM yet)
     const preloaderCounter = document.createElement('div');
     preloaderCounter.className = 'preloader-counter';
-    Object.assign(preloaderCounter.style, {
-      position: 'fixed',
-      top: '1vw',
-      left: '1vw',
-      color: 'white',
-      fontSize: '2rem', // Larger font for single digit
-      fontWeight: 'bold',
-      zIndex: '10000',
-      opacity: '0',
-      visibility: 'visible'
-    });
     
     // Create the counter text element
     const counterText = document.createElement('span');
@@ -264,16 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
       // Create and inject overlay
       const overlay = document.createElement('div');
-      Object.assign(overlay.style, {
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'var(--overlay-color)',
-        zIndex: '9999',
-        pointerEvents: 'none'
-      });
       overlay.className = 'page-overlay';
       document.body.appendChild(overlay);
       
@@ -457,17 +436,6 @@ document.addEventListener('DOMContentLoaded', function() {
           // Create exit overlay
           const exitOverlay = document.createElement('div');
           exitOverlay.className = 'page-exit-overlay';
-          Object.assign(exitOverlay.style, {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'var(--overlay-color)',
-            zIndex: '9999',
-            opacity: '0',
-            pointerEvents: 'none'
-          });
           document.body.appendChild(exitOverlay);
           
           // Elements to animate out

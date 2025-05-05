@@ -18,6 +18,20 @@
   }
 }
 
+/* Preloader styling */
+.preloader-counter {
+  position: fixed;
+  top: 1vw;
+  left: 1vw;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  z-index: 10000;
+  opacity: 0;
+  visibility: visible;
+  will-change: opacity, visibility;
+}
+
 /* Hide scrollbars but keep scrolling functionality - refined approach */
 html {
   overflow: scroll;
@@ -99,8 +113,18 @@ body {
 /* Page overlay styling */
 .page-overlay,
 .page-exit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-color: var(--overlay-color) !important;
-  z-index: 999999;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.page-exit-overlay {
+  opacity: 0;
 }
 
 /* GSAP animation classes */
@@ -118,8 +142,11 @@ body {
 
 /* Mobile-down height animation */
 .mobile-down {
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
   overflow: hidden;
-  will-change: height, opacity;
+  will-change: height, opacity, visibility;
 }
 
 /* Media element animation base */
@@ -134,9 +161,11 @@ body {
 }
 
 /* Project card styles - only show when loaded */
-.card-project, .preloader-counter, .mobile-down {
+.card-project {
   opacity: 0;
-  transition: opacity 0.5s ease-out;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 /* A parent wrapper class to apply when nesting elements inside containers with overflow */
