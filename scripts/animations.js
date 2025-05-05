@@ -321,33 +321,63 @@ document.addEventListener('DOMContentLoaded', function() {
           exitOverlay.style.pointerEvents = "none";
           document.body.appendChild(exitOverlay);
           
-          // Elements to animate out
-          const elementsToAnimate = [textElements, mediaElements, cardProjects];
+          // Handle different element types separately to ensure they all fade out properly
+          const exitTl = gsap.timeline({
+            onComplete: () => window.location = targetHref
+          });
           
           // Handle mobile-down elements during exit
           if (mobileDownElements.length > 0) {
-            gsap.to(mobileDownElements, {
+            exitTl.to(mobileDownElements, {
               height: 0,
               opacity: 0,
-              duration: 0.4, // Faster exit
+              duration: 0.4,
               ease: "power2.inOut"
-            });
+            }, 0); // Start at the beginning of the timeline
+          }
+
+          // Fade out text elements
+          if (textElements.length > 0) {
+            exitTl.to(textElements, {
+              autoAlpha: 0,
+              y: -10,
+              duration: 0.5,
+              ease: "power2.inOut"
+            }, 0); // Start at the beginning of the timeline
+          }
+
+          // Fade out media elements
+          if (mediaElements.length > 0) {
+            exitTl.to(mediaElements, {
+              autoAlpha: 0,
+              y: -10,
+              duration: 0.5,
+              ease: "power2.inOut"
+            }, 0); // Start at the beginning of the timeline
           }
           
-          // Exit animation
-          gsap.timeline({
-            onComplete: () => window.location = targetHref
-          })
-          .to(elementsToAnimate, {
-            autoAlpha: 0,
-            y: -10,
-            duration: 0.6, // Faster exit
-            stagger: 0.001, // Minimal stagger
-            ease: "power2.inOut"
-          })
-          .to(exitOverlay, {
+          // Specifically target card projects to ensure they fade out
+          if (cardProjects.length > 0) {
+            exitTl.to(cardProjects, {
+              opacity: 0,
+              autoAlpha: 0,
+              y: -10,
+              duration: 0.5,
+              ease: "power2.inOut",
+              onStart: () => {
+                // Force immediate style change to ensure animation works
+                cardProjects.forEach(card => {
+                  card.style.visibility = "visible";
+                  card.style.opacity = "1";
+                });
+              }
+            }, 0); // Start at the beginning of the timeline
+          }
+
+          // Fade in the exit overlay as the last step
+          exitTl.to(exitOverlay, {
             opacity: 1,
-            duration: 0.3, // Faster fade
+            duration: 0.3,
             ease: "power2.inOut"
           });
         });

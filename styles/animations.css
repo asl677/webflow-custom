@@ -151,7 +151,16 @@ body {
   opacity: 0 !important;
   visibility: hidden !important;
   transform: translateY(10px) !important;
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
+  will-change: opacity, transform, visibility;
+}
+
+/* Visible state - applied by JS or GSAP */
+.card-project.visible,
+.card-project[style*="opacity: 1"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
 }
 
 /* A parent wrapper class to apply when nesting elements inside containers with overflow */
