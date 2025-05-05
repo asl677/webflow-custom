@@ -374,6 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (cardProjects.length > 0) {
             exitTl.to(cardProjects, {
               autoAlpha: 0,
+              height: 0,
               y: 0,
               duration: 0.4,
               ease: "power2.inOut"
