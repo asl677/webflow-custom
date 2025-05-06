@@ -51,7 +51,23 @@ document.addEventListener('DOMContentLoaded', function() {
         duration: 1.5, 
         y: 50,       // animate from
         autoAlpha: 0, // fade in
+        ease: "power2.out", // easing
         stagger: 0.12 // seconds between each
+      });
+    }
+    
+    // Character by character animation for .heading.huge
+    let hugeHeadings = document.querySelectorAll(".heading.huge");
+    if (hugeHeadings.length > 0) {
+      let splitHuge = SplitText.create(".heading.huge", { type: "chars" });
+      
+      // Animate characters individually
+      gsap.from(splitHuge.chars, {
+        duration: 1.2,
+        y: 40,
+        autoAlpha: 0,
+        ease: "power3.out",
+        stagger: 0.03 // Faster stagger for characters
       });
     }
       
