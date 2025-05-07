@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onComplete: () => overlay.remove()
   }, 0)
   .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.1, duration: 0.8 }, 0)
-  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.6, onComplete: () => mediaEls.forEach(el => el.classList.add('visible')) }, 0)
+  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, delay: 0.2, duration: 0.6 }, 0)
   .to(cardEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.12, duration: 0.8 }, 0.2)
   .to(mobileEls, { height: "auto", opacity: 1, y: 0, visibility: "visible", duration: 0.8, stagger: 0.08 }, 0);
 
