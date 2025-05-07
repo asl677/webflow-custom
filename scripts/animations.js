@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardEls = document.querySelectorAll('.card-project');
 
   const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-  gsap.from(splitLines.lines, { y: 50, autoAlpha: 0, stagger: 0.24 });
+  gsap.from(splitLines.lines, { y: 50, autoAlpha: 0, stagger: 0.8 });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
   gsap.from(splitChars.chars, { y: 40, autoAlpha: 0, stagger: 0.07 });
