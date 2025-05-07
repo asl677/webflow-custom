@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tl = gsap.timeline();
   tl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.6,
+    duration: 0.3,
     onComplete: () => overlay.remove()
   }, 0)
   .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.1, duration: 0.8 }, 0)
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .to(textEls, { autoAlpha: 0, y: -20 }, 0)
         .to(mediaEls, { autoAlpha: 0, y: -30 }, 0)
         .to('.card-project', { autoAlpha: 0, y: 0 }, 0)
-        .to(exitOverlay, { opacity: 1, duration: 0.3 }, 0);
+        .to(exitOverlay, { opacity: 1, duration: 0.5 }, 0);
     });
   });
 });
