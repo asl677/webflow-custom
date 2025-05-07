@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onComplete: () => overlay.remove()
   }, 0)
   .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.34 }, 0)
-  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.04, onComplete: () => mediaEls.forEach(el => el.classList.add('visible')) }, 0)
+  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.04, onComplete: () => mediaEls.forEach(el => el.classList.add('visible')) }, 0.5)
   .to(cardEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.34 }, 0)
   .to(mobileEls, { height: "auto", opacity: 1, y: 0, visibility: "visible", duration: 0.34, stagger: 0.05 }, 0);
 
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gsap.timeline({ onComplete: () => location = target })
         .to(mobileEls, { height: 0, opacity: 0 }, 0)
         .to(textEls, { autoAlpha: 0, y: -20 }, 0)
-        .to(mediaEls, { autoAlpha: 0, y: -10 }, 0)
+        .to(mediaEls, { autoAlpha: 0, y: -20 }, 0)
         .to('.card-project', { autoAlpha: 0, y: 0 }, 0)
         .to(exitOverlay, { opacity: 1, duration: 0.44 }, 0);
     });
