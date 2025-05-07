@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardEls = document.querySelectorAll('.card-project');
 
   const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-  gsap.from(splitLines.lines, { duration: 1.5, y: 50, autoAlpha: 0, stagger: 0.2 });
+  gsap.from(splitLines.lines, { duration: 1.5, y: 50, autoAlpha: 0, stagger: 0.5 });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
-  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.03 });
+  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.4 });
 
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
   gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
