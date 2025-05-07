@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.from(splitLines.lines, { duration: 1.5, y: 50, autoAlpha: 0, stagger: 0.5 });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
-  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.4 });
+  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.1 });
 
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
   gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
