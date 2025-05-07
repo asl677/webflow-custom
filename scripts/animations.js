@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
-  gsap.defaults({ ease: "power2.out", duration: 0.64 });
+  gsap.defaults({ ease: "power2.out", duration: 1.2 });
   gsap.registerPlugin(SplitText);
 
   const overlay = Object.assign(document.createElement('div'), { className: 'page-overlay' });
@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardEls = document.querySelectorAll('.card-project');
 
   const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-  gsap.from(splitLines.lines, { y: 50, autoAlpha: 0, stagger: 0.5 });
+  gsap.from(splitLines.lines, { duration: 1.5, y: 50, autoAlpha: 0, stagger: 0.2 });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
-  gsap.from(splitChars.chars, { y: 40, autoAlpha: 0, stagger: 0.07 });
+  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.03 });
 
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
   gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
@@ -23,13 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const tl = gsap.timeline();
   tl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.24,
+    duration: 0.8,
     onComplete: () => overlay.remove()
   }, 0)
-  .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.34 }, 0)
-  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.04, onComplete: () => mediaEls.forEach(el => el.classList.add('visible')) }, 0.5)
-  .to(cardEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.34 }, 0)
-  .to(mobileEls, { height: "auto", opacity: 1, y: 0, visibility: "visible", duration: 0.34, stagger: 0.05 }, 0);
+  .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.1, duration: 0.8 }, 0)
+  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, duration: 0.6, onComplete: () => mediaEls.forEach(el => el.classList.add('visible')) }, 0)
+  .to(cardEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.12, duration: 0.8 }, 0.2)
+  .to(mobileEls, { height: "auto", opacity: 1, y: 0, visibility: "visible", duration: 0.8, stagger: 0.08 }, 0);
 
   const hideScrollbars = el => {
     if (!el) return;
