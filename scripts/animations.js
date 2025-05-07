@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set default animation parameters
     gsap.defaults({
       ease: "power2.out",
-      duration: 0.6
+      duration: 0.64
     });
     
     // Track active state
@@ -48,11 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // now animate the characters in a staggered fashion
       gsap.from(split.lines, {
-        duration: 1.5, 
+        duration: 1.04, 
         y: 50,       // animate from
         autoAlpha: 0, // fade in
         ease: "power2.out", // easing
-        stagger: 0.12 // seconds between each
+        stagger: 0.24 // seconds between each
       });
     }
     
@@ -63,11 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Animate characters individually
       gsap.from(splitHuge.chars, {
-        duration: 1.2,
+        duration: 1.24,
         y: 40,
         autoAlpha: 0,
         ease: "power3.out",
-        stagger: 0.03 // Faster stagger for characters
+        stagger: 0.07 // Faster stagger for characters
       });
     }
       
@@ -204,8 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fade out overlay
         .to(overlay, {
           autoAlpha: 0,
-          duration: 0.2, // Faster fade
-          delay: 0, // No delay
+          duration: 0.24, // Faster fade
+          delay: 0.04, // No delay
           onComplete: () => document.body.contains(overlay) && document.body.removeChild(overlay)
         })
         
@@ -214,8 +214,8 @@ document.addEventListener('DOMContentLoaded', function() {
           autoAlpha: 1,
           y: 0,
           visibility: 'visible',
-          stagger: 0.04, // Faster stagger
-          duration: 0.3 // Faster animation
+          stagger: 0.08, // Faster stagger
+          duration: 0.34 // Faster animation
         }, 0) // Start at the very beginning
         
         // Animate media elements - start immediately
@@ -223,8 +223,8 @@ document.addEventListener('DOMContentLoaded', function() {
           autoAlpha: 1, 
           y: 0,
           visibility: 'visible',
-          stagger: 0.04, // Faster stagger
-          duration: 0., // Very fast animation
+          stagger: 0.08, // Faster stagger
+          duration: 0.04, // Very fast animation
           onComplete: () => mediaElements.forEach(el => el.classList.add('visible'))
         }, 0) // Start at the very beginning
         
@@ -233,8 +233,8 @@ document.addEventListener('DOMContentLoaded', function() {
           autoAlpha: 1,
           y: 0, 
           visibility: 'visible',
-          stagger: 0.04,
-          duration: 0.3,
+          stagger: 0.08,
+          duration: 0.34,
           ease: "power2.out"
         }, 0) // Start at the very beginning
         
@@ -244,8 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
           opacity: 1,
           y: 0,
           visibility: "visible",
-          duration: 0.3, // Faster animation
-          stagger: 0.01 // Faster stagger
+          duration: 0.34, // Faster animation
+          stagger: 0.05 // Faster stagger
         }, 0); // Start at the very beginning
       
       // Find and handle existing sticky elements
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const exitTl = gsap.timeline({
             onComplete: () => window.location = targetHref,
             defaults: {
-              duration: 0.4,
+              duration: 0.44,
               ease: "power2.inOut"
             }
           });
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
           // Fade in the exit overlay as the last step
           exitTl.to(exitOverlay, {
             opacity: 1,
-            duration: 0.4
+            duration: 0.44
           }, 0); 
         });
       });
