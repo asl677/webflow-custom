@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const easeOutBack = "back.out(1.2)";
   const easeOutStrong = "power4.out";
   
+  // Custom natural curves - create more organic, natural motion
+  // Parameters: 0.64, 0, 0.36, 1 create a nice natural curve with slight acceleration and gentle deceleration
+  const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 1");
+  
+  // Reverse natural curve for exit animations (more acceleration at the end)
+  const naturalCurveExit = gsap.parseEase("0.36, 0, 0.64, 1");
+  
   gsap.defaults({ ease: easeOut, duration: 1.2 });
   gsap.registerPlugin(SplitText);
 
@@ -25,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     y: 50, 
     autoAlpha: 0, 
     stagger: 0.18,
-    ease: easeOutBack
+    ease: naturalCurve // Apply natural curve
   });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
@@ -53,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visibility: 'visible', 
     stagger: 0.06, 
     duration: 0.9,
-    ease: easeOut
+    ease: naturalCurve // Apply natural curve
   }, 0.1)
   .to(mediaEls, { 
     autoAlpha: 1, 
@@ -69,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visibility: 'visible', 
     stagger: 0.09, 
     duration: 0.85,
-    ease: easeOutStrong
+    ease: naturalCurve // Apply natural curve
   }, 0.2)
   .to(mobileEls, { 
     height: "auto", 
@@ -139,34 +146,34 @@ document.addEventListener('DOMContentLoaded', () => {
         .to(mobileEls, { 
           height: 0, 
           opacity: 0,
-          ease: easeInOut,
+          ease: naturalCurveExit,
           duration: 0.6
         }, 0)
         .to(textEls, { 
           autoAlpha: 0, 
           y: -25,
-          ease: easeIn,
+          ease: naturalCurveExit,
           stagger: 0.03,
           duration: 0.5
         }, 0)
         .to(mediaEls, { 
           autoAlpha: 0, 
           y: -30,
-          ease: easeIn,
+          ease: naturalCurveExit,
           stagger: 0.04,
           duration: 0.6
         }, 0.1)
         .to('.card-project', { 
           autoAlpha: 0, 
           y: -15,
-          ease: easeIn,
+          ease: naturalCurveExit,
           stagger: 0.05,
           duration: 0.45
         }, 0.1)
         .to(exitOverlay, { 
           opacity: 1, 
           duration: 0.5,
-          ease: easeInOut
+          ease: naturalCurve
         }, 0.2);
     });
   });
