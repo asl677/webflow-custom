@@ -10,12 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Custom natural curves - create more organic, natural motion
   // Parameters: 0.64, 0, 0.36, 1 create a nice natural curve with slight acceleration and gentle deceleration
-  const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 1");
+  const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 087");
   
   // Reverse natural curve for exit animations (more acceleration at the end)
-  const naturalCurveExit = gsap.parseEase("0.36, 0, 0.64, 1");
+  const naturalCurveExit = gsap.parseEase("0.64, 0, 0.36, 0.8")
   
-  gsap.defaults({ ease: easeOut, duration: 1.2 });
+  gsap.defaults({ ease: easeOut, duration: 0.8 });
   gsap.registerPlugin(SplitText);
 
   const overlay = Object.assign(document.createElement('div'), { className: 'page-overlay' });
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
   gsap.from(splitLines.lines, { 
-    duration: 1.4, 
+    duration: 1, 
     y: 50, 
     autoAlpha: 0, 
     stagger: 0.18,
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
   gsap.from(splitChars.chars, { 
     duration: 1.3, 
-    y: 35, 
+    y: 30, 
     autoAlpha: 0, 
     stagger: 0.03,
     ease: easeOutStrong
