@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
-  gsap.defaults({ ease: "power1.out", duration: 1 });
+  
+  // Define easing variables for consistency
+  const easeOut = "power3.out";
+  const easeInOut = "power2.inOut";
+  const easeIn = "power3.in";
+  const easeOutBack = "back.out(1.2)";
+  const easeOutStrong = "power4.out";
+  
+  gsap.defaults({ ease: easeOut, duration: 1.2 });
   gsap.registerPlugin(SplitText);
 
   const overlay = Object.assign(document.createElement('div'), { className: 'page-overlay' });
@@ -12,10 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardEls = document.querySelectorAll('.card-project');
 
   const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
-  gsap.from(splitLines.lines, { duration: 1.5, y: 50, autoAlpha: 0, stagger: 0.5 });
+  gsap.from(splitLines.lines, { 
+    duration: 1.4, 
+    y: 50, 
+    autoAlpha: 0, 
+    stagger: 0.18,
+    ease: easeOutBack
+  });
 
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
-  gsap.from(splitChars.chars, { duration: 1.5, y: 40, autoAlpha: 0, stagger: 0.1 });
+  gsap.from(splitChars.chars, { 
+    duration: 1.3, 
+    y: 35, 
+    autoAlpha: 0, 
+    stagger: 0.03,
+    ease: easeOutStrong
+  });
 
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
   gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
@@ -23,13 +43,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const tl = gsap.timeline();
   tl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.3,
+    duration: 0.4,
+    ease: easeInOut,
     onComplete: () => overlay.remove()
   }, 0)
-  .to(textEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.1, duration: 0.8 }, 0)
-  .to(mediaEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.08, delay: 0.2, duration: 0.6 }, 0)
-  .to(cardEls, { autoAlpha: 1, y: 0, visibility: 'visible', stagger: 0.12, duration: 0.8 }, 0.2)
-  .to(mobileEls, { height: "auto", opacity: 1, y: 0, visibility: "visible", duration: 0.8, stagger: 0.08 }, 0);
+  .to(textEls, { 
+    autoAlpha: 1, 
+    y: 0, 
+    visibility: 'visible', 
+    stagger: 0.06, 
+    duration: 0.9,
+    ease: easeOut
+  }, 0.1)
+  .to(mediaEls, { 
+    autoAlpha: 1, 
+    y: 0, 
+    visibility: 'visible', 
+    stagger: 0.08, 
+    duration: 1.1,
+    ease: easeOutBack
+  }, 0.3)
+  .to(cardEls, { 
+    autoAlpha: 1, 
+    y: 0, 
+    visibility: 'visible', 
+    stagger: 0.09, 
+    duration: 0.85,
+    ease: easeOutStrong
+  }, 0.2)
+  .to(mobileEls, { 
+    height: "auto", 
+    opacity: 1, 
+    y: 0, 
+    visibility: "visible", 
+    duration: 0.8, 
+    stagger: 0.05,
+    ease: easeOut
+  }, 0.15);
 
   const hideScrollbars = el => {
     if (!el) return;
@@ -79,19 +129,45 @@ document.addEventListener('DOMContentLoaded', () => {
       if (link.pathname === location.pathname || link.getAttribute('href')?.startsWith('#')) return;
       e.preventDefault();
       const target = link.href;
-      const exitOverlay = Object.assign(document.createElement('div'), { className: 'page-exit-overlay' });
-      Object.assign(exitOverlay.style, {
-        position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-        backgroundColor: "#000", zIndex: "9999", opacity: "0", pointerEvents: "none"
+      const exitOverlay = Object.assign(document.createElement('div'), {
+        className: 'exit-overlay',
+        style: "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; opacity: 0; pointer-events: none;"
       });
       document.body.appendChild(exitOverlay);
 
       gsap.timeline({ onComplete: () => location = target })
-        .to(mobileEls, { height: 0, opacity: 0 }, 0)
-        .to(textEls, { autoAlpha: 0, y: -30 }, 0)
-        .to(mediaEls, { autoAlpha: 0, y: -40 }, 0)
-        .to('.card-project', { autoAlpha: 0, y: 0 }, 0)
-        .to(exitOverlay, { opacity: 1, duration: 0.5 }, 0);
+        .to(mobileEls, { 
+          height: 0, 
+          opacity: 0,
+          ease: easeInOut,
+          duration: 0.6
+        }, 0)
+        .to(textEls, { 
+          autoAlpha: 0, 
+          y: -25,
+          ease: easeIn,
+          stagger: 0.03,
+          duration: 0.5
+        }, 0)
+        .to(mediaEls, { 
+          autoAlpha: 0, 
+          y: -30,
+          ease: easeIn,
+          stagger: 0.04,
+          duration: 0.6
+        }, 0.1)
+        .to('.card-project', { 
+          autoAlpha: 0, 
+          y: -15,
+          ease: easeIn,
+          stagger: 0.05,
+          duration: 0.45
+        }, 0.1)
+        .to(exitOverlay, { 
+          opacity: 1, 
+          duration: 0.5,
+          ease: easeInOut
+        }, 0.2);
     });
   });
 });
