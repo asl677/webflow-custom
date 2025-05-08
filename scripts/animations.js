@@ -10,10 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Custom natural curves - create more organic, natural motion
   // Parameters: 0.64, 0, 0.36, 1 create a nice natural curve with slight acceleration and gentle deceleration
-  const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 087");
+  const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 0.6")
   
   // Reverse natural curve for exit animations (more acceleration at the end)
-  const naturalCurveExit = gsap.parseEase("0.64, 0, 0.36, 0.8")
+  const naturalCurveExit = gsap.parseEase("0.64, 0, 0.36, 0.6")
   
   gsap.defaults({ ease: easeOut, duration: 0.8 });
   gsap.registerPlugin(SplitText);
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     y: 0, 
     visibility: 'visible', 
     stagger: 0.08, 
-    duration: 1.1,
+    duration: 1,
     ease: easeOutBack
   }, 0.3)
   .to(cardEls, { 
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     duration: 0.8, 
     stagger: 0.05,
     ease: easeOut
-  }, 0.15);
+  }, 0.1);
 
   const hideScrollbars = el => {
     if (!el) return;
@@ -147,34 +147,34 @@ document.addEventListener('DOMContentLoaded', () => {
           height: 0, 
           opacity: 0,
           ease: naturalCurveExit,
-          duration: 0.6
+          duration: 0.4
         }, 0)
         .to(textEls, { 
           autoAlpha: 0, 
-          y: -25,
+          y: -10,
           ease: naturalCurveExit,
           stagger: 0.03,
-          duration: 0.5
+          duration: 0.4
         }, 0)
         .to(mediaEls, { 
           autoAlpha: 0, 
-          y: -30,
+          y: -10,
           ease: naturalCurveExit,
           stagger: 0.04,
-          duration: 0.6
+          duration: 0.4
         }, 0.1)
         .to('.card-project', { 
           autoAlpha: 0, 
-          y: -15,
+          y: -10,
           ease: naturalCurveExit,
           stagger: 0.05,
-          duration: 0.45
+          duration: 0.4
         }, 0.1)
         .to(exitOverlay, { 
           opacity: 1, 
-          duration: 0.5,
+          duration: 0.4,
           ease: naturalCurve
-        }, 0.2);
+        }, 0.15);
     });
   });
 });
