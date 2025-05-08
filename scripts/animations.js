@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
-  gsap.defaults({ ease: "power2.out", duration: 1 });
+  gsap.defaults({ ease: "power1.out", duration: 1 });
   gsap.registerPlugin(SplitText);
 
   const overlay = Object.assign(document.createElement('div'), { className: 'page-overlay' });
@@ -88,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       gsap.timeline({ onComplete: () => location = target })
         .to(mobileEls, { height: 0, opacity: 0 }, 0)
-        .to(textEls, { autoAlpha: 0, y: -20 }, 0)
-        .to(mediaEls, { autoAlpha: 0, y: -30 }, 0)
+        .to(textEls, { autoAlpha: 0, y: -30 }, 0)
+        .to(mediaEls, { autoAlpha: 0, y: -40 }, 0)
         .to('.card-project', { autoAlpha: 0, y: 0 }, 0)
         .to(exitOverlay, { opacity: 1, duration: 0.5 }, 0);
     });
