@@ -136,45 +136,56 @@ document.addEventListener('DOMContentLoaded', () => {
       if (link.pathname === location.pathname || link.getAttribute('href')?.startsWith('#')) return;
       e.preventDefault();
       const target = link.href;
+      
+      // Quick check if link is inside a sticky element
+      const isInStickyElement = link.closest('.sticky-element') || link.closest('.scrollable-wrapper');
+      
+      // Create exit overlay
       const exitOverlay = Object.assign(document.createElement('div'), {
         className: 'exit-overlay',
         style: "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; opacity: 0; pointer-events: none;"
       });
       document.body.appendChild(exitOverlay);
 
-      gsap.timeline({ onComplete: () => location = target })
-        .to(mobileEls, { 
-          height: 0, 
-          opacity: 0,
-          ease: naturalCurveExit,
-          duration: 0.4
-        }, 0)
-        .to(textEls, { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.03,
-          duration: 0.4
-        }, 0)
-        .to(mediaEls, { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.04,
-          duration: 0.4
-        }, 0.1)
-        .to('.card-project', { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.05,
-          duration: 0.4
-        }, 0.1)
+      // Create simplified timeline for faster transitions
+      const timeline = gsap.timeline({
+        // Navigate faster for sticky elements, wait a bit for regular elements
+        onStart: () => {
+          if (isInStickyElement) {
+            // For sticky elements, set a short timeout to allow overlay to start showing
+            setTimeout(() => location = target, 200);
+          }
+        },
+        onComplete: () => {
+          // For non-sticky elements, navigate after animation completes
+          if (!isInStickyElement) location = target;
+        }
+      });
+      
+      // Use faster animations with shorter durations for quicker transitions
+      timeline
         .to(exitOverlay, { 
           opacity: 1, 
-          duration: 0.4,
-          ease: naturalCurve
-        }, 0.15);
+          duration: 0.3, // Faster fade-in
+          ease: easeIn
+        }, 0);
+      
+      // Only animate visible elements for better performance
+      if (!isInStickyElement) {
+        // Get only visible elements (in viewport)
+        const visibleTextEls = Array.from(textEls).filter(el => {
+          const rect = el.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        });
+        
+        // Use faster, simplified animations for links outside sticky containers
+        timeline
+          .to(visibleTextEls, { 
+            autoAlpha: 0, 
+            duration: 0.25,
+            ease: easeIn
+          }, 0);
+      }
     });
   });
 });
