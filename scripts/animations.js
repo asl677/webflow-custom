@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     duration: 1, 
     y: 50, 
     autoAlpha: 0, 
-    stagger: 0.18,
+    stagger: 0.3,
     ease: naturalCurve // Apply natural curve
   });
 
