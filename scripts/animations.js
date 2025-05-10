@@ -130,12 +130,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
+  // Helper function to check if an element is inside a sticky-wrap container
+  const isInStickyWrap = element => {
+    let parent = element;
+    while (parent && parent !== document.body) {
+      if (parent.classList.contains('sticky-wrap') || 
+          parent.classList.contains('sticky-element') || 
+          parent.classList.contains('sticky') ||
+          getComputedStyle(parent).position === 'sticky') {
+        return true;
+      }
+      parent = parent.parentElement;
+    }
+    return false;
+  };
+
   document.querySelectorAll('a[href]').forEach(link => {
     if (link.hostname !== location.hostname || link.target) return;
     link.addEventListener('click', e => {
       if (link.pathname === location.pathname || link.getAttribute('href')?.startsWith('#')) return;
       e.preventDefault();
       const target = link.href;
+      
+      // Fast navigation for links in sticky containers
+      if (isInStickyWrap(link)) {
+        const miniExitTl = gsap.timeline({
+          onComplete: () => location = target,
+          defaults: { duration: 0.25 }
+        });
+        
+        miniExitTl.to(link, { 
+          opacity: 0.5, 
+          scale: 0.95, 
+          ease: "power2.in" 
+        }, 0);
+        
+        return;
+      }
+      
       const exitOverlay = Object.assign(document.createElement('div'), {
         className: 'exit-overlay',
         style: "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; opacity: 0; pointer-events: none;"
