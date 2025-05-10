@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileEls = document.querySelectorAll('.mobile-down');
   const cardEls = document.querySelectorAll('.card-project');
 
-  const splitLines = SplitText.create(".heading.large.bold.skinny", { type: "lines" });
+  const splitLines = SplitText.create(".heading.large", { type: "lines" });
   gsap.from(splitLines.lines, { 
     duration: 1, 
     y: 50, 
