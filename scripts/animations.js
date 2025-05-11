@@ -12,9 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Parameters: 0.64, 0, 0.36, 1 create a nice natural curve with slight acceleration and gentle deceleration
   const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 0.6")
   
-  // Reverse natural curve for exit animations (more acceleration at the end)
-  const naturalCurveExit = gsap.parseEase("0.64, 0, 0.36, 0.6")
-  
   gsap.defaults({ ease: easeOut, duration: 0.8 });
   gsap.registerPlugin(SplitText);
 
@@ -129,84 +126,4 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
-
-  // Helper function to check if an element is inside a sticky-wrap container
-  const isInStickyWrap = element => {
-    let parent = element;
-    while (parent && parent !== document.body) {
-      if (parent.classList.contains('sticky-wrap') || 
-          parent.classList.contains('sticky-element') || 
-          parent.classList.contains('sticky') ||
-          getComputedStyle(parent).position === 'sticky') {
-        return true;
-      }
-      parent = parent.parentElement;
-    }
-    return false;
-  };
-
-  document.querySelectorAll('a[href]').forEach(link => {
-    if (link.hostname !== location.hostname || link.target) return;
-    link.addEventListener('click', e => {
-      if (link.pathname === location.pathname || link.getAttribute('href')?.startsWith('#')) return;
-      e.preventDefault();
-      const target = link.href;
-      
-      // Fast navigation for links in sticky containers
-      if (isInStickyWrap(link)) {
-        const miniExitTl = gsap.timeline({
-          onComplete: () => location = target,
-          defaults: { duration: 0.25 }
-        });
-        
-        miniExitTl.to(link, { 
-          opacity: 0.5, 
-          scale: 0.95, 
-          ease: "power2.in" 
-        }, 0);
-        
-        return;
-      }
-      
-      const exitOverlay = Object.assign(document.createElement('div'), {
-        className: 'exit-overlay',
-        style: "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 9999; opacity: 0; pointer-events: none;"
-      });
-      document.body.appendChild(exitOverlay);
-
-      gsap.timeline({ onComplete: () => location = target })
-        .to(mobileEls, { 
-          height: 0, 
-          opacity: 0,
-          ease: naturalCurveExit,
-          duration: 0.4
-        }, 0)
-        .to(textEls, { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.03,
-          duration: 0.4
-        }, 0)
-        .to(mediaEls, { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.04,
-          duration: 0.4
-        }, 0.1)
-        .to('.card-project', { 
-          autoAlpha: 0, 
-          y: -10,
-          ease: naturalCurveExit,
-          stagger: 0.05,
-          duration: 0.4
-        }, 0.1)
-        .to(exitOverlay, { 
-          opacity: 1, 
-          duration: 0.4,
-          ease: naturalCurve
-        }, 0.15);
-    });
-  });
 });
