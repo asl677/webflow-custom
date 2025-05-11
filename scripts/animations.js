@@ -127,8 +127,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
+  // Helper function to check if an element is in a sticky container
+  const isInStickyContainer = (element) => {
+    let parent = element.parentElement;
+    while (parent) {
+      if (parent.classList.contains('sticky-wrap') || 
+          parent.classList.contains('sticky-element') || 
+          parent.classList.contains('scrollable-wrapper') ||
+          getComputedStyle(parent).position === 'sticky') {
+        return true;
+      }
+      parent = parent.parentElement;
+    }
+    return false;
+  };
+ 
   // Simple page transition system
-  const handleNavigation = (targetUrl) => {
+  const handleNavigation = (targetUrl, isFromStickyContainer = false) => {
     // Create a new timeline for exit animations
     const exitTl = gsap.timeline({
       onComplete: () => {
@@ -137,7 +152,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Show overlay first
+    // Fast path for sticky container elements - shorter animations
+    if (isFromStickyContainer) {
+      exitTl.to(overlay, {
+        autoAlpha: 1,
+        duration: 0.25,
+        ease: "power2.in"
+      }, 0);
+      
+      // Quick fade out - no stagger, no individual animations
+      exitTl.to([textEls, mediaEls, cardEls, mobileEls], { 
+        autoAlpha: 0, 
+        duration: 0.25,
+        ease: "power2.in"
+      }, 0);
+      
+      // Shorter total timeline duration
+      return;
+    }
+    
+    // Regular path for non-sticky elements - normal animations
     exitTl.to(overlay, {
       autoAlpha: 1,
       duration: 0.4,
@@ -193,7 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      handleNavigation(href);
+      
+      // Check if the link is inside a sticky container
+      const isStickyLink = isInStickyContainer(link);
+      
+      // Use fast path for sticky links
+      handleNavigation(href, isStickyLink);
     });
   });
 });
