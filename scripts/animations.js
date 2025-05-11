@@ -181,7 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ease: "power1.in"
         }, 0);
         
-        return; // Very quick transition for sticky elements
+        // Quick minimal animation for visible feedback when clicking sticky links
+        exitTl.to([textEls, mediaEls, cardEls], { 
+          autoAlpha: 0, 
+          y: -8, 
+          duration: 0.2,
+          ease: "power1.in"
+        }, 0);
+        
+        return;
       }
       
       // Regular path for non-sticky elements - normal animations
@@ -194,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Shorter, simplified animations
       exitTl.to([textEls, mediaEls, cardEls], { 
         autoAlpha: 0, 
-        y: 10, 
+        y: -20, 
         duration: 0.4,
         ease: easeIn
       }, 0);
