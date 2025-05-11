@@ -126,4 +126,74 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+  // Simple page transition system
+  const handleNavigation = (targetUrl) => {
+    // Create a new timeline for exit animations
+    const exitTl = gsap.timeline({
+      onComplete: () => {
+        // Navigate to the target URL after animations complete
+        window.location.href = targetUrl;
+      }
+    });
+    
+    // Show overlay first
+    exitTl.to(overlay, {
+      autoAlpha: 1,
+      duration: 0.4,
+      ease: easeInOut
+    }, 0);
+    
+    // Reverse animations for elements
+    exitTl.to(textEls, { 
+      autoAlpha: 0, 
+      y: 20, 
+      stagger: 0.04, 
+      duration: 0.6,
+      ease: easeIn
+    }, 0);
+    
+    exitTl.to(mediaEls, { 
+      autoAlpha: 0, 
+      y: 20, 
+      stagger: 0.04, 
+      duration: 0.5,
+      ease: easeIn
+    }, 0.1);
+    
+    exitTl.to(cardEls, { 
+      autoAlpha: 0, 
+      y: 20, 
+      stagger: 0.04, 
+      duration: 0.5,
+      ease: easeIn
+    }, 0.1);
+    
+    exitTl.to(mobileEls, { 
+      height: 0, 
+      opacity: 0, 
+      y: 30, 
+      duration: 0.5, 
+      stagger: 0.03,
+      ease: easeIn
+    }, 0);
+  };
+
+  // Attach click handlers to all links
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    // Skip external links, anchor links, and javascript: links
+    if (href.startsWith('#') || 
+        href.startsWith('javascript:') || 
+        href.startsWith('tel:') || 
+        href.startsWith('mailto:') ||
+        href.includes('://') && !href.includes(window.location.hostname)) {
+      return;
+    }
+    
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleNavigation(href);
+    });
+  });
 });
