@@ -127,32 +127,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
-  // Helper function to check if an element is in a sticky container
-  const isInStickyContainer = (element) => {
+  // Helper function to check if an element is in the navigation
+  const isNavLink = (element) => {
     try {
-      let parent = element.parentElement;
-      let depth = 0;
-      const maxDepth = 10; // Prevent infinite loops
-      
-      while (parent && depth < maxDepth) {
-        if (parent.classList.contains('sticky-wrap') || 
-            parent.classList.contains('sticky-element') || 
-            parent.classList.contains('scrollable-wrapper') ||
-            getComputedStyle(parent).position === 'sticky') {
-          return true;
-        }
-        parent = parent.parentElement;
-        depth++;
-      }
-      return false;
+      return element.closest('.nav, nav, header, .navbar, [class*="navigation"], [class*="menu"]') !== null;
     } catch (e) {
-      console.error('Error in isInStickyContainer:', e);
-      return false; // Default to regular animation on error
+      console.error('Error in isNavLink:', e);
+      return false;
     }
   };
  
   // Simple page transition system
-  const handleNavigation = (targetUrl, isFromStickyContainer = false) => {
+  const handleNavigation = (targetUrl) => {
     try {
       // Safety check
       if (!targetUrl) {
@@ -173,46 +159,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       
-      // Fast path for sticky container elements - shorter animations
-      if (isFromStickyContainer) {
-        exitTl.to(overlay, {
-          autoAlpha: 1,
-          duration: 0.15, // Faster fade in
-          ease: "power1.in"
-        }, 0);
-        
-        // Quick minimal animation for visible feedback when clicking sticky links
-        exitTl.to([textEls, mediaEls, cardEls], { 
-          autoAlpha: 0, 
-          y: -8, 
-          duration: 0.2,
-          ease: "power1.in"
-        }, 0);
-        
-        return;
-      }
-      
-      // Regular path for non-sticky elements - normal animations
+      // Consistent exit animation for all links
+      // First fade in the overlay
       exitTl.to(overlay, {
         autoAlpha: 1,
-        duration: 0.3,
+        duration: 0.4,
         ease: easeInOut
       }, 0);
       
-      // Shorter, simplified animations
-      exitTl.to([textEls, mediaEls, cardEls], { 
+      // Animate out all text elements
+      exitTl.to(textEls, { 
         autoAlpha: 0, 
-        y: -20, 
-        duration: 0.4,
+        y: -15, 
+        duration: 0.5,
+        stagger: 0.02,
         ease: easeIn
       }, 0);
       
+      // Animate out media elements
+      exitTl.to(mediaEls, { 
+        autoAlpha: 0, 
+        y: -15, 
+        duration: 0.5,
+        stagger: 0.03,
+        ease: easeIn
+      }, 0.05);
+      
+      // Animate out card elements
+      exitTl.to(cardEls, { 
+        autoAlpha: 0, 
+        y: -15, 
+        duration: 0.5,
+        stagger: 0.03,
+        ease: easeIn
+      }, 0.05);
+      
+      // Animate out mobile elements
       exitTl.to(mobileEls, { 
         height: 0, 
         opacity: 0, 
-        duration: 0.3, 
+        duration: 0.4, 
         ease: easeIn
-      }, 0);
+      }, 0.1);
     } catch (e) {
       console.error('Animation error:', e);
       // Fallback to immediate navigation on error
@@ -237,12 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', (e) => {
         try {
           e.preventDefault();
-          
-          // Determine if link is in sticky container
-          const isStickyLink = isInStickyContainer(link);
-          
-          // Use appropriate animation path
-          handleNavigation(href, isStickyLink);
+          // Use consistent animation for all links
+          handleNavigation(href);
         } catch (error) {
           console.error('Click handling error:', error);
           // Fallback to default navigation
