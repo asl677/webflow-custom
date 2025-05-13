@@ -37,7 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial states
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20 });
-  gsap.set(mobileEls, { height: 0, opacity: 0, y: 30 });
+  gsap.set(mobileEls, { 
+    height: 0, 
+    opacity: 0, 
+    y: 30,
+    transformOrigin: "top center"
+  });
 
   // Make page visible now that we've set initial states
   document.documentElement.style.visibility = 'visible';
@@ -91,10 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
       height: "auto",
       opacity: 1,
       y: 0,
-      duration: 0.8,
-      stagger: 0.05,
-      ease: easeOut
-    }, "<0.1");
+      duration: 1,
+      stagger: {
+        each: 0.08,
+        from: "top"
+      },
+      ease: "back.out(1.4)"
+    }, "<0.2");
 
   // Handle all link clicks
   document.addEventListener('click', e => {
