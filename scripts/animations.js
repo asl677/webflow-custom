@@ -61,6 +61,7 @@ const initAnimation = () => {
   const mediaEls = document.querySelectorAll('img, video');
   const mobileEls = document.querySelectorAll('.mobile-down');
   const cardEls = document.querySelectorAll('.card-project');
+  const pageWrapper = document.querySelector('.page-wrapper');
 
   // Split text animations
   const splitLines = SplitText.create(".heading.large", { type: "lines" });
@@ -87,45 +88,25 @@ const initAnimation = () => {
     const exitTl = gsap.timeline();
     
     exitTl
-      .to(mobileEls, {
-        height: 0,
+      .to(pageWrapper, {
         opacity: 0,
-        y: 30,
-        duration: 0.6,
-        stagger: {
-          each: 0.08,
-          from: "bottom"
-        },
-        ease: "power2.inOut"
+        duration: 0.2,
+        ease: easeIn
       })
-      .to([cardEls, mediaEls], {
+      .to([mobileEls, cardEls, mediaEls, textEls], {
         autoAlpha: 0,
-        y: -20,
-        duration: 0.5,
-        stagger: 0.05,
-        ease: easeIn
-      }, "<0.1")
-      .to(textEls, {
-        autoAlpha: 0,
-        y: -20,
-        stagger: 0.04,
-        duration: 0.5,
-        ease: easeIn
-      }, "<0.1")
-      .to(splitChars.chars, {
-        duration: 0.6,
-        y: -30,
-        autoAlpha: 0,
+        y: -10,
+        duration: 0.3,
         stagger: 0.02,
         ease: easeIn
       }, "<")
-      .to(splitLines.lines, {
-        duration: 0.5,
-        y: -30,
+      .to([splitChars.chars, splitLines.lines], {
+        duration: 0.3,
+        y: -10,
         autoAlpha: 0,
-        stagger: 0.05,
+        stagger: 0.01,
         ease: easeIn
-      }, "<0.1");
+      }, "<");
       
     return exitTl;
   };
@@ -204,8 +185,8 @@ const initAnimation = () => {
     exitTl.eventCallback("onComplete", () => {
       gsap.to(overlay, {
         opacity: 1,
-        duration: 0.3,
-        ease: easeInOut,
+        duration: 0.15,
+        ease: easeIn,
         onComplete: () => {
           window.location.href = href;
         }
