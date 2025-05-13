@@ -72,6 +72,7 @@ const initAnimation = () => {
     height: 0, 
     opacity: 0, 
     y: 30,
+    overflow: "hidden",
     transformOrigin: "top center"
   });
 
@@ -127,12 +128,13 @@ const initAnimation = () => {
       height: "auto",
       opacity: 1,
       y: 0,
-      duration: 1,
+      duration: 1.2,
       stagger: {
-        each: 0.08,
+        each: 0.12,
         from: "top"
       },
-      ease: "back.out(1.4)"
+      clearProps: "height,overflow",
+      ease: "power2.inOut"
     }, "<0.2");
 
   // Handle all link clicks
