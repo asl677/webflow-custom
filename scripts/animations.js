@@ -142,12 +142,12 @@ const initAnimation = () => {
     .from(splitLines.lines, { 
       y: 20, 
       autoAlpha: 0, 
-      stagger: 0.03
+      stagger: 0.07
     }, "<0.1")
     .from(splitChars.chars, { 
       y: 30, 
       autoAlpha: 0, 
-      stagger: 0.02,
+      stagger: 0.05,
       ease: easeOutStrong
     }, "<")
     .to([textEls, mediaEls], {
