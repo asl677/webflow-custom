@@ -3,7 +3,7 @@
   const style = document.createElement('style');
   style.textContent = `
     html, body {
-      background: #fff !important;
+      background: #000 !important;
     }
     body {
       opacity: 0 !important;
@@ -18,7 +18,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #fff;
+      background: #000;
       z-index: 9999;
       pointer-events: none;
       opacity: 1;
