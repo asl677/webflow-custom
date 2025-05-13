@@ -47,7 +47,7 @@ const initAnimation = () => {
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
   // Create exit animation
-  const createExitTimeline = () => {
+  const createExitTimeline = (href) => {
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.3 } });
     return tl
       .to(overlay, { opacity: 1, duration: 0.2, ease: "power2.in" })
@@ -76,7 +76,7 @@ const initAnimation = () => {
     if (!href || /^(?:javascript:|#|tel:|mailto:)/.test(href)) return;
 
     e.preventDefault();
-    createExitTimeline();
+    createExitTimeline(href);
   }, true);
 
   // Setup scrollbar handling
