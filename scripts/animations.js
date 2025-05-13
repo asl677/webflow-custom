@@ -72,7 +72,8 @@ const initAnimation = () => {
   gsap.set(cardEls, { 
     autoAlpha: 0, 
     y: 20,
-    scale: 0.98,
+    blur: 8,
+    scale: 0.99,
     transformOrigin: "center center"
   });
   gsap.set(mobileEls, { 
