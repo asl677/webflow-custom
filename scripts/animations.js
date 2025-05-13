@@ -52,10 +52,10 @@ const initAnimation = () => {
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.3 } });
     return tl
       .to(els.splitLinesWhite, { y: 0, autoAlpha: 0, stagger: 0.02, duration: 0.3 })
-      .to([els.splitChars, els.splitLinesRegular], { y: -10, autoAlpha: 0, stagger: 0.02, duration: 0.4 }, "<0.1")
+      //.to([els.splitChars, els.splitLinesRegular], { y: -10, autoAlpha: 0, stagger: 0.02, duration: 0.4 }, "<0.1")
       .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -10, stagger: 0.02 }, "<0.1")
-      .to(els.cards, { y: -10, autoAlpha: 0, stagger: 0.02 }, "<")
-      .to(overlay, { opacity: 1, duration: 0.3, ease: "power2.in" }, "<0.2")
+      //.to(els.cards, { y: 0, autoAlpha: 0, stagger: 0.03 }, "<")
+      .to(overlay, { opacity: 1, duration: 0.3, ease: "power2.in" }, "<0.3")
       .to(els.wrapper, { opacity: 0, duration: 0.3, ease: "power2.out" }, "<")
       .eventCallback("onComplete", () => window.location.href = href);
   };
@@ -65,7 +65,7 @@ const initAnimation = () => {
     .to(overlay, { opacity: 0, duration: 0.3, ease: "power2.inOut" })
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.06, duration: 0.4 }, "<0.1")
     .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.09 }, "<0.1")
-    .from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
+    //.from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
     .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.02 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.04 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.5, stagger: 0.03, clearProps: "height,overflow" }, "<0.2");
