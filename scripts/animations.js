@@ -68,7 +68,13 @@ const initAnimation = () => {
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
 
   // Initial states
-  gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20 });
+  gsap.set([textEls, mediaEls], { autoAlpha: 0, y: 20 });
+  gsap.set(cardEls, { 
+    autoAlpha: 0, 
+    y: 20,
+    scale: 0.98,
+    transformOrigin: "center center"
+  });
   gsap.set(mobileEls, { 
     height: 0, 
     opacity: 0, 
@@ -81,31 +87,45 @@ const initAnimation = () => {
   document.body.classList.add('ready');
 
   // Create the main timeline
-  const mainTl = gsap.timeline();
+  const mainTl = gsap.timeline({
+    defaults: {
+      ease: naturalCurve,
+      duration: 0.6
+    }
+  });
 
   // Create exit timeline
   const createExitTimeline = () => {
-    const exitTl = gsap.timeline();
+    const exitTl = gsap.timeline({
+      defaults: {
+        ease: "power2.inOut",
+        duration: 0.3
+      }
+    });
     
     exitTl
       .to(pageWrapper, {
         opacity: 0,
         duration: 0.2,
-        ease: easeIn
+        ease: "power2.in"
       })
-      .to([mobileEls, cardEls, mediaEls, textEls], {
+      .to(cardEls, {
+        scale: 0.95,
+        y: -10,
+        autoAlpha: 0,
+        stagger: 0.02,
+        ease: "power2.in"
+      }, "<")
+      .to([mobileEls, mediaEls, textEls], {
         autoAlpha: 0,
         y: -10,
-        duration: 0.3,
-        stagger: 0.02,
-        ease: easeIn
-      }, "<")
+        stagger: 0.01
+      }, "<0.1")
       .to([splitChars.chars, splitLines.lines], {
-        duration: 0.3,
         y: -10,
         autoAlpha: 0,
         stagger: 0.01,
-        ease: easeIn
+        duration: 0.2
       }, "<");
       
     return exitTl;
@@ -115,59 +135,43 @@ const initAnimation = () => {
   mainTl
     .to(overlay, {
       opacity: 0,
-      duration: 0.4,
-      ease: easeInOut
+      duration: 0.3,
+      ease: "power2.inOut"
     })
     .from(splitLines.lines, { 
-      duration: 1, 
-      y: 30, 
+      y: 20, 
       autoAlpha: 0, 
-      stagger: 0.1,
-      ease: naturalCurve
+      stagger: 0.03
     }, "<0.1")
     .from(splitChars.chars, { 
-      duration: 1.3, 
       y: 30, 
       autoAlpha: 0, 
-      stagger: 0.03,
+      stagger: 0.02,
       ease: easeOutStrong
     }, "<")
-    .to(textEls, {
+    .to([textEls, mediaEls], {
       autoAlpha: 1,
       y: 0,
-      stagger: 0.06,
-      duration: 0.9,
-      ease: naturalCurve
+      stagger: 0.02
     }, "<0.1")
-    .to(mediaEls, {
-      autoAlpha: 1,
-      y: 0,
-      stagger: 0.08,
-      duration: 1,
-      ease: easeOutBack
-    }, "<0.2")
     .to(cardEls, {
       autoAlpha: 1,
+      scale: 1,
       y: 0,
-      stagger: 0.09,
-      duration: 0.85,
-      ease: naturalCurve
+      stagger: 0.04,
+      ease: "power2.out"
     }, "<0.1")
     .to(mobileEls, {
       height: "auto",
       opacity: 1,
       y: 0,
-      duration: 1.2,
-      stagger: {
-        each: 0.12,
-        from: "top"
-      },
-      clearProps: "height,overflow",
-      ease: "power2.inOut"
+      duration: 0.5,
+      stagger: 0.03,
+      clearProps: "height,overflow"
     }, "<0.2");
 
   // Handle all link clicks
-  document.addEventListener('click', e => {
+  const handleLinkClick = (e) => {
     const link = e.target.closest('a');
     if (!link) return;
 
@@ -179,6 +183,7 @@ const initAnimation = () => {
         href.startsWith('mailto:')) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
     // Run exit animations then navigate
     const exitTl = createExitTimeline();
@@ -186,13 +191,16 @@ const initAnimation = () => {
       gsap.to(overlay, {
         opacity: 1,
         duration: 0.15,
-        ease: easeIn,
+        ease: "power2.in",
         onComplete: () => {
           window.location.href = href;
         }
       });
     });
-  });
+  };
+
+  // Attach click handler to document once
+  document.addEventListener('click', handleLinkClick, true);
 
   const hideScrollbars = el => {
     if (!el) return;
