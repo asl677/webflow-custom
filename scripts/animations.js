@@ -82,6 +82,54 @@ const initAnimation = () => {
   // Create the main timeline
   const mainTl = gsap.timeline();
 
+  // Create exit timeline
+  const createExitTimeline = () => {
+    const exitTl = gsap.timeline();
+    
+    exitTl
+      .to(mobileEls, {
+        height: 0,
+        opacity: 0,
+        y: 30,
+        duration: 0.6,
+        stagger: {
+          each: 0.08,
+          from: "bottom"
+        },
+        ease: "power2.inOut"
+      })
+      .to([cardEls, mediaEls], {
+        autoAlpha: 0,
+        y: -20,
+        duration: 0.5,
+        stagger: 0.05,
+        ease: easeIn
+      }, "<0.1")
+      .to(textEls, {
+        autoAlpha: 0,
+        y: -20,
+        stagger: 0.04,
+        duration: 0.5,
+        ease: easeIn
+      }, "<0.1")
+      .to(splitChars.chars, {
+        duration: 0.6,
+        y: -30,
+        autoAlpha: 0,
+        stagger: 0.02,
+        ease: easeIn
+      }, "<")
+      .to(splitLines.lines, {
+        duration: 0.5,
+        y: -30,
+        autoAlpha: 0,
+        stagger: 0.05,
+        ease: easeIn
+      }, "<0.1");
+      
+    return exitTl;
+  };
+
   // Start animations
   mainTl
     .to(overlay, {
@@ -151,14 +199,17 @@ const initAnimation = () => {
 
     e.preventDefault();
 
-    // Show overlay and navigate
-    gsap.to(overlay, {
-      opacity: 1,
-      duration: 0.3,
-      ease: easeInOut,
-      onComplete: () => {
-        window.location.href = href;
-      }
+    // Run exit animations then navigate
+    const exitTl = createExitTimeline();
+    exitTl.eventCallback("onComplete", () => {
+      gsap.to(overlay, {
+        opacity: 1,
+        duration: 0.3,
+        ease: easeInOut,
+        onComplete: () => {
+          window.location.href = href;
+        }
+      });
     });
   });
 
