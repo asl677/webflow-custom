@@ -1,5 +1,27 @@
-// Add this before DOMContentLoaded to prevent FOUC
-document.documentElement.style.visibility = 'hidden';
+// Add styles to prevent FOUC and handle initial state
+const style = document.createElement('style');
+style.textContent = `
+  body {
+    opacity: 0;
+    background: #fff;
+  }
+  body.ready {
+    opacity: 1;
+    transition: opacity 0.1s;
+  }
+  .page-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 1;
+  }
+`;
+document.head.appendChild(style);
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
@@ -18,10 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.registerPlugin(SplitText);
   gsap.config({ force3D: true });
 
-  // Create overlay with initial opacity of 1
+  // Create overlay
   const overlay = Object.assign(document.createElement('div'), { 
-    className: 'page-overlay',
-    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 1;'
+    className: 'page-overlay'
   });
   document.body.appendChild(overlay);
 
@@ -44,11 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     transformOrigin: "top center"
   });
 
-  // Make page visible now that we've set initial states
-  document.documentElement.style.visibility = 'visible';
-
   // Create the main timeline
-  const mainTl = gsap.timeline();
+  const mainTl = gsap.timeline({
+    onStart: () => document.body.classList.add('ready')
+  });
 
   // Start by fading out the overlay
   mainTl
