@@ -5,7 +5,7 @@
       textContent: `
         html, body { background: #000 !important; }
         body { opacity: 0 !important; }
-        body.ready { opacity: 1 !important; transition: opacity 0.2s ease-out; }
+        body.ready { opacity: 1 !important; transition: opacity 0.4s ease-out; }
         .page-overlay {
           position: fixed; top: 0; left: 0;
           width: 100%; height: 100%;
@@ -50,14 +50,14 @@ const initAnimation = () => {
   const createExitTimeline = () => {
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.3 } });
     return tl
-      .to(els.wrapper, { opacity: 0, duration: 0.2, filter: 'blur(4px)', ease: "power2.in" })
-      .to(els.cards, { scale: 0.98, y: -10, autoAlpha: 0, stagger: 0.02 }, "<")
+      .to(els.wrapper, { opacity: 0, duration: 0.2, filter: 'blur(4px)', ease: "power2.out" })
+      .to(els.cards, { scale: 0.98, y: -10, autoAlpha: 0, stagger: 0.01 }, "<")
       .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -10, stagger: 0.01 }, "<0.1")
-      .to([els.splitChars, els.splitLines], { y: -10, autoAlpha: 0, stagger: 0.01, duration: 0.2 }, "<");
+      .to([els.splitChars, els.splitLines], { y: -10, autoAlpha: 0, stagger: 0.01, duration: 0.3 }, "<");
   };
 
   // Start intro animations
-  gsap.timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
+  gsap.timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
     .to(overlay, { opacity: 0, duration: 0.3, ease: "power2.inOut" })
     .from(els.splitLines, { y: 20, autoAlpha: 0, stagger: 0.07 }, "<0.1")
     .from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
@@ -77,7 +77,7 @@ const initAnimation = () => {
     createExitTimeline().eventCallback("onComplete", () => {
       gsap.to(overlay, {
         opacity: 1,
-        duration: 0.15,
+        duration: 0.22,
         ease: "power2.in",
         onComplete: () => window.location.href = href
       });
