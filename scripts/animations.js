@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const splitLines = SplitText.create(".heading.large", { type: "lines" });
   gsap.from(splitLines.lines, { 
     duration: 1, 
-    y: 50, 
+    y: 30, 
     autoAlpha: 0, 
     stagger: 0.1,
     ease: naturalCurve // Apply natural curve
@@ -47,42 +47,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const tl = gsap.timeline();
   tl.to(overlay, {
     autoAlpha: 0,
-    duration: 0.4,
+    duration: 0.3,
     ease: easeInOut,
-    onComplete: () => overlay.remove()
+    onComplete: () => {
+      overlay.remove();
+      document.body.style.willChange = 'auto'; // Clean up will-change
+    }
   }, 0)
-  .to(textEls, { 
-    autoAlpha: 1, 
-    y: 0, 
-    visibility: 'visible', 
-    stagger: 0.06, 
-    duration: 0.9,
-    ease: naturalCurve // Apply natural curve
+  .to([textEls, mediaEls, cardEls], {
+    autoAlpha: 1,
+    y: 0,
+    visibility: 'visible',
+    stagger: 0.04,
+    duration: 0.7,
+    ease: naturalCurve,
+    clearProps: "all"
   }, 0.1)
-  .to(mediaEls, { 
-    autoAlpha: 1, 
-    y: 0, 
-    visibility: 'visible', 
-    stagger: 0.08, 
-    duration: 1,
-    ease: easeOutBack
-  }, 0.3)
-  .to(cardEls, { 
-    autoAlpha: 1, 
-    y: 0, 
-    visibility: 'visible', 
-    stagger: 0.09, 
-    duration: 0.85,
-    ease: naturalCurve // Apply natural curve
-  }, 0.2)
-  .to(mobileEls, { 
-    height: "auto", 
-    opacity: 1, 
-    y: 0, 
-    visibility: "visible", 
-    duration: 0.8, 
-    stagger: 0.05,
-    ease: easeOut
+  .to(mobileEls, {
+    height: "auto",
+    opacity: 1,
+    y: 0,
+    visibility: "visible",
+    duration: 0.6,
+    stagger: 0.03,
+    ease: easeOut,
+    clearProps: "all"
   }, 0.1);
 
   const hideScrollbars = el => {
@@ -137,73 +126,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
  
-  // Simple page transition system
+  // Add this near the top of your file after gsap.defaults
+  gsap.config({
+    force3D: true // Forces 3D transforms for better performance
+  });
+
+  // Modify your exit animation to be more performant
   const handleNavigation = (targetUrl) => {
     try {
-      // Safety check
       if (!targetUrl) {
         console.error('No target URL provided');
-        return window.location.reload(); // Fallback to reload
+        return window.location.reload();
       }
       
-      // Create overlay if it was removed
       if (!document.body.contains(overlay)) {
         document.body.appendChild(overlay);
       }
       
-      // Create a new timeline for exit animations
+      // Add will-change to improve browser optimization
+      document.body.style.willChange = 'opacity, transform';
+      
+      // Create a single timeline with fewer, more efficient animations
       const exitTl = gsap.timeline({
         onComplete: () => {
-          // Navigate to the target URL after animations complete
           window.location.href = targetUrl;
         }
       });
-      
-      // Consistent exit animation for all links
-      // First fade in the overlay
-      exitTl.to(overlay, {
-        autoAlpha: 1,
-        duration: 0.4,
-        ease: easeInOut
-      }, 0);
-      
-      // Animate out all text elements
-      exitTl.to(textEls, { 
-        autoAlpha: 0, 
-        y: -15, 
-        duration: 0.5,
-        stagger: 0.02,
-        ease: easeIn
-      }, 0);
-      
-      // Animate out media elements
-      exitTl.to(mediaEls, { 
-        autoAlpha: 0, 
-        y: -15, 
-        duration: 0.5,
-        stagger: 0.03,
-        ease: easeIn
-      }, 0.05);
-      
-      // Animate out card elements
-      exitTl.to(cardEls, { 
-        autoAlpha: 0, 
-        y: -15, 
-        duration: 0.5,
-        stagger: 0.03,
-        ease: easeIn
-      }, 0.05);
-      
-      // Animate out mobile elements
-      exitTl.to(mobileEls, { 
-        height: 0, 
-        opacity: 0, 
-        duration: 0.4, 
-        ease: easeIn
-      }, 0.1);
+
+      // Batch animations together and use simpler properties
+      exitTl
+        .to(overlay, {
+          autoAlpha: 1,
+          duration: 0.3,
+          ease: easeInOut
+        }, 0)
+        // Animate all elements together with a single stagger
+        .to([textEls, mediaEls, cardEls], {
+          autoAlpha: 0,
+          y: -10,
+          duration: 0.4,
+          stagger: 0.02,
+          ease: easeIn,
+          clearProps: "all" // Clean up properties after animation
+        }, 0)
+        // Separate mobile elements since they have different properties
+        .to(mobileEls, {
+          height: 0,
+          opacity: 0,
+          duration: 0.3,
+          ease: easeIn,
+          clearProps: "all"
+        }, 0);
+
     } catch (e) {
       console.error('Animation error:', e);
-      // Fallback to immediate navigation on error
       window.location.href = targetUrl;
     }
   };
