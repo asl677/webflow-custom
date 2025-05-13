@@ -50,11 +50,11 @@ const initAnimation = () => {
   const createExitTimeline = (href) => {
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.3 } });
     return tl
-      .to(overlay, { opacity: 1, duration: 0.2, ease: "power2.in" })
-      .to(els.wrapper, { opacity: 0, duration: 0.2, filter: 'blur(4px)', ease: "power2.out" }, "<0.1")
-      .to(els.cards, { scale: 0.98, y: -10, autoAlpha: 0, stagger: 0.01 }, "<")
+      .to([els.splitChars, els.splitLines], { y: -10, autoAlpha: 0, stagger: 0.01, duration: 0.3 })
       .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -10, stagger: 0.01 }, "<0.1")
-      .to([els.splitChars, els.splitLines], { y: -10, autoAlpha: 0, stagger: 0.01, duration: 0.3 }, "<")
+      .to(els.cards, { scale: 0.98, y: -10, autoAlpha: 0, stagger: 0.01 }, "<")
+      .to(overlay, { opacity: 1, duration: 0.2, ease: "power2.in" }, "<0.2")
+      .to(els.wrapper, { opacity: 0, duration: 0.2, filter: 'blur(4px)', ease: "power2.out" }, "<0.1")
       .eventCallback("onComplete", () => window.location.href = href);
   };
 
