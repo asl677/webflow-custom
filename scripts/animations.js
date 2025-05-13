@@ -108,6 +108,7 @@ const initAnimation = () => {
       .to(pageWrapper, {
         opacity: 0,
         duration: 0.2,
+        filter: 'blur(4px)',
         ease: "power2.in"
       })
       .to(cardEls, {
