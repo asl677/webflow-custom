@@ -1,3 +1,6 @@
+// Add this before DOMContentLoaded to prevent FOUC
+document.documentElement.style.visibility = 'hidden';
+
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
   
@@ -15,10 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.registerPlugin(SplitText);
   gsap.config({ force3D: true });
 
-  // Create overlay with initial opacity of 0
+  // Create overlay with initial opacity of 1
   const overlay = Object.assign(document.createElement('div'), { 
     className: 'page-overlay',
-    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 0;'
+    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 1;'
   });
   document.body.appendChild(overlay);
 
@@ -36,18 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20 });
   gsap.set(mobileEls, { height: 0, opacity: 0, y: 30 });
 
+  // Make page visible now that we've set initial states
+  document.documentElement.style.visibility = 'visible';
+
   // Create the main timeline
   const mainTl = gsap.timeline();
 
-  // Intro animations
+  // Start by fading out the overlay
   mainTl
+    .to(overlay, {
+      opacity: 0,
+      duration: 0.4,
+      ease: easeInOut
+    })
     .from(splitLines.lines, { 
       duration: 1, 
       y: 30, 
       autoAlpha: 0, 
       stagger: 0.1,
       ease: naturalCurve
-    })
+    }, "<0.1")
     .from(splitChars.chars, { 
       duration: 1.3, 
       y: 30, 
@@ -99,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
 
-    // Show overlay and reverse timeline
+    // Show overlay and navigate
     gsap.to(overlay, {
       opacity: 1,
       duration: 0.3,
