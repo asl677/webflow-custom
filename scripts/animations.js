@@ -37,23 +37,25 @@ const initAnimation = () => {
     mobile: document.querySelectorAll('.mobile-down'),
     cards: document.querySelectorAll('.card-project'),
     wrapper: document.querySelector('.page-wrapper'),
-    splitLines: SplitText.create(".heading.large", { type: "lines" }).lines,
+    splitLinesWhite: SplitText.create(".heading.large.white", { type: "lines" }).lines,
+    splitLinesRegular: SplitText.create(".heading.large:not(.white)", { type: "lines" }).lines,
     splitChars: SplitText.create(".heading.huge", { type: "chars" }).chars
   };
 
   // Set initial states
   gsap.set([els.text, els.media], { autoAlpha: 0, y: 20 });
-  gsap.set(els.cards, { autoAlpha: 0, y: 20, scale: 0.98, transformOrigin: "center center" });
+  gsap.set(els.cards, { autoAlpha: 0, y: 20 });
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
   // Create exit animation
   const createExitTimeline = (href) => {
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.3 } });
     return tl
-      .to([els.splitChars, els.splitLines], { y: -30, autoAlpha: 0, stagger: 0.02, duration: 0.4 })
+      .to(els.splitLinesWhite, { y: -30, autoAlpha: 0, stagger: 0.01, duration: 0.2 })
+      .to([els.splitChars, els.splitLinesRegular], { y: -30, autoAlpha: 0, stagger: 0.02, duration: 0.4 }, "<0.1")
       .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -20, stagger: 0.02 }, "<0.1")
-      .to(overlay, { opacity: 1, duration: 0.3, ease: "power2.in" }, "<0.2")
       .to(els.cards, { y: -20, autoAlpha: 0, stagger: 0.02 }, "<")
+      .to(overlay, { opacity: 1, duration: 0.3, ease: "power2.in" }, "<0.2")
       .to(els.wrapper, { opacity: 0, duration: 0.3, ease: "power2.out" }, "<")
       .eventCallback("onComplete", () => window.location.href = href);
   };
@@ -61,10 +63,11 @@ const initAnimation = () => {
   // Start intro animations
   gsap.timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
     .to(overlay, { opacity: 0, duration: 0.3, ease: "power2.inOut" })
-    .from(els.splitLines, { y: 20, autoAlpha: 0, stagger: 0.07 }, "<0.1")
+    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.03, duration: 0.2 }, "<0.1")
+    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.07 }, "<0.1")
     .from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
     .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.02 }, "<0.1")
-    .to(els.cards, { autoAlpha: 1, scale: 1, y: 0, stagger: 0.04 }, "<0.1")
+    .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.04 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.5, stagger: 0.03, clearProps: "height,overflow" }, "<0.2");
 
   // Handle navigation
