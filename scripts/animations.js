@@ -72,8 +72,8 @@ const initAnimation = () => {
   gsap.set(cardEls, { 
     autoAlpha: 0, 
     y: 20,
-    blur: 8,
     scale: 0.99,
+    filter: 'blur(8px)',
     transformOrigin: "center center"
   });
   gsap.set(mobileEls, { 
@@ -111,9 +111,9 @@ const initAnimation = () => {
         ease: "power2.in"
       })
       .to(cardEls, {
-        scale: 0.98,
-        blur: 8;
-        y: -10,
+        scale: 0.99,
+        filter: 'blur(8px)',
+        y: -5,
         autoAlpha: 0,
         stagger: 0.02,
         ease: "power2.in"
@@ -159,6 +159,7 @@ const initAnimation = () => {
     .to(cardEls, {
       autoAlpha: 1,
       scale: 1,
+      filter: 'blur(0px)',
       y: 0,
       stagger: 0.04,
       ease: "power2.out"
