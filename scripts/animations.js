@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.registerPlugin(SplitText);
   gsap.config({ force3D: true });
 
-  // Create overlay
+  // Create overlay with initial opacity of 0
   const overlay = Object.assign(document.createElement('div'), { 
     className: 'page-overlay',
-    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none;'
+    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 0;'
   });
   document.body.appendChild(overlay);
 
@@ -33,26 +33,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const splitChars = SplitText.create(".heading.huge", { type: "chars" });
 
   // Initial states
-  gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
-  gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
+  gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20 });
+  gsap.set(mobileEls, { height: 0, opacity: 0, y: 30 });
 
-  // Create the main timeline that we'll reverse later
+  // Create the main timeline
   const mainTl = gsap.timeline();
 
   // Intro animations
   mainTl
-    .to(overlay, {
-      autoAlpha: 0,
-      duration: 0.4,
-      ease: easeInOut
-    })
     .from(splitLines.lines, { 
       duration: 1, 
       y: 30, 
       autoAlpha: 0, 
       stagger: 0.1,
       ease: naturalCurve
-    }, "<")
+    })
     .from(splitChars.chars, { 
       duration: 1.3, 
       y: 30, 
@@ -63,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .to(textEls, {
       autoAlpha: 1,
       y: 0,
-      visibility: 'visible',
       stagger: 0.06,
       duration: 0.9,
       ease: naturalCurve
@@ -71,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .to(mediaEls, {
       autoAlpha: 1,
       y: 0,
-      visibility: 'visible',
       stagger: 0.08,
       duration: 1,
       ease: easeOutBack
@@ -79,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .to(cardEls, {
       autoAlpha: 1,
       y: 0,
-      visibility: 'visible',
       stagger: 0.09,
       duration: 0.85,
       ease: naturalCurve
@@ -88,13 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
       height: "auto",
       opacity: 1,
       y: 0,
-      visibility: "visible",
       duration: 0.8,
       stagger: 0.05,
       ease: easeOut
     }, "<0.1");
 
-  // Simple link handling - just reverse the timeline
+  // Handle all link clicks
   document.addEventListener('click', e => {
     const link = e.target.closest('a');
     if (!link) return;
@@ -107,10 +98,15 @@ document.addEventListener('DOMContentLoaded', () => {
         href.startsWith('mailto:')) return;
 
     e.preventDefault();
-    
-    // Reverse the timeline and then navigate
-    mainTl.reverse().eventCallback("onReverseComplete", () => {
-      window.location.href = href;
+
+    // Show overlay and reverse timeline
+    gsap.to(overlay, {
+      opacity: 1,
+      duration: 0.3,
+      ease: easeInOut,
+      onComplete: () => {
+        window.location.href = href;
+      }
     });
   });
 
