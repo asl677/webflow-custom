@@ -111,7 +111,8 @@ const initAnimation = () => {
         ease: "power2.in"
       })
       .to(cardEls, {
-        scale: 0.95,
+        scale: 0.98,
+        blur: 8;
         y: -10,
         autoAlpha: 0,
         stagger: 0.02,
