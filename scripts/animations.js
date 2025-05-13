@@ -1,5 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-  if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
+  // Add more detailed error checking for GSAP
+  if (typeof gsap === 'undefined') {
+    console.error('GSAP not loaded - animations will not work');
+    return;
+  }
+  
+  if (!gsap.registerPlugin) {
+    console.error('GSAP registerPlugin not available');
+    return;
+  }
+
+  try {
+    gsap.registerPlugin(SplitText);
+  } catch (e) {
+    console.error('Failed to register SplitText plugin:', e);
+    return;
+  }
   
   // Define easing variables for consistency
   const easeOut = "power3.out";
@@ -9,51 +25,97 @@ document.addEventListener('DOMContentLoaded', () => {
   const easeOutStrong = "power4.out";
   
   // Custom natural curves - create more organic, natural motion
-  // Parameters: 0.64, 0, 0.36, 1 create a nice natural curve with slight acceleration and gentle deceleration
   const naturalCurve = gsap.parseEase("0.64, 0, 0.36, 0.6")
   
   gsap.defaults({ ease: easeOut, duration: 0.8 });
-  gsap.registerPlugin(SplitText);
+  gsap.config({
+    force3D: true,
+    nullTargetWarn: false // Suppress warnings about null targets
+  });
 
-  const overlay = Object.assign(document.createElement('div'), { className: 'page-overlay' });
+  // Create overlay with specific z-index to ensure it's above other elements
+  const overlay = Object.assign(document.createElement('div'), { 
+    className: 'page-overlay',
+    style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none;'
+  });
   document.body.appendChild(overlay);
 
+  // Cache selectors and check if elements exist
   const textEls = document.querySelectorAll('h1, h2, h3, p, a, .nav');
   const mediaEls = document.querySelectorAll('img, video');
   const mobileEls = document.querySelectorAll('.mobile-down');
   const cardEls = document.querySelectorAll('.card-project');
 
-  const splitLines = SplitText.create(".heading.large", { type: "lines" });
-  gsap.from(splitLines.lines, { 
-    duration: 1, 
-    y: 30, 
-    autoAlpha: 0, 
-    stagger: 0.1,
-    ease: naturalCurve // Apply natural curve
+  // Log element counts for debugging
+  console.log('Elements found:', {
+    text: textEls.length,
+    media: mediaEls.length,
+    mobile: mobileEls.length,
+    cards: cardEls.length
   });
 
-  const splitChars = SplitText.create(".heading.huge", { type: "chars" });
-  gsap.from(splitChars.chars, { 
-    duration: 1.3, 
-    y: 30, 
+  try {
+    // Only create SplitText if elements exist
+    const largeHeadings = document.querySelectorAll(".heading.large");
+    const hugeHeadings = document.querySelectorAll(".heading.huge");
+
+    if (largeHeadings.length) {
+      const splitLines = SplitText.create(".heading.large", { type: "lines" });
+      gsap.from(splitLines.lines, { 
+        duration: 1, 
+        y: 30, 
+        autoAlpha: 0, 
+        stagger: 0.1,
+        ease: naturalCurve
+      });
+    }
+
+    if (hugeHeadings.length) {
+      const splitChars = SplitText.create(".heading.huge", { type: "chars" });
+      gsap.from(splitChars.chars, { 
+        duration: 1.3, 
+        y: 30, 
+        autoAlpha: 0, 
+        stagger: 0.03,
+        ease: easeOutStrong
+      });
+    }
+  } catch (e) {
+    console.error('Error in text splitting:', e);
+  }
+
+  // Set initial states with visibility
+  gsap.set([textEls, mediaEls, cardEls], { 
     autoAlpha: 0, 
-    stagger: 0.03,
-    ease: easeOutStrong
+    y: 20, 
+    visibility: 'hidden',
+    immediateRender: true
+  });
+  
+  gsap.set(mobileEls, { 
+    height: 0, 
+    opacity: 0, 
+    y: 30, 
+    visibility: 'hidden',
+    immediateRender: true
   });
 
-  gsap.set([textEls, mediaEls, cardEls], { autoAlpha: 0, y: 20, visibility: 'hidden' });
-  gsap.set(mobileEls, { height: 0, opacity: 0, y: 30, visibility: 'hidden' });
+  // Create timeline with callbacks
+  const tl = gsap.timeline({
+    onStart: () => console.log('Animation timeline started'),
+    onComplete: () => console.log('Animation timeline completed')
+  });
 
-  const tl = gsap.timeline();
+  // Add animations with proper position parameters
   tl.to(overlay, {
     autoAlpha: 0,
     duration: 0.3,
     ease: easeInOut,
     onComplete: () => {
       overlay.remove();
-      document.body.style.willChange = 'auto'; // Clean up will-change
+      document.body.style.willChange = 'auto';
     }
-  }, 0)
+  })
   .to([textEls, mediaEls, cardEls], {
     autoAlpha: 1,
     y: 0,
@@ -62,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     duration: 0.7,
     ease: naturalCurve,
     clearProps: "all"
-  }, 0.1)
+  }, ">-0.1") // Slight overlap
   .to(mobileEls, {
     height: "auto",
     opacity: 1,
@@ -72,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stagger: 0.03,
     ease: easeOut,
     clearProps: "all"
-  }, 0.1);
+  }, ">-0.2"); // Slight overlap
 
   const hideScrollbars = el => {
     if (!el) return;
@@ -126,11 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
  
-  // Add this near the top of your file after gsap.defaults
-  gsap.config({
-    force3D: true // Forces 3D transforms for better performance
-  });
-
   // Modify your exit animation to be more performant
   const handleNavigation = (targetUrl) => {
     try {
@@ -138,28 +195,51 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('No target URL provided');
         return window.location.reload();
       }
-      
-      if (!document.body.contains(overlay)) {
-        document.body.appendChild(overlay);
+
+      // Prevent multiple transitions
+      if (window._isNavigating) {
+        console.log('Navigation already in progress');
+        return;
       }
+      window._isNavigating = true;
+      
+      // Create overlay if it was removed
+      if (!document.body.contains(overlay)) {
+        const newOverlay = Object.assign(document.createElement('div'), { 
+          className: 'page-overlay',
+          style: 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 0;'
+        });
+        document.body.appendChild(newOverlay);
+      }
+      
+      // Kill any running animations
+      gsap.killTweensOf([textEls, mediaEls, cardEls, mobileEls, overlay]);
       
       // Add will-change to improve browser optimization
       document.body.style.willChange = 'opacity, transform';
       
       // Create a single timeline with fewer, more efficient animations
       const exitTl = gsap.timeline({
+        onStart: () => console.log('Exit animation started'),
         onComplete: () => {
+          console.log('Exit animation completed, navigating to:', targetUrl);
+          window._isNavigating = false;
           window.location.href = targetUrl;
         }
       });
 
       // Batch animations together and use simpler properties
       exitTl
+        .set(overlay, { 
+          opacity: 0,
+          display: 'block',
+          immediateRender: true
+        })
         .to(overlay, {
-          autoAlpha: 1,
+          opacity: 1,
           duration: 0.3,
           ease: easeInOut
-        }, 0)
+        })
         // Animate all elements together with a single stagger
         .to([textEls, mediaEls, cardEls], {
           autoAlpha: 0,
@@ -167,8 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
           duration: 0.4,
           stagger: 0.02,
           ease: easeIn,
-          clearProps: "all" // Clean up properties after animation
-        }, 0)
+          clearProps: "all"
+        }, "<")
         // Separate mobile elements since they have different properties
         .to(mobileEls, {
           height: 0,
@@ -176,10 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
           duration: 0.3,
           ease: easeIn,
           clearProps: "all"
-        }, 0);
+        }, "<");
 
     } catch (e) {
       console.error('Animation error:', e);
+      window._isNavigating = false;
       window.location.href = targetUrl;
     }
   };
@@ -201,11 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', (e) => {
         try {
           e.preventDefault();
-          // Use consistent animation for all links
-          handleNavigation(href);
+          if (!window._isNavigating) {
+            handleNavigation(href);
+          }
         } catch (error) {
           console.error('Click handling error:', error);
-          // Fallback to default navigation
           window.location.href = href;
         }
       });
