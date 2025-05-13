@@ -1,31 +1,41 @@
-// Add styles to prevent FOUC and handle initial state
-const style = document.createElement('style');
-style.textContent = `
-  body {
-    opacity: 0;
-    background: #fff;
-  }
-  body.ready {
-    opacity: 1;
-    transition: opacity 0.1s;
-  }
-  .page-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #fff;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 1;
-  }
-`;
-document.head.appendChild(style);
+// Immediately inject styles before anything else
+(() => {
+  const style = document.createElement('style');
+  style.textContent = `
+    html, body {
+      background: #fff !important;
+    }
+    body {
+      opacity: 0 !important;
+    }
+    body.ready {
+      opacity: 1 !important;
+      transition: opacity 0.2s ease-out;
+    }
+    .page-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 1;
+      will-change: opacity;
+      transform: translateZ(0);
+    }
+  `;
+  document.head.insertBefore(style, document.head.firstChild);
+})();
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof gsap === 'undefined') return console.error('GSAP not loaded');
-  
+// Wait for GSAP before doing anything
+const initAnimation = () => {
+  if (typeof gsap === 'undefined') {
+    requestAnimationFrame(initAnimation);
+    return;
+  }
+
   // Define easing variables for consistency
   const easeOut = "power3.out";
   const easeInOut = "power2.inOut";
@@ -65,12 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
     transformOrigin: "top center"
   });
 
-  // Create the main timeline
-  const mainTl = gsap.timeline({
-    onStart: () => document.body.classList.add('ready')
-  });
+  // Add ready class immediately to prevent flash
+  document.body.classList.add('ready');
 
-  // Start by fading out the overlay
+  // Create the main timeline
+  const mainTl = gsap.timeline();
+
+  // Start animations
   mainTl
     .to(overlay, {
       opacity: 0,
@@ -200,4 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
   };
-});
+};
+
+// Start initialization immediately
+initAnimation();
