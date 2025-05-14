@@ -68,7 +68,7 @@ const initAnimation = () => {
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.26, duration: 0.7 }, "<0.1")
     .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.29 }, "<0.1")
     //.from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
-    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.22 }, "<0.1")
+    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.08 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.24 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.8, stagger: 0.23, clearProps: "height,overflow" }, "<0.2");
 
