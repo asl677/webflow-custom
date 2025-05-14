@@ -50,7 +50,7 @@ const initAnimation = () => {
   // Create exit animation
   const createExitTimeline = (href) => {
     // Ensure navigation happens after 0.6s no matter what
-    gsap.delayedCall(0.6, () => window.location.href = href);
+    gsap.delayedCall(1.2, () => window.location.href = href);
 
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.6 } });
     return tl
@@ -64,11 +64,10 @@ const initAnimation = () => {
 
   // Start intro animations
   gsap.timeline({ defaults: { ease: "power2.out", duration: 0.7 } })
-    .to(overlay, { opacity: 0, duration: 0.6, ease: "power2.inOut" })
+    .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.26, duration: 0.7 }, "<0.1")
+    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.08 }, "<")
     .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.29 }, "<0.1")
-    //.from(els.splitChars, { y: 30, autoAlpha: 0, stagger: 0.05 }, "<")
-    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.08 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.24 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.8, stagger: 0.23, clearProps: "height,overflow" }, "<0.2");
 
