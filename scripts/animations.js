@@ -66,7 +66,8 @@ const initAnimation = () => {
   gsap.timeline({ defaults: { ease: "power2.out", duration: 0.7 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.26, duration: 0.7 }, "<0.1")
-    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.08 }, "<")
+    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.08 }, "<")
+    .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05, duration: 0.5 }, "<0.1")
     .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.29 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.24 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.8, stagger: 0.23, clearProps: "height,overflow" }, "<0.2");
