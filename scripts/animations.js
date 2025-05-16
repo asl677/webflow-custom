@@ -49,15 +49,13 @@ const initAnimation = () => {
 
   // Create exit animation
   const createExitTimeline = (href) => {
-    // Ensure navigation happens after 0.6s no matter what
+    // Ensure navigation happens after animation
     gsap.delayedCall(1.2, () => window.location.href = href);
 
     const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.4 } });
     return tl
       .to(els.splitLinesWhite, { y: 0, autoAlpha: 0, stagger: 0.22, duration: 0.4 })
-      //.to([els.splitChars, els.splitLinesRegular], { y: -10, autoAlpha: 0, stagger: 0.02, duration: 0.4 }, "<0.1")
       .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -10, stagger: 0.22 }, "<0.1")
-      //.to(els.cards, { y: 0, autoAlpha: 0, stagger: 0.03 }, "<")
       .to(overlay, { opacity: 1, duration: 0.6, ease: "power2.in" }, "<0.3")
       .to(els.wrapper, { opacity: 0, y: -10, duration: 0.6, ease: "power2.out" }, "<");
   };
