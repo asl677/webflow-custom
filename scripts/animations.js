@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start intro animations immediately
   gsap.timeline({ defaults: { ease: "power3.out", duration: 0.6 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .from(els.splitLinesRegular, { y: -20, autoAlpha: 0, stagger: 0.25 })
-    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15 }, "<0.1")
+    .from(els.splitLinesRegular, { y: -20, autoAlpha: 0, stagger: 0.30, duration: 1 })
+    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15, duration: 1.5 }, "<0.1")
     .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
     .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05, duration: 0.5 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.15 }, "<0.1")
