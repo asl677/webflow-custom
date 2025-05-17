@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup GSAP
   gsap.registerPlugin(SplitText);
   gsap.config({ force3D: true });
-  gsap.defaults({ ease: "power3.out", duration: 1.1 });
+  gsap.defaults({ ease: "power3.out", duration: 1.2 });
 
   // Cache elements and create overlay
   const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
   // Start intro animations immediately
-  gsap.timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
+  gsap.timeline({ defaults: { ease: "power3.out", duration: 0.6 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.35 })
+    .from(els.splitLinesRegular, { y: -20, autoAlpha: 0, stagger: 0.25 })
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15 }, "<0.1")
     .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
     .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05, duration: 0.5 }, "<0.1")
