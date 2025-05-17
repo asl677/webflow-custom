@@ -132,51 +132,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
 
-  // Initialize Lenis with improved retry mechanism
-  let lenisRetryCount = 0;
-  const MAX_RETRIES = 50; // 5 seconds total (50 * 100ms)
+  // Initialize Lenis with basic configuration
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    smoothWheel: true,
+  });
 
-  function initLenis() {
-    if (typeof Lenis !== 'undefined') {
-      console.log('Lenis found, initializing smooth scroll...');
-      const lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        wheelMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        infinite: false,
-      });
+  // Basic scroll handling
+  lenis.on('scroll', (e) => {
+    console.log('Lenis scrolling', e);
+  });
 
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-
-      requestAnimationFrame(raf);
-
-      if (typeof ScrollTrigger !== 'undefined') {
-        lenis.on('scroll', ScrollTrigger.update);
-        gsap.ticker.lagSmoothing(0);
-      }
-
-      window.lenis = lenis;
-      console.log('Lenis smooth scroll initialized successfully');
-    } else {
-      lenisRetryCount++;
-      if (lenisRetryCount <= MAX_RETRIES) {
-        console.warn(`Lenis not found, retrying... (attempt ${lenisRetryCount}/${MAX_RETRIES})`);
-        setTimeout(initLenis, 100);
-      } else {
-        console.error('Failed to initialize Lenis after maximum retries. Please ensure the Lenis script is loaded before animations.js');
-      }
-    }
+  // Connect with ScrollTrigger if available
+  if (typeof ScrollTrigger !== 'undefined') {
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.lagSmoothing(0);
   }
 
-  // Start trying to initialize Lenis
-  console.log('Starting Lenis initialization...');
-  initLenis();
+  // Start the animation frame loop
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
 });
