@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
     media: document.querySelectorAll('img, video'),
     mobile: document.querySelectorAll('.mobile-down'),
-    cards: document.querySelectorAll('.card-project, .inner-wrap.inner-top'),
+    cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
     wrapper: document.querySelector('.page-wrapper'),
     splitLinesWhite: SplitText.create(".heading.large.white", { type: "lines" }).lines,
     splitLinesRegular: SplitText.create(".heading.large:not(.white)", { type: "lines" }).lines,
