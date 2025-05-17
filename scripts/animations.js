@@ -132,10 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
 
-  // Initialize Lenis with retry mechanism
+  // Initialize Lenis with improved retry mechanism
+  let lenisRetryCount = 0;
+  const MAX_RETRIES = 50; // 5 seconds total (50 * 100ms)
+
   function initLenis() {
     if (typeof Lenis !== 'undefined') {
-      // Create Lenis instance with updated config
+      console.log('Lenis found, initializing smooth scroll...');
       const lenis = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -153,23 +156,27 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(raf);
       }
 
-      // Start the animation frame loop
       requestAnimationFrame(raf);
 
-      // ScrollTrigger integration
       if (typeof ScrollTrigger !== 'undefined') {
         lenis.on('scroll', ScrollTrigger.update);
         gsap.ticker.lagSmoothing(0);
       }
 
-      // Expose lenis globally for debugging
       window.lenis = lenis;
+      console.log('Lenis smooth scroll initialized successfully');
     } else {
-      console.warn('Lenis not found, retrying...');
-      setTimeout(initLenis, 100);
+      lenisRetryCount++;
+      if (lenisRetryCount <= MAX_RETRIES) {
+        console.warn(`Lenis not found, retrying... (attempt ${lenisRetryCount}/${MAX_RETRIES})`);
+        setTimeout(initLenis, 100);
+      } else {
+        console.error('Failed to initialize Lenis after maximum retries. Please ensure the Lenis script is loaded before animations.js');
+      }
     }
   }
 
   // Start trying to initialize Lenis
+  console.log('Starting Lenis initialization...');
   initLenis();
 });
