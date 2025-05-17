@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Create Lenis instance with updated config
       const lenis = new Lenis({
         duration: 1.2,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
         smoothWheel: true,
@@ -148,17 +148,24 @@ document.addEventListener('DOMContentLoaded', () => {
         infinite: false,
       });
 
-      // GSAP ScrollTrigger integration
-      lenis.on('scroll', ScrollTrigger.update);
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
 
-      gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
-      });
+      // Start the animation frame loop
+      requestAnimationFrame(raf);
 
-      // Optional: ensure smooth scrolling in ScrollTrigger
-      gsap.ticker.lagSmoothing(0);
+      // ScrollTrigger integration
+      if (typeof ScrollTrigger !== 'undefined') {
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      // Expose lenis globally for debugging
+      window.lenis = lenis;
     } else {
-      // Retry after a short delay
+      console.warn('Lenis not found, retrying...');
       setTimeout(initLenis, 100);
     }
   }
