@@ -71,31 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
     
-    // Store the URL we want to navigate to
-    const targetUrl = href;
-    
-    // Quick exit animation
+    // Quick exit animation - simplified and faster
     gsap.timeline({
-      defaults: { ease: "power2.inOut", duration: 0.5 },
-      onComplete: function() {
-        // Force navigation after animation completes
-        window.location = targetUrl;
-      }
+      defaults: { ease: "power2.inOut", duration: 0.2 },
+      onComplete: () => window.location = href
     })
-    .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), { 
-      y: -20, 
-      autoAlpha: 0, 
-      stagger: 0.05 
-    }, 0)
-    .to([els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
-      autoAlpha: 0, 
-      y: -20, 
-      stagger: 0.05 
-    }, "<0.1")
     .to(overlay, { 
-      opacity: 1, 
-      duration: 0.3 
-    }, "<0.1");
+      opacity: 1,
+      duration: 0.2
+    }, 0)
+    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
+      autoAlpha: 0,
+      y: -10,
+      duration: 0.2,
+      stagger: 0.02
+    }, 0);
   });
 
   // Setup scrollbar handling
