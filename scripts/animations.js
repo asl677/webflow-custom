@@ -73,20 +73,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Quick exit animation
     const exitTl = gsap.timeline({
-      defaults: { ease: "power2.inOut", duration: 0.4 },
-      onComplete: () => window.location.href = href
+      defaults: { ease: "power2.inOut", duration: 0.5 },
+      onComplete: () => {
+        window.location.assign(href);
+      }
     });
 
     exitTl
       .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), { 
         y: -20, 
         autoAlpha: 0, 
-        stagger: 0.1 
+        stagger: 0.05 
       }, 0)
       .to([els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
         autoAlpha: 0, 
         y: -20, 
-        stagger: 0.1 
+        stagger: 0.05 
       }, "<0.1")
       .to(overlay, { 
         opacity: 1, 
