@@ -71,30 +71,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
     
+    // Store the URL we want to navigate to
+    const targetUrl = href;
+    
     // Quick exit animation
-    const exitTl = gsap.timeline({
+    gsap.timeline({
       defaults: { ease: "power2.inOut", duration: 0.5 },
-      onComplete: () => {
-        window.location.assign(href);
+      onComplete: function() {
+        // Force navigation after animation completes
+        window.location = targetUrl;
       }
-    });
-
-    exitTl
-      .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), { 
-        y: -20, 
-        autoAlpha: 0, 
-        stagger: 0.05 
-      }, 0)
-      .to([els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
-        autoAlpha: 0, 
-        y: -20, 
-        stagger: 0.05 
-      }, "<0.1")
-      .to(overlay, { 
-        opacity: 1, 
-        duration: 0.3 
-      }, "<0.1");
-  }, true);
+    })
+    .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), { 
+      y: -20, 
+      autoAlpha: 0, 
+      stagger: 0.05 
+    }, 0)
+    .to([els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
+      autoAlpha: 0, 
+      y: -20, 
+      stagger: 0.05 
+    }, "<0.1")
+    .to(overlay, { 
+      opacity: 1, 
+      duration: 0.3 
+    }, "<0.1");
+  });
 
   // Setup scrollbar handling
   const setupScroll = container => {
