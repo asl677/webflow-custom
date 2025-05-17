@@ -131,19 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   document.body.classList.add('ready');
-});
 
-// Initialize Lenis smooth scroll
-const lenis = new Lenis({
-  duration: 1.2,
-  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
-  smooth: true,
-  smoothTouch: false // disable on mobile if desired
-});
+  // Initialize Lenis smooth scroll if available
+  if (typeof Lenis !== 'undefined') {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+      smooth: true,
+      smoothTouch: false // disable on mobile if desired
+    });
 
-// Animation frame loop
-function raf(time) {
-  lenis.raf(time);
-  requestAnimationFrame(raf);
-}
-requestAnimationFrame(raf);
+    // Animation frame loop
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  } else {
+    console.warn('Lenis is not loaded. Make sure it is included in the head section before this script.');
+  }
+});
