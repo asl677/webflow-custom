@@ -20,9 +20,13 @@
   );
 })();
 
-// Initialize animations when GSAP is ready
-const initAnimation = () => {
-  if (typeof gsap === 'undefined') return requestAnimationFrame(initAnimation);
+// Initialize animations immediately
+document.addEventListener('DOMContentLoaded', () => {
+  // Quick check for GSAP
+  if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') {
+    setTimeout(initAnimation, 50);
+    return;
+  }
 
   // Setup GSAP
   gsap.registerPlugin(SplitText);
@@ -47,30 +51,15 @@ const initAnimation = () => {
   gsap.set(els.cards, { autoAlpha: 0, y: 20 });
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
-  // Create exit animation
-  const createExitTimeline = (href) => {
-    // Ensure navigation happens after 0.6s no matter what
-    gsap.delayedCall(1.2, () => window.location.href = href);
-
-    const tl = gsap.timeline({ defaults: { ease: "power2.inOut", duration: 0.6 } });
-    return tl
-      .to(els.splitLinesWhite, { y: 0, autoAlpha: 0, stagger: 0.22, duration: 0.6 })
-      //.to([els.splitChars, els.splitLinesRegular], { y: -10, autoAlpha: 0, stagger: 0.02, duration: 0.4 }, "<0.1")
-      .to([els.mobile, els.media, els.text], { autoAlpha: 0, y: -10, stagger: 0.22 }, "<0.1")
-      //.to(els.cards, { y: 0, autoAlpha: 0, stagger: 0.03 }, "<")
-      .to(overlay, { opacity: 1, duration: 0.6, ease: "power2.in" }, "<0.3")
-      .to(els.wrapper, { opacity: 0, duration: 0.6, ease: "power2.out" }, "<");
-  };
-
-  // Start intro animations
-  gsap.timeline({ defaults: { ease: "power2.out", duration: 0.7 } })
+  // Start intro animations immediately
+  gsap.timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.29 })
-    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.29 }, "+=0.1")
-    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.08 }, "<")
+    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.15 })
+    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15 }, "<0.1")
+    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
     .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05, duration: 0.5 }, "<0.1")
-    .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.24 }, "<0.1")
-    .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.8, stagger: 0.23, clearProps: "height,overflow" }, "<0.2");
+    .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.15 }, "<0.1")
+    .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.6, stagger: 0.15, clearProps: "height,overflow" }, "<0.1");
 
   // Handle navigation
   document.addEventListener('click', e => {
@@ -81,7 +70,28 @@ const initAnimation = () => {
     if (!href || /^(?:javascript:|#|tel:|mailto:)/.test(href)) return;
 
     e.preventDefault();
-    createExitTimeline(href);
+    
+    // Quick exit animation
+    const exitTl = gsap.timeline({
+      defaults: { ease: "power2.inOut", duration: 0.4 },
+      onComplete: () => window.location.href = href
+    });
+
+    exitTl
+      .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), { 
+        y: -20, 
+        autoAlpha: 0, 
+        stagger: 0.1 
+      }, 0)
+      .to([els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
+        autoAlpha: 0, 
+        y: -20, 
+        stagger: 0.1 
+      }, "<0.1")
+      .to(overlay, { 
+        opacity: 1, 
+        duration: 0.3 
+      }, "<0.1");
   }, true);
 
   // Setup scrollbar handling
@@ -122,6 +132,4 @@ const initAnimation = () => {
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   document.body.classList.add('ready');
-};
-
-initAnimation();
+});
