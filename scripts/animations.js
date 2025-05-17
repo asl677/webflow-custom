@@ -71,20 +71,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
     
-    // Quick exit animation - simplified and faster
+    // Smooth exit animation with quick navigation
     gsap.timeline({
-      defaults: { ease: "power2.inOut", duration: 0.2 },
-      onComplete: () => window.location = href
+      defaults: { ease: "power1.inOut", duration: 0.4 },
+      onStart: () => {
+        // Schedule the navigation to happen very soon
+        setTimeout(() => window.location = href, 300);
+      }
     })
     .to(overlay, { 
-      opacity: 1,
-      duration: 0.2
+      opacity: 0.8,
+      duration: 0.3,
+      ease: "power1.in"
     }, 0)
     .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
       autoAlpha: 0,
-      y: -10,
-      duration: 0.2,
-      stagger: 0.02
+      y: -15,
+      duration: 0.35,
+      stagger: 0.02,
+      ease: "power1.inOut"
     }, 0);
   });
 
