@@ -132,22 +132,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
 
-  // Initialize Lenis smooth scroll if available
-  if (typeof Lenis !== 'undefined') {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
-      smooth: true,
-      smoothTouch: false // disable on mobile if desired
-    });
+  // Initialize Lenis with retry mechanism
+  function initLenis() {
+    if (typeof Lenis !== 'undefined') {
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+        smooth: true,
+        smoothTouch: false // disable on mobile if desired
+      });
 
-    // Animation frame loop
-    function raf(time) {
-      lenis.raf(time);
+      // Animation frame loop
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
       requestAnimationFrame(raf);
+    } else {
+      // Retry after a short delay
+      setTimeout(initLenis, 100);
     }
-    requestAnimationFrame(raf);
-  } else {
-    console.warn('Lenis is not loaded. Make sure it is included in the head section before this script.');
   }
+
+  // Start trying to initialize Lenis
+  initLenis();
 });
