@@ -76,18 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
       defaults: { ease: "power1.inOut", duration: 0.4 },
       onStart: () => {
         // Schedule the navigation to happen very soon
-        setTimeout(() => window.location = href, 500);
+        setTimeout(() => window.location = href, 600);
       }
     })
     .to(overlay, { 
-      opacity: 0.8,
-      duration: 0.3,
+      opacity: 1,
+      duration: 0.4,
       ease: "power1.in"
     }, 0)
     .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
       autoAlpha: 0,
-      y: -15,
-      duration: 0.35,
+      y: -10,
+      duration: 0.4,
       stagger: 0.02,
       ease: "power1.inOut"
     }, 0);
