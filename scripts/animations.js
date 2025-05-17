@@ -132,3 +132,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
 });
+
+// Initialize Lenis smooth scroll
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
+  smooth: true,
+  smoothTouch: false // disable on mobile if desired
+});
+
+// Animation frame loop
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
