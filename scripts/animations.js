@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
       defaults: { ease: "power1.inOut", duration: 0.4 },
       onStart: () => {
         // Schedule the navigation to happen very soon
-        setTimeout(() => window.location = href, 300);
+        setTimeout(() => window.location = href, 500);
       }
     })
     .to(overlay, { 
