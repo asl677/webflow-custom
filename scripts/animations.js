@@ -135,19 +135,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize Lenis with retry mechanism
   function initLenis() {
     if (typeof Lenis !== 'undefined') {
+      // Create Lenis instance with updated config
       const lenis = new Lenis({
         duration: 1.2,
         easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
-        smooth: true,
-        smoothTouch: false // disable on mobile if desired
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        smoothTouch: false,
+        touchMultiplier: 2,
+        infinite: false,
       });
 
-      // Animation frame loop
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
+      // GSAP ScrollTrigger integration
+      lenis.on('scroll', ScrollTrigger.update);
+
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+
+      // Optional: ensure smooth scrolling in ScrollTrigger
+      gsap.ticker.lagSmoothing(0);
     } else {
       // Retry after a short delay
       setTimeout(initLenis, 100);
