@@ -58,7 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     wrapper: document.querySelector('.page-wrapper'),
     splitLinesWhite: SplitText.create(".heading.large.white", { type: "lines" }).lines,
     splitLinesRegular: SplitText.create(".heading.large:not(.white)", { type: "lines" }).lines,
-    splitChars: SplitText.create(".heading.huge", { type: "chars" }).chars
+    splitChars: SplitText.create(".heading.huge", { type: "chars" }).chars,
+    hoverLinks: document.querySelectorAll('.heading.small.link.large-link')
   };
 
   // Set initial states
@@ -75,6 +76,36 @@ document.addEventListener('DOMContentLoaded', () => {
     .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05, duration: 0.5 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.15 }, "<0.1")
     .to(els.mobile, { height: "auto", opacity: 1, y: 0, duration: 0.6, stagger: 0.15, clearProps: "height,overflow" }, "<0.1");
+
+  // Initialize hover effects for large links
+  els.hoverLinks.forEach(link => {
+    // Split text into characters
+    const splitText = new SplitText(link, { type: "chars" });
+    const chars = splitText.chars;
+    
+    // Set initial state
+    gsap.set(chars, { opacity: 1 });
+    
+    // Create hover timeline
+    const tl = gsap.timeline({ paused: true });
+    tl.to(chars, {
+      yPercent: -50,
+      opacity: 0,
+      stagger: { amount: 0.3, from: "start" },
+      ease: "power2.in"
+    })
+    .set(chars, { yPercent: 50 })
+    .to(chars, {
+      yPercent: 0,
+      opacity: 1,
+      stagger: { amount: 0.3, from: "start" },
+      ease: "power2.out"
+    });
+    
+    // Add event listeners
+    link.addEventListener('mouseenter', () => tl.play());
+    link.addEventListener('mouseleave', () => tl.reverse());
+  });
 
   // Handle navigation
   document.addEventListener('click', e => {
