@@ -3,6 +3,21 @@
   document.head.insertBefore(
     Object.assign(document.createElement('style'), {
       textContent: `
+        html.lenis, html.lenis body {
+          height: auto;
+        }
+        .lenis.lenis-smooth {
+          scroll-behavior: auto !important;
+        }
+        .lenis.lenis-smooth [data-lenis-prevent] {
+          overscroll-behavior: contain;
+        }
+        .lenis.lenis-stopped {
+          overflow: hidden;
+        }
+        .lenis.lenis-smooth iframe {
+          pointer-events: none;
+        }
         html, body { background: #000 !important; }
         body { opacity: 0 !important; }
         body.ready { opacity: 1 !important; transition: opacity 0.4s ease-out; }
@@ -138,37 +153,38 @@ document.addEventListener('DOMContentLoaded', () => {
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)),
     orientation: 'vertical',
     smoothWheel: true,
-    wheelMultiplier: 1.2,
-    wrapper: window,
-    content: document.documentElement,
-    lerp: 0.1,
-    infinite: false,
-    gestureOrientation: "vertical"
+    wheelMultiplier: 1,
+    touchMultiplier: 1,
+    infinite: false
   });
 
   // Basic scroll handling
-  lenis.on('scroll', (e) => {
-    console.log('Lenis scrolling', e);
+  lenis.on('scroll', () => {
+    ScrollTrigger.update();
   });
 
-  // Connect with ScrollTrigger if available
-  if (typeof ScrollTrigger !== 'undefined') {
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
-    });
-    gsap.ticker.lagSmoothing(0);
-  } else {
-    // Start the animation frame loop
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-  }
+  // Connect with ScrollTrigger
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
 
-  // Recalculate on resize
+  // Force recalculation on load and resize
+  window.addEventListener('load', () => {
+    lenis.resize();
+    setTimeout(() => lenis.resize(), 500); // Additional resize after a delay to ensure all content is loaded
+  });
+
   window.addEventListener('resize', () => {
     lenis.resize();
   });
+
+  // Handle dynamic content changes
+  const observer = new ResizeObserver(() => {
+    lenis.resize();
+  });
+  observer.observe(document.documentElement);
+
+  // Ensure proper initialization
+  document.documentElement.classList.add('lenis', 'lenis-smooth');
 });
