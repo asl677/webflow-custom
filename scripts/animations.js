@@ -134,10 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Lenis with basic configuration
   const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    duration: 0.8,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)),
     orientation: 'vertical',
     smoothWheel: true,
+    wheelMultiplier: 1.2,
+    wrapper: window,
+    content: document.documentElement,
+    lerp: 0.1,
+    infinite: false,
+    gestureOrientation: "vertical"
   });
 
   // Basic scroll handling
@@ -148,13 +154,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Connect with ScrollTrigger if available
   if (typeof ScrollTrigger !== 'undefined') {
     lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
     gsap.ticker.lagSmoothing(0);
-  }
-
-  // Start the animation frame loop
-  function raf(time) {
-    lenis.raf(time);
+  } else {
+    // Start the animation frame loop
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
     requestAnimationFrame(raf);
   }
-  requestAnimationFrame(raf);
+
+  // Recalculate on resize
+  window.addEventListener('resize', () => {
+    lenis.resize();
+  });
 });
