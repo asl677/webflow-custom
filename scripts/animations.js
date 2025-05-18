@@ -89,21 +89,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create hover timeline
     const tl = gsap.timeline({ paused: true });
     tl.to(chars, {
-      yPercent: -50,
+      yPercent: -30,
       opacity: 0,
-      stagger: { amount: 0.07, from: "start" },
-      ease: "power2.in"
+      duration: 0.2,
+      stagger: { amount: 0.1, from: "start" },
+      ease: "power1.in"
     })
-    .set(chars, { yPercent: 50 })
+    .set(chars, { yPercent: 30 })
     .to(chars, {
       yPercent: 0,
       opacity: 1,
-      stagger: { amount: 0.07, from: "start" },
-      ease: "power2.out"
+      duration: 0.2,
+      stagger: { amount: 0.1, from: "start" },
+      ease: "power1.out"
     });
     
     // Add event listeners
-    link.addEventListener('mouseenter', () => tl.play());
+    link.addEventListener('mouseenter', () => tl.restart());
     link.addEventListener('mouseleave', () => tl.reverse());
   });
 
