@@ -91,14 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
     tl.to(chars, {
       yPercent: -50,
       opacity: 0,
-      stagger: { amount: 0.3, from: "start" },
+      stagger: { amount: 0.07, from: "start" },
       ease: "power2.in"
     })
     .set(chars, { yPercent: 50 })
     .to(chars, {
       yPercent: 0,
       opacity: 1,
-      stagger: { amount: 0.3, from: "start" },
+      stagger: { amount: 0.07, from: "start" },
       ease: "power2.out"
     });
     
