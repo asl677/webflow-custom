@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create hover timeline
     const tl = gsap.timeline({ paused: true });
     tl.to(chars, {
-      yPercent: -10,
+      yPercent: -30,
       opacity: 0,
       duration: 0.2,
       stagger: { amount: 0.1, from: "start" },
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Smooth exit animation with quick navigation
     gsap.timeline({
-      defaults: { ease: "power2.inOut", duration: 0.4 },
+      defaults: { ease: "power2.inOut", duration: 0.6 },
       onStart: () => {
         // Schedule the navigation to happen very soon
         setTimeout(() => window.location = href, 600);
