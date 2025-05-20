@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       defaults: { ease: "power2.inOut", duration: 0.6 },
       onStart: () => {
         // Schedule the navigation to happen very soon
-        setTimeout(() => window.location = href, 600);
+        setTimeout(() => window.location = href, 800);
       }
     })
     .to(overlay, { 
@@ -132,21 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 0.4,
       ease: "power2.in"
     }, 0)
-    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile].filter(Boolean), { 
-      autoAlpha: 0,
-      y: -30,
+    // First move elements up while keeping them visible
+    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile, els.media].filter(Boolean), { 
+      y: -40,
       duration: 0.5,
-      stagger: 0.03,
+      stagger: 0.02,
       ease: "power2.in"
-    }, 0.1)
-    .to(els.media, {
-      autoAlpha: 0,
-      y: -30,
-      duration: 0.5,
-      stagger: 0.03,
-      ease: "power2.in",
-      clearProps: "transform"
-    }, 0.1);
+    }, 0)
+    // Then fade them out
+    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile, els.media].filter(Boolean), { 
+      opacity: 0,
+      duration: 0.3,
+      stagger: 0.02,
+      ease: "power2.in"
+    }, 0.2);
   });
 
   // Setup scrollbar handling
@@ -196,9 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
     smoothWheel: true,
     wheelMultiplier: 1,
     touchMultiplier: 1,
-    infinite: false,
-    content: document.documentElement,
-    wrapper: window
+    infinite: false
+  });
+
+  // Stop Lenis when page is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      lenis.stop();
+    } else {
+      lenis.start();
+    }
   });
 
   // Basic scroll handling
@@ -214,43 +220,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function to properly update scroll height
   function updateScrollHeight() {
-    // Force recalculation of document height
-    document.documentElement.style.minHeight = '100%';
-    document.body.style.minHeight = '100%';
-    
-    // Small delay to ensure all content is measured
-    setTimeout(() => {
-      const height = Math.max(
+    requestAnimationFrame(() => {
+      // Reset any height constraints
+      document.documentElement.style.height = '';
+      document.body.style.height = '';
+      
+      // Get the actual content height
+      const contentHeight = Math.max(
         document.documentElement.scrollHeight,
         document.documentElement.offsetHeight,
         document.documentElement.clientHeight,
         document.body.scrollHeight,
-        document.body.offsetHeight
+        document.body.offsetHeight,
+        window.innerHeight
       );
-      document.documentElement.style.height = height + 'px';
-      document.body.style.height = height + 'px';
+
+      // Add a small buffer
+      const heightWithBuffer = contentHeight + 100;
+
+      // Apply the height
+      document.documentElement.style.minHeight = `${heightWithBuffer}px`;
+      document.body.style.minHeight = `${heightWithBuffer}px`;
+
+      // Force Lenis to update
       lenis.resize();
-    }, 100);
+
+      // Double check after a short delay
+      setTimeout(() => {
+        const newContentHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          window.innerHeight
+        );
+        if (Math.abs(newContentHeight - heightWithBuffer) > 100) {
+          updateScrollHeight();
+        }
+      }, 100);
+    });
   }
 
-  // Call on load
+  // Call on load and after a delay
   window.addEventListener('load', () => {
     updateScrollHeight();
-    // Additional resize after images and other content loads
-    setTimeout(updateScrollHeight, 500);
+    // Additional check after all content loads
+    setTimeout(updateScrollHeight, 1000);
   });
 
-  // Handle window resize
+  // Handle window resize with debounce
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(updateScrollHeight, 100);
   });
 
-  // Handle dynamic content changes
+  // Watch for content changes
   const observer = new ResizeObserver(() => {
     updateScrollHeight();
   });
+
+  // Observe both document and body
   observer.observe(document.documentElement);
   observer.observe(document.body);
 
