@@ -109,6 +109,33 @@ document.addEventListener('DOMContentLoaded', () => {
     link.addEventListener('mouseleave', () => tl.reverse());
   });
 
+  // Initialize Lenis with basic configuration
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    smoothWheel: true,
+    wheelMultiplier: 0.8,
+    touchMultiplier: 0.8,
+    infinite: false
+  });
+
+  // Basic scroll handling
+  lenis.on('scroll', () => {
+    ScrollTrigger.update();
+  });
+
+  // Connect with ScrollTrigger
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+
+  // Simple resize handler
+  window.addEventListener('resize', () => {
+    lenis.resize();
+  });
+
   // Handle navigation
   document.addEventListener('click', e => {
     const link = e.target.closest('a');
@@ -121,26 +148,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Smooth exit animation with quick navigation
     gsap.timeline({
-      defaults: { ease: "power2.inOut", duration: 0.6 },
+      defaults: { ease: "power2.inOut" },
       onStart: () => {
-        // Schedule the navigation to happen very soon
-        setTimeout(() => window.location = href, 800);
+        lenis.stop();
+        setTimeout(() => window.location = href, 1000);
       }
     })
     .to(overlay, { 
       opacity: 1,
-      duration: 0.4,
+      duration: 0.5,
       ease: "power2.in"
     }, 0)
-    // First move elements up while keeping them visible
-    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile, els.media].filter(Boolean), { 
-      y: -40,
-      duration: 0.5,
+    .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), {
+      y: -50,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.05,
+      ease: "power2.in"
+    }, 0)
+    .to([els.text, els.cards, els.mobile].filter(Boolean), {
+      y: -30,
+      opacity: 0,
+      duration: 0.4,
       stagger: 0.02,
       ease: "power2.in"
-    }, 0)
-    // Then fade them out
-    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile, els.media].filter(Boolean), { 
+    }, 0.1)
+    .to(els.media, {
+      y: -20,
       opacity: 0,
       duration: 0.3,
       stagger: 0.02,
@@ -186,101 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   document.body.classList.add('ready');
-
-  // Initialize Lenis with basic configuration
-  const lenis = new Lenis({
-    duration: 0.8,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)),
-    orientation: 'vertical',
-    smoothWheel: true,
-    wheelMultiplier: 1,
-    touchMultiplier: 1,
-    infinite: false
-  });
-
-  // Stop Lenis when page is hidden
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      lenis.stop();
-    } else {
-      lenis.start();
-    }
-  });
-
-  // Basic scroll handling
-  lenis.on('scroll', () => {
-    ScrollTrigger.update();
-  });
-
-  // Connect with ScrollTrigger
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-  gsap.ticker.lagSmoothing(0);
-
-  // Function to properly update scroll height
-  function updateScrollHeight() {
-    requestAnimationFrame(() => {
-      // Reset any height constraints
-      document.documentElement.style.height = '';
-      document.body.style.height = '';
-      
-      // Get the actual content height
-      const contentHeight = Math.max(
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight,
-        document.documentElement.clientHeight,
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        window.innerHeight
-      );
-
-      // Add a small buffer
-      const heightWithBuffer = contentHeight + 100;
-
-      // Apply the height
-      document.documentElement.style.minHeight = `${heightWithBuffer}px`;
-      document.body.style.minHeight = `${heightWithBuffer}px`;
-
-      // Force Lenis to update
-      lenis.resize();
-
-      // Double check after a short delay
-      setTimeout(() => {
-        const newContentHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          window.innerHeight
-        );
-        if (Math.abs(newContentHeight - heightWithBuffer) > 100) {
-          updateScrollHeight();
-        }
-      }, 100);
-    });
-  }
-
-  // Call on load and after a delay
-  window.addEventListener('load', () => {
-    updateScrollHeight();
-    // Additional check after all content loads
-    setTimeout(updateScrollHeight, 1000);
-  });
-
-  // Handle window resize with debounce
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(updateScrollHeight, 100);
-  });
-
-  // Watch for content changes
-  const observer = new ResizeObserver(() => {
-    updateScrollHeight();
-  });
-
-  // Observe both document and body
-  observer.observe(document.documentElement);
-  observer.observe(document.body);
 
   // Ensure proper initialization
   document.documentElement.classList.add('lenis', 'lenis-smooth');
