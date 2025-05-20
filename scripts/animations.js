@@ -132,12 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 0.4,
       ease: "power2.in"
     }, 0)
-    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
+    .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile].filter(Boolean), { 
       autoAlpha: 0,
       y: -30,
       duration: 0.5,
       stagger: 0.03,
       ease: "power2.in"
+    }, 0.1)
+    .to(els.media, {
+      autoAlpha: 0,
+      y: -30,
+      duration: 0.5,
+      stagger: 0.03,
+      ease: "power2.in",
+      clearProps: "transform"
     }, 0.1);
   });
 
@@ -188,7 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
     smoothWheel: true,
     wheelMultiplier: 1,
     touchMultiplier: 1,
-    infinite: false
+    infinite: false,
+    content: document.documentElement,
+    wrapper: window
   });
 
   // Basic scroll handling
@@ -202,21 +212,47 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   gsap.ticker.lagSmoothing(0);
 
-  // Force recalculation on load and resize
+  // Function to properly update scroll height
+  function updateScrollHeight() {
+    // Force recalculation of document height
+    document.documentElement.style.minHeight = '100%';
+    document.body.style.minHeight = '100%';
+    
+    // Small delay to ensure all content is measured
+    setTimeout(() => {
+      const height = Math.max(
+        document.documentElement.scrollHeight,
+        document.documentElement.offsetHeight,
+        document.documentElement.clientHeight,
+        document.body.scrollHeight,
+        document.body.offsetHeight
+      );
+      document.documentElement.style.height = height + 'px';
+      document.body.style.height = height + 'px';
+      lenis.resize();
+    }, 100);
+  }
+
+  // Call on load
   window.addEventListener('load', () => {
-    lenis.resize();
-    setTimeout(() => lenis.resize(), 500); // Additional resize after a delay to ensure all content is loaded
+    updateScrollHeight();
+    // Additional resize after images and other content loads
+    setTimeout(updateScrollHeight, 500);
   });
 
+  // Handle window resize
+  let resizeTimeout;
   window.addEventListener('resize', () => {
-    lenis.resize();
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(updateScrollHeight, 100);
   });
 
   // Handle dynamic content changes
   const observer = new ResizeObserver(() => {
-    lenis.resize();
+    updateScrollHeight();
   });
   observer.observe(document.documentElement);
+  observer.observe(document.body);
 
   // Ensure proper initialization
   document.documentElement.classList.add('lenis', 'lenis-smooth');
