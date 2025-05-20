@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create hover timeline
     const tl = gsap.timeline({ paused: true });
     tl.to(chars, {
-      yPercent: -30,
+      yPercent: -10,
       opacity: 0,
       duration: 0.2,
       stagger: { amount: 0.1, from: "start" },
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Smooth exit animation with quick navigation
     gsap.timeline({
-      defaults: { ease: "power1.inOut", duration: 0.4 },
+      defaults: { ease: "power2.inOut", duration: 0.4 },
       onStart: () => {
         // Schedule the navigation to happen very soon
         setTimeout(() => window.location = href, 600);
@@ -130,15 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
     .to(overlay, { 
       opacity: 1,
       duration: 0.4,
-      ease: "power1.in"
+      ease: "power2.in"
     }, 0)
     .to([els.splitLinesWhite, els.splitLinesRegular, els.text, els.media, els.cards, els.mobile].filter(Boolean), { 
       autoAlpha: 0,
-      y: -10,
-      duration: 0.4,
-      stagger: 0.02,
-      ease: "power1.inOut"
-    }, 0);
+      y: -30,
+      duration: 0.5,
+      stagger: 0.03,
+      ease: "power2.in"
+    }, 0.1);
   });
 
   // Setup scrollbar handling
