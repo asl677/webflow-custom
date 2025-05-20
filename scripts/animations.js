@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ease: "power2.in"
     }, 0)
     .to([els.splitLinesWhite, els.splitLinesRegular].filter(Boolean), {
-      y: -50,
+      y: -20,
       opacity: 0,
       duration: 0.6,
       stagger: 0.05,
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 0.3,
       stagger: 0.02,
       ease: "power2.in"
-    }, 0.2);
+    }, 0.1);
   });
 
   // Setup scrollbar handling
