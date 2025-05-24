@@ -92,13 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const chars = SplitText.create(link, { type: "chars" }).chars;
     const tl = gsap.timeline({ paused: true })
       .to(chars, {
-        yPercent: -30, opacity: 0, duration: 0.2,
+        yPercent: -20, opacity: 0, duration: 0.3,
         stagger: { amount: 0.1, from: "start" },
         ease: "power1.in"
       })
-      .set(chars, { yPercent: 30 })
+      .set(chars, { yPercent: 20 })
       .to(chars, {
-        yPercent: 0, opacity: 1, duration: 0.2,
+        yPercent: 0, opacity: 1, duration: 0.3,
         stagger: { amount: 0.1, from: "start" },
         ease: "power1.out"
       });
