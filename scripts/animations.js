@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     
     link.addEventListener('mouseenter', () => tl.restart());
-    link.addEventListener('mouseleave', () => tl.reverse());
+    link.addEventListener('mouseleave', () => tl.restart());
   });
 
   // Initialize Lenis
@@ -137,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .to(overlay, { opacity: 1, duration: 0.4 }, 0)
     .to([els.media, els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile], {
-      y: -20,
+      y: -30,
       opacity: 0,
-      duration: 0.4,
-      stagger: 0.02,
-      ease: "power1.in"
+      duration: 0.5,
+      stagger: 0.03,
+      ease: "power2.in"
     }, 0);
   });
 
