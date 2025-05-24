@@ -137,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .to(overlay, { opacity: 1, duration: 0.4 }, 0)
     .to([els.media, els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile], {
-      y: -30,
+      y: -50,
       opacity: 0,
-      duration: 0.5,
-      stagger: 0.03,
-      ease: "power2.in"
+      duration: 0.6,
+      stagger: 0.04,
+      ease: "power3.in"
     }, 0);
   });
 
