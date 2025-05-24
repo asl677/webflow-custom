@@ -132,22 +132,47 @@ document.addEventListener('DOMContentLoaded', () => {
     lenis.stop();
     
     gsap.timeline({
-      defaults: { ease: "power3.in" },
-      onStart: () => setTimeout(() => window.location = href, 1200)
+      defaults: { ease: "power2.inOut" },
+      onStart: () => setTimeout(() => window.location = href, 1500)
     })
-    .to(overlay, { opacity: 1, duration: 0.6 }, 0)
+    .to(overlay, { opacity: 1, duration: 0.8 }, 0)
     .to(els.mobile, { 
       autoAlpha: 0, 
-      y: -30, 
+      y: -60, 
       height: 0,
-      duration: 0.8,
+      duration: 1,
       stagger: 0.1
-    }, 0.1)
-    .to(els.cards, { autoAlpha: 0, y: -30, stagger: 0.1, duration: 0.8 }, "<0.1")
-    .to(els.text, { autoAlpha: 0, y: -30, stagger: 0.05, duration: 0.8 }, "<0.1")
-    .to(els.splitLinesWhite, { y: -30, autoAlpha: 0, stagger: 0.15, duration: 0.8 }, "<0.1")
-    .to(els.splitLinesRegular, { y: -30, autoAlpha: 0, stagger: 0.15, duration: 0.8 }, "<0.1")
-    .to(els.media, { autoAlpha: 0, y: -30, stagger: 0.05, duration: 0.8 }, "<0.1");
+    }, 0)
+    .to(els.cards, { 
+      autoAlpha: 0, 
+      y: -60, 
+      duration: 1,
+      stagger: 0.1 
+    }, "<0.1")
+    .to(els.text, { 
+      autoAlpha: 0, 
+      y: -60, 
+      duration: 1,
+      stagger: 0.1 
+    }, "<0.1")
+    .to(els.splitLinesWhite, { 
+      y: -60, 
+      autoAlpha: 0, 
+      duration: 1,
+      stagger: 0.1 
+    }, "<0.1")
+    .to(els.splitLinesRegular, { 
+      y: -60, 
+      autoAlpha: 0, 
+      duration: 1,
+      stagger: 0.1 
+    }, "<0.1")
+    .to(els.media, { 
+      autoAlpha: 0, 
+      y: -60, 
+      duration: 1,
+      stagger: 0.1 
+    }, "<0.1");
   });
 
   // Handle scrollbars
