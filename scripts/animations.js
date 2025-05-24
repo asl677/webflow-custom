@@ -49,9 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   gsap.timeline({ defaults: { ease: "power3.out", duration: 0.6 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.30, duration: 1 })
+    .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.02, duration: 0.8 }, 0)
+    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.30, duration: 1 }, 0.2)
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15, duration: 1.5 }, "<0.1")
-    .to([els.text, els.media], { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
+    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
     .to([els.cards, els.mobile], { 
       autoAlpha: 1, y: 0, stagger: 0.15,
       height: (i) => i ? "auto" : null,
@@ -107,25 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
       onStart: () => setTimeout(() => window.location = href, 800)
     })
     .to(overlay, { opacity: 1, duration: 0.4 }, 0)
-    .to(els.media, {
+    .to([els.media, els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile], {
       y: -15,
       opacity: 0,
-      duration: 0.25,
-      stagger: 0.01,
-      ease: "power1.in"
-    }, 0)
-    .to([els.splitLinesWhite, els.splitLinesRegular], {
-      y: -20,
-      opacity: 0,
-      duration: 0.6,
-      stagger: 0.05
-    }, 0.15)
-    .to([els.text, els.cards, els.mobile], {
-      y: -30,
-      opacity: 0,
       duration: 0.4,
-      stagger: 0.02
-    }, 0.2);
+      stagger: 0.02,
+      ease: "power1.in"
+    }, 0);
   });
 
   // Handle scrollbars
