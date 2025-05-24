@@ -92,19 +92,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const chars = SplitText.create(link, { type: "chars" }).chars;
     const tl = gsap.timeline({ paused: true })
       .to(chars, {
-        yPercent: -20, opacity: 0, duration: 0.3,
+        yPercent: -20, opacity: 0, duration: 0.5,
         stagger: { amount: 0.1, from: "start" },
-        ease: "power1.in"
+        ease: "power2.in"
       })
       .set(chars, { yPercent: 20 })
       .to(chars, {
-        yPercent: 0, opacity: 1, duration: 0.3,
+        yPercent: 0, opacity: 1, duration: 0.5,
         stagger: { amount: 0.1, from: "start" },
-        ease: "power1.out"
+        ease: "power2.out"
       });
     
     link.addEventListener('mouseenter', () => tl.restart());
-    link.addEventListener('mouseleave', () => tl.restart());
+    link.addEventListener('mouseleave', () => tl.reverse());
   });
 
   // Initialize Lenis
