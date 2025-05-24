@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.timeline({ defaults: { ease: "power3.out", duration: 0.8 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
     .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05 }, 0)
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.2 }, 0.2)
+    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.3 }, 0.2)
     .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.2 }, "<0.1")
     .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<0.1")
     .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.1 }, "<0.1")
