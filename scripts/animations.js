@@ -132,17 +132,22 @@ document.addEventListener('DOMContentLoaded', () => {
     lenis.stop();
     
     gsap.timeline({
-      defaults: { ease: "power2.in" },
+      defaults: { ease: "power3.in" },
       onStart: () => setTimeout(() => window.location = href, 800)
     })
     .to(overlay, { opacity: 1, duration: 0.4 }, 0)
-    .to([els.media, els.splitLinesWhite, els.splitLinesRegular, els.text, els.cards, els.mobile], {
-      y: -50,
-      opacity: 0,
-      duration: 0.6,
-      stagger: 0.04,
-      ease: "power3.in"
-    }, 0);
+    .to(els.mobile, { 
+      autoAlpha: 0, 
+      y: -20, 
+      height: 0,
+      stagger: 0.1,
+      duration: 0.8
+    }, 0)
+    .to(els.cards, { autoAlpha: 0, y: -20, stagger: 0.1 }, "<")
+    .to(els.text, { autoAlpha: 0, y: -20, stagger: 0.05 }, "<")
+    .to(els.splitLinesWhite, { y: -20, autoAlpha: 0, stagger: 0.2 }, "<")
+    .to(els.splitLinesRegular, { y: -20, autoAlpha: 0, stagger: 0.3 }, "<0.1")
+    .to(els.media, { autoAlpha: 0, y: -20, stagger: 0.05 }, "<");
   });
 
   // Handle scrollbars
