@@ -38,10 +38,35 @@ document.addEventListener('DOMContentLoaded', () => {
     media: document.querySelectorAll('img, video'),
     mobile: document.querySelectorAll('.mobile-down'),
     cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
-    splitLinesWhite: SplitText.create(".heading.large.white", { type: "lines" }).lines,
-    splitLinesRegular: SplitText.create(".heading.large:not(.white)", { type: "lines" }).lines,
     hoverLinks: document.querySelectorAll('.heading.small.link.large-link')
   };
+
+  // Split text setup
+  let splitTextInstances = [];
+  const createSplitText = () => {
+    // Kill old instances
+    splitTextInstances.forEach(split => split.revert());
+    splitTextInstances = [];
+    
+    // Create new instances
+    const regularSplit = SplitText.create(".heading.large:not(.white)", { type: "lines" });
+    const whiteSplit = SplitText.create(".heading.large.white", { type: "lines" });
+    splitTextInstances.push(regularSplit, whiteSplit);
+    
+    // Update element references
+    els.splitLinesRegular = regularSplit.lines;
+    els.splitLinesWhite = whiteSplit.lines;
+  };
+
+  // Initial split
+  createSplitText();
+
+  // Handle resize
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(createSplitText, 100);
+  });
 
   // Initial states and intro animation
   gsap.set([els.text, els.media, els.cards], { autoAlpha: 0, y: 20 });
