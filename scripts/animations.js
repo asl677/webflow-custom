@@ -104,17 +104,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     gsap.timeline({
       defaults: { ease: "power2.in" },
-      onStart: () => setTimeout(() => window.location = href, 1000)
+      onStart: () => setTimeout(() => window.location = href, 800)
     })
-    .to(overlay, { opacity: 1, duration: 0.5 }, 0)
+    .to(overlay, { opacity: 1, duration: 0.4 }, 0)
     .to(els.media, {
-      y: -20, opacity: 0, duration: 0.4, stagger: 0.02
+      y: -15,
+      opacity: 0,
+      duration: 0.25,
+      stagger: 0.01,
+      ease: "power1.in"
     }, 0)
     .to([els.splitLinesWhite, els.splitLinesRegular], {
-      y: -20, opacity: 0, duration: 0.6, stagger: 0.05
-    }, 0.1)
+      y: -20,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.05
+    }, 0.15)
     .to([els.text, els.cards, els.mobile], {
-      y: -30, opacity: 0, duration: 0.4, stagger: 0.02
+      y: -30,
+      opacity: 0,
+      duration: 0.4,
+      stagger: 0.02
     }, 0.2);
   });
 
