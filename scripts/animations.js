@@ -47,16 +47,19 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.set([els.text, els.media, els.cards], { autoAlpha: 0, y: 20 });
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
-  gsap.timeline({ defaults: { ease: "power3.out", duration: 0.6 } })
+  gsap.timeline({ defaults: { ease: "power3.out", duration: 0.8 } })
     .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.02, duration: 0.8 }, 0)
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.30, duration: 1 }, 0.2)
-    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15, duration: 1.5 }, "<0.1")
-    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<")
-    .to([els.cards, els.mobile], { 
-      autoAlpha: 1, y: 0, stagger: 0.15,
-      height: (i) => i ? "auto" : null,
-      clearProps: (i) => i ? "height,overflow" : null
+    .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.02 }, 0)
+    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.15 }, 0.2)
+    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.15 }, "<0.1")
+    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<0.1")
+    .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.1 }, "<0.1")
+    .to(els.mobile, { 
+      autoAlpha: 1, 
+      y: 0, 
+      height: "auto",
+      stagger: 0.1,
+      clearProps: "height,overflow"
     }, "<0.1");
 
   // Hover effects
