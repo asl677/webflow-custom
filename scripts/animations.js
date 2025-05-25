@@ -82,6 +82,8 @@ function initAnimation() {
       visibility: "hidden"
     });
   }
+  if (els.splitLinesRegular?.length) gsap.set(els.splitLinesRegular, { autoAlpha: 0, y: -20 });
+  if (els.splitLinesWhite?.length) gsap.set(els.splitLinesWhite, { autoAlpha: 0, y: 30 });
 
   // Initialize Lenis
   const lenis = new Lenis({
