@@ -1,10 +1,23 @@
 // Initial styles
 (() => {
+  // Add Lenis CSS
+  const lenisStylesheet = document.createElement('link');
+  lenisStylesheet.rel = 'stylesheet';
+  lenisStylesheet.href = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
+  document.head.appendChild(lenisStylesheet);
+
+  // Add our custom animations CSS
+  const animationsStylesheet = document.createElement('link');
+  animationsStylesheet.rel = 'stylesheet';
+  animationsStylesheet.href = 'https://asl677.github.io/webflow-custom/styles/animations.css';
+  document.head.appendChild(animationsStylesheet);
+
   // Add FontFaceObserver script
   const fontObserverScript = document.createElement('script');
   fontObserverScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js';
   document.head.appendChild(fontObserverScript);
 
+  // Critical styles that need to be applied immediately
   document.head.insertBefore(
     Object.assign(document.createElement('style'), {
       textContent: `
@@ -16,66 +29,47 @@
         html, body { background: #000 !important; }
         body { opacity: 0 !important; }
         body.ready { opacity: 1 !important; transition: opacity 0.4s ease-out; }
-        .page-overlay {
-          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-          background: #000; z-index: 9999; pointer-events: none;
-          opacity: 1; will-change: opacity;
-        }
-        [data-lenis-prevent] {
-          position: relative;
-          z-index: 1;
-        }
       `
     }),
     document.head.firstChild
   );
 })();
 
+// Wait for both CSS files to load before initializing
 document.addEventListener('DOMContentLoaded', () => {
-  if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') {
-    return setTimeout(initAnimation, 50);
-  }
-
-  // Wait for FontFaceObserver to load
-  const initWithFonts = () => {
-    if (typeof FontFaceObserver === 'undefined') {
-      return setTimeout(initWithFonts, 50);
-    }
-
-    // Get all unique font families used in the document
-    const fontFamilies = new Set();
-    const elements = document.querySelectorAll('*');
-    elements.forEach(element => {
-      const fontFamily = window.getComputedStyle(element).fontFamily;
-      if (fontFamily) {
-        fontFamily.split(',').forEach(font => {
-          font = font.trim().replace(/['"]/g, '');
-          if (font !== '' && !font.includes('system') && !font.includes('serif') && !font.includes('sans-serif')) {
-            fontFamilies.add(font);
+  const cssLoaded = Promise.all(
+    Array.from(document.styleSheets).map(styleSheet => {
+      if (styleSheet.href) {
+        return new Promise((resolve, reject) => {
+          try {
+            // Try to access the rules to check if the stylesheet is loaded
+            styleSheet.cssRules;
+            resolve();
+          } catch (e) {
+            const link = document.querySelector(`link[href="${styleSheet.href}"]`);
+            link.onload = resolve;
+            link.onerror = reject;
           }
         });
       }
-    });
+      return Promise.resolve();
+    })
+  );
 
-    // Create observers for each font
-    const fontObservers = Array.from(fontFamilies).map(family => {
-      return new FontFaceObserver(family).load(null, 5000); // 5 second timeout
-    });
-
-    // Wait for all fonts to load
-    Promise.all(fontObservers)
-      .then(() => {
-        console.log('All fonts loaded successfully');
-        initAnimation();
-      })
-      .catch(err => {
-        console.warn('Some fonts failed to load:', err);
-        // Initialize anyway after a delay
-        setTimeout(initAnimation, 1000);
-      });
-  };
-
-  initWithFonts();
+  // Initialize only when CSS and fonts are loaded
+  Promise.all([
+    cssLoaded,
+    document.fonts.ready
+  ]).then(() => {
+    if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') {
+      return setTimeout(initAnimation, 50);
+    }
+    initAnimation();
+  }).catch(err => {
+    console.warn('Error loading resources:', err);
+    // Initialize anyway after a delay
+    setTimeout(initAnimation, 1000);
+  });
 });
 
 function initAnimation() {

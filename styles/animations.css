@@ -90,7 +90,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Lenis */
+/* Essential Lenis styles */
 html.lenis {
   height: auto;
 }
@@ -211,6 +211,9 @@ html.lenis {
 /* Base styles */
 html, body {
   background: #000 !important;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -238,9 +241,10 @@ body.ready {
 
 /* Sticky elements */
 [data-lenis-prevent] {
-  position: relative;
+  position: relative !important;
   z-index: 1;
   transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 /* Animation states */
@@ -249,8 +253,9 @@ body.ready {
 }
 
 .mobile-down {
-  opacity: 0;
-  transform: translateY(30px);
+  height: auto;
+  visibility: visible;
+  overflow: visible;
 }
 
 /* Hover effects */
