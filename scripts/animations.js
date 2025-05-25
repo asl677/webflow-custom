@@ -3,7 +3,7 @@
   document.head.insertBefore(
     Object.assign(document.createElement('style'), {
       textContent: `
-        html.lenis, html.lenis body { height: auto; }
+        html.lenis { height: auto; }
         .lenis.lenis-smooth { scroll-behavior: auto !important; }
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
         .lenis.lenis-stopped { overflow: hidden; }
@@ -14,13 +14,9 @@
         .page-overlay {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
           background: #000; z-index: 9999; pointer-events: none;
-          opacity: 1; will-change: opacity; transform: translateZ(0);
+          opacity: 1; will-change: opacity;
         }
-        .scrollable-wrapper {
-          position: relative;
-          overflow: hidden;
-        }
-        .scrollable-content {
+        [data-lenis-prevent] {
           position: relative;
           z-index: 1;
         }
@@ -129,11 +125,6 @@ function initAnimation() {
     });
   });
 
-  // Setup sticky elements for Lenis
-  document.querySelectorAll('[style*="sticky"]').forEach(el => {
-    el.setAttribute('data-lenis-prevent', '');
-  });
-
   // Initialize Lenis with proper configuration
   const lenis = new Lenis({
     duration: 1.2,
@@ -156,6 +147,44 @@ function initAnimation() {
   });
 
   gsap.ticker.lagSmoothing(0);
+
+  // Handle scrollbars and sticky elements
+  const setupSticky = () => {
+    // Find all sticky elements
+    document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]').forEach(el => {
+      // Add data-lenis-prevent attribute
+      el.setAttribute('data-lenis-prevent', '');
+      
+      // Ensure proper stacking context
+      if (getComputedStyle(el).zIndex === 'auto') {
+        el.style.zIndex = '1';
+      }
+    });
+  };
+
+  // Initial setup
+  setupSticky();
+
+  // Watch for new sticky elements
+  new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+        const el = mutation.target;
+        const style = getComputedStyle(el);
+        if (style.position === 'sticky') {
+          el.setAttribute('data-lenis-prevent', '');
+        }
+      }
+      if (mutation.type === 'childList') {
+        setupSticky();
+      }
+    });
+  }).observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style']
+  });
 
   // Create the intro timeline
   gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
@@ -290,60 +319,6 @@ function initAnimation() {
       stagger: 0.1 
     }, "<0.1");
   });
-
-  // Handle scrollbars and sticky elements
-  const setupScroll = container => {
-    if (!container) return;
-    
-    // Find all sticky elements within the container
-    const stickyElements = container.querySelectorAll('[style*="sticky"]');
-    const isStickyContainer = getComputedStyle(container).position === 'sticky';
-    
-    if (stickyElements.length > 0 || isStickyContainer) {
-      // Create a wrapper for sticky content if needed
-      if (!container.classList.contains('scrollable-wrapper')) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'scrollable-wrapper';
-        container.parentNode.insertBefore(wrapper, container);
-        wrapper.appendChild(container);
-      }
-      
-      // Mark sticky elements for Lenis to handle
-      stickyElements.forEach(el => {
-        el.setAttribute('data-lenis-prevent-wheel', '');
-        el.setAttribute('data-lenis-prevent-touch', '');
-      });
-    }
-  };
-
-  // Initialize and watch for new scrollable elements
-  document.querySelectorAll('[style*="sticky"]').forEach(el => {
-    el.classList.add('sticky-element');
-    el.setAttribute('data-lenis-prevent-wheel', '');
-    el.setAttribute('data-lenis-prevent-touch', '');
-  });
-  
-  document.querySelectorAll('[style*="overflow"], .scrollable').forEach(setupScroll);
-  
-  // Watch for new elements
-  new MutationObserver(mutations => 
-    mutations.forEach(m => m.addedNodes.forEach(node => {
-      if (node.nodeType !== 1) return;
-      const style = getComputedStyle(node);
-      if (style.position === 'sticky') {
-        node.classList.add('sticky-element');
-        node.setAttribute('data-lenis-prevent-wheel', '');
-        node.setAttribute('data-lenis-prevent-touch', '');
-      }
-      if (['auto', 'scroll'].includes(style.overflowY)) setupScroll(node);
-      node.querySelectorAll?.('[style*="sticky"]').forEach(el => {
-        el.classList.add('sticky-element');
-        el.setAttribute('data-lenis-prevent-wheel', '');
-        el.setAttribute('data-lenis-prevent-touch', '');
-      });
-      node.querySelectorAll?.('[style*="overflow"], .scrollable').forEach(setupScroll);
-    }))
-  ).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   document.body.classList.add('ready');
   document.documentElement.classList.add('lenis', 'lenis-smooth');
