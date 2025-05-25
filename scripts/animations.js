@@ -1,23 +1,18 @@
 // Initial styles
 (() => {
-  // Add Lenis CSS
+  // Add Lenis CSS directly
   const lenisStylesheet = document.createElement('link');
   lenisStylesheet.rel = 'stylesheet';
   lenisStylesheet.href = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
   document.head.appendChild(lenisStylesheet);
 
-  // Add our custom animations CSS
+  // Add our custom animations CSS using raw GitHub URL
   const animationsStylesheet = document.createElement('link');
   animationsStylesheet.rel = 'stylesheet';
-  animationsStylesheet.href = 'https://asl677.github.io/webflow-custom/styles/animations.css';
+  animationsStylesheet.href = 'https://raw.githubusercontent.com/asl677/webflow-custom/main/styles/animations.css';
   document.head.appendChild(animationsStylesheet);
 
-  // Add FontFaceObserver script
-  const fontObserverScript = document.createElement('script');
-  fontObserverScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js';
-  document.head.appendChild(fontObserverScript);
-
-  // Critical styles that need to be applied immediately
+  // Add critical styles inline to ensure they're applied immediately
   document.head.insertBefore(
     Object.assign(document.createElement('style'), {
       textContent: `
@@ -29,10 +24,36 @@
         html, body { background: #000 !important; }
         body { opacity: 0 !important; }
         body.ready { opacity: 1 !important; transition: opacity 0.4s ease-out; }
+        .page-overlay {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: #000; z-index: 9999; pointer-events: none;
+          opacity: 1; will-change: opacity;
+        }
+        [data-lenis-prevent] {
+          position: relative !important;
+          z-index: 1;
+          transform: translate3d(0, 0, 0);
+        }
+        .sticky-element {
+          position: sticky !important;
+          top: 0;
+          z-index: 100;
+          transform: translate3d(0, 0, 0);
+        }
+        .text-animate, .media-animate, .card-project, .mobile-down {
+          opacity: 0;
+          transform: translateY(20px);
+          will-change: transform, opacity;
+        }
       `
     }),
     document.head.firstChild
   );
+
+  // Add FontFaceObserver script
+  const fontObserverScript = document.createElement('script');
+  fontObserverScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js';
+  document.head.appendChild(fontObserverScript);
 })();
 
 // Wait for both CSS files to load before initializing
