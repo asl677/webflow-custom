@@ -90,7 +90,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Lenis */
+/* Essential Lenis styles */
 html.lenis {
   height: auto;
 }
@@ -105,6 +105,10 @@ html.lenis {
 
 .lenis.lenis-stopped {
   overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 /* Exclude navigation links from animations */
@@ -202,4 +206,93 @@ html.lenis {
     visibility: visible;
     overflow: visible;
   }
+}
+
+/* Base styles */
+html, body {
+  background: #000 !important;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  opacity: 0 !important;
+}
+
+body.ready {
+  opacity: 1 !important;
+  transition: opacity 0.4s ease-out;
+}
+
+/* Overlay */
+.page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 1;
+  will-change: opacity;
+}
+
+/* Sticky elements */
+[data-lenis-prevent] {
+  position: relative !important;
+  z-index: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+/* Animation states */
+[data-split] {
+  opacity: 0;
+}
+
+.mobile-down {
+  height: auto;
+  visibility: visible;
+  overflow: visible;
+}
+
+/* Hover effects */
+.heading.small.link.large-link {
+  transition: opacity 0.3s ease;
+}
+
+.heading.small.link.large-link:hover {
+  opacity: 0.7;
+}
+
+/* Ensure proper stacking context */
+.sticky-element {
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+/* Hide scrollbars but keep functionality */
+html {
+  overflow: scroll;
+  overflow-x: hidden;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  background: transparent;
+}
+
+/* Ensure proper visibility */
+.visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
 }
