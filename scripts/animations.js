@@ -1,11 +1,11 @@
-// Version 1.0.3 - Switch to direct GitHub URLs
+// Version 1.0.4 - Remove all jsDelivr dependencies
 // Initial styles
 (() => {
   // Add required scripts in the correct order
   const scripts = [
     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js',
-    'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.js',
+    'https://unpkg.com/@studio-freight/lenis@1.0.27/dist/lenis.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js',
     'https://unpkg.com/split-type',
   ];
@@ -24,7 +24,7 @@
   // Add Lenis CSS directly
   const lenisStylesheet = document.createElement('link');
   lenisStylesheet.rel = 'stylesheet';
-  lenisStylesheet.href = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
+  lenisStylesheet.href = 'https://unpkg.com/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
   document.head.appendChild(lenisStylesheet);
 
   // Add our custom animations CSS using direct GitHub URL
