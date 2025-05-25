@@ -1,6 +1,7 @@
 /*
 To use this script in Webflow, add the following URL to your site's custom code:
 https://cdn.jsdelivr.net/gh/asl677/webflow-custom@main/scripts/animations.js
+Version: 1.0.1 - Improved exit animations
 */
 
 // Initial styles
