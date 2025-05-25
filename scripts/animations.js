@@ -1,5 +1,25 @@
 // Initial styles
 (() => {
+  // Add required scripts in the correct order
+  const scripts = [
+    'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js',
+    'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js',
+    'https://unpkg.com/split-type',
+  ];
+
+  // Load scripts sequentially
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
   // Add Lenis CSS directly
   const lenisStylesheet = document.createElement('link');
   lenisStylesheet.rel = 'stylesheet';
@@ -50,48 +70,33 @@
     document.head.firstChild
   );
 
-  // Add FontFaceObserver script
-  const fontObserverScript = document.createElement('script');
-  fontObserverScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js';
-  document.head.appendChild(fontObserverScript);
-})();
-
-// Wait for both CSS files to load before initializing
-document.addEventListener('DOMContentLoaded', () => {
-  const cssLoaded = Promise.all(
-    Array.from(document.styleSheets).map(styleSheet => {
-      if (styleSheet.href) {
-        return new Promise((resolve, reject) => {
-          try {
-            // Try to access the rules to check if the stylesheet is loaded
-            styleSheet.cssRules;
+  // Load all scripts in sequence
+  scripts.reduce((promise, script) => {
+    return promise.then(() => loadScript(script));
+  }, Promise.resolve())
+    .then(() => {
+      // All scripts loaded, now wait for fonts and CSS
+      return Promise.all([
+        document.fonts.ready,
+        new Promise(resolve => {
+          if (document.readyState === 'complete') {
             resolve();
-          } catch (e) {
-            const link = document.querySelector(`link[href="${styleSheet.href}"]`);
-            link.onload = resolve;
-            link.onerror = reject;
+          } else {
+            window.addEventListener('load', resolve);
           }
-        });
-      }
-      return Promise.resolve();
+        })
+      ]);
     })
-  );
-
-  // Initialize only when CSS and fonts are loaded
-  Promise.all([
-    cssLoaded,
-    document.fonts.ready
-  ]).then(() => {
-    if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') {
-      return setTimeout(initAnimation, 50);
-    }
-    initAnimation();
-  }).catch(err => {
-    console.warn('Error loading resources:', err);
-    // Initialize anyway after a delay
-    setTimeout(initAnimation, 1000);
-  });
-});
+    .then(() => {
+      // Everything is loaded, initialize animation
+      initAnimation();
+    })
+    .catch(error => {
+      console.warn('Error loading resources:', error);
+      // Try to initialize anyway after a delay
+      setTimeout(initAnimation, 1000);
+    });
+})();
 
 function initAnimation() {
   gsap.registerPlugin(SplitText, ScrollTrigger);
