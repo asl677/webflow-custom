@@ -118,7 +118,7 @@ function initAnimation() {
       }
     }, 0)
     .from(els.splitLinesRegular, { 
-      y: 30, 
+      y: -20, 
       opacity: 0,
       stagger: { 
         amount: 0.8,
