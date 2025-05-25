@@ -264,23 +264,25 @@ function initAnimation() {
     }, 0)
     .from(els.splitLinesRegular, { 
       y: -30, 
-      autoAlpha: 0, 
+      opacity: 0,
       stagger: { 
         amount: 0.8,
         from: "start",
         ease: "power2.inOut"
       },
-      duration: 1.4
+      duration: 1.4,
+      ease: "power3.out"
     }, 0.2)
     .from(els.splitLinesWhite, { 
-      y: 30, 
-      autoAlpha: 0, 
+      y: -30,
+      opacity: 0,
       stagger: { 
         amount: 0.5,
         from: "start",
         ease: "power2.inOut"
       },
-      duration: 1.4
+      duration: 1.4,
+      ease: "power3.out"
     }, "<0.1")
     .to(els.text, { 
       autoAlpha: 1, 
