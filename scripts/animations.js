@@ -1,4 +1,4 @@
-// Version 1.0.8 - Animation logic only
+// Version 1.0.9 - Test with red background
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -12,6 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
+    // Add test styles
+    const textElements = document.querySelectorAll('h1, h2, h3, p, a');
+    textElements.forEach(el => {
+      el.style.backgroundColor = 'red';
+      el.style.color = 'white';
+      console.log('Applied test styles to:', el);
+    });
+
     initAnimation();
   } catch (error) {
     console.error('Error initializing animations:', error);
