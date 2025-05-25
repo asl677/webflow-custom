@@ -53,12 +53,6 @@ function initAnimation() {
     hoverLinks: gsap.utils.toArray('.heading.small.link.large-link')
   };
 
-  // Ensure elements exist before proceeding
-  if (!els.text.length && !els.media.length && !els.mobile.length && !els.cards.length) {
-    console.warn('No target elements found for animations');
-    return;
-  }
-
   // Split text setup
   let splitTextInstances = [];
   const createSplitText = () => {
@@ -96,7 +90,7 @@ function initAnimation() {
     }, 100);
   });
 
-  // Initial states and intro animation
+  // Initial states
   if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: 20 });
   if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
   if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
@@ -109,24 +103,7 @@ function initAnimation() {
     });
   }
 
-  // Helper function to get natural height
-  const getHeight = (el) => {
-    const height = el.offsetHeight;
-    const style = window.getComputedStyle(el);
-    return height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-  };
-
-  // Store original heights and prepare elements
-  els.mobile.forEach(el => {
-    el._naturalHeight = getHeight(el);
-    // Ensure the element is visible for height calculation
-    gsap.set(el, { 
-      visibility: "visible",
-      height: "auto"
-    });
-  });
-
-  // Initialize Lenis with proper configuration
+  // Initialize Lenis
   const lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -140,52 +117,10 @@ function initAnimation() {
     smoothTouch: false
   });
 
-  // Proper Lenis + GSAP ScrollTrigger integration
+  // Lenis + GSAP integration
   lenis.on('scroll', ScrollTrigger.update);
-
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
-
-  // Handle scrollbars and sticky elements
-  const setupSticky = () => {
-    // Find all sticky elements
-    document.querySelectorAll('[style*="position: sticky"], [style*="position:sticky"]').forEach(el => {
-      // Add data-lenis-prevent attribute
-      el.setAttribute('data-lenis-prevent', '');
-      
-      // Ensure proper stacking context
-      if (getComputedStyle(el).zIndex === 'auto') {
-        el.style.zIndex = '1';
-      }
-    });
-  };
-
-  // Initial setup
-  setupSticky();
-
-  // Watch for new sticky elements
-  new MutationObserver((mutations) => {
-    mutations.forEach(mutation => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-        const el = mutation.target;
-        const style = getComputedStyle(el);
-        if (style.position === 'sticky') {
-          el.setAttribute('data-lenis-prevent', '');
-        }
-      }
-      if (mutation.type === 'childList') {
-        setupSticky();
-      }
-    });
-  }).observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['style']
-  });
 
   // Create the intro timeline
   gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
@@ -203,7 +138,7 @@ function initAnimation() {
       }
     }, 0)
     .from(els.splitLinesRegular, { 
-      y: -30, 
+      y: 30, 
       opacity: 0,
       stagger: { 
         amount: 0.8,
@@ -214,7 +149,7 @@ function initAnimation() {
       ease: "power3.out"
     }, 0.2)
     .from(els.splitLinesWhite, { 
-      y: -30,
+      y: 30,
       opacity: 0,
       stagger: { 
         amount: 0.5,
@@ -270,7 +205,7 @@ function initAnimation() {
     link.addEventListener('mouseleave', () => tl.reverse());
   });
 
-  // Navigation handling with Lenis smooth scrolling
+  // Navigation handling
   document.addEventListener('click', e => {
     const link = e.target.closest('a');
     const href = link?.getAttribute('href');
@@ -326,3 +261,6 @@ function initAnimation() {
   document.body.classList.add('ready');
   document.documentElement.classList.add('lenis', 'lenis-smooth');
 }
+
+// Start animations when the page is ready
+document.addEventListener('DOMContentLoaded', initAnimation);
