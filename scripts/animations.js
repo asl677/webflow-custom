@@ -1,5 +1,10 @@
 // Initial styles
 (() => {
+  // Add FontFaceObserver script
+  const fontObserverScript = document.createElement('script');
+  fontObserverScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js';
+  document.head.appendChild(fontObserverScript);
+
   document.head.insertBefore(
     Object.assign(document.createElement('style'), {
       textContent: `
@@ -31,10 +36,46 @@ document.addEventListener('DOMContentLoaded', () => {
     return setTimeout(initAnimation, 50);
   }
 
-  // Wait for fonts to load before initializing
-  document.fonts.ready.then(() => {
-    initAnimation();
-  });
+  // Wait for FontFaceObserver to load
+  const initWithFonts = () => {
+    if (typeof FontFaceObserver === 'undefined') {
+      return setTimeout(initWithFonts, 50);
+    }
+
+    // Get all unique font families used in the document
+    const fontFamilies = new Set();
+    const elements = document.querySelectorAll('*');
+    elements.forEach(element => {
+      const fontFamily = window.getComputedStyle(element).fontFamily;
+      if (fontFamily) {
+        fontFamily.split(',').forEach(font => {
+          font = font.trim().replace(/['"]/g, '');
+          if (font !== '' && !font.includes('system') && !font.includes('serif') && !font.includes('sans-serif')) {
+            fontFamilies.add(font);
+          }
+        });
+      }
+    });
+
+    // Create observers for each font
+    const fontObservers = Array.from(fontFamilies).map(family => {
+      return new FontFaceObserver(family).load(null, 5000); // 5 second timeout
+    });
+
+    // Wait for all fonts to load
+    Promise.all(fontObservers)
+      .then(() => {
+        console.log('All fonts loaded successfully');
+        initAnimation();
+      })
+      .catch(err => {
+        console.warn('Some fonts failed to load:', err);
+        // Initialize anyway after a delay
+        setTimeout(initAnimation, 1000);
+      });
+  };
+
+  initWithFonts();
 });
 
 function initAnimation() {
