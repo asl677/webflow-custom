@@ -1,6 +1,7 @@
 // Version 1.0.13 - Fix mobile and exit animations timing
 // Version 1.0.14 - Fix mobile-down visibility
 // Version 1.0.15 - Fix white lines stagger animation
+// Version 1.0.16 - Fix mobile-down visibility persistence
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -76,7 +77,13 @@ function initAnimation() {
   if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: -20 });
   if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
   if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
-  if (els.mobile.length) gsap.set(els.mobile, { opacity: 0, y: 30 });
+  if (els.mobile.length) {
+    gsap.set(els.mobile, { 
+      opacity: 0,
+      visibility: "hidden",
+      y: 30 
+    });
+  }
   if (els.splitLinesRegular?.length) gsap.set(els.splitLinesRegular, { autoAlpha: 0, y: -20 });
   if (els.splitLinesWhite?.length) gsap.set(els.splitLinesWhite, { autoAlpha: 0, y: 30 });
 
@@ -154,6 +161,7 @@ function initAnimation() {
     }, "<0.1")
     .to(els.mobile, {
       opacity: 1,
+      visibility: "visible",
       y: 0,
       duration: 0.8,
       immediateRender: true,
@@ -161,6 +169,9 @@ function initAnimation() {
         each: 0.15,
         from: "start",
         ease: "power2.inOut"
+      },
+      onComplete: function() {
+        gsap.set(els.mobile, { clearProps: "visibility" }); // Ensure visibility remains after animation
       }
     }, 0.4);
 
@@ -202,6 +213,7 @@ function initAnimation() {
     exitTl.to(overlay, { opacity: 1 }, 0)
          .to(els.mobile, { 
            opacity: 0,
+           visibility: "hidden",
            y: -30,
            stagger: {
              each: 0.1,
