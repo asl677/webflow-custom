@@ -1,3 +1,4 @@
+// Version 1.0.1 - Force update
 // Initial styles
 (() => {
   // Add required scripts in the correct order
