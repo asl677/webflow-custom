@@ -16,9 +16,13 @@
           background: #000; z-index: 9999; pointer-events: none;
           opacity: 1; will-change: opacity; transform: translateZ(0);
         }
-        [data-lenis-prevent] {
-          transform: translate3d(0, 0, 0);
-          will-change: transform;
+        .scrollable-wrapper {
+          position: relative;
+          overflow: hidden;
+        }
+        .scrollable-content {
+          position: relative;
+          z-index: 1;
         }
       `
     }),
@@ -114,19 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     infinite: false,
     gestureOrientation: "vertical",
     normalizeWheel: true,
-    smoothTouch: false,
-    // Custom prevent function for sticky elements
-    prevent: ({ currentTarget, target }) => {
-      // Check if the element or any of its parents has position: sticky
-      const isOrHasSticky = (el) => {
-        while (el && el !== document.body) {
-          if (getComputedStyle(el).position === 'sticky') return true;
-          el = el.parentElement;
-        }
-        return false;
-      };
-      return isOrHasSticky(target);
-    }
+    smoothTouch: false
   });
 
   // Proper Lenis + GSAP ScrollTrigger integration
@@ -281,22 +273,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const isStickyContainer = getComputedStyle(container).position === 'sticky';
     
     if (stickyElements.length > 0 || isStickyContainer) {
-      // Add data-lenis-prevent to the container if it contains sticky elements
-      container.setAttribute('data-lenis-prevent', '');
-      
+      // Create a wrapper for sticky content if needed
       if (!container.classList.contains('scrollable-wrapper')) {
-        const content = document.createElement('div');
-        content.className = 'scrollable-content';
-        while (container.firstChild) content.appendChild(container.firstChild);
-        container.appendChild(content);
-        container.classList.add('scrollable-wrapper');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'scrollable-wrapper';
+        container.parentNode.insertBefore(wrapper, container);
+        wrapper.appendChild(container);
       }
       
-      // Add data-lenis-prevent to all sticky elements
+      // Mark sticky elements for Lenis to handle
       stickyElements.forEach(el => {
-        el.setAttribute('data-lenis-prevent', '');
-        el.style.transform = 'translate3d(0, 0, 0)';
-        el.style.willChange = 'transform';
+        el.setAttribute('data-lenis-prevent-wheel', '');
+        el.setAttribute('data-lenis-prevent-touch', '');
       });
     }
   };
@@ -304,25 +292,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize and watch for new scrollable elements
   document.querySelectorAll('[style*="sticky"]').forEach(el => {
     el.classList.add('sticky-element');
-    el.setAttribute('data-lenis-prevent', '');
-    el.style.transform = 'translate3d(0, 0, 0)';
-    el.style.willChange = 'transform';
+    el.setAttribute('data-lenis-prevent-wheel', '');
+    el.setAttribute('data-lenis-prevent-touch', '');
   });
   
   document.querySelectorAll('[style*="overflow"], .scrollable').forEach(setupScroll);
   
+  // Watch for new elements
   new MutationObserver(mutations => 
     mutations.forEach(m => m.addedNodes.forEach(node => {
       if (node.nodeType !== 1) return;
       const style = getComputedStyle(node);
       if (style.position === 'sticky') {
         node.classList.add('sticky-element');
-        node.setAttribute('data-lenis-prevent', '');
+        node.setAttribute('data-lenis-prevent-wheel', '');
+        node.setAttribute('data-lenis-prevent-touch', '');
       }
       if (['auto', 'scroll'].includes(style.overflowY)) setupScroll(node);
       node.querySelectorAll?.('[style*="sticky"]').forEach(el => {
         el.classList.add('sticky-element');
-        el.setAttribute('data-lenis-prevent', '');
+        el.setAttribute('data-lenis-prevent-wheel', '');
+        el.setAttribute('data-lenis-prevent-touch', '');
       });
       node.querySelectorAll?.('[style*="overflow"], .scrollable').forEach(setupScroll);
     }))
