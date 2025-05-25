@@ -138,7 +138,7 @@ function initAnimation() {
       }
     }, 0)
     .from(els.splitLinesRegular, { 
-      y: 30, 
+      y: -30, 
       opacity: 0,
       stagger: { 
         amount: 0.8,
@@ -149,7 +149,7 @@ function initAnimation() {
       ease: "power3.out"
     }, 0.2)
     .from(els.splitLinesWhite, { 
-      y: 30,
+      y: -30,
       opacity: 0,
       stagger: { 
         amount: 0.5,
