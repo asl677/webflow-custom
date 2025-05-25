@@ -1,4 +1,4 @@
-// Version 1.0.2 - Force cache refresh
+// Version 1.0.3 - Switch to direct GitHub URLs
 // Initial styles
 (() => {
   // Add required scripts in the correct order
@@ -27,10 +27,10 @@
   lenisStylesheet.href = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
   document.head.appendChild(lenisStylesheet);
 
-  // Add our custom animations CSS using jsDelivr
+  // Add our custom animations CSS using direct GitHub URL
   const animationsStylesheet = document.createElement('link');
   animationsStylesheet.rel = 'stylesheet';
-  animationsStylesheet.href = 'https://cdn.jsdelivr.net/gh/asl677/webflow-custom@main/styles/animations.css';
+  animationsStylesheet.href = 'https://raw.githubusercontent.com/asl677/webflow-custom/main/styles/animations.css';
   document.head.appendChild(animationsStylesheet);
 
   // Add critical styles inline to ensure they're applied immediately
