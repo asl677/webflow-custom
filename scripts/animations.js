@@ -16,6 +16,10 @@
           background: #000; z-index: 9999; pointer-events: none;
           opacity: 1; will-change: opacity; transform: translateZ(0);
         }
+        [data-lenis-prevent] {
+          transform: translate3d(0, 0, 0);
+          will-change: transform;
+        }
       `
     }),
     document.head.firstChild
@@ -70,7 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial states and intro animation
   gsap.set([els.text, els.media, els.cards], { autoAlpha: 0, y: 20 });
-  gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
+  gsap.set(els.mobile, { 
+    height: "auto", 
+    opacity: 0, 
+    y: 30,
+    visibility: "hidden"
+  });
 
   // Helper function to get natural height
   const getHeight = (el) => {
@@ -79,9 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
   };
 
-  // Store original heights
+  // Store original heights and prepare elements
   els.mobile.forEach(el => {
     el._naturalHeight = getHeight(el);
+    // Ensure the element is visible for height calculation
+    gsap.set(el, { 
+      visibility: "visible",
+      height: "auto"
+    });
   });
 
   // Setup sticky elements for Lenis
@@ -97,8 +111,22 @@ document.addEventListener('DOMContentLoaded', () => {
     smoothWheel: true,
     wheelMultiplier: 0.8,
     touchMultiplier: 0.8,
-    syncTouch: true,
-    syncTouchLerp: 0.075
+    infinite: false,
+    gestureOrientation: "vertical",
+    normalizeWheel: true,
+    smoothTouch: false,
+    // Custom prevent function for sticky elements
+    prevent: ({ currentTarget, target }) => {
+      // Check if the element or any of its parents has position: sticky
+      const isOrHasSticky = (el) => {
+        while (el && el !== document.body) {
+          if (getComputedStyle(el).position === 'sticky') return true;
+          el = el.parentElement;
+        }
+        return false;
+      };
+      return isOrHasSticky(target);
+    }
   });
 
   // Proper Lenis + GSAP ScrollTrigger integration
@@ -110,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   gsap.ticker.lagSmoothing(0);
 
-  // Intro animation timeline
+  // Create the intro timeline
   gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
     .to(overlay, { 
       opacity: 0, 
@@ -161,28 +189,15 @@ document.addEventListener('DOMContentLoaded', () => {
         ease: "power2.inOut"
       }
     }, "<0.1")
-    .to(els.mobile, { 
-      autoAlpha: 1, 
-      y: 0,
-      stagger: {
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, "<0.1")
     .to(els.mobile, {
-      height: el => el._naturalHeight,
+      opacity: 1,
+      y: 0,
       duration: 0.8,
       stagger: {
         each: 0.1,
         ease: "power2.inOut"
-      },
-      ease: "power2.inOut",
-      onComplete: () => {
-        els.mobile.forEach(el => {
-          gsap.set(el, { clearProps: "height,overflow" });
-        });
       }
-    }, "<0.2");
+    }, "<0.1");
 
   // Hover effects
   els.hoverLinks.forEach(link => {
@@ -260,9 +275,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle scrollbars and sticky elements
   const setupScroll = container => {
     if (!container) return;
-    const hasSticky = container.querySelector('[style*="sticky"], .sticky-element');
-    if (hasSticky) {
+    
+    // Find all sticky elements within the container
+    const stickyElements = container.querySelectorAll('[style*="sticky"]');
+    const isStickyContainer = getComputedStyle(container).position === 'sticky';
+    
+    if (stickyElements.length > 0 || isStickyContainer) {
+      // Add data-lenis-prevent to the container if it contains sticky elements
       container.setAttribute('data-lenis-prevent', '');
+      
       if (!container.classList.contains('scrollable-wrapper')) {
         const content = document.createElement('div');
         content.className = 'scrollable-content';
@@ -270,6 +291,13 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(content);
         container.classList.add('scrollable-wrapper');
       }
+      
+      // Add data-lenis-prevent to all sticky elements
+      stickyElements.forEach(el => {
+        el.setAttribute('data-lenis-prevent', '');
+        el.style.transform = 'translate3d(0, 0, 0)';
+        el.style.willChange = 'transform';
+      });
     }
   };
 
@@ -277,6 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[style*="sticky"]').forEach(el => {
     el.classList.add('sticky-element');
     el.setAttribute('data-lenis-prevent', '');
+    el.style.transform = 'translate3d(0, 0, 0)';
+    el.style.willChange = 'transform';
   });
   
   document.querySelectorAll('[style*="overflow"], .scrollable').forEach(setupScroll);
