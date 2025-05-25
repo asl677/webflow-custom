@@ -1,3 +1,8 @@
+/*
+To use this script in Webflow, add the following URL to your site's custom code:
+https://cdn.jsdelivr.net/gh/asl677/webflow-custom@main/scripts/animations.js
+*/
+
 // Initial styles
 (() => {
   document.head.insertBefore(
