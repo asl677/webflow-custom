@@ -3,8 +3,9 @@
 // Version 1.0.15 - Fix white lines stagger animation
 // Version 1.0.16 - Fix mobile-down visibility persistence
 // Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
-// Cache-buster: 1684968575
-console.log('animations.js version 1.0.16.1 loaded');
+// Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
+// Cache-buster: 1684968576
+console.log('animations.js version 1.0.17 loaded - commit a59a4b9b');
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
