@@ -1,11 +1,10 @@
-// Version 1.0.5 - Remove style injections
+// Version 1.0.6 - Animation logic only
 (() => {
-  // Add required scripts in the correct order
+  // Add required scripts in the correct order - only animation related
   const scripts = [
     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js',
     'https://unpkg.com/@studio-freight/lenis@1.0.27/dist/lenis.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.3.0/fontfaceobserver.js',
     'https://unpkg.com/split-type',
   ];
 
