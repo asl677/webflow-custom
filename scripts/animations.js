@@ -72,20 +72,90 @@ document.addEventListener('DOMContentLoaded', () => {
   gsap.set([els.text, els.media, els.cards], { autoAlpha: 0, y: 20 });
   gsap.set(els.mobile, { height: 0, opacity: 0, y: 30, overflow: "hidden" });
 
-  gsap.timeline({ defaults: { ease: "power3.out", duration: 0.8 } })
-    .to(overlay, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
-    .to(els.media, { autoAlpha: 1, y: 0, stagger: 0.05 }, 0)
-    .from(els.splitLinesRegular, { y: 20, autoAlpha: 0, stagger: 0.3 }, 0.2)
-    .from(els.splitLinesWhite, { y: 20, autoAlpha: 0, stagger: 0.2 }, "<0.1")
-    .to(els.text, { autoAlpha: 1, y: 0, stagger: 0.05 }, "<0.1")
-    .to(els.cards, { autoAlpha: 1, y: 0, stagger: 0.1 }, "<0.1")
-    .to(els.mobile, { 
+  // Helper function to get natural height
+  const getHeight = (el) => {
+    const height = el.offsetHeight;
+    const style = window.getComputedStyle(el);
+    return height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+  };
+
+  // Store original heights
+  els.mobile.forEach(el => {
+    el._naturalHeight = getHeight(el);
+  });
+
+  gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
+    .to(overlay, { 
+      opacity: 0, 
+      duration: 0.4, 
+      ease: "power2.inOut" 
+    })
+    .to(els.media, { 
       autoAlpha: 1, 
       y: 0, 
-      height: "auto",
-      stagger: 0.1,
-      clearProps: "height,overflow"
-    }, "<0.1");
+      stagger: { 
+        each: 0.1,
+        ease: "power2.inOut"
+      }
+    }, 0)
+    .from(els.splitLinesRegular, { 
+      y: 30, 
+      autoAlpha: 0, 
+      stagger: { 
+        amount: 0.6,
+        from: "start",
+        ease: "power2.inOut"
+      },
+      duration: 1.4
+    }, 0.2)
+    .from(els.splitLinesWhite, { 
+      y: 30, 
+      autoAlpha: 0, 
+      stagger: { 
+        amount: 0.5,
+        from: "start",
+        ease: "power2.inOut"
+      },
+      duration: 1.4
+    }, "<0.1")
+    .to(els.text, { 
+      autoAlpha: 1, 
+      y: 0, 
+      stagger: { 
+        each: 0.05,
+        ease: "power2.inOut"
+      }
+    }, "<0.1")
+    .to(els.cards, { 
+      autoAlpha: 1, 
+      y: 0, 
+      stagger: { 
+        each: 0.1,
+        ease: "power2.inOut"
+      }
+    }, "<0.1")
+    .to(els.mobile, { 
+      autoAlpha: 1, 
+      y: 0,
+      stagger: {
+        each: 0.1,
+        ease: "power2.inOut"
+      }
+    }, "<0.1")
+    .to(els.mobile, {
+      height: el => el._naturalHeight,
+      duration: 0.8,
+      stagger: {
+        each: 0.1,
+        ease: "power2.inOut"
+      },
+      ease: "power2.inOut",
+      onComplete: () => {
+        els.mobile.forEach(el => {
+          gsap.set(el, { clearProps: "height,overflow" });
+        });
+      }
+    }, "<0.2");
 
   // Hover effects
   els.hoverLinks.forEach(link => {
