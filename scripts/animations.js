@@ -6,10 +6,10 @@
   lenisStylesheet.href = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
   document.head.appendChild(lenisStylesheet);
 
-  // Add our custom animations CSS using raw GitHub URL
+  // Add our custom animations CSS using jsDelivr
   const animationsStylesheet = document.createElement('link');
   animationsStylesheet.rel = 'stylesheet';
-  animationsStylesheet.href = 'https://raw.githubusercontent.com/asl677/webflow-custom/main/styles/animations.css';
+  animationsStylesheet.href = 'https://cdn.jsdelivr.net/gh/asl677/webflow-custom@main/styles/animations.css';
   document.head.appendChild(animationsStylesheet);
 
   // Add critical styles inline to ensure they're applied immediately
