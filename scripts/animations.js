@@ -35,6 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return setTimeout(initAnimation, 50);
   }
 
+  // Wait for fonts to load before initializing
+  document.fonts.ready.then(() => {
+    initAnimation();
+  });
+});
+
+function initAnimation() {
   gsap.registerPlugin(SplitText, ScrollTrigger);
   gsap.config({ force3D: true });
   gsap.defaults({ ease: "power3.out", duration: 1.2 });
@@ -42,12 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cache elements
   const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
   const els = {
-    text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
-    media: document.querySelectorAll('img, video'),
-    mobile: document.querySelectorAll('.mobile-down'),
-    cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
-    hoverLinks: document.querySelectorAll('.heading.small.link.large-link')
+    text: gsap.utils.toArray('h1, h2, h3, p, a, .nav'),
+    media: gsap.utils.toArray('img, video'),
+    mobile: gsap.utils.toArray('.mobile-down'),
+    cards: gsap.utils.toArray('.card-project, .fake-nav, .inner-top'),
+    hoverLinks: gsap.utils.toArray('.heading.small.link.large-link')
   };
+
+  // Ensure elements exist before proceeding
+  if (!els.text.length && !els.media.length && !els.mobile.length && !els.cards.length) {
+    console.warn('No target elements found for animations');
+    return;
+  }
 
   // Split text setup
   let splitTextInstances = [];
@@ -57,13 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
     splitTextInstances = [];
     
     // Create new instances
-    const regularSplit = SplitText.create(".heading.large:not(.white)", { type: "lines" });
-    const whiteSplit = SplitText.create(".heading.large.white", { type: "lines" });
-    splitTextInstances.push(regularSplit, whiteSplit);
+    const regularElements = document.querySelectorAll(".heading.large:not(.white)");
+    const whiteElements = document.querySelectorAll(".heading.large.white");
     
-    // Update element references
-    els.splitLinesRegular = regularSplit.lines;
-    els.splitLinesWhite = whiteSplit.lines;
+    if (regularElements.length) {
+      const regularSplit = SplitText.create(regularElements, { type: "lines" });
+      splitTextInstances.push(regularSplit);
+      els.splitLinesRegular = regularSplit.lines;
+    }
+    
+    if (whiteElements.length) {
+      const whiteSplit = SplitText.create(whiteElements, { type: "lines" });
+      splitTextInstances.push(whiteSplit);
+      els.splitLinesWhite = whiteSplit.lines;
+    }
   };
 
   // Initial split
@@ -73,17 +93,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(createSplitText, 100);
+    resizeTimeout = setTimeout(() => {
+      // Ensure fonts are still loaded
+      document.fonts.ready.then(createSplitText);
+    }, 100);
   });
 
   // Initial states and intro animation
-  gsap.set([els.text, els.media, els.cards], { autoAlpha: 0, y: 20 });
-  gsap.set(els.mobile, { 
-    height: "auto", 
-    opacity: 0, 
-    y: 30,
-    visibility: "hidden"
-  });
+  if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: 20 });
+  if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
+  if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
+  if (els.mobile.length) {
+    gsap.set(els.mobile, { 
+      height: "auto", 
+      opacity: 0, 
+      y: 30,
+      visibility: "hidden"
+    });
+  }
 
   // Helper function to get natural height
   const getHeight = (el) => {
@@ -320,4 +347,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
   document.documentElement.classList.add('lenis', 'lenis-smooth');
-});
+}
