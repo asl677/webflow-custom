@@ -1,5 +1,22 @@
-// Version 1.0.7 - Animation logic only
-document.addEventListener('DOMContentLoaded', initAnimation);
+// Version 1.0.8 - Animation logic only
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if required libraries are loaded
+  if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
+    console.error('Required libraries not loaded. Please check script loading order:',
+      '\nGSAP:', !!window.gsap,
+      '\nScrollTrigger:', !!window.ScrollTrigger,
+      '\nSplitText:', !!window.SplitText,
+      '\nLenis:', !!window.Lenis
+    );
+    return;
+  }
+
+  try {
+    initAnimation();
+  } catch (error) {
+    console.error('Error initializing animations:', error);
+  }
+});
 
 function initAnimation() {
   gsap.registerPlugin(ScrollTrigger);
