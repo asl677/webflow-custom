@@ -1,4 +1,4 @@
-// Version 1.0.10 - Remove test styles
+// Version 1.0.12 - Fix mobile and exit animations
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -74,14 +74,7 @@ function initAnimation() {
   if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: -20 });
   if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
   if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
-  if (els.mobile.length) {
-    gsap.set(els.mobile, { 
-      height: "auto", 
-      opacity: 0, 
-      y: 30,
-      visibility: "hidden"
-    });
-  }
+  if (els.mobile.length) gsap.set(els.mobile, { autoAlpha: 0, y: 30 });
   if (els.splitLinesRegular?.length) gsap.set(els.splitLinesRegular, { autoAlpha: 0, y: -20 });
   if (els.splitLinesWhite?.length) gsap.set(els.splitLinesWhite, { autoAlpha: 0, y: 30 });
 
@@ -158,14 +151,14 @@ function initAnimation() {
       }
     }, "<0.1")
     .to(els.mobile, {
-      opacity: 1,
+      autoAlpha: 1,
       y: 0,
-      duration: 0.8,
+      duration: 1.2,
       stagger: {
-        each: 0.1,
+        amount: 0.3,
         ease: "power2.inOut"
       }
-    }, "<0.1");
+    }, "<0.2");
 
   // Hover effects
   els.hoverLinks.forEach(link => {
@@ -203,40 +196,53 @@ function initAnimation() {
     .to(overlay, { opacity: 1, duration: 0.8 }, 0)
     .to(els.mobile, { 
       autoAlpha: 0, 
-      y: -60, 
-      height: 0,
+      y: -30, 
       duration: 1,
-      stagger: 0.1
+      stagger: {
+        amount: 0.3,
+        from: "end",
+        ease: "power2.inOut"
+      }
     }, 0)
     .to(els.cards, { 
       autoAlpha: 0, 
-      y: -60, 
+      y: -30, 
       duration: 1,
-      stagger: 0.1 
+      stagger: {
+        amount: 0.3,
+        from: "end",
+        ease: "power2.inOut"
+      }
     }, "<0.1")
     .to(els.text, { 
       autoAlpha: 0, 
-      y: -60, 
+      y: -30, 
       duration: 1,
-      stagger: 0.1 
+      stagger: {
+        amount: 0.3,
+        from: "end",
+        ease: "power2.inOut"
+      }
     }, "<0.1")
-    .to(els.splitLinesWhite, { 
-      y: -60, 
+    .to([els.splitLinesWhite, els.splitLinesRegular], { 
       autoAlpha: 0, 
+      y: -30, 
       duration: 1,
-      stagger: 0.1 
-    }, "<0.1")
-    .to(els.splitLinesRegular, { 
-      y: -60, 
-      autoAlpha: 0, 
-      duration: 1,
-      stagger: 0.1 
+      stagger: {
+        amount: 0.3,
+        from: "end",
+        ease: "power2.inOut"
+      }
     }, "<0.1")
     .to(els.media, { 
       autoAlpha: 0, 
-      y: -60, 
+      y: -30, 
       duration: 1,
-      stagger: 0.1 
+      stagger: {
+        amount: 0.3,
+        from: "end",
+        ease: "power2.inOut"
+      }
     }, "<0.1");
   });
 
