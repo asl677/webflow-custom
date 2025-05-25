@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return setTimeout(initAnimation, 50);
   }
 
-  gsap.registerPlugin(SplitText);
+  gsap.registerPlugin(SplitText, ScrollTrigger);
   gsap.config({ force3D: true });
   gsap.defaults({ ease: "power3.out", duration: 1.2 });
 
@@ -84,6 +84,33 @@ document.addEventListener('DOMContentLoaded', () => {
     el._naturalHeight = getHeight(el);
   });
 
+  // Setup sticky elements for Lenis
+  document.querySelectorAll('[style*="sticky"]').forEach(el => {
+    el.setAttribute('data-lenis-prevent', '');
+  });
+
+  // Initialize Lenis with proper configuration
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    smoothWheel: true,
+    wheelMultiplier: 0.8,
+    touchMultiplier: 0.8,
+    syncTouch: true,
+    syncTouchLerp: 0.075
+  });
+
+  // Proper Lenis + GSAP ScrollTrigger integration
+  lenis.on('scroll', ScrollTrigger.update);
+
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+
+  gsap.ticker.lagSmoothing(0);
+
+  // Intro animation timeline
   gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
     .to(overlay, { 
       opacity: 0, 
@@ -177,22 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     link.addEventListener('mouseleave', () => tl.reverse());
   });
 
-  // Initialize Lenis
-  const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    orientation: 'vertical',
-    smoothWheel: true,
-    wheelMultiplier: 0.8,
-    touchMultiplier: 0.8
-  });
-
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-  window.addEventListener('resize', () => lenis.resize());
-
-  // Navigation handling
+  // Navigation handling with Lenis smooth scrolling
   document.addEventListener('click', e => {
     const link = e.target.closest('a');
     const href = link?.getAttribute('href');
@@ -245,33 +257,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }, "<0.1");
   });
 
-  // Handle scrollbars
+  // Handle scrollbars and sticky elements
   const setupScroll = container => {
     if (!container) return;
     const hasSticky = container.querySelector('[style*="sticky"], .sticky-element');
-    if (hasSticky && !container.classList.contains('scrollable-wrapper')) {
-      const content = document.createElement('div');
-      content.className = 'scrollable-content';
-      while (container.firstChild) content.appendChild(container.firstChild);
-      container.appendChild(content);
-      container.classList.add('scrollable-wrapper');
-    } else {
-      Object.assign(container.style, { scrollbarWidth: 'none', msOverflowStyle: 'none' });
-      container.classList.add('no-scrollbar');
+    if (hasSticky) {
+      container.setAttribute('data-lenis-prevent', '');
+      if (!container.classList.contains('scrollable-wrapper')) {
+        const content = document.createElement('div');
+        content.className = 'scrollable-content';
+        while (container.firstChild) content.appendChild(container.firstChild);
+        container.appendChild(content);
+        container.classList.add('scrollable-wrapper');
+      }
     }
   };
 
   // Initialize and watch for new scrollable elements
-  document.querySelectorAll('[style*="sticky"]').forEach(el => el.classList.add('sticky-element'));
+  document.querySelectorAll('[style*="sticky"]').forEach(el => {
+    el.classList.add('sticky-element');
+    el.setAttribute('data-lenis-prevent', '');
+  });
+  
   document.querySelectorAll('[style*="overflow"], .scrollable').forEach(setupScroll);
   
   new MutationObserver(mutations => 
     mutations.forEach(m => m.addedNodes.forEach(node => {
       if (node.nodeType !== 1) return;
       const style = getComputedStyle(node);
-      if (style.position === 'sticky') node.classList.add('sticky-element');
+      if (style.position === 'sticky') {
+        node.classList.add('sticky-element');
+        node.setAttribute('data-lenis-prevent', '');
+      }
       if (['auto', 'scroll'].includes(style.overflowY)) setupScroll(node);
-      node.querySelectorAll?.('[style*="sticky"]').forEach(el => el.classList.add('sticky-element'));
+      node.querySelectorAll?.('[style*="sticky"]').forEach(el => {
+        el.classList.add('sticky-element');
+        el.setAttribute('data-lenis-prevent', '');
+      });
       node.querySelectorAll?.('[style*="overflow"], .scrollable').forEach(setupScroll);
     }))
   ).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
