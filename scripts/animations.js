@@ -263,10 +263,10 @@ function initAnimation() {
       }
     }, 0)
     .from(els.splitLinesRegular, { 
-      y: 30, 
+      y: -30, 
       autoAlpha: 0, 
       stagger: { 
-        amount: 0.6,
+        amount: 0.8,
         from: "start",
         ease: "power2.inOut"
       },
