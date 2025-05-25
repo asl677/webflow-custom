@@ -1,5 +1,4 @@
-// Version 1.0.4 - Remove all jsDelivr dependencies
-// Initial styles
+// Version 1.0.5 - Remove style injections
 (() => {
   // Add required scripts in the correct order
   const scripts = [
@@ -21,72 +20,13 @@
     });
   };
 
-  // Add Lenis CSS directly
-  const lenisStylesheet = document.createElement('link');
-  lenisStylesheet.rel = 'stylesheet';
-  lenisStylesheet.href = 'https://unpkg.com/@studio-freight/lenis@1.0.27/dist/lenis.min.css';
-  document.head.appendChild(lenisStylesheet);
-
-  // Add our custom animations CSS using direct GitHub URL
-  const animationsStylesheet = document.createElement('link');
-  animationsStylesheet.rel = 'stylesheet';
-  animationsStylesheet.href = 'https://raw.githubusercontent.com/asl677/webflow-custom/main/styles/animations.css';
-  document.head.appendChild(animationsStylesheet);
-
-  // Add critical styles inline to ensure they're applied immediately
-  document.head.insertBefore(
-    Object.assign(document.createElement('style'), {
-      textContent: `
-        html.lenis { height: auto; }
-        .lenis.lenis-smooth { scroll-behavior: auto !important; }
-        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-        .lenis.lenis-stopped { overflow: hidden; }
-        .lenis.lenis-smooth iframe { pointer-events: none; }
-        html, body { background: #000 !important; }
-        body { opacity: 0 !important; }
-        body.ready { opacity: 1 !important; transition: opacity 0.4s ease-out; }
-        .page-overlay {
-          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-          background: #000; z-index: 9999; pointer-events: none;
-          opacity: 1; will-change: opacity;
-        }
-        [data-lenis-prevent] {
-          position: relative !important;
-          z-index: 1;
-          transform: translate3d(0, 0, 0);
-        }
-        .sticky-element {
-          position: sticky !important;
-          top: 0;
-          z-index: 100;
-          transform: translate3d(0, 0, 0);
-        }
-        .text-animate, .media-animate, .card-project, .mobile-down {
-          opacity: 0;
-          transform: translateY(20px);
-          will-change: transform, opacity;
-        }
-      `
-    }),
-    document.head.firstChild
-  );
-
   // Load all scripts in sequence
   scripts.reduce((promise, script) => {
     return promise.then(() => loadScript(script));
   }, Promise.resolve())
     .then(() => {
-      // All scripts loaded, now wait for fonts and CSS
-      return Promise.all([
-        document.fonts.ready,
-        new Promise(resolve => {
-          if (document.readyState === 'complete') {
-            resolve();
-          } else {
-            window.addEventListener('load', resolve);
-          }
-        })
-      ]);
+      // All scripts loaded, now wait for fonts
+      return document.fonts.ready;
     })
     .then(() => {
       // Everything is loaded, initialize animation
