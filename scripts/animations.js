@@ -1,7 +1,13 @@
 /*
 To use this script in Webflow, add the following URL to your site's custom code:
 https://cdn.jsdelivr.net/gh/asl677/webflow-custom@main/scripts/animations.js
-Version: 1.0.1 - Improved exit animations
+Version: 1.0.2 - Fixed initialization and dependency handling
+
+Required external scripts (add these to your site's settings in this order):
+1. https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js
+2. https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js
+3. https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.39/bundled/lenis.min.js
+4. https://assets.codepen.io/16327/SplitText3.min.js (requires GSAP Club membership)
 */
 
 // Initial styles
@@ -28,9 +34,24 @@ Version: 1.0.1 - Improved exit animations
   );
 })();
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof gsap === 'undefined' || typeof SplitText === 'undefined') {
-    return setTimeout(initAnimation, 50);
+// Main initialization function
+function initAnimation() {
+  // Check dependencies
+  if (typeof gsap === 'undefined') {
+    console.error('GSAP is not loaded. Please add the GSAP script to your site settings.');
+    return;
+  }
+  if (typeof ScrollTrigger === 'undefined') {
+    console.error('ScrollTrigger is not loaded. Please add the ScrollTrigger plugin to your site settings.');
+    return;
+  }
+  if (typeof Lenis === 'undefined') {
+    console.error('Lenis is not loaded. Please add the Lenis script to your site settings.');
+    return;
+  }
+  if (typeof SplitText === 'undefined') {
+    console.error('SplitText is not loaded. Please add the SplitText plugin to your site settings.');
+    return;
   }
 
   gsap.registerPlugin(SplitText);
@@ -214,4 +235,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.classList.add('ready');
   document.documentElement.classList.add('lenis', 'lenis-smooth');
-});
+}
+
+// Initialize with retry
+let initAttempts = 0;
+const maxAttempts = 10;
+const attemptInterval = 100;
+
+function attemptInit() {
+  if (initAttempts >= maxAttempts) {
+    console.error('Failed to initialize animations after multiple attempts. Please check if all required scripts are loaded.');
+    return;
+  }
+  
+  if (typeof gsap === 'undefined' || typeof SplitText === 'undefined' || 
+      typeof Lenis === 'undefined' || typeof ScrollTrigger === 'undefined') {
+    initAttempts++;
+    setTimeout(attemptInit, attemptInterval);
+    return;
+  }
+  
+  initAnimation();
+}
+
+document.addEventListener('DOMContentLoaded', attemptInit);
