@@ -1,4 +1,6 @@
-// Version 1.0.12 - Fix mobile and exit animations
+// Version 1.0.13 - Fix mobile and exit animations timing
+// Version 1.0.14 - Fix mobile-down visibility
+// Version 1.0.15 - Fix white lines stagger animation
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -74,7 +76,7 @@ function initAnimation() {
   if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: -20 });
   if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
   if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
-  if (els.mobile.length) gsap.set(els.mobile, { autoAlpha: 0, y: 30 });
+  if (els.mobile.length) gsap.set(els.mobile, { opacity: 0, y: 30 });
   if (els.splitLinesRegular?.length) gsap.set(els.splitLinesRegular, { autoAlpha: 0, y: -20 });
   if (els.splitLinesWhite?.length) gsap.set(els.splitLinesWhite, { autoAlpha: 0, y: 30 });
 
@@ -127,13 +129,13 @@ function initAnimation() {
       y: 30,
       opacity: 0,
       stagger: { 
-        amount: 0.5,
-        from: "start",
+        amount: 0.8,
+        from: "end",
         ease: "power2.inOut"
       },
       duration: 1.4,
       ease: "power3.out"
-    }, "<0.1")
+    }, "<0.2")
     .to(els.text, { 
       autoAlpha: 1, 
       y: 0, 
@@ -151,14 +153,16 @@ function initAnimation() {
       }
     }, "<0.1")
     .to(els.mobile, {
-      autoAlpha: 1,
+      opacity: 1,
       y: 0,
-      duration: 1.2,
+      duration: 0.8,
+      immediateRender: true,
       stagger: {
-        amount: 0.3,
+        each: 0.15,
+        from: "start",
         ease: "power2.inOut"
       }
-    }, "<0.2");
+    }, 0.4);
 
   // Hover effects
   els.hoverLinks.forEach(link => {
@@ -189,61 +193,55 @@ function initAnimation() {
     e.preventDefault();
     lenis.stop();
     
-    gsap.timeline({
-      defaults: { ease: "power2.inOut" },
-      onStart: () => setTimeout(() => window.location = href, 1500)
-    })
-    .to(overlay, { opacity: 1, duration: 0.8 }, 0)
-    .to(els.mobile, { 
+    const exitTl = gsap.timeline({
+      defaults: { ease: "power2.inOut", duration: 0.8 },
+      onStart: () => setTimeout(() => window.location = href, 2000)
+    });
+
+    // First batch of animations
+    exitTl.to(overlay, { opacity: 1 }, 0)
+         .to(els.mobile, { 
+           opacity: 0,
+           y: -30,
+           stagger: {
+             each: 0.1,
+             from: "end",
+             ease: "power2.inOut"
+           }
+         }, 0);
+
+    // Second batch - text and cards
+    exitTl.to([els.cards, els.text], { 
       autoAlpha: 0, 
-      y: -30, 
-      duration: 1,
+      y: -30,
       stagger: {
-        amount: 0.3,
+        each: 0.1,
         from: "end",
         ease: "power2.inOut"
       }
-    }, 0)
-    .to(els.cards, { 
+    }, 0.2);
+
+    // Third batch - split lines
+    exitTl.to([els.splitLinesWhite, els.splitLinesRegular], { 
       autoAlpha: 0, 
-      y: -30, 
-      duration: 1,
+      y: -30,
       stagger: {
-        amount: 0.3,
+        each: 0.1,
         from: "end",
         ease: "power2.inOut"
       }
-    }, "<0.1")
-    .to(els.text, { 
+    }, 0.4);
+
+    // Final batch - media
+    exitTl.to(els.media, { 
       autoAlpha: 0, 
-      y: -30, 
-      duration: 1,
+      y: -30,
       stagger: {
-        amount: 0.3,
+        each: 0.1,
         from: "end",
         ease: "power2.inOut"
       }
-    }, "<0.1")
-    .to([els.splitLinesWhite, els.splitLinesRegular], { 
-      autoAlpha: 0, 
-      y: -30, 
-      duration: 1,
-      stagger: {
-        amount: 0.3,
-        from: "end",
-        ease: "power2.inOut"
-      }
-    }, "<0.1")
-    .to(els.media, { 
-      autoAlpha: 0, 
-      y: -30, 
-      duration: 1,
-      stagger: {
-        amount: 0.3,
-        from: "end",
-        ease: "power2.inOut"
-      }
-    }, "<0.1");
+    }, 0.6);
   });
 
   document.body.classList.add('ready');
