@@ -16,7 +16,7 @@
     --text-color: var(--gainsboro);
     --overlay-color: var(--onyx);
   }
-}
+} 
 
 /* Hide scrollbars but keep scrolling functionality - refined approach */
 html {
@@ -249,9 +249,53 @@ body.ready {
 
 /* Animation states */
 [data-split] {
-  opacity: 0;
+  visibility: visible !important;
+  will-change: transform;
 }
 
+.split-line {
+  display: block;
+  overflow: hidden;
+  transform-origin: 0% 50% -50;
+}
+
+.split-line.white {
+  color: #fff;
+}
+
+/* Ensure proper rendering of split lines */
+.heading.large {
+  visibility: visible !important;
+  will-change: transform;
+}
+
+.heading.large .split-line {
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* Fix for split text container heights */
+[data-split="regular"],
+[data-split="white"] {
+  height: auto !important;
+  min-height: 0 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Optimize performance for animations */
+.split-line {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Mobile-down */
 .mobile-down {
   height: auto;
   visibility: visible;
@@ -295,4 +339,56 @@ html {
   opacity: 1 !important;
   visibility: visible !important;
   transform: translateY(0) !important;
+}
+
+/* Sticky Container Styles */
+.sticky-container {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* Sticky Element Styles */
+[data-sticky="true"] {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Ensure proper z-index stacking */
+.sticky-container {
+  z-index: 1;
+}
+
+[data-sticky="true"] {
+  z-index: 2;
+}
+
+/* Optimize performance */
+.lenis {
+  scroll-behavior: smooth;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Fix for iOS sticky behavior */
+@supports (-webkit-overflow-scrolling: touch) {
+  [data-sticky="true"] {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }

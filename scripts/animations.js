@@ -4,8 +4,9 @@
 // Version 1.0.16 - Fix mobile-down visibility persistence
 // Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
 // Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
+// Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.17 loaded - commit a59a4b9b');
+console.log('animations.js version 1.0.18 loaded');
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -44,7 +45,13 @@ function initAnimation() {
   let splitTextInstances = [];
   const createSplitText = () => {
     // Kill old instances
-    splitTextInstances.forEach(split => split.revert());
+    splitTextInstances.forEach(split => {
+      try {
+        split.revert();
+      } catch (e) {
+        console.warn('Error reverting split:', e);
+      }
+    });
     splitTextInstances = [];
     
     // Create new instances
@@ -52,33 +59,40 @@ function initAnimation() {
     const whiteElements = document.querySelectorAll(".heading.large.white");
     
     if (regularElements.length) {
-      const regularSplit = SplitText.create(regularElements, { type: "lines" });
+      const regularSplit = new SplitText(regularElements, { 
+        type: "lines",
+        reduceWhiteSpace: false
+      });
       splitTextInstances.push(regularSplit);
       els.splitLinesRegular = regularSplit.lines;
+      
+      // Set initial state for regular lines
+      gsap.set(els.splitLinesRegular, { 
+        autoAlpha: 0, 
+        y: 20,
+        rotateX: 0
+      });
     }
     
     if (whiteElements.length) {
-      const whiteSplit = SplitText.create(whiteElements, { type: "lines" });
+      const whiteSplit = new SplitText(whiteElements, { 
+        type: "lines",
+        reduceWhiteSpace: false
+      });
       splitTextInstances.push(whiteSplit);
       els.splitLinesWhite = whiteSplit.lines;
+      
+      // Set initial state for white lines
+      gsap.set(els.splitLinesWhite, { 
+        autoAlpha: 0, 
+        y: 30,
+        rotateX: 0
+      });
     }
   };
 
-  // Initial split
-  createSplitText();
-
-  // Handle resize
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      // Ensure fonts are still loaded
-      document.fonts.ready.then(createSplitText);
-    }, 100);
-  });
-
   // Initial states
-  if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: -20 });
+  if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: 20 });
   if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
   if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
   if (els.mobile.length) {
@@ -88,10 +102,8 @@ function initAnimation() {
       y: 30 
     });
   }
-  if (els.splitLinesRegular?.length) gsap.set(els.splitLinesRegular, { autoAlpha: 0, y: -20 });
-  if (els.splitLinesWhite?.length) gsap.set(els.splitLinesWhite, { autoAlpha: 0, y: 30 });
 
-  // Initialize Lenis
+  // Initialize Lenis with original settings
   const lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -110,6 +122,20 @@ function initAnimation() {
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
+  // Wait for fonts and create split text
+  document.fonts.ready.then(() => {
+    setTimeout(createSplitText, 100);
+  });
+
+  // Handle resize
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      document.fonts.ready.then(createSplitText);
+    }, 100);
+  });
+
   // Create the intro timeline
   gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
     .to(overlay, { 
@@ -126,7 +152,7 @@ function initAnimation() {
       }
     }, 0)
     .from(els.splitLinesRegular, { 
-      y: -20, 
+      y: 20, 
       opacity: 0,
       stagger: { 
         amount: 0.8,
@@ -173,9 +199,6 @@ function initAnimation() {
         each: 0.15,
         from: "start",
         ease: "power2.inOut"
-      },
-      onComplete: function() {
-        gsap.set(els.mobile, { clearProps: "visibility" }); // Ensure visibility remains after animation
       }
     }, 0.4);
 
