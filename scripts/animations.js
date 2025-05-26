@@ -11,8 +11,10 @@
 // Version 1.0.22 - Fix viewport animations
 // Version 1.0.23 - Streamlined code
 // Version 1.0.24 - Remove redundant heading animations
+// Version 1.0.25 - Consistent animation directions
+// Version 1.0.26 - Consistent top-to-bottom animations
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.24 loaded');
+console.log('animations.js version 1.0.26 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -66,21 +68,25 @@ document.addEventListener('DOMContentLoaded', () => {
       .to(overlay, { opacity: 0, duration: 0.4 })
       .from(inView, {
         autoAlpha: 0,
-        y: -20,
+        y: -30,
         stagger: { each: 0.05, ease: "power2.out" }
       }, 0.2);
 
     // Scroll animations
     outOfView.forEach(element => {
-      gsap.to(element, {
-        scrollTrigger: {
-          trigger: element,
-          start: "top bottom-=100",
-          toggleActions: "play none none reverse"
-        },
-        autoAlpha: 1,
-        y: 0
-      });
+      gsap.fromTo(element, 
+        { autoAlpha: 0, y: -30 },
+        {
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom-=100",
+            toggleActions: "play none none reverse"
+          },
+          autoAlpha: 1,
+          y: 0,
+          ease: "power2.out"
+        }
+      );
     });
 
     // Hover animations
@@ -108,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .to(overlay, { opacity: 1 }, 0)
       .to([...Object.values(elementGroups)].flat(), { 
         autoAlpha: 0, 
-        y: -20,
+        y: 30,
         stagger: { each: 0.02, from: "end" }
       }, 0.2);
     });
