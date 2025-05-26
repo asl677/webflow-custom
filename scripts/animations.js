@@ -23,31 +23,54 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.2
-gsap.registerPlugin(ScrollTrigger);
+// Simple animations v1.0.3
+console.log('Initializing animations.js...');
+
+// Check if GSAP is loaded
+if (typeof gsap === 'undefined') {
+  console.error('GSAP not loaded! Please check script loading order.');
+  throw new Error('GSAP not loaded');
+}
+
+// Register ScrollTrigger
+try {
+  gsap.registerPlugin(ScrollTrigger);
+  console.log('ScrollTrigger registered successfully');
+} catch (error) {
+  console.error('Failed to register ScrollTrigger:', error);
+  throw error;
+}
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, starting animations');
+
   // Animate text elements
   const textElements = document.querySelectorAll('h1, h2, h3, p');
+  console.log('Found text elements:', textElements.length);
+  
   textElements.forEach((element) => {
     gsap.from(element, {
-      y: -30,
+      y: 30,
       opacity: 0,
       duration: 1,
       ease: 'power2.out',
       scrollTrigger: {
         trigger: element,
         start: 'top bottom-=100',
-        toggleActions: 'play none none reverse'
+        toggleActions: 'play none none reverse',
+        markers: true, // Enable markers for debugging
+        onEnter: () => console.log('Text animation triggered:', element),
       }
     });
   });
 
   // Animate media elements with stagger
   const mediaElements = document.querySelectorAll('img, video');
+  console.log('Found media elements:', mediaElements.length);
+  
   gsap.from(mediaElements, {
-    y: -30,
+    y: 30,
     opacity: 0,
     duration: 1,
     stagger: 0.2,
@@ -55,14 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollTrigger: {
       trigger: mediaElements,
       start: 'top bottom-=100',
-      toggleActions: 'play none none reverse'
+      toggleActions: 'play none none reverse',
+      markers: true, // Enable markers for debugging
+      onEnter: () => console.log('Media animation triggered')
     }
   });
 
   // Animate links and buttons
   const linkElements = document.querySelectorAll('a, button');
+  console.log('Found link elements:', linkElements.length);
+  
   gsap.from(linkElements, {
-    y: -20,
+    y: 20,
     opacity: 0,
     duration: 0.8,
     stagger: 0.1,
@@ -70,7 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollTrigger: {
       trigger: linkElements,
       start: 'top bottom-=100',
-      toggleActions: 'play none none reverse'
+      toggleActions: 'play none none reverse',
+      markers: true, // Enable markers for debugging
+      onEnter: () => console.log('Link animation triggered')
     }
   });
+
+  console.log('All animations initialized');
 });
