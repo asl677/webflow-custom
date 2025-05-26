@@ -19,7 +19,8 @@
 // Version 1.0.30 - Fix font loading issues
 // Version 1.0.31 - Add SplitText animations
 // Version 1.0.32 - Fix font loading for SplitText
-console.log('animations.js version 1.0.32 loaded');
+// Version 1.0.33 - Fix text selector syntax
+console.log('animations.js version 1.0.33 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis || !window.SplitText) {
@@ -119,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Function to handle element animations
       function setupElementAnimations() {
         const elements = {
-          text: document.querySelectorAll('p, a, .nav'),
+          text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
           media: document.querySelectorAll('img, video'),
           cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
           mobile: document.querySelectorAll('.mobile-down')
