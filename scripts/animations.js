@@ -18,7 +18,8 @@
 // Version 1.0.29 - Fix dynamic text animations
 // Version 1.0.30 - Fix font loading issues
 // Version 1.0.31 - Add SplitText animations
-console.log('animations.js version 1.0.31 loaded');
+// Version 1.0.32 - Fix font loading for SplitText
+console.log('animations.js version 1.0.32 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis || !window.SplitText) {
@@ -29,6 +30,57 @@ document.addEventListener('DOMContentLoaded', () => {
       SplitText: !!window.SplitText 
     });
     return;
+  }
+
+  // Function to handle text splitting and animation
+  async function setupSplitTextAnimations() {
+    const headings = document.querySelectorAll('h1, h2, h3');
+    
+    // Wait for all fonts to load
+    try {
+      await document.fonts.ready;
+      
+      // Additional check: wait a bit more to ensure fonts are fully applied
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      headings.forEach(heading => {
+        if (heading.hasAttribute('data-split-animated')) return;
+
+        try {
+          const split = new SplitText(heading, {
+            type: "chars,words,lines",
+            linesClass: "split-line",
+            wordsClass: "split-word",
+            charsClass: "split-char"
+          });
+
+          // Set initial state
+          gsap.set(split.chars, {
+            y: 30,
+            autoAlpha: 0
+          });
+
+          // Create animation
+          gsap.to(split.chars, {
+            scrollTrigger: {
+              trigger: heading,
+              start: "top bottom-=100",
+              toggleActions: "play none none reverse"
+            },
+            duration: 1,
+            y: 0,
+            autoAlpha: 1,
+            stagger: 0.02,
+            ease: "power2.out",
+            onComplete: () => heading.setAttribute('data-split-animated', 'true')
+          });
+        } catch (error) {
+          console.error('Error splitting text:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading fonts:', error);
+    }
   }
 
   // Wait for fonts to load before initializing animations
@@ -63,42 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
       lenis.on('scroll', ScrollTrigger.update);
       gsap.ticker.add(time => lenis.raf(time * 1000));
       gsap.ticker.lagSmoothing(0);
-
-      // Function to handle text splitting and animation
-      function setupSplitTextAnimations() {
-        const headings = document.querySelectorAll('h1, h2, h3');
-        headings.forEach(heading => {
-          if (heading.hasAttribute('data-split-animated')) return;
-
-          const split = new SplitText(heading, {
-            type: "chars,words,lines",
-            linesClass: "split-line",
-            wordsClass: "split-word",
-            charsClass: "split-char"
-          });
-
-          // Set initial state
-          gsap.set(split.chars, {
-            y: 30,
-            autoAlpha: 0
-          });
-
-          // Create animation
-          gsap.to(split.chars, {
-            scrollTrigger: {
-              trigger: heading,
-              start: "top bottom-=100",
-              toggleActions: "play none none reverse"
-            },
-            duration: 1,
-            y: 0,
-            autoAlpha: 1,
-            stagger: 0.02,
-            ease: "power2.out",
-            onComplete: () => heading.setAttribute('data-split-animated', 'true')
-          });
-        });
-      }
 
       // Function to handle element animations
       function setupElementAnimations() {
@@ -157,9 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Initial setup
-      setupSplitTextAnimations();
-      setupElementAnimations();
+      // Initial setup with proper order
+      setupElementAnimations();  // First set up regular animations
+      setupSplitTextAnimations(); // Then handle text splitting
 
       // Watch for DOM changes
       const observer = new MutationObserver((mutations) => {
@@ -170,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         if (shouldUpdate) {
-          setupSplitTextAnimations();
           setupElementAnimations();
+          setupSplitTextAnimations();
         }
       });
 
