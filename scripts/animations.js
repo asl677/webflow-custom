@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.1
+// Simple animations v1.0.2
 gsap.registerPlugin(ScrollTrigger);
 
 // Wait for DOM to be ready
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Animate links and buttons
   const linkElements = document.querySelectorAll('a, button');
   gsap.from(linkElements, {
-    y: 20,
+    y: -20,
     opacity: 0,
     duration: 0.8,
     stagger: 0.1,
