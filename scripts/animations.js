@@ -13,8 +13,9 @@
 // Version 1.0.24 - Remove redundant heading animations
 // Version 1.0.25 - Consistent animation directions
 // Version 1.0.26 - Consistent top-to-bottom animations
+// Version 1.0.27 - Fix text animation consistency
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.26 loaded');
+console.log('animations.js version 1.0.27 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -36,16 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
       mobile: gsap.utils.toArray('.mobile-down')
     };
 
-    // Sort elements by viewport visibility
-    const { inView, outOfView } = Object.entries(elementGroups).reduce((acc, [key, elements]) => {
-      elements.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-        (isVisible ? acc.inView : acc.outOfView).push(el);
-        if (!isVisible) gsap.set(el, { autoAlpha: 0, y: -30 });
-      });
-      return acc;
-    }, { inView: [], outOfView: [] });
+    // Set initial state for ALL elements
+    [...Object.values(elementGroups)].flat().forEach(el => {
+      gsap.set(el, { autoAlpha: 0, y: -30 });
+    });
 
     // Initialize smooth scroll
     const lenis = new Lenis({
@@ -63,30 +58,38 @@ document.addEventListener('DOMContentLoaded', () => {
     gsap.ticker.add(time => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Initial animations
+    // Initial animations for elements in viewport
+    const initialElements = [...Object.values(elementGroups)].flat().filter(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top < window.innerHeight && rect.bottom > 0;
+    });
+
     gsap.timeline({ defaults: { ease: "power2.out" } })
       .to(overlay, { opacity: 0, duration: 0.4 })
-      .from(inView, {
-        autoAlpha: 0,
-        y: -30,
+      .to(initialElements, {
+        autoAlpha: 1,
+        y: 0,
         stagger: { each: 0.05, ease: "power2.out" }
       }, 0.2);
 
-    // Scroll animations
-    outOfView.forEach(element => {
-      gsap.fromTo(element, 
-        { autoAlpha: 0, y: -30 },
-        {
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom-=100",
-            toggleActions: "play none none reverse"
-          },
-          autoAlpha: 1,
-          y: 0,
-          ease: "power2.out"
-        }
-      );
+    // Scroll animations for elements not in initial viewport
+    const scrollElements = [...Object.values(elementGroups)].flat().filter(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= window.innerHeight || rect.bottom <= 0;
+    });
+
+    scrollElements.forEach(element => {
+      gsap.to(element, {
+        scrollTrigger: {
+          trigger: element,
+          start: "top bottom-=100",
+          toggleActions: "play none none reverse"
+        },
+        autoAlpha: 1,
+        y: 0,
+        duration: 1,
+        ease: "power2.out"
+      });
     });
 
     // Hover animations
@@ -114,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .to(overlay, { opacity: 1 }, 0)
       .to([...Object.values(elementGroups)].flat(), { 
         autoAlpha: 0, 
-        y: 30,
+        y: -30,
         stagger: { each: 0.02, from: "end" }
       }, 0.2);
     });
