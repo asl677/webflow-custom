@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.0
+// Simple animations v1.0.1
 gsap.registerPlugin(ScrollTrigger);
 
 // Wait for DOM to be ready
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const textElements = document.querySelectorAll('h1, h2, h3, p');
   textElements.forEach((element) => {
     gsap.from(element, {
-      y: -30,
+      y: 30,
       opacity: 0,
       duration: 1,
       ease: 'power2.out',
