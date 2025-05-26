@@ -17,18 +17,24 @@
 // Version 1.0.28 - Fix animation consistency and version compatibility
 // Version 1.0.29 - Fix dynamic text animations
 // Version 1.0.30 - Fix font loading issues
-console.log('animations.js version 1.0.30 loaded');
+// Version 1.0.31 - Add SplitText animations
+console.log('animations.js version 1.0.31 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
-    console.error('Missing libraries:', { gsap: !!window.gsap, ScrollTrigger: !!window.ScrollTrigger, Lenis: !!window.Lenis });
+  if (!window.gsap || !window.ScrollTrigger || !window.Lenis || !window.SplitText) {
+    console.error('Missing libraries:', { 
+      gsap: !!window.gsap, 
+      ScrollTrigger: !!window.ScrollTrigger, 
+      Lenis: !!window.Lenis,
+      SplitText: !!window.SplitText 
+    });
     return;
   }
 
   // Wait for fonts to load before initializing animations
   document.fonts.ready.then(() => {
     try {
-      gsap.registerPlugin(ScrollTrigger);
+      gsap.registerPlugin(ScrollTrigger, SplitText);
       gsap.config({ force3D: true });
 
       // Initialize elements and overlay
@@ -58,10 +64,46 @@ document.addEventListener('DOMContentLoaded', () => {
       gsap.ticker.add(time => lenis.raf(time * 1000));
       gsap.ticker.lagSmoothing(0);
 
+      // Function to handle text splitting and animation
+      function setupSplitTextAnimations() {
+        const headings = document.querySelectorAll('h1, h2, h3');
+        headings.forEach(heading => {
+          if (heading.hasAttribute('data-split-animated')) return;
+
+          const split = new SplitText(heading, {
+            type: "chars,words,lines",
+            linesClass: "split-line",
+            wordsClass: "split-word",
+            charsClass: "split-char"
+          });
+
+          // Set initial state
+          gsap.set(split.chars, {
+            y: 30,
+            autoAlpha: 0
+          });
+
+          // Create animation
+          gsap.to(split.chars, {
+            scrollTrigger: {
+              trigger: heading,
+              start: "top bottom-=100",
+              toggleActions: "play none none reverse"
+            },
+            duration: 1,
+            y: 0,
+            autoAlpha: 1,
+            stagger: 0.02,
+            ease: "power2.out",
+            onComplete: () => heading.setAttribute('data-split-animated', 'true')
+          });
+        });
+      }
+
       // Function to handle element animations
       function setupElementAnimations() {
         const elements = {
-          text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
+          text: document.querySelectorAll('p, a, .nav'),
           media: document.querySelectorAll('img, video'),
           cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
           mobile: document.querySelectorAll('.mobile-down')
@@ -116,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Initial setup
+      setupSplitTextAnimations();
       setupElementAnimations();
 
       // Watch for DOM changes
@@ -127,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         if (shouldUpdate) {
+          setupSplitTextAnimations();
           setupElementAnimations();
         }
       });
