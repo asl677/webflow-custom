@@ -16,7 +16,8 @@
 // Version 1.0.27 - Fix text animation consistency
 // Version 1.0.28 - Fix animation consistency and version compatibility
 // Version 1.0.29 - Fix dynamic text animations
-console.log('animations.js version 1.0.29 loaded');
+// Version 1.0.30 - Fix font loading issues
+console.log('animations.js version 1.0.30 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -24,149 +25,154 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  try {
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.config({ force3D: true });
+  // Wait for fonts to load before initializing animations
+  document.fonts.ready.then(() => {
+    try {
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.config({ force3D: true });
 
-    // Initialize elements and overlay
-    const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
-    
-    // Define animation defaults
-    const animationDefaults = {
-      y: -30,
-      autoAlpha: 0,
-      duration: 1,
-      ease: "power2.out"
-    };
-
-    // Initialize smooth scroll
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 0.8,
-      touchMultiplier: 0.8,
-      infinite: false
-    });
-
-    // GSAP + Lenis integration
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add(time => lenis.raf(time * 1000));
-    gsap.ticker.lagSmoothing(0);
-
-    // Function to handle element animations
-    function setupElementAnimations() {
-      const elements = {
-        text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
-        media: document.querySelectorAll('img, video'),
-        cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
-        mobile: document.querySelectorAll('.mobile-down')
+      // Initialize elements and overlay
+      const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
+      
+      // Define animation defaults
+      const animationDefaults = {
+        y: -30,
+        autoAlpha: 0,
+        duration: 1,
+        ease: "power2.out"
       };
 
-      // Set initial state for all elements that haven't been animated yet
-      Object.values(elements).forEach(group => {
-        group.forEach(el => {
-          if (!el.hasAttribute('data-animated')) {
-            gsap.set(el, {
-              y: animationDefaults.y,
-              autoAlpha: animationDefaults.autoAlpha
-            });
-            el.setAttribute('data-animated', 'true');
-          }
-        });
+      // Initialize smooth scroll
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 0.8,
+        touchMultiplier: 0.8,
+        infinite: false
       });
 
-      // Animate elements
-      Object.values(elements).forEach(group => {
-        group.forEach(el => {
-          if (el.hasAttribute('data-animated-complete')) return;
+      // GSAP + Lenis integration
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(time => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
 
-          const rect = el.getBoundingClientRect();
-          const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+      // Function to handle element animations
+      function setupElementAnimations() {
+        const elements = {
+          text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
+          media: document.querySelectorAll('img, video'),
+          cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
+          mobile: document.querySelectorAll('.mobile-down')
+        };
 
-          if (isInView) {
-            gsap.to(el, {
-              y: 0,
-              autoAlpha: 1,
-              duration: animationDefaults.duration,
-              ease: animationDefaults.ease,
-              delay: 0.2,
-              onComplete: () => el.setAttribute('data-animated-complete', 'true')
-            });
-          } else {
-            gsap.to(el, {
-              scrollTrigger: {
-                trigger: el,
-                start: "top bottom-=100",
-                toggleActions: "play none none reverse",
-                onEnter: () => el.setAttribute('data-animated-complete', 'true')
-              },
-              y: 0,
-              autoAlpha: 1,
-              duration: animationDefaults.duration,
-              ease: animationDefaults.ease
-            });
+        // Set initial state for all elements that haven't been animated yet
+        Object.values(elements).forEach(group => {
+          group.forEach(el => {
+            if (!el.hasAttribute('data-animated')) {
+              gsap.set(el, {
+                y: animationDefaults.y,
+                autoAlpha: animationDefaults.autoAlpha
+              });
+              el.setAttribute('data-animated', 'true');
+            }
+          });
+        });
+
+        // Animate elements
+        Object.values(elements).forEach(group => {
+          group.forEach(el => {
+            if (el.hasAttribute('data-animated-complete')) return;
+
+            const rect = el.getBoundingClientRect();
+            const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+
+            if (isInView) {
+              gsap.to(el, {
+                y: 0,
+                autoAlpha: 1,
+                duration: animationDefaults.duration,
+                ease: animationDefaults.ease,
+                delay: 0.2,
+                onComplete: () => el.setAttribute('data-animated-complete', 'true')
+              });
+            } else {
+              gsap.to(el, {
+                scrollTrigger: {
+                  trigger: el,
+                  start: "top bottom-=100",
+                  toggleActions: "play none none reverse",
+                  onEnter: () => el.setAttribute('data-animated-complete', 'true')
+                },
+                y: 0,
+                autoAlpha: 1,
+                duration: animationDefaults.duration,
+                ease: animationDefaults.ease
+              });
+            }
+          });
+        });
+      }
+
+      // Initial setup
+      setupElementAnimations();
+
+      // Watch for DOM changes
+      const observer = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes.length > 0) {
+            shouldUpdate = true;
           }
         });
-      });
-    }
-
-    // Initial setup
-    setupElementAnimations();
-
-    // Watch for DOM changes
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-      mutations.forEach((mutation) => {
-        if (mutation.addedNodes.length > 0) {
-          shouldUpdate = true;
+        if (shouldUpdate) {
+          setupElementAnimations();
         }
       });
-      if (shouldUpdate) {
-        setupElementAnimations();
-      }
-    });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
 
-    // Hover animations
-    document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
-      const hoverTl = gsap.timeline({ paused: true })
-        .to(link, { opacity: 0.7, duration: 0.3 });
-      
-      link.addEventListener('mouseenter', () => hoverTl.play());
-      link.addEventListener('mouseleave', () => hoverTl.reverse());
-    });
+      // Hover animations
+      document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
+        const hoverTl = gsap.timeline({ paused: true })
+          .to(link, { opacity: 0.7, duration: 0.3 });
+        
+        link.addEventListener('mouseenter', () => hoverTl.play());
+        link.addEventListener('mouseleave', () => hoverTl.reverse());
+      });
 
-    // Page transitions
-    document.addEventListener('click', e => {
-      const link = e.target.closest('a');
-      const href = link?.getAttribute('href');
-      if (!link || !href || /^(?:javascript:|#|tel:|mailto:)/.test(href)) return;
+      // Page transitions
+      document.addEventListener('click', e => {
+        const link = e.target.closest('a');
+        const href = link?.getAttribute('href');
+        if (!link || !href || /^(?:javascript:|#|tel:|mailto:)/.test(href)) return;
 
-      e.preventDefault();
-      lenis.stop();
-      
-      gsap.timeline({
-        defaults: { ease: "power2.inOut", duration: 0.8 },
-        onStart: () => setTimeout(() => window.location = href, 2000)
-      })
-      .to(overlay, { opacity: 1 }, 0)
-      .to(document.querySelectorAll('[data-animated]'), { 
-        y: animationDefaults.y,
-        autoAlpha: 0,
-        stagger: { each: 0.02, from: "end" }
-      }, 0.2);
-    });
+        e.preventDefault();
+        lenis.stop();
+        
+        gsap.timeline({
+          defaults: { ease: "power2.inOut", duration: 0.8 },
+          onStart: () => setTimeout(() => window.location = href, 2000)
+        })
+        .to(overlay, { opacity: 1 }, 0)
+        .to(document.querySelectorAll('[data-animated]'), { 
+          y: animationDefaults.y,
+          autoAlpha: 0,
+          stagger: { each: 0.02, from: "end" }
+        }, 0.2);
+      });
 
-    // Add classes
-    document.body.classList.add('ready');
-    document.documentElement.classList.add('lenis', 'lenis-smooth');
-  } catch (error) {
-    console.error('Animation initialization error:', error);
-  }
+      // Add classes
+      document.body.classList.add('ready');
+      document.documentElement.classList.add('lenis', 'lenis-smooth');
+    } catch (error) {
+      console.error('Animation initialization error:', error);
+    }
+  }).catch(error => {
+    console.error('Font loading error:', error);
+  });
 });
