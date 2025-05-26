@@ -5,8 +5,9 @@
 // Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
 // Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
 // Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
+// Version 1.0.19 - Simplify text animations
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.18 loaded');
+console.log('animations.js version 1.0.19 loaded');
 document.addEventListener('DOMContentLoaded', () => {
   // Check if required libraries are loaded
   if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
@@ -34,7 +35,7 @@ function initAnimation() {
   // Cache elements
   const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
   const els = {
-    text: gsap.utils.toArray('h1, h2, h3, p, a, .nav'),
+    text: gsap.utils.toArray('h1, h2, h3, p, a, .nav, .heading'),
     media: gsap.utils.toArray('img, video'),
     mobile: gsap.utils.toArray('.mobile-down'),
     cards: gsap.utils.toArray('.card-project, .fake-nav, .inner-top'),
@@ -151,28 +152,6 @@ function initAnimation() {
         ease: "power2.inOut"
       }
     }, 0)
-    .from(els.splitLinesRegular, { 
-      y: 20, 
-      opacity: 0,
-      stagger: { 
-        amount: 0.8,
-        from: "start",
-        ease: "power2.inOut"
-      },
-      duration: 1.4,
-      ease: "power3.out"
-    }, 0.2)
-    .from(els.splitLinesWhite, { 
-      y: 30,
-      opacity: 0,
-      stagger: { 
-        amount: 0.8,
-        from: "end",
-        ease: "power2.inOut"
-      },
-      duration: 1.4,
-      ease: "power3.out"
-    }, "<0.2")
     .to(els.text, { 
       autoAlpha: 1, 
       y: 0, 
@@ -180,7 +159,7 @@ function initAnimation() {
         each: 0.05,
         ease: "power2.inOut"
       }
-    }, "<0.1")
+    }, 0.2)
     .to(els.cards, { 
       autoAlpha: 1, 
       y: 0, 
@@ -202,23 +181,16 @@ function initAnimation() {
       }
     }, 0.4);
 
-  // Hover effects
+  // Hover effects for links
   els.hoverLinks.forEach(link => {
-    const chars = SplitText.create(link, { type: "chars" }).chars;
     const tl = gsap.timeline({ paused: true })
-      .to(chars, {
-        yPercent: -20, opacity: 0, duration: 0.5,
-        stagger: { amount: 0.1, from: "start" },
-        ease: "power2.in"
-      })
-      .set(chars, { yPercent: 20 })
-      .to(chars, {
-        yPercent: 0, opacity: 1, duration: 0.5,
-        stagger: { amount: 0.1, from: "start" },
-        ease: "power2.out"
+      .to(link, {
+        opacity: 0.7,
+        duration: 0.3,
+        ease: "power2.inOut"
       });
     
-    link.addEventListener('mouseenter', () => tl.restart());
+    link.addEventListener('mouseenter', () => tl.play());
     link.addEventListener('mouseleave', () => tl.reverse());
   });
 
@@ -236,11 +208,9 @@ function initAnimation() {
       onStart: () => setTimeout(() => window.location = href, 2000)
     });
 
-    // First batch of animations
     exitTl.to(overlay, { opacity: 1 }, 0)
-         .to(els.mobile, { 
-           opacity: 0,
-           visibility: "hidden",
+         .to([els.mobile, els.cards, els.text, els.media], { 
+           autoAlpha: 0, 
            y: -30,
            stagger: {
              each: 0.1,
@@ -248,39 +218,6 @@ function initAnimation() {
              ease: "power2.inOut"
            }
          }, 0);
-
-    // Second batch - text and cards
-    exitTl.to([els.cards, els.text], { 
-      autoAlpha: 0, 
-      y: -30,
-      stagger: {
-        each: 0.1,
-        from: "end",
-        ease: "power2.inOut"
-      }
-    }, 0.2);
-
-    // Third batch - split lines
-    exitTl.to([els.splitLinesWhite, els.splitLinesRegular], { 
-      autoAlpha: 0, 
-      y: -30,
-      stagger: {
-        each: 0.1,
-        from: "end",
-        ease: "power2.inOut"
-      }
-    }, 0.4);
-
-    // Final batch - media
-    exitTl.to(els.media, { 
-      autoAlpha: 0, 
-      y: -30,
-      stagger: {
-        each: 0.1,
-        from: "end",
-        ease: "power2.inOut"
-      }
-    }, 0.6);
   });
 
   document.body.classList.add('ready');
