@@ -7,8 +7,9 @@
 // Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
 // Version 1.0.19 - Simplify text animations
 // Version 1.0.20 - Streamline animations code
+// Version 1.0.21 - Fix smooth text animations
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.20 loaded');
+console.log('animations.js version 1.0.21 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -24,13 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize elements and animations
     const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
     const elements = {
-      animated: gsap.utils.toArray('h1, h2, h3, p, a, .nav, .heading, img, video, .card-project, .fake-nav, .inner-top'),
+      text: gsap.utils.toArray('h1, h2, h3, p, a, .nav'),
+      headings: gsap.utils.toArray('.heading'),
+      media: gsap.utils.toArray('img, video'),
+      cards: gsap.utils.toArray('.card-project, .fake-nav, .inner-top'),
       mobile: gsap.utils.toArray('.mobile-down'),
       hoverLinks: gsap.utils.toArray('.heading.small.link.large-link')
     };
 
     // Set initial states
-    gsap.set(elements.animated, { autoAlpha: 0, y: 20 });
+    gsap.set([elements.text, elements.headings], { autoAlpha: 0, y: 30 });
+    gsap.set(elements.media, { autoAlpha: 0, y: 20 });
+    gsap.set(elements.cards, { autoAlpha: 0, y: 20 });
     gsap.set(elements.mobile, { opacity: 0, visibility: "hidden", y: 30 });
 
     // Initialize Lenis
@@ -52,26 +58,84 @@ document.addEventListener('DOMContentLoaded', () => {
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Intro animations
-    gsap.timeline({ defaults: { ease: "power2.out" }})
-      .to(overlay, { opacity: 0, duration: 0.4 })
-      .to(elements.animated, { 
-        autoAlpha: 1, 
-        y: 0,
-        stagger: { each: 0.05, ease: "power2.inOut" }
-      }, 0)
-      .to(elements.mobile, {
-        opacity: 1,
-        visibility: "visible",
-        y: 0,
-        duration: 0.8,
-        stagger: { each: 0.15, from: "start" }
-      }, 0.4);
+    // Intro animations with improved timing
+    const mainTl = gsap.timeline({ 
+      defaults: { 
+        ease: "power2.out",
+        duration: 1.2
+      }
+    });
+
+    // Fade out overlay
+    mainTl.to(overlay, { 
+      opacity: 0, 
+      duration: 0.4,
+      ease: "power2.inOut" 
+    });
+
+    // Animate media elements
+    mainTl.to(elements.media, { 
+      autoAlpha: 1, 
+      y: 0,
+      stagger: { 
+        each: 0.1,
+        ease: "power2.inOut"
+      }
+    }, 0);
+
+    // Animate text elements with smoother timing
+    mainTl.to(elements.text, { 
+      autoAlpha: 1, 
+      y: 0,
+      duration: 1.4,
+      stagger: { 
+        each: 0.08,
+        ease: "power2.inOut"
+      }
+    }, 0.2);
+
+    // Animate headings with more emphasis
+    mainTl.to(elements.headings, { 
+      autoAlpha: 1, 
+      y: 0,
+      duration: 1.6,
+      stagger: { 
+        each: 0.12,
+        ease: "power3.out"
+      }
+    }, 0.3);
+
+    // Animate cards
+    mainTl.to(elements.cards, { 
+      autoAlpha: 1, 
+      y: 0,
+      stagger: { 
+        each: 0.1,
+        ease: "power2.inOut"
+      }
+    }, 0.4);
+
+    // Animate mobile elements
+    mainTl.to(elements.mobile, {
+      opacity: 1,
+      visibility: "visible",
+      y: 0,
+      duration: 0.8,
+      stagger: {
+        each: 0.15,
+        from: "start",
+        ease: "power2.inOut"
+      }
+    }, 0.5);
 
     // Hover effects
     elements.hoverLinks.forEach(link => {
       const hoverTl = gsap.timeline({ paused: true })
-        .to(link, { opacity: 0.7, duration: 0.3, ease: "power2.inOut" });
+        .to(link, { 
+          opacity: 0.7, 
+          duration: 0.3, 
+          ease: "power2.inOut" 
+        });
       
       link.addEventListener('mouseenter', () => hoverTl.play());
       link.addEventListener('mouseleave', () => hoverTl.reverse());
@@ -91,11 +155,15 @@ document.addEventListener('DOMContentLoaded', () => {
         onStart: () => setTimeout(() => window.location = href, 2000)
       })
       .to(overlay, { opacity: 1 }, 0)
-      .to([elements.animated, elements.mobile], { 
+      .to([elements.text, elements.headings, elements.media, elements.cards, elements.mobile], { 
         autoAlpha: 0, 
         y: -30,
-        stagger: { each: 0.1, from: "end" }
-      }, 0);
+        stagger: {
+          each: 0.05,
+          from: "end",
+          ease: "power2.inOut"
+        }
+      }, 0.2);
     });
 
     // Add classes
