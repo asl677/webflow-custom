@@ -8,8 +8,9 @@
 // Version 1.0.19 - Simplify text animations
 // Version 1.0.20 - Streamline animations code
 // Version 1.0.21 - Fix smooth text animations
+// Version 1.0.22 - Fix viewport animations
 // Cache-buster: 1684968576
-console.log('animations.js version 1.0.21 loaded');
+console.log('animations.js version 1.0.22 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -33,11 +34,46 @@ document.addEventListener('DOMContentLoaded', () => {
       hoverLinks: gsap.utils.toArray('.heading.small.link.large-link')
     };
 
-    // Set initial states
-    gsap.set([elements.text, elements.headings], { autoAlpha: 0, y: 30 });
-    gsap.set(elements.media, { autoAlpha: 0, y: 20 });
-    gsap.set(elements.cards, { autoAlpha: 0, y: 20 });
-    gsap.set(elements.mobile, { opacity: 0, visibility: "hidden", y: 30 });
+    // Helper function to check if element is in viewport
+    const isInViewport = element => {
+      const rect = element.getBoundingClientRect();
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+    };
+
+    // Set initial states and create arrays for in-view and out-of-view elements
+    const inViewElements = {
+      text: [],
+      headings: [],
+      media: [],
+      cards: [],
+      mobile: []
+    };
+    const outOfViewElements = {
+      text: [],
+      headings: [],
+      media: [],
+      cards: [],
+      mobile: []
+    };
+
+    // Sort elements based on viewport visibility
+    Object.keys(elements).forEach(key => {
+      if (key !== 'hoverLinks') {
+        elements[key].forEach(element => {
+          if (isInViewport(element)) {
+            inViewElements[key].push(element);
+          } else {
+            outOfViewElements[key].push(element);
+            gsap.set(element, { autoAlpha: 0, y: 30 });
+          }
+        });
+      }
+    });
 
     // Initialize Lenis
     const lenis = new Lenis({
@@ -58,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Intro animations with improved timing
+    // Initial animation timeline
     const mainTl = gsap.timeline({ 
       defaults: { 
         ease: "power2.out",
@@ -73,60 +109,62 @@ document.addEventListener('DOMContentLoaded', () => {
       ease: "power2.inOut" 
     });
 
-    // Animate media elements
-    mainTl.to(elements.media, { 
-      autoAlpha: 1, 
-      y: 0,
-      stagger: { 
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, 0);
+    // Animate in-view elements with subtle fade
+    if (inViewElements.media.length) {
+      mainTl.from(inViewElements.media, {
+        autoAlpha: 0,
+        scale: 1,
+        y: 20,
+        duration: 1,
+        ease: "power2.out"
+      }, 0);
+    }
 
-    // Animate text elements with smoother timing
-    mainTl.to(elements.text, { 
-      autoAlpha: 1, 
-      y: 0,
-      duration: 1.4,
-      stagger: { 
-        each: 0.08,
-        ease: "power2.inOut"
-      }
-    }, 0.2);
+    if (inViewElements.text.length) {
+      mainTl.from(inViewElements.text, {
+        autoAlpha: 0,
+        y: -20,
+        duration: 1,
+        stagger: { each: 0.05, ease: "power2.out" }
+      }, 0.2);
+    }
 
-    // Animate headings with more emphasis
-    mainTl.to(elements.headings, { 
-      autoAlpha: 1, 
-      y: 0,
-      duration: 1.6,
-      stagger: { 
-        each: 0.12,
-        ease: "power3.out"
-      }
-    }, 0.3);
+    if (inViewElements.headings.length) {
+      mainTl.from(inViewElements.headings, {
+        autoAlpha: 0,
+        y: -20,
+        duration: 1,
+        stagger: { each: 0.06, ease: "power2.out" }
+      }, 0.3);
+    }
 
-    // Animate cards
-    mainTl.to(elements.cards, { 
-      autoAlpha: 1, 
-      y: 0,
-      stagger: { 
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, 0.4);
+    if (inViewElements.cards.length) {
+      mainTl.from(inViewElements.cards, {
+        autoAlpha: 0,
+        y: 20,
+        duration: 1,
+        stagger: { each: 0.1, ease: "power2.out" }
+      }, 0.4);
+    }
 
-    // Animate mobile elements
-    mainTl.to(elements.mobile, {
-      opacity: 1,
-      visibility: "visible",
-      y: 0,
-      duration: 0.8,
-      stagger: {
-        each: 0.15,
-        from: "start",
-        ease: "power2.inOut"
+    // Set up scroll triggers for out-of-view elements
+    Object.keys(outOfViewElements).forEach(key => {
+      if (outOfViewElements[key].length) {
+        outOfViewElements[key].forEach(element => {
+          gsap.to(element, {
+            scrollTrigger: {
+              trigger: element,
+              start: "top bottom-=100",
+              toggleActions: "play none none reverse"
+            },
+            autoAlpha: 1,
+            y: 0,
+            duration: 1,
+            ease: "power2.out"
+          });
+        });
       }
-    }, 0.5);
+    });
 
     // Hover effects
     elements.hoverLinks.forEach(link => {
@@ -155,11 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
         onStart: () => setTimeout(() => window.location = href, 2000)
       })
       .to(overlay, { opacity: 1 }, 0)
-      .to([elements.text, elements.headings, elements.media, elements.cards, elements.mobile], { 
+      .to([...Object.values(elements)].flat(), { 
         autoAlpha: 0, 
-        y: -30,
+        y: -20,
         stagger: {
-          each: 0.05,
+          each: 0.02,
           from: "end",
           ease: "power2.inOut"
         }
