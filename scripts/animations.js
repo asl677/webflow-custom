@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const textElements = document.querySelectorAll('h1, h2, h3, p');
   textElements.forEach((element) => {
     gsap.from(element, {
-      y: 30,
+      y: -30,
       opacity: 0,
       duration: 1,
       ease: 'power2.out',
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Animate media elements with stagger
   const mediaElements = document.querySelectorAll('img, video');
   gsap.from(mediaElements, {
-    y: 30,
+    y: -30,
     opacity: 0,
     duration: 1,
     stagger: 0.2,
