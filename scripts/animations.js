@@ -14,8 +14,8 @@
 // Version 1.0.25 - Consistent animation directions
 // Version 1.0.26 - Consistent top-to-bottom animations
 // Version 1.0.27 - Fix text animation consistency
-// Cache-buster: 1684968576
-console.log('animations.js version 1.0.27 loaded');
+// Version 1.0.28 - Fix animation consistency and version compatibility
+console.log('animations.js version 1.0.28 loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
@@ -26,20 +26,34 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     gsap.registerPlugin(ScrollTrigger);
     gsap.config({ force3D: true });
-    gsap.defaults({ ease: "power2.out", duration: 1 });
 
     // Initialize elements and overlay
     const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
-    const elementGroups = {
-      text: gsap.utils.toArray('h1, h2, h3, p, a, .nav'),
-      media: gsap.utils.toArray('img, video'),
-      cards: gsap.utils.toArray('.card-project, .fake-nav, .inner-top'),
-      mobile: gsap.utils.toArray('.mobile-down')
+    
+    // Define animation defaults
+    const animationDefaults = {
+      y: -30,
+      autoAlpha: 0,
+      duration: 1,
+      ease: "power2.out"
     };
 
-    // Set initial state for ALL elements
-    [...Object.values(elementGroups)].flat().forEach(el => {
-      gsap.set(el, { autoAlpha: 0, y: -30 });
+    // Initialize elements
+    const elements = {
+      text: document.querySelectorAll('h1, h2, h3, p, a, .nav'),
+      media: document.querySelectorAll('img, video'),
+      cards: document.querySelectorAll('.card-project, .fake-nav, .inner-top'),
+      mobile: document.querySelectorAll('.mobile-down')
+    };
+
+    // Set initial state for all elements
+    Object.values(elements).forEach(group => {
+      group.forEach(el => {
+        gsap.set(el, {
+          y: animationDefaults.y,
+          autoAlpha: animationDefaults.autoAlpha
+        });
+      });
     });
 
     // Initialize smooth scroll
@@ -58,42 +72,38 @@ document.addEventListener('DOMContentLoaded', () => {
     gsap.ticker.add(time => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Initial animations for elements in viewport
-    const initialElements = [...Object.values(elementGroups)].flat().filter(el => {
-      const rect = el.getBoundingClientRect();
-      return rect.top < window.innerHeight && rect.bottom > 0;
-    });
+    // Animate elements in viewport
+    Object.values(elements).forEach(group => {
+      group.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const isInView = rect.top < window.innerHeight && rect.bottom > 0;
 
-    gsap.timeline({ defaults: { ease: "power2.out" } })
-      .to(overlay, { opacity: 0, duration: 0.4 })
-      .to(initialElements, {
-        autoAlpha: 1,
-        y: 0,
-        stagger: { each: 0.05, ease: "power2.out" }
-      }, 0.2);
-
-    // Scroll animations for elements not in initial viewport
-    const scrollElements = [...Object.values(elementGroups)].flat().filter(el => {
-      const rect = el.getBoundingClientRect();
-      return rect.top >= window.innerHeight || rect.bottom <= 0;
-    });
-
-    scrollElements.forEach(element => {
-      gsap.to(element, {
-        scrollTrigger: {
-          trigger: element,
-          start: "top bottom-=100",
-          toggleActions: "play none none reverse"
-        },
-        autoAlpha: 1,
-        y: 0,
-        duration: 1,
-        ease: "power2.out"
+        if (isInView) {
+          gsap.to(el, {
+            y: 0,
+            autoAlpha: 1,
+            duration: animationDefaults.duration,
+            ease: animationDefaults.ease,
+            delay: 0.2
+          });
+        } else {
+          gsap.to(el, {
+            scrollTrigger: {
+              trigger: el,
+              start: "top bottom-=100",
+              toggleActions: "play none none reverse"
+            },
+            y: 0,
+            autoAlpha: 1,
+            duration: animationDefaults.duration,
+            ease: animationDefaults.ease
+          });
+        }
       });
     });
 
     // Hover animations
-    gsap.utils.toArray('.heading.small.link.large-link').forEach(link => {
+    document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
       const hoverTl = gsap.timeline({ paused: true })
         .to(link, { opacity: 0.7, duration: 0.3 });
       
@@ -115,9 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
         onStart: () => setTimeout(() => window.location = href, 2000)
       })
       .to(overlay, { opacity: 1 }, 0)
-      .to([...Object.values(elementGroups)].flat(), { 
-        autoAlpha: 0, 
-        y: -30,
+      .to(Object.values(elements).reduce((acc, group) => [...acc, ...group], []), { 
+        y: animationDefaults.y,
+        autoAlpha: 0,
         stagger: { each: 0.02, from: "end" }
       }, 0.2);
     });
