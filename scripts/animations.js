@@ -25,33 +25,57 @@
 // Version 1.0.36 - Fix initial element visibility
 // Version 1.0.37 - Fix FOUC with proper initial styles
 // Version 1.0.38 - Fix animation triggering
-console.log('animations.js version 1.0.38 loaded');
+// Version 1.0.39 - Fix initial visibility
+console.log('animations.js version 1.0.39 loaded');
 
 // Create a flag to track initialization
 let isInitialized = false;
 
-// Add initial CSS to prevent FOUC
+// Function to set initial styles
+function setInitialStyles() {
+  const elements = document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
+  elements.forEach(el => {
+    el.style.visibility = 'hidden';
+    el.style.opacity = '0';
+    el.style.willChange = 'transform, opacity';
+    el.style.overflow = 'hidden';
+  });
+}
+
+// Apply styles immediately
+setInitialStyles();
+
+// Also apply styles when DOM starts loading
+document.addEventListener('readystatechange', (event) => {
+  if (document.readyState === 'loading') {
+    setInitialStyles();
+  }
+});
+
+// Add initial CSS as backup
 const initialStyles = document.createElement('style');
 initialStyles.textContent = `
   h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project {
     will-change: transform, opacity;
     overflow: hidden;
-    visibility: hidden;
-    opacity: 0;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
 
   .card-project, .fake-nav, .inner-top {
-    opacity: 0;
     will-change: transform, opacity;
     overflow: hidden;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
 
   .mobile-down {
-    opacity: 0;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
 `;
 
-// Insert styles at the beginning of head to ensure they're applied first
+// Insert styles at the beginning of head
 document.head.insertBefore(initialStyles, document.head.firstChild);
 
 // Simple animations v1.0.12
@@ -158,15 +182,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
     console.log('Found elements to animate:', allElements.length);
 
-    // Set initial state
+    // Remove initial styles
+    initialStyles.remove();
+
+    // Set initial state with GSAP
     gsap.set(allElements, {
       opacity: 0,
       y: 20,
       visibility: 'visible'
     });
-
-    // Remove initial styles before starting animations
-    initialStyles.remove();
 
     // Animate elements in
     gsap.to(allElements, {
@@ -181,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ease: 'power2.out',
       onStart: () => {
         console.log('Starting initial animations');
+        allElements.forEach(el => {
+          el.style.visibility = 'visible';
+        });
       },
       onComplete: () => {
         console.log('Initial animations complete');
