@@ -33,11 +33,18 @@
 // Version 1.0.44 - Fix script loading and initialization
 // Version 1.0.45 - Prevent multiple initializations
 // Version 1.0.46 - Add loading overlay to prevent FOUC
-console.log('animations.js version 1.0.46 loading...');
+// Version 1.0.47 - Add class-based visibility control
+console.log('animations.js version 1.0.47 loading...');
 
-// Create and inject the overlay styles
-const overlayStyles = document.createElement('style');
-overlayStyles.textContent = `
+// Create and inject the critical styles
+const criticalStyles = document.createElement('style');
+criticalStyles.textContent = `
+  .initial-hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(20px) !important;
+    will-change: transform, opacity;
+  }
   .loading-overlay {
     position: fixed;
     top: 0;
@@ -61,7 +68,7 @@ overlayStyles.textContent = `
     opacity: 1;
   }
 `;
-document.head.appendChild(overlayStyles);
+document.head.appendChild(criticalStyles);
 
 // Create and inject the overlay element
 const overlay = document.createElement('div');
@@ -79,6 +86,27 @@ let scriptsLoaded = {
   scrollTrigger: false,
   lenis: false
 };
+
+// Function to add initial-hidden class to elements
+function addInitialHiddenClass() {
+  const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+  const selectorString = selectors.join(',');
+  
+  console.log('Adding initial-hidden class to elements...');
+  const elements = document.querySelectorAll(selectorString);
+  elements.forEach(el => {
+    if (!el.classList.contains('initial-hidden')) {
+      el.classList.add('initial-hidden');
+      console.log('Added initial-hidden class to:', el);
+    }
+  });
+}
+
+// Add the class immediately when the script loads
+addInitialHiddenClass();
+
+// Also add the class when DOM content loads (backup)
+document.addEventListener('DOMContentLoaded', addInitialHiddenClass);
 
 // Function to remove overlay and show content
 function showContent() {
@@ -101,7 +129,6 @@ function forceStyles(element, styles) {
   console.log('Forcing styles on:', element, styles);
   Object.entries(styles).forEach(([property, value]) => {
     element.style.setProperty(property, value, 'important');
-    console.log(`Applied ${property}: ${value} to`, element);
   });
 }
 
@@ -113,39 +140,7 @@ function ensureElementsHidden() {
     return;
   }
 
-  const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
-  
-  console.log('Ensuring elements are hidden...');
-  selectors.forEach(selector => {
-    const elements = document.querySelectorAll(selector);
-    console.log(`Found ${elements.length} ${selector} elements to hide`);
-    
-    elements.forEach(el => {
-      // Store original styles
-      const originalStyles = {
-        opacity: el.style.opacity,
-        visibility: el.style.visibility,
-        transform: el.style.transform
-      };
-      
-      console.log('Original styles for element:', originalStyles);
-      
-      forceStyles(el, {
-        'opacity': '0',
-        'visibility': 'hidden',
-        'transform': 'translateY(20px)',
-        'will-change': 'transform, opacity'
-      });
-      
-      // Verify styles were applied
-      const computedStyles = getComputedStyle(el);
-      console.log('Computed styles after forcing:', {
-        opacity: computedStyles.opacity,
-        visibility: computedStyles.visibility,
-        transform: computedStyles.transform
-      });
-    });
-  });
+  addInitialHiddenClass();
 }
 
 // Check for GSAP and its plugins
@@ -279,7 +274,7 @@ function startAnimations() {
     onStart: () => {
       console.log('Animation timeline started');
       allElements.forEach(el => {
-        el.style.cssText = '';
+        el.classList.remove('initial-hidden');
         forceStyles(el, {
           'visibility': 'visible',
           'will-change': 'transform, opacity'
@@ -287,7 +282,6 @@ function startAnimations() {
       });
     },
     onComplete: () => {
-      // Remove overlay after main animations complete
       showContent();
     }
   });
