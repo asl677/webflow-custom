@@ -26,57 +26,32 @@
 // Version 1.0.37 - Fix FOUC with proper initial styles
 // Version 1.0.38 - Fix animation triggering
 // Version 1.0.39 - Fix initial visibility
-console.log('animations.js version 1.0.39 loaded');
+// Version 1.0.40 - Fix FOUC with critical CSS
+console.log('animations.js version 1.0.40 loaded');
 
 // Create a flag to track initialization
 let isInitialized = false;
 
-// Function to set initial styles
-function setInitialStyles() {
+// Function to ensure elements are hidden
+function ensureElementsHidden() {
   const elements = document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
   elements.forEach(el => {
-    el.style.visibility = 'hidden';
-    el.style.opacity = '0';
-    el.style.willChange = 'transform, opacity';
-    el.style.overflow = 'hidden';
+    if (getComputedStyle(el).opacity !== '0') {
+      el.style.setProperty('opacity', '0', 'important');
+      el.style.setProperty('visibility', 'hidden', 'important');
+    }
   });
 }
 
-// Apply styles immediately
-setInitialStyles();
+// Run immediately
+ensureElementsHidden();
 
-// Also apply styles when DOM starts loading
-document.addEventListener('readystatechange', (event) => {
-  if (document.readyState === 'loading') {
-    setInitialStyles();
-  }
-});
-
-// Add initial CSS as backup
-const initialStyles = document.createElement('style');
-initialStyles.textContent = `
-  h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project {
-    will-change: transform, opacity;
-    overflow: hidden;
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-
-  .card-project, .fake-nav, .inner-top {
-    will-change: transform, opacity;
-    overflow: hidden;
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-
-  .mobile-down {
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-`;
-
-// Insert styles at the beginning of head
-document.head.insertBefore(initialStyles, document.head.firstChild);
+// Run again when DOM starts loading
+if (document.readyState === 'loading') {
+  document.addEventListener('readystatechange', () => {
+    ensureElementsHidden();
+  });
+}
 
 // Simple animations v1.0.12
 console.log('Initializing animations.js...');
@@ -182,14 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
     console.log('Found elements to animate:', allElements.length);
 
-    // Remove initial styles
-    initialStyles.remove();
-
     // Set initial state with GSAP
     gsap.set(allElements, {
       opacity: 0,
       y: 20,
-      visibility: 'visible'
+      visibility: 'visible',
+      overwrite: true
+    });
+
+    // Remove any inline styles that might interfere
+    allElements.forEach(el => {
+      el.style.removeProperty('opacity');
+      el.style.removeProperty('visibility');
     });
 
     // Animate elements in
@@ -203,11 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
         from: "top"
       },
       ease: 'power2.out',
+      overwrite: true,
       onStart: () => {
         console.log('Starting initial animations');
-        allElements.forEach(el => {
-          el.style.visibility = 'visible';
-        });
       },
       onComplete: () => {
         console.log('Initial animations complete');
@@ -227,7 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
             y: 0,
             duration: 0.5,
             visibility: 'visible',
-            ease: 'power2.out'
+            ease: 'power2.out',
+            overwrite: true
           });
         },
         onLeave: () => {
@@ -235,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 0,
             y: 20,
             duration: 0.3,
-            ease: 'power1.in'
+            ease: 'power1.in',
+            overwrite: true
           });
         }
       });
