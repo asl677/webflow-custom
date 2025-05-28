@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.6
+// Simple animations v1.0.7
 console.log('Initializing animations.js...');
 
 // Check if GSAP is loaded
@@ -73,17 +73,32 @@ try {
 function handlePageTransition(e, href) {
   e.preventDefault();
   e.stopPropagation();
+
+  // Stop Lenis scroll during transition
+  if (lenis) lenis.stop();
   
-  // Quick fade out all elements
-  const elements = document.querySelectorAll('h1, h2, h3, p, img, video, a, button');
-  gsap.to(elements, {
-    opacity: 0,
-    y: -20,
-    duration: 0.3,
-    ease: 'power1.in',
-    stagger: 0.02,
+  // Create timeline for exit animations
+  const tl = gsap.timeline({
     onComplete: () => {
       window.location.href = href;
+    }
+  });
+
+  // Get all visible elements
+  const elements = gsap.utils.toArray('h1, h2, h3, p, img, video, a, button').filter(el => {
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  });
+
+  // Add fade out animation to timeline
+  tl.to(elements, {
+    opacity: 0,
+    y: -20,
+    duration: 0.5,
+    ease: 'power2.inOut',
+    stagger: {
+      amount: 0.3,
+      from: "top"
     }
   });
 }
@@ -98,7 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
     opacity: 0,
     y: 30,
     duration: 1,
-    stagger: 0.1,
+    stagger: {
+      amount: 0.5,
+      from: "top"
+    },
     ease: 'power2.out'
   });
 
