@@ -23,21 +23,36 @@
 // Version 1.0.34 - Improved script loading and animation handling
 // Version 1.0.35 - Fix Lenis initialization
 // Version 1.0.36 - Fix initial element visibility
-console.log('animations.js version 1.0.36 loaded');
+// Version 1.0.37 - Fix FOUC with proper initial styles
+console.log('animations.js version 1.0.37 loaded');
 
-// Simple animations v1.0.12
-console.log('Initializing animations.js...');
-
-// Add initial CSS to hide elements
+// Add initial CSS to prevent FOUC
 const initialStyles = document.createElement('style');
 initialStyles.textContent = `
   h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project {
-    opacity: 0;
+    will-change: transform, opacity;
+    overflow: hidden;
     visibility: hidden;
-    will-change: opacity, transform;
+    opacity: 0;
+  }
+
+  .card-project, .fake-nav, .inner-top {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    will-change: transform, opacity;
+    overflow: hidden;
+  }
+
+  .mobile-down {
+    opacity: 0;
   }
 `;
-document.head.appendChild(initialStyles);
+
+// Insert styles at the beginning of head to ensure they're applied first
+document.head.insertBefore(initialStyles, document.head.firstChild);
+
+// Simple animations v1.0.12
+console.log('Initializing animations.js...');
 
 // Add Lenis CSS classes to html element
 document.documentElement.classList.add('lenis', 'lenis-smooth');
@@ -129,17 +144,14 @@ function handlePageTransition(e, href) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, starting animations');
 
-  // Remove initial styles once DOM is ready
-  initialStyles.remove();
-
   // Initial page load animations with stagger
-  const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project');
+  const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
   console.log('Found elements to animate:', allElements.length);
 
   gsap.set(allElements, {
     opacity: 0,
     y: 20,
-    visibility: 'visible'
+    visibility: 'visible' // Make elements visible before animation
   });
 
   gsap.to(allElements, {
@@ -154,68 +166,40 @@ document.addEventListener('DOMContentLoaded', () => {
     ease: 'power2.out',
     onStart: () => {
       console.log('Starting initial animations');
+      // Remove initial styles once animations begin
+      initialStyles.remove();
     },
     onComplete: () => {
       console.log('Initial animations complete');
     }
   });
 
-  // Setup scroll-triggered animations
-  const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav, .preloader-counter');
-  console.log('Found text elements:', textElements.length);
+  // Setup scroll-triggered animations for all elements
+  const animatedElements = document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
+  console.log('Found elements for scroll animations:', animatedElements.length);
   
-  textElements.forEach((element) => {
+  animatedElements.forEach((element) => {
     gsap.from(element, {
       scrollTrigger: {
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
         toggleActions: 'play none none reverse',
+        onEnter: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power2.out',
+            visibility: 'visible'
+          });
+        },
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
             y: 20,
             duration: 0.3,
             ease: 'power1.in'
-          });
-        },
-        onEnterBack: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: 'power2.out'
-          });
-        }
-      }
-    });
-  });
-
-  // Animate media elements with stagger
-  const mediaElements = document.querySelectorAll('img, video');
-  console.log('Found media elements:', mediaElements.length);
-  
-  mediaElements.forEach((element) => {
-    gsap.from(element, {
-      scrollTrigger: {
-        trigger: element,
-        start: 'top bottom-=100',
-        end: 'bottom top+=100',
-        toggleActions: 'play none none reverse',
-        onLeaveBack: () => {
-          gsap.to(element, {
-            opacity: 0,
-            y: 20,
-            duration: 0.3,
-            ease: 'power1.in'
-          });
-        },
-        onEnterBack: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: 'power2.out'
           });
         }
       }
