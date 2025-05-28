@@ -21,10 +21,23 @@
 // Version 1.0.32 - Fix font loading for SplitText
 // Version 1.0.33 - Fix text selector syntax
 // Version 1.0.34 - Improved script loading and animation handling
-console.log('animations.js version 1.0.34 loaded');
+// Version 1.0.35 - Fix Lenis initialization
+// Version 1.0.36 - Fix initial element visibility
+console.log('animations.js version 1.0.36 loaded');
 
 // Simple animations v1.0.12
 console.log('Initializing animations.js...');
+
+// Add initial CSS to hide elements
+const initialStyles = document.createElement('style');
+initialStyles.textContent = `
+  h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project {
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform;
+  }
+`;
+document.head.appendChild(initialStyles);
 
 // Add Lenis CSS classes to html element
 document.documentElement.classList.add('lenis', 'lenis-smooth');
@@ -116,21 +129,39 @@ function handlePageTransition(e, href) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, starting animations');
 
+  // Remove initial styles once DOM is ready
+  initialStyles.remove();
+
   // Initial page load animations with stagger
-  const allElements = gsap.utils.toArray('h1, h2, h3, p, img, video');
-  gsap.from(allElements, {
+  const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project');
+  console.log('Found elements to animate:', allElements.length);
+
+  gsap.set(allElements, {
     opacity: 0,
     y: 20,
+    visibility: 'visible'
+  });
+
+  gsap.to(allElements, {
+    opacity: 1,
+    y: 0,
     duration: 1,
+    visibility: 'visible',
     stagger: {
-      amount: 0.5,
+      amount: 0.8,
       from: "top"
     },
-    ease: 'power2.out'
+    ease: 'power2.out',
+    onStart: () => {
+      console.log('Starting initial animations');
+    },
+    onComplete: () => {
+      console.log('Initial animations complete');
+    }
   });
 
   // Setup scroll-triggered animations
-  const textElements = document.querySelectorAll('h1, h2, h3, p');
+  const textElements = document.querySelectorAll('h1, h2, h3, p, a, .nav, .preloader-counter');
   console.log('Found text elements:', textElements.length);
   
   textElements.forEach((element) => {
