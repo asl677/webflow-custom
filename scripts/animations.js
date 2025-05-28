@@ -1,3 +1,4 @@
+// Version 1.1.0 - Force cache refresh with major version bump
 // Version 1.0.13 - Fix mobile and exit animations timing
 // Version 1.0.14 - Fix mobile-down visibility
 // Version 1.0.15 - Fix white lines stagger animation
