@@ -1,243 +1,224 @@
-// Version 1.0.10 - Remove test styles
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if required libraries are loaded
-  if (!window.gsap || !window.ScrollTrigger || !window.SplitText || !window.Lenis) {
-    console.error('Required libraries not loaded. Please check script loading order:',
-      '\nGSAP:', !!window.gsap,
-      '\nScrollTrigger:', !!window.ScrollTrigger,
-      '\nSplitText:', !!window.SplitText,
-      '\nLenis:', !!window.Lenis
-    );
-    return;
-  }
+// Version 1.0.13 - Fix mobile and exit animations timing
+// Version 1.0.14 - Fix mobile-down visibility
+// Version 1.0.15 - Fix white lines stagger animation
+// Version 1.0.16 - Fix mobile-down visibility persistence
+// Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
+// Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
+// Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
+// Version 1.0.19 - Simplify text animations
+// Version 1.0.20 - Streamline animations code
+// Version 1.0.21 - Fix smooth text animations
+// Version 1.0.22 - Fix viewport animations
+// Version 1.0.23 - Streamlined code
+// Version 1.0.24 - Remove redundant heading animations
+// Version 1.0.25 - Consistent animation directions
+// Version 1.0.26 - Consistent top-to-bottom animations
+// Version 1.0.27 - Fix text animation consistency
+// Version 1.0.28 - Fix animation consistency and version compatibility
+// Version 1.0.29 - Fix dynamic text animations
+// Version 1.0.30 - Fix font loading issues
+// Version 1.0.31 - Add SplitText animations
+// Version 1.0.32 - Fix font loading for SplitText
+// Version 1.0.33 - Fix text selector syntax
+// Version 1.0.34 - Improved script loading and animation handling
+console.log('animations.js version 1.0.34 loaded');
 
-  try {
-    initAnimation();
-  } catch (error) {
-    console.error('Error initializing animations:', error);
-  }
-});
+// Simple animations v1.0.12
+console.log('Initializing animations.js...');
 
-function initAnimation() {
+// Add Lenis CSS classes to html element
+document.documentElement.classList.add('lenis', 'lenis-smooth');
+
+// Create and append the transition overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = `
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+`;
+document.body.appendChild(overlay);
+
+// Check if GSAP is loaded
+if (typeof gsap === 'undefined') {
+  console.error('GSAP not loaded! Please check script loading order.');
+  throw new Error('GSAP not loaded');
+}
+
+// Register ScrollTrigger
+try {
   gsap.registerPlugin(ScrollTrigger);
-  gsap.config({ force3D: true });
-  gsap.defaults({ ease: "power3.out", duration: 1.2 });
+  console.log('ScrollTrigger registered successfully');
+} catch (error) {
+  console.error('Failed to register ScrollTrigger:', error);
+  throw error;
+}
 
-  // Cache elements
-  const overlay = document.body.appendChild(Object.assign(document.createElement('div'), { className: 'page-overlay' }));
-  const els = {
-    text: gsap.utils.toArray('h1, h2, h3, p, a, .nav'),
-    media: gsap.utils.toArray('img, video'),
-    mobile: gsap.utils.toArray('.mobile-down'),
-    cards: gsap.utils.toArray('.card-project, .fake-nav, .inner-top'),
-    hoverLinks: gsap.utils.toArray('.heading.small.link.large-link')
-  };
-
-  // Split text setup
-  let splitTextInstances = [];
-  const createSplitText = () => {
-    // Kill old instances
-    splitTextInstances.forEach(split => split.revert());
-    splitTextInstances = [];
-    
-    // Create new instances
-    const regularElements = document.querySelectorAll(".heading.large:not(.white)");
-    const whiteElements = document.querySelectorAll(".heading.large.white");
-    
-    if (regularElements.length) {
-      const regularSplit = SplitText.create(regularElements, { type: "lines" });
-      splitTextInstances.push(regularSplit);
-      els.splitLinesRegular = regularSplit.lines;
-    }
-    
-    if (whiteElements.length) {
-      const whiteSplit = SplitText.create(whiteElements, { type: "lines" });
-      splitTextInstances.push(whiteSplit);
-      els.splitLinesWhite = whiteSplit.lines;
-    }
-  };
-
-  // Initial split
-  createSplitText();
-
-  // Handle resize
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      // Ensure fonts are still loaded
-      document.fonts.ready.then(createSplitText);
-    }, 100);
-  });
-
-  // Initial states
-  if (els.text.length) gsap.set(els.text, { autoAlpha: 0, y: -20 });
-  if (els.media.length) gsap.set(els.media, { autoAlpha: 0, y: 20 });
-  if (els.cards.length) gsap.set(els.cards, { autoAlpha: 0, y: 20 });
-  if (els.mobile.length) {
-    gsap.set(els.mobile, { 
-      height: "auto", 
-      opacity: 0, 
-      y: 30,
-      visibility: "hidden"
-    });
-  }
-
-  // Initialize Lenis
-  const lenis = new Lenis({
+// Initialize smooth scroll
+let lenis;
+try {
+  lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
     smoothWheel: true,
-    wheelMultiplier: 0.8,
-    touchMultiplier: 0.8,
-    infinite: false,
-    gestureOrientation: "vertical",
-    normalizeWheel: true,
-    smoothTouch: false
+    smoothTouch: false,
+    touchMultiplier: 2,
+    wheelMultiplier: 1,
+    infinite: false
   });
 
-  // Lenis + GSAP integration
+  // Sync Lenis with ScrollTrigger
   lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
+
+  // Create a single RAF loop
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+
+  // Disable smooth scrolling during GSAP animations
   gsap.ticker.lagSmoothing(0);
-
-  // Create the intro timeline
-  gsap.timeline({ defaults: { ease: "power2.out", duration: 1.2 } })
-    .to(overlay, { 
-      opacity: 0, 
-      duration: 0.4, 
-      ease: "power2.inOut" 
-    })
-    .to(els.media, { 
-      autoAlpha: 1, 
-      y: 0, 
-      stagger: { 
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, 0)
-    .from(els.splitLinesRegular, { 
-      y: -20, 
-      opacity: 0,
-      stagger: { 
-        amount: 0.8,
-        from: "start",
-        ease: "power2.inOut"
-      },
-      duration: 1.4,
-      ease: "power3.out"
-    }, 0.2)
-    .from(els.splitLinesWhite, { 
-      y: 30,
-      opacity: 0,
-      stagger: { 
-        amount: 0.5,
-        from: "start",
-        ease: "power2.inOut"
-      },
-      duration: 1.4,
-      ease: "power3.out"
-    }, "<0.1")
-    .to(els.text, { 
-      autoAlpha: 1, 
-      y: 0, 
-      stagger: { 
-        each: 0.05,
-        ease: "power2.inOut"
-      }
-    }, "<0.1")
-    .to(els.cards, { 
-      autoAlpha: 1, 
-      y: 0, 
-      stagger: { 
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, "<0.1")
-    .to(els.mobile, {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      stagger: {
-        each: 0.1,
-        ease: "power2.inOut"
-      }
-    }, "<0.1");
-
-  // Hover effects
-  els.hoverLinks.forEach(link => {
-    const chars = SplitText.create(link, { type: "chars" }).chars;
-    const tl = gsap.timeline({ paused: true })
-      .to(chars, {
-        yPercent: -20, opacity: 0, duration: 0.5,
-        stagger: { amount: 0.1, from: "start" },
-        ease: "power2.in"
-      })
-      .set(chars, { yPercent: 20 })
-      .to(chars, {
-        yPercent: 0, opacity: 1, duration: 0.5,
-        stagger: { amount: 0.1, from: "start" },
-        ease: "power2.out"
-      });
-    
-    link.addEventListener('mouseenter', () => tl.restart());
-    link.addEventListener('mouseleave', () => tl.reverse());
-  });
-
-  // Navigation handling
-  document.addEventListener('click', e => {
-    const link = e.target.closest('a');
-    const href = link?.getAttribute('href');
-    if (!link || !href || /^(?:javascript:|#|tel:|mailto:)/.test(href)) return;
-
-    e.preventDefault();
-    lenis.stop();
-    
-    gsap.timeline({
-      defaults: { ease: "power2.inOut" },
-      onStart: () => setTimeout(() => window.location = href, 1500)
-    })
-    .to(overlay, { opacity: 1, duration: 0.8 }, 0)
-    .to(els.mobile, { 
-      autoAlpha: 0, 
-      y: -60, 
-      height: 0,
-      duration: 1,
-      stagger: 0.1
-    }, 0)
-    .to(els.cards, { 
-      autoAlpha: 0, 
-      y: -60, 
-      duration: 1,
-      stagger: 0.1 
-    }, "<0.1")
-    .to(els.text, { 
-      autoAlpha: 0, 
-      y: -60, 
-      duration: 1,
-      stagger: 0.1 
-    }, "<0.1")
-    .to(els.splitLinesWhite, { 
-      y: -60, 
-      autoAlpha: 0, 
-      duration: 1,
-      stagger: 0.1 
-    }, "<0.1")
-    .to(els.splitLinesRegular, { 
-      y: -60, 
-      autoAlpha: 0, 
-      duration: 1,
-      stagger: 0.1 
-    }, "<0.1")
-    .to(els.media, { 
-      autoAlpha: 0, 
-      y: -60, 
-      duration: 1,
-      stagger: 0.1 
-    }, "<0.1");
-  });
-
-  document.body.classList.add('ready');
-  document.documentElement.classList.add('lenis', 'lenis-smooth');
+  
+  console.log('Lenis initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Lenis:', error);
 }
+
+// Handle page transitions
+function handlePageTransition(e, href) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Stop Lenis scroll during transition
+  if (lenis) {
+    lenis.stop();
+  }
+
+  // Simple fade out and move up
+  gsap.to('body *', {
+    opacity: 0,
+    y: -10,
+    duration: 0.5,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      window.location.href = href;
+    }
+  });
+}
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, starting animations');
+
+  // Initial page load animations with stagger
+  const allElements = gsap.utils.toArray('h1, h2, h3, p, img, video');
+  gsap.from(allElements, {
+    opacity: 0,
+    y: 20,
+    duration: 1,
+    stagger: {
+      amount: 0.5,
+      from: "top"
+    },
+    ease: 'power2.out'
+  });
+
+  // Setup scroll-triggered animations
+  const textElements = document.querySelectorAll('h1, h2, h3, p');
+  console.log('Found text elements:', textElements.length);
+  
+  textElements.forEach((element) => {
+    gsap.from(element, {
+      scrollTrigger: {
+        trigger: element,
+        start: 'top bottom-=100',
+        end: 'bottom top+=100',
+        toggleActions: 'play none none reverse',
+        onLeaveBack: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: 20,
+            duration: 0.3,
+            ease: 'power1.in'
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power2.out'
+          });
+        }
+      }
+    });
+  });
+
+  // Animate media elements with stagger
+  const mediaElements = document.querySelectorAll('img, video');
+  console.log('Found media elements:', mediaElements.length);
+  
+  mediaElements.forEach((element) => {
+    gsap.from(element, {
+      scrollTrigger: {
+        trigger: element,
+        start: 'top bottom-=100',
+        end: 'bottom top+=100',
+        toggleActions: 'play none none reverse',
+        onLeaveBack: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: 20,
+            duration: 0.3,
+            ease: 'power1.in'
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power2.out'
+          });
+        }
+      }
+    });
+  });
+
+  // Handle all link clicks, including those in sticky elements
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    // Only handle internal links
+    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+      handlePageTransition(e, href);
+    }
+  }, true);
+
+  // Handle form inputs
+  document.addEventListener('focusin', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (lenis) {
+        lenis.stop();
+      }
+    }
+  });
+
+  document.addEventListener('focusout', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (lenis) {
+        lenis.start();
+      }
+    }
+  });
+
+  console.log('All animations initialized');
+});
