@@ -31,7 +31,11 @@
 // Version 1.0.42 - Fix Lenis initialization
 // Version 1.0.43 - Fix style application
 // Version 1.0.44 - Fix script loading and initialization
-console.log('animations.js version 1.0.44 loading...');
+// Version 1.0.45 - Prevent multiple initializations
+console.log('animations.js version 1.0.45 loading...');
+
+// Global initialization flag
+window.animationsInitialized = window.animationsInitialized || false;
 
 // Create flags to track initialization and loading
 let isInitialized = false;
@@ -49,6 +53,7 @@ function areScriptsLoaded() {
 
 // Function to force style application with logging
 function forceStyles(element, styles) {
+  if (!element) return;
   console.log('Forcing styles on:', element, styles);
   Object.entries(styles).forEach(([property, value]) => {
     element.style.setProperty(property, value, 'important');
@@ -58,6 +63,12 @@ function forceStyles(element, styles) {
 
 // Function to ensure elements are hidden with improved logging
 function ensureElementsHidden() {
+  // Check if already initialized
+  if (window.animationsInitialized) {
+    console.log('Animations already initialized, skipping element hiding');
+    return;
+  }
+
   const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
   
   console.log('Ensuring elements are hidden...');
@@ -118,6 +129,12 @@ function checkScripts() {
 
 // Initialize scripts with retry mechanism
 function initializeScripts(retries = 0, maxRetries = 50) {
+  // Check if already initialized globally
+  if (window.animationsInitialized) {
+    console.log('Animations already initialized globally, skipping initialization');
+    return;
+  }
+
   console.log(`Attempting to initialize scripts (attempt ${retries + 1}/${maxRetries})`);
   
   if (retries >= maxRetries) {
@@ -137,13 +154,14 @@ function initializeScripts(retries = 0, maxRetries = 50) {
 
 // Function to initialize animations
 function initializeAnimations() {
-  if (isInitialized) {
+  if (isInitialized || window.animationsInitialized) {
     console.log('Animations already initialized');
     return;
   }
   
   console.log('Initializing animations...');
   isInitialized = true;
+  window.animationsInitialized = true;
 
   // Initialize Lenis
   try {
