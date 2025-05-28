@@ -29,31 +29,57 @@
 // Version 1.0.40 - Fix FOUC with critical CSS
 // Version 1.0.41 - Fix visibility restoration
 // Version 1.0.42 - Fix Lenis initialization
-console.log('animations.js version 1.0.42 loaded');
+// Version 1.0.43 - Fix style application
+console.log('animations.js version 1.0.43 loaded');
 
-// Create a flag to track initialization
+// Create flags to track initialization
 let isInitialized = false;
 let lenis = null;
 
-// Function to ensure elements are hidden
-function ensureElementsHidden() {
-  const elements = document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
-  elements.forEach(el => {
-    if (getComputedStyle(el).opacity !== '0') {
-      el.style.setProperty('opacity', '0', 'important');
-      el.style.setProperty('visibility', 'hidden', 'important');
-    }
+// Debug function
+function debugElement(el) {
+  console.log('Element:', el.tagName, el.className);
+  console.log('Computed styles:', {
+    opacity: getComputedStyle(el).opacity,
+    visibility: getComputedStyle(el).visibility,
+    transform: getComputedStyle(el).transform
   });
 }
 
-// Run immediately
+// Function to force style application
+function forceStyles(element, styles) {
+  Object.entries(styles).forEach(([property, value]) => {
+    element.style.setProperty(property, value, 'important');
+  });
+}
+
+// Function to ensure elements are hidden
+function ensureElementsHidden() {
+  const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+  
+  console.log('Hiding elements...');
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    console.log(`Found ${elements.length} ${selector} elements`);
+    
+    elements.forEach(el => {
+      forceStyles(el, {
+        'opacity': '0',
+        'visibility': 'hidden',
+        'transform': 'translateY(20px)',
+        'will-change': 'transform, opacity'
+      });
+    });
+  });
+}
+
+// Run immediately and after a short delay to ensure application
 ensureElementsHidden();
+setTimeout(ensureElementsHidden, 0);
 
 // Run again when DOM starts loading
 if (document.readyState === 'loading') {
-  document.addEventListener('readystatechange', () => {
-    ensureElementsHidden();
-  });
+  document.addEventListener('readystatechange', ensureElementsHidden);
 }
 
 // Simple animations v1.0.12
@@ -173,27 +199,29 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Starting animations');
     
     // Get all elements to animate
-    const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
-    console.log('Found elements to animate:', allElements.length);
-
-    // Remove any inline styles that might interfere
-    allElements.forEach(el => {
-      // Force remove the important flags
-      el.style.removeProperty('opacity');
-      el.style.removeProperty('visibility');
-      el.style.removeProperty('transform');
-      // Also remove any inline styles added by CSS
-      el.style.cssText = el.style.cssText.replace(/opacity\s*:\s*[^;]+;?/gi, '');
-      el.style.cssText = el.style.cssText.replace(/visibility\s*:\s*[^;]+;?/gi, '');
+    const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+    const allElements = [];
+    
+    // Gather all elements and debug their state
+    selectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      console.log(`Found ${elements.length} ${selector} elements`);
+      elements.forEach(el => {
+        allElements.push(el);
+        debugElement(el);
+      });
     });
 
-    // Set initial state with GSAP
-    gsap.set(allElements, {
-      opacity: 0,
-      y: 20,
-      visibility: 'visible',
-      clearProps: 'transform',
-      overwrite: 'auto'
+    console.log('Total elements to animate:', allElements.length);
+
+    // Force initial state
+    allElements.forEach(el => {
+      forceStyles(el, {
+        'opacity': '0',
+        'visibility': 'visible',
+        'transform': 'translateY(20px)',
+        'will-change': 'transform, opacity'
+      });
     });
 
     // Create the main timeline
@@ -204,9 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       onStart: () => {
         console.log('Animation timeline started');
-        // Ensure elements are visible when animation starts
         allElements.forEach(el => {
-          el.style.setProperty('visibility', 'visible', 'important');
+          // Remove any conflicting inline styles
+          el.style.cssText = '';
+          // Force visibility
+          forceStyles(el, {
+            'visibility': 'visible',
+            'will-change': 'transform, opacity'
+          });
         });
       }
     });
@@ -221,9 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       onComplete: () => {
         console.log('Initial animations complete');
-        // Clear any remaining inline styles
         allElements.forEach(el => {
-          gsap.set(el, {clearProps: 'all'});
+          // Clear transform and will-change but keep visibility
+          el.style.removeProperty('transform');
+          el.style.removeProperty('will-change');
+          debugElement(el);
         });
       }
     });
