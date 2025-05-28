@@ -27,7 +27,8 @@
 // Version 1.0.38 - Fix animation triggering
 // Version 1.0.39 - Fix initial visibility
 // Version 1.0.40 - Fix FOUC with critical CSS
-console.log('animations.js version 1.0.40 loaded');
+// Version 1.0.41 - Fix visibility restoration
+console.log('animations.js version 1.0.41 loaded');
 
 // Create a flag to track initialization
 let isInitialized = false;
@@ -149,45 +150,63 @@ document.addEventListener('DOMContentLoaded', () => {
   
   console.log('DOM loaded, waiting for fonts...');
 
-  // Wait for fonts to load to prevent FOUC
-  document.fonts.ready.then(() => {
-    console.log('Fonts loaded, starting animations');
-
-    // Initial page load animations with stagger
+  // Function to start animations
+  function startAnimations() {
+    console.log('Starting animations');
+    
+    // Get all elements to animate
     const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
     console.log('Found elements to animate:', allElements.length);
+
+    // Remove any inline styles that might interfere
+    allElements.forEach(el => {
+      // Force remove the important flags
+      el.style.removeProperty('opacity');
+      el.style.removeProperty('visibility');
+      el.style.removeProperty('transform');
+      // Also remove any inline styles added by CSS
+      el.style.cssText = el.style.cssText.replace(/opacity\s*:\s*[^;]+;?/gi, '');
+      el.style.cssText = el.style.cssText.replace(/visibility\s*:\s*[^;]+;?/gi, '');
+    });
 
     // Set initial state with GSAP
     gsap.set(allElements, {
       opacity: 0,
       y: 20,
       visibility: 'visible',
-      overwrite: true
+      clearProps: 'transform',
+      overwrite: 'auto'
     });
 
-    // Remove any inline styles that might interfere
-    allElements.forEach(el => {
-      el.style.removeProperty('opacity');
-      el.style.removeProperty('visibility');
+    // Create the main timeline
+    const mainTL = gsap.timeline({
+      defaults: {
+        ease: 'power2.out',
+        duration: 1
+      },
+      onStart: () => {
+        console.log('Animation timeline started');
+        // Ensure elements are visible when animation starts
+        allElements.forEach(el => {
+          el.style.setProperty('visibility', 'visible', 'important');
+        });
+      }
     });
 
-    // Animate elements in
-    gsap.to(allElements, {
+    // Add staggered animations to timeline
+    mainTL.to(allElements, {
       opacity: 1,
       y: 0,
-      duration: 1,
-      visibility: 'visible',
       stagger: {
         amount: 0.8,
         from: "top"
       },
-      ease: 'power2.out',
-      overwrite: true,
-      onStart: () => {
-        console.log('Starting initial animations');
-      },
       onComplete: () => {
         console.log('Initial animations complete');
+        // Clear any remaining inline styles
+        allElements.forEach(el => {
+          gsap.set(el, {clearProps: 'all'});
+        });
       }
     });
 
@@ -205,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duration: 0.5,
             visibility: 'visible',
             ease: 'power2.out',
-            overwrite: true
+            overwrite: 'auto'
           });
         },
         onLeave: () => {
@@ -214,41 +233,54 @@ document.addEventListener('DOMContentLoaded', () => {
             y: 20,
             duration: 0.3,
             ease: 'power1.in',
-            overwrite: true
+            overwrite: 'auto'
           });
         }
       });
     });
+  }
 
-    // Handle all link clicks, including those in sticky elements
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]');
-      if (!link) return;
-
-      const href = link.getAttribute('href');
-      // Only handle internal links
-      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-        handlePageTransition(e, href);
-      }
-    }, true);
-
-    // Handle form inputs
-    document.addEventListener('focusin', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        if (lenis) {
-          lenis.stop();
-        }
-      }
-    });
-
-    document.addEventListener('focusout', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        if (lenis) {
-          lenis.start();
-        }
-      }
-    });
-
-    console.log('All animations initialized');
+  // Wait for fonts and a small delay to ensure everything is ready
+  Promise.all([
+    document.fonts.ready,
+    new Promise(resolve => setTimeout(resolve, 100))
+  ]).then(() => {
+    console.log('Fonts loaded and delay complete, starting animations');
+    startAnimations();
+  }).catch(error => {
+    console.error('Error waiting for fonts:', error);
+    // Start animations anyway after a short delay
+    setTimeout(startAnimations, 200);
   });
+
+  // Handle all link clicks, including those in sticky elements
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    // Only handle internal links
+    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+      handlePageTransition(e, href);
+    }
+  }, true);
+
+  // Handle form inputs
+  document.addEventListener('focusin', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (lenis) {
+        lenis.stop();
+      }
+    }
+  });
+
+  document.addEventListener('focusout', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (lenis) {
+        lenis.start();
+      }
+    }
+  });
+
+  console.log('All animations initialized');
 });
