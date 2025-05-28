@@ -28,10 +28,12 @@
 // Version 1.0.39 - Fix initial visibility
 // Version 1.0.40 - Fix FOUC with critical CSS
 // Version 1.0.41 - Fix visibility restoration
-console.log('animations.js version 1.0.41 loaded');
+// Version 1.0.42 - Fix Lenis initialization
+console.log('animations.js version 1.0.42 loaded');
 
 // Create a flag to track initialization
 let isInitialized = false;
+let lenis = null;
 
 // Function to ensure elements are hidden
 function ensureElementsHidden() {
@@ -57,24 +59,47 @@ if (document.readyState === 'loading') {
 // Simple animations v1.0.12
 console.log('Initializing animations.js...');
 
-// Add Lenis CSS classes to html element
-document.documentElement.classList.add('lenis', 'lenis-smooth');
+// Function to initialize Lenis
+function initLenis() {
+  // Check if Lenis is available
+  if (typeof Lenis === 'undefined') {
+    console.warn('Lenis not loaded yet, waiting...');
+    return false;
+  }
 
-// Create and append the transition overlay
-const overlay = document.createElement('div');
-overlay.style.cssText = `
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 9999;
-  transition: opacity 0.5s ease;
-`;
-document.body.appendChild(overlay);
+  try {
+    // Add Lenis CSS classes to html element
+    document.documentElement.classList.add('lenis', 'lenis-smooth');
+
+    lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      smoothWheel: true,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      wheelMultiplier: 1,
+      infinite: false
+    });
+
+    // Sync Lenis with ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // Create a single RAF loop
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    // Disable smooth scrolling during GSAP animations
+    gsap.ticker.lagSmoothing(0);
+    
+    console.log('Lenis initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize Lenis:', error);
+    return false;
+  }
+}
 
 // Check if GSAP is loaded
 if (typeof gsap === 'undefined') {
@@ -91,34 +116,27 @@ try {
   throw error;
 }
 
-// Initialize smooth scroll
-let lenis;
-try {
-  lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    orientation: 'vertical',
-    smoothWheel: true,
-    smoothTouch: false,
-    touchMultiplier: 2,
-    wheelMultiplier: 1,
-    infinite: false
-  });
+// Try to initialize Lenis immediately
+let lenisInitialized = initLenis();
 
-  // Sync Lenis with ScrollTrigger
-  lenis.on('scroll', ScrollTrigger.update);
+// If Lenis isn't available yet, wait for it
+if (!lenisInitialized) {
+  const waitForLenis = setInterval(() => {
+    if (typeof Lenis !== 'undefined') {
+      lenisInitialized = initLenis();
+      if (lenisInitialized) {
+        clearInterval(waitForLenis);
+      }
+    }
+  }, 100);
 
-  // Create a single RAF loop
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-
-  // Disable smooth scrolling during GSAP animations
-  gsap.ticker.lagSmoothing(0);
-  
-  console.log('Lenis initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize Lenis:', error);
+  // Stop trying after 5 seconds
+  setTimeout(() => {
+    clearInterval(waitForLenis);
+    if (!lenisInitialized) {
+      console.warn('Could not initialize Lenis after 5 seconds, continuing without smooth scroll');
+    }
+  }, 5000);
 }
 
 // Handle page transitions
