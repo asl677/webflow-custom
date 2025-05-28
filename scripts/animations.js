@@ -91,9 +91,9 @@ function handlePageTransition(e, href) {
   // Simple fade out all elements at once
   gsap.to('body *', {
     opacity: 0,
-    y: -20,
-    duration: 0.5,
-    ease: 'power2.inOut',
+    y: -10,
+    duration: 0.3,
+    ease: 'power3.inOut',
     onComplete: () => {
       window.location.href = href;
     }
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const allElements = gsap.utils.toArray('h1, h2, h3, p, img, video');
   gsap.from(allElements, {
     opacity: 0,
-    y: 30,
+    y: 20,
     duration: 1,
     stagger: {
       amount: 0.5,
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
-            y: 30,
+            y: 20,
             duration: 0.3,
             ease: 'power1.in'
           });
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
-            y: 30,
+            y: 20,
             duration: 0.3,
             ease: 'power1.in'
           });
