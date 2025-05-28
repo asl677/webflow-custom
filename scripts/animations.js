@@ -23,11 +23,27 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.10
+// Simple animations v1.0.11
 console.log('Initializing animations.js...');
 
 // Add Lenis CSS classes to html element
 document.documentElement.classList.add('lenis', 'lenis-smooth');
+
+// Create and append the transition overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = `
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+`;
+document.body.appendChild(overlay);
 
 // Check if GSAP is loaded
 if (typeof gsap === 'undefined') {
@@ -96,10 +112,21 @@ function handlePageTransition(e, href) {
     }
   });
 
-  // Add a fade out animation for the entire body
-  tl.to('body', {
+  // Fade out all elements first
+  tl.to('*:not(html, body, head, script, style, link, meta, #lenis-scrollbar, #lenis-scrollbar *)', {
     opacity: 0,
-    duration: 0.5,
+    duration: 0.3,
+    ease: 'power2.inOut',
+    stagger: {
+      amount: 0.1,
+      from: "top"
+    }
+  });
+
+  // Then fade in the overlay
+  tl.to(overlay, {
+    opacity: 1,
+    duration: 0.2,
     ease: 'power2.inOut'
   });
 }
