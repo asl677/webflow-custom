@@ -24,7 +24,11 @@
 // Version 1.0.35 - Fix Lenis initialization
 // Version 1.0.36 - Fix initial element visibility
 // Version 1.0.37 - Fix FOUC with proper initial styles
-console.log('animations.js version 1.0.37 loaded');
+// Version 1.0.38 - Fix animation triggering
+console.log('animations.js version 1.0.38 loaded');
+
+// Create a flag to track initialization
+let isInitialized = false;
 
 // Add initial CSS to prevent FOUC
 const initialStyles = document.createElement('style');
@@ -38,7 +42,6 @@ initialStyles.textContent = `
 
   .card-project, .fake-nav, .inner-top {
     opacity: 0;
-    transition: opacity 0.3s ease;
     will-change: transform, opacity;
     overflow: hidden;
   }
@@ -140,47 +143,53 @@ function handlePageTransition(e, href) {
   });
 }
 
-// Wait for DOM to be ready
+// Wait for DOM and fonts to be ready
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, starting animations');
-
-  // Initial page load animations with stagger
-  const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
-  console.log('Found elements to animate:', allElements.length);
-
-  gsap.set(allElements, {
-    opacity: 0,
-    y: 20,
-    visibility: 'visible' // Make elements visible before animation
-  });
-
-  gsap.to(allElements, {
-    opacity: 1,
-    y: 0,
-    duration: 1,
-    visibility: 'visible',
-    stagger: {
-      amount: 0.8,
-      from: "top"
-    },
-    ease: 'power2.out',
-    onStart: () => {
-      console.log('Starting initial animations');
-      // Remove initial styles once animations begin
-      initialStyles.remove();
-    },
-    onComplete: () => {
-      console.log('Initial animations complete');
-    }
-  });
-
-  // Setup scroll-triggered animations for all elements
-  const animatedElements = document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
-  console.log('Found elements for scroll animations:', animatedElements.length);
+  if (isInitialized) return;
+  isInitialized = true;
   
-  animatedElements.forEach((element) => {
-    gsap.from(element, {
-      scrollTrigger: {
+  console.log('DOM loaded, waiting for fonts...');
+
+  // Wait for fonts to load to prevent FOUC
+  document.fonts.ready.then(() => {
+    console.log('Fonts loaded, starting animations');
+
+    // Initial page load animations with stagger
+    const allElements = gsap.utils.toArray('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down');
+    console.log('Found elements to animate:', allElements.length);
+
+    // Set initial state
+    gsap.set(allElements, {
+      opacity: 0,
+      y: 20,
+      visibility: 'visible'
+    });
+
+    // Remove initial styles before starting animations
+    initialStyles.remove();
+
+    // Animate elements in
+    gsap.to(allElements, {
+      opacity: 1,
+      y: 0,
+      duration: 1,
+      visibility: 'visible',
+      stagger: {
+        amount: 0.8,
+        from: "top"
+      },
+      ease: 'power2.out',
+      onStart: () => {
+        console.log('Starting initial animations');
+      },
+      onComplete: () => {
+        console.log('Initial animations complete');
+      }
+    });
+
+    // Setup scroll-triggered animations
+    allElements.forEach((element) => {
+      ScrollTrigger.create({
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
@@ -190,11 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 1,
             y: 0,
             duration: 0.5,
-            ease: 'power2.out',
-            visibility: 'visible'
+            visibility: 'visible',
+            ease: 'power2.out'
           });
         },
-        onLeaveBack: () => {
+        onLeave: () => {
           gsap.to(element, {
             opacity: 0,
             y: 20,
@@ -202,38 +211,38 @@ document.addEventListener('DOMContentLoaded', () => {
             ease: 'power1.in'
           });
         }
+      });
+    });
+
+    // Handle all link clicks, including those in sticky elements
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      // Only handle internal links
+      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+        handlePageTransition(e, href);
+      }
+    }, true);
+
+    // Handle form inputs
+    document.addEventListener('focusin', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (lenis) {
+          lenis.stop();
+        }
       }
     });
-  });
 
-  // Handle all link clicks, including those in sticky elements
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href]');
-    if (!link) return;
-
-    const href = link.getAttribute('href');
-    // Only handle internal links
-    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-      handlePageTransition(e, href);
-    }
-  }, true);
-
-  // Handle form inputs
-  document.addEventListener('focusin', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) {
-        lenis.stop();
+    document.addEventListener('focusout', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (lenis) {
+          lenis.start();
+        }
       }
-    }
-  });
+    });
 
-  document.addEventListener('focusout', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) {
-        lenis.start();
-      }
-    }
+    console.log('All animations initialized');
   });
-
-  console.log('All animations initialized');
 });
