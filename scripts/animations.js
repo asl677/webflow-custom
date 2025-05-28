@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.8
+// Simple animations v1.0.9
 console.log('Initializing animations.js...');
 
 // Add Lenis CSS classes to html element
@@ -69,11 +69,6 @@ try {
   // Disable smooth scrolling during GSAP animations
   gsap.ticker.lagSmoothing(0);
   
-  // Log scroll progress
-  lenis.on('scroll', ({ progress }) => {
-    console.log('Scroll progress:', progress);
-  });
-
   console.log('Lenis initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Lenis:', error);
@@ -89,29 +84,18 @@ function handlePageTransition(e, href) {
     lenis.stop();
     document.documentElement.classList.add('lenis-stopped');
   }
+
+  // Kill any existing GSAP animations
+  gsap.killTweensOf('*');
   
-  // Create timeline for exit animations
-  const tl = gsap.timeline({
-    onComplete: () => {
-      window.location.href = href;
-    }
-  });
-
-  // Get all visible elements
-  const elements = gsap.utils.toArray('h1, h2, h3, p, img, video, a, button').filter(el => {
-    const style = window.getComputedStyle(el);
-    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-  });
-
-  // Add fade out animation to timeline
-  tl.to(elements, {
+  // Simple fade out all elements at once
+  gsap.to('body *', {
     opacity: 0,
     y: -20,
     duration: 0.5,
     ease: 'power2.inOut',
-    stagger: {
-      amount: 0.3,
-      from: "top"
+    onComplete: () => {
+      window.location.href = href;
     }
   });
 }
@@ -143,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
-        toggleActions: 'play none none none',
+        toggleActions: 'play none none reverse',
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
@@ -174,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
-        toggleActions: 'play none none none',
+        toggleActions: 'play none none reverse',
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
