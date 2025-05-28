@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.4
+// Simple animations v1.0.5
 console.log('Initializing animations.js...');
 
 // Check if GSAP is loaded
@@ -62,6 +62,33 @@ try {
   console.error('Failed to initialize Lenis:', error);
 }
 
+// Handle page transitions
+function handlePageTransition() {
+  const links = document.querySelectorAll('a[href]');
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      // Only handle internal links
+      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+        e.preventDefault();
+        
+        // Quick fade out all elements
+        const elements = document.querySelectorAll('h1, h2, h3, p, img, video, a, button');
+        gsap.to(elements, {
+          opacity: 0,
+          y: -20,
+          duration: 0.3,
+          ease: 'power1.in',
+          stagger: 0.02,
+          onComplete: () => {
+            window.location.href = href;
+          }
+        });
+      }
+    });
+  });
+}
+
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, starting animations');
@@ -80,18 +107,18 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
-        toggleActions: 'play none reverse none',
-        onLeave: () => {
+        toggleActions: 'play none none none',
+        onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
-            duration: 0.5,
+            duration: 0.3,
             ease: 'power1.in'
           });
         },
         onEnterBack: () => {
           gsap.to(element, {
             opacity: 1,
-            duration: 1,
+            duration: 0.5,
             ease: 'power2.out'
           });
         }
@@ -113,45 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
       trigger: mediaElements,
       start: 'top bottom-=100',
       end: 'bottom top+=100',
-      toggleActions: 'play none reverse none',
-      onLeave: (batch) => {
+      toggleActions: 'play none none none',
+      onLeaveBack: (batch) => {
         gsap.to(batch.targets, {
           opacity: 0,
-          duration: 0.5,
-          ease: 'power1.in',
-          stagger: 0.1
-        });
-      },
-      onEnterBack: (batch) => {
-        gsap.to(batch.targets, {
-          opacity: 1,
-          duration: 1,
-          ease: 'power2.out',
-          stagger: 0.2
-        });
-      }
-    }
-  });
-
-  // Animate links and buttons
-  const linkElements = document.querySelectorAll('a, button');
-  console.log('Found link elements:', linkElements.length);
-  
-  gsap.from(linkElements, {
-    y: 20,
-    opacity: 0,
-    duration: 0.8,
-    stagger: 0.1,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: linkElements,
-      start: 'top bottom-=100',
-      end: 'bottom top+=100',
-      toggleActions: 'play none reverse none',
-      onLeave: (batch) => {
-        gsap.to(batch.targets, {
-          opacity: 0,
-          duration: 0.5,
+          duration: 0.3,
           ease: 'power1.in',
           stagger: 0.05
         });
@@ -159,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       onEnterBack: (batch) => {
         gsap.to(batch.targets, {
           opacity: 1,
-          duration: 0.8,
+          duration: 0.5,
           ease: 'power2.out',
           stagger: 0.1
         });
@@ -167,5 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Initialize page transition handler
+  handlePageTransition();
+  
   console.log('All animations initialized');
 });
