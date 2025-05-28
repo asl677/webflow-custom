@@ -32,7 +32,41 @@
 // Version 1.0.43 - Fix style application
 // Version 1.0.44 - Fix script loading and initialization
 // Version 1.0.45 - Prevent multiple initializations
-console.log('animations.js version 1.0.45 loading...');
+// Version 1.0.46 - Add loading overlay to prevent FOUC
+console.log('animations.js version 1.0.46 loading...');
+
+// Create and inject the overlay styles
+const overlayStyles = document.createElement('style');
+overlayStyles.textContent = `
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+    pointer-events: none;
+  }
+  .loading-overlay.fade-out {
+    opacity: 0;
+  }
+  body {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+  }
+  body.content-loaded {
+    opacity: 1;
+  }
+`;
+document.head.appendChild(overlayStyles);
+
+// Create and inject the overlay element
+const overlay = document.createElement('div');
+overlay.className = 'loading-overlay';
+document.body.appendChild(overlay);
 
 // Global initialization flag
 window.animationsInitialized = window.animationsInitialized || false;
@@ -45,6 +79,16 @@ let scriptsLoaded = {
   scrollTrigger: false,
   lenis: false
 };
+
+// Function to remove overlay and show content
+function showContent() {
+  console.log('Showing content...');
+  document.body.classList.add('content-loaded');
+  overlay.classList.add('fade-out');
+  setTimeout(() => {
+    overlay.remove();
+  }, 500);
+}
 
 // Function to check if all required scripts are loaded
 function areScriptsLoaded() {
@@ -221,14 +265,12 @@ function startAnimations() {
   const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
   const allElements = [];
   
-  // Gather all elements
   selectors.forEach(selector => {
     const elements = document.querySelectorAll(selector);
     console.log(`Found ${elements.length} ${selector} elements to animate`);
     elements.forEach(el => allElements.push(el));
   });
 
-  // Create and start the main timeline
   const mainTL = gsap.timeline({
     defaults: {
       ease: 'power2.out',
@@ -237,12 +279,16 @@ function startAnimations() {
     onStart: () => {
       console.log('Animation timeline started');
       allElements.forEach(el => {
-        el.style.cssText = ''; // Clear existing inline styles
+        el.style.cssText = '';
         forceStyles(el, {
           'visibility': 'visible',
           'will-change': 'transform, opacity'
         });
       });
+    },
+    onComplete: () => {
+      // Remove overlay after main animations complete
+      showContent();
     }
   });
 
