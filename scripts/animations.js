@@ -23,8 +23,11 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.7
+// Simple animations v1.0.8
 console.log('Initializing animations.js...');
+
+// Add Lenis CSS classes to html element
+document.documentElement.classList.add('lenis', 'lenis-smooth');
 
 // Check if GSAP is loaded
 if (typeof gsap === 'undefined') {
@@ -51,19 +54,26 @@ try {
     smoothWheel: true,
     smoothTouch: false,
     touchMultiplier: 2,
+    wheelMultiplier: 1,
     infinite: false
   });
 
   // Sync Lenis with ScrollTrigger
   lenis.on('scroll', ScrollTrigger.update);
 
+  // Create a single RAF loop
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
   });
 
-  // Override default ScrollTrigger refresh behavior
+  // Disable smooth scrolling during GSAP animations
   gsap.ticker.lagSmoothing(0);
   
+  // Log scroll progress
+  lenis.on('scroll', ({ progress }) => {
+    console.log('Scroll progress:', progress);
+  });
+
   console.log('Lenis initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Lenis:', error);
@@ -75,7 +85,10 @@ function handlePageTransition(e, href) {
   e.stopPropagation();
 
   // Stop Lenis scroll during transition
-  if (lenis) lenis.stop();
+  if (lenis) {
+    lenis.stop();
+    document.documentElement.classList.add('lenis-stopped');
+  }
   
   // Create timeline for exit animations
   const tl = gsap.timeline({
@@ -194,16 +207,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, true);
 
-  // Stop Lenis scroll on form focus
+  // Handle form inputs
   document.addEventListener('focusin', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      lenis.stop();
+      if (lenis) {
+        lenis.stop();
+        document.documentElement.classList.add('lenis-stopped');
+      }
     }
   });
 
   document.addEventListener('focusout', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      lenis.start();
+      if (lenis) {
+        lenis.start();
+        document.documentElement.classList.remove('lenis-stopped');
+      }
     }
   });
 
