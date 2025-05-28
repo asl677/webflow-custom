@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.9
+// Simple animations v1.0.10
 console.log('Initializing animations.js...');
 
 // Add Lenis CSS classes to html element
@@ -85,18 +85,22 @@ function handlePageTransition(e, href) {
     document.documentElement.classList.add('lenis-stopped');
   }
 
-  // Kill any existing GSAP animations
+  // Kill all existing GSAP animations and ScrollTriggers
+  ScrollTrigger.getAll().forEach(st => st.kill());
   gsap.killTweensOf('*');
   
-  // Simple fade out all elements at once
-  gsap.to('body *', {
-    opacity: 0,
-    y: -10,
-    duration: 0.3,
-    ease: 'power3.inOut',
+  // Create a timeline for exit animation
+  const tl = gsap.timeline({
     onComplete: () => {
       window.location.href = href;
     }
+  });
+
+  // Add a fade out animation for the entire body
+  tl.to('body', {
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.inOut'
   });
 }
 
