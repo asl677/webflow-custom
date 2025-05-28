@@ -1,41 +1,5 @@
-// Version 1.1.0 - Force cache refresh with major version bump
-// Version 1.0.13 - Fix mobile and exit animations timing
-// Version 1.0.14 - Fix mobile-down visibility
-// Version 1.0.15 - Fix white lines stagger animation
-// Version 1.0.16 - Fix mobile-down visibility persistence
-// Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.19 - Simplify text animations
-// Version 1.0.20 - Streamline animations code
-// Version 1.0.21 - Fix smooth text animations
-// Version 1.0.22 - Fix viewport animations
-// Version 1.0.23 - Streamlined code
-// Version 1.0.24 - Remove redundant heading animations
-// Version 1.0.25 - Consistent animation directions
-// Version 1.0.26 - Consistent top-to-bottom animations
-// Version 1.0.27 - Fix text animation consistency
-// Version 1.0.28 - Fix animation consistency and version compatibility
-// Version 1.0.29 - Fix dynamic text animations
-// Version 1.0.30 - Fix font loading issues
-// Version 1.0.31 - Add SplitText animations
-// Version 1.0.32 - Fix font loading for SplitText
-// Version 1.0.33 - Fix text selector syntax
-// Version 1.0.34 - Improved script loading and animation handling
-// Version 1.0.35 - Fix Lenis initialization
-// Version 1.0.36 - Fix initial element visibility
-// Version 1.0.37 - Fix FOUC with proper initial styles
-// Version 1.0.38 - Fix animation triggering
-// Version 1.0.39 - Fix initial visibility
-// Version 1.0.40 - Fix FOUC with critical CSS
-// Version 1.0.41 - Fix visibility restoration
-// Version 1.0.42 - Fix Lenis initialization
-// Version 1.0.43 - Fix style application
-// Version 1.0.44 - Fix script loading and initialization
-// Version 1.0.45 - Prevent multiple initializations
-// Version 1.0.46 - Add loading overlay to prevent FOUC
-// Version 1.0.47 - Add class-based visibility control
-console.log('animations.js version 1.0.47 loading...');
+// Version 1.1.1 - Fix module error and ensure script runs as regular JavaScript
+console.log('animations.js version 1.1.1 loading...');
 
 // Create and inject the critical styles
 const criticalStyles = document.createElement('style');
