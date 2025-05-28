@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.11
+// Simple animations v1.0.12
 console.log('Initializing animations.js...');
 
 // Add Lenis CSS classes to html element
@@ -98,36 +98,17 @@ function handlePageTransition(e, href) {
   // Stop Lenis scroll during transition
   if (lenis) {
     lenis.stop();
-    document.documentElement.classList.add('lenis-stopped');
   }
 
-  // Kill all existing GSAP animations and ScrollTriggers
-  ScrollTrigger.getAll().forEach(st => st.kill());
-  gsap.killTweensOf('*');
-  
-  // Create a timeline for exit animation
-  const tl = gsap.timeline({
+  // Simple fade out and move up
+  gsap.to('body *', {
+    opacity: 0,
+    y: -10,
+    duration: 0.5,
+    ease: 'power2.inOut',
     onComplete: () => {
       window.location.href = href;
     }
-  });
-
-  // Fade out all elements first
-  tl.to('*:not(html, body, head, script, style, link, meta, #lenis-scrollbar, #lenis-scrollbar *)', {
-    opacity: 0,
-    duration: 0.3,
-    ease: 'power2.inOut',
-    stagger: {
-      amount: 0.1,
-      from: "top"
-    }
-  });
-
-  // Then fade in the overlay
-  tl.to(overlay, {
-    opacity: 1,
-    duration: 0.2,
-    ease: 'power2.inOut'
   });
 }
 
@@ -227,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       if (lenis) {
         lenis.stop();
-        document.documentElement.classList.add('lenis-stopped');
       }
     }
   });
@@ -236,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       if (lenis) {
         lenis.start();
-        document.documentElement.classList.remove('lenis-stopped');
       }
     }
   });
