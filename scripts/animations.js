@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.3
+// Simple animations v1.0.4
 console.log('Initializing animations.js...');
 
 // Check if GSAP is loaded
@@ -39,6 +39,27 @@ try {
 } catch (error) {
   console.error('Failed to register ScrollTrigger:', error);
   throw error;
+}
+
+// Initialize smooth scroll
+let lenis;
+try {
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    smoothWheel: true
+  });
+  
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  
+  requestAnimationFrame(raf);
+  console.log('Lenis initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Lenis:', error);
 }
 
 // Wait for DOM to be ready
@@ -58,9 +79,22 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollTrigger: {
         trigger: element,
         start: 'top bottom-=100',
-        toggleActions: 'play none none reverse',
-        markers: true, // Enable markers for debugging
-        onEnter: () => console.log('Text animation triggered:', element),
+        end: 'bottom top+=100',
+        toggleActions: 'play none reverse none',
+        onLeave: () => {
+          gsap.to(element, {
+            opacity: 0,
+            duration: 0.5,
+            ease: 'power1.in'
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            duration: 1,
+            ease: 'power2.out'
+          });
+        }
       }
     });
   });
@@ -78,9 +112,24 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollTrigger: {
       trigger: mediaElements,
       start: 'top bottom-=100',
-      toggleActions: 'play none none reverse',
-      markers: true, // Enable markers for debugging
-      onEnter: () => console.log('Media animation triggered')
+      end: 'bottom top+=100',
+      toggleActions: 'play none reverse none',
+      onLeave: (batch) => {
+        gsap.to(batch.targets, {
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power1.in',
+          stagger: 0.1
+        });
+      },
+      onEnterBack: (batch) => {
+        gsap.to(batch.targets, {
+          opacity: 1,
+          duration: 1,
+          ease: 'power2.out',
+          stagger: 0.2
+        });
+      }
     }
   });
 
@@ -97,9 +146,24 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollTrigger: {
       trigger: linkElements,
       start: 'top bottom-=100',
-      toggleActions: 'play none none reverse',
-      markers: true, // Enable markers for debugging
-      onEnter: () => console.log('Link animation triggered')
+      end: 'bottom top+=100',
+      toggleActions: 'play none reverse none',
+      onLeave: (batch) => {
+        gsap.to(batch.targets, {
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power1.in',
+          stagger: 0.05
+        });
+      },
+      onEnterBack: (batch) => {
+        gsap.to(batch.targets, {
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power2.out',
+          stagger: 0.1
+        });
+      }
     }
   });
 
