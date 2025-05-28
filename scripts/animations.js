@@ -23,7 +23,7 @@
 // Version 1.0.34 - Improved script loading and animation handling
 console.log('animations.js version 1.0.34 loaded');
 
-// Simple animations v1.0.5
+// Simple animations v1.0.6
 console.log('Initializing animations.js...');
 
 // Check if GSAP is loaded
@@ -48,44 +48,43 @@ try {
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
-    smoothWheel: true
+    smoothWheel: true,
+    smoothTouch: false,
+    touchMultiplier: 2,
+    infinite: false
   });
+
+  // Sync Lenis with ScrollTrigger
+  lenis.on('scroll', ScrollTrigger.update);
+
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+
+  // Override default ScrollTrigger refresh behavior
+  gsap.ticker.lagSmoothing(0);
   
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-  
-  requestAnimationFrame(raf);
   console.log('Lenis initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Lenis:', error);
 }
 
 // Handle page transitions
-function handlePageTransition() {
-  const links = document.querySelectorAll('a[href]');
-  links.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      // Only handle internal links
-      if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-        e.preventDefault();
-        
-        // Quick fade out all elements
-        const elements = document.querySelectorAll('h1, h2, h3, p, img, video, a, button');
-        gsap.to(elements, {
-          opacity: 0,
-          y: -20,
-          duration: 0.3,
-          ease: 'power1.in',
-          stagger: 0.02,
-          onComplete: () => {
-            window.location.href = href;
-          }
-        });
-      }
-    });
+function handlePageTransition(e, href) {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  // Quick fade out all elements
+  const elements = document.querySelectorAll('h1, h2, h3, p, img, video, a, button');
+  gsap.to(elements, {
+    opacity: 0,
+    y: -20,
+    duration: 0.3,
+    ease: 'power1.in',
+    stagger: 0.02,
+    onComplete: () => {
+      window.location.href = href;
+    }
   });
 }
 
@@ -93,16 +92,22 @@ function handlePageTransition() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, starting animations');
 
-  // Animate text elements
+  // Initial page load animations with stagger
+  const allElements = gsap.utils.toArray('h1, h2, h3, p, img, video');
+  gsap.from(allElements, {
+    opacity: 0,
+    y: 30,
+    duration: 1,
+    stagger: 0.1,
+    ease: 'power2.out'
+  });
+
+  // Setup scroll-triggered animations
   const textElements = document.querySelectorAll('h1, h2, h3, p');
   console.log('Found text elements:', textElements.length);
   
   textElements.forEach((element) => {
     gsap.from(element, {
-      y: 30,
-      opacity: 0,
-      duration: 1,
-      ease: 'power2.out',
       scrollTrigger: {
         trigger: element,
         start: 'top bottom-=100',
@@ -111,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onLeaveBack: () => {
           gsap.to(element, {
             opacity: 0,
+            y: 30,
             duration: 0.3,
             ease: 'power1.in'
           });
@@ -118,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onEnterBack: () => {
           gsap.to(element, {
             opacity: 1,
+            y: 0,
             duration: 0.5,
             ease: 'power2.out'
           });
@@ -130,38 +137,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const mediaElements = document.querySelectorAll('img, video');
   console.log('Found media elements:', mediaElements.length);
   
-  gsap.from(mediaElements, {
-    y: 30,
-    opacity: 0,
-    duration: 1,
-    stagger: 0.2,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: mediaElements,
-      start: 'top bottom-=100',
-      end: 'bottom top+=100',
-      toggleActions: 'play none none none',
-      onLeaveBack: (batch) => {
-        gsap.to(batch.targets, {
-          opacity: 0,
-          duration: 0.3,
-          ease: 'power1.in',
-          stagger: 0.05
-        });
-      },
-      onEnterBack: (batch) => {
-        gsap.to(batch.targets, {
-          opacity: 1,
-          duration: 0.5,
-          ease: 'power2.out',
-          stagger: 0.1
-        });
+  mediaElements.forEach((element) => {
+    gsap.from(element, {
+      scrollTrigger: {
+        trigger: element,
+        start: 'top bottom-=100',
+        end: 'bottom top+=100',
+        toggleActions: 'play none none none',
+        onLeaveBack: () => {
+          gsap.to(element, {
+            opacity: 0,
+            y: 30,
+            duration: 0.3,
+            ease: 'power1.in'
+          });
+        },
+        onEnterBack: () => {
+          gsap.to(element, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: 'power2.out'
+          });
+        }
       }
+    });
+  });
+
+  // Handle all link clicks, including those in sticky elements
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    // Only handle internal links
+    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+      handlePageTransition(e, href);
+    }
+  }, true);
+
+  // Stop Lenis scroll on form focus
+  document.addEventListener('focusin', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      lenis.stop();
     }
   });
 
-  // Initialize page transition handler
-  handlePageTransition();
-  
+  document.addEventListener('focusout', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      lenis.start();
+    }
+  });
+
   console.log('All animations initialized');
 });
