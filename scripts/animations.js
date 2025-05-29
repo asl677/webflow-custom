@@ -192,13 +192,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
 
-    // Setup scroll triggers
+    // Setup scroll triggers with modified configuration
     allElements.forEach((element) => {
       ScrollTrigger.create({
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
-        toggleActions: 'play none none reverse',
+        toggleActions: 'play none none none', // Changed from 'play none none reverse'
         onEnter: () => {
           console.log('Element entering viewport:', element);
           gsap.to(element, {
@@ -209,17 +209,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: 'power2.out',
             overwrite: 'auto'
           });
-        },
-        onLeave: () => {
-          console.log('Element leaving viewport:', element);
-          gsap.to(element, {
-            opacity: 0,
-            y: 20,
-            duration: 0.3,
-            ease: 'power1.in',
-            overwrite: 'auto'
-          });
         }
+        // Removed onLeave handler to prevent elements from disappearing
       });
     });
   }
