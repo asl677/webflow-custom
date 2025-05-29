@@ -21,7 +21,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       let scrambling = false, interval;
 
       function scramble(duration = 600) {
-        if (scrambling) return;
+        if (scrambling) {
+          clearInterval(interval);
+        }
         scrambling = true;
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
@@ -36,18 +38,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           if (progress >= 1) {
             clearInterval(interval);
+            interval = null;
             scrambling = false;
+            charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 50);
+        }, 30);
       }
 
       function reset() {
-        if (interval) clearInterval(interval);
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
         scrambling = false;
-        charEls.forEach(char => char.textContent = char.dataset.char);
+        const originals = Array.from(charEls).map(el => el.dataset.char);
+        charEls.forEach((char, i) => char.textContent = originals[i]);
       }
 
-      link.addEventListener('mouseenter', scramble);
+      link.addEventListener('mouseenter', () => scramble(600));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
