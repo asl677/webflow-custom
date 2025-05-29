@@ -1,5 +1,5 @@
-// Version 1.1.6 - Fix sticky positioning
-console.log('animations.js version 1.1.6 loading...');
+// Version 1.1.8 - Fix sticky elements with body wrapper
+console.log('animations.js version 1.1.8 loading...');
 
 (function() {
   // Create and inject the critical styles
@@ -7,6 +7,10 @@ console.log('animations.js version 1.1.6 loading...');
   criticalStyles.textContent = `
     /* Lenis recommended styles */
     html.lenis {
+      height: auto;
+    }
+
+    html.lenis body {
       height: auto;
     }
 
@@ -22,7 +26,7 @@ console.log('animations.js version 1.1.6 loading...');
       overflow: hidden;
     }
 
-    .lenis.lenis-smooth iframe {
+    .lenis.lenis-scrolling iframe {
       pointer-events: none;
     }
 
@@ -30,8 +34,11 @@ console.log('animations.js version 1.1.6 loading...');
     [style*="position: sticky"],
     [style*="position:sticky"] {
       position: sticky !important;
-      transform: none !important;
+      transform: translate3d(0, 0, 0) !important;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
       will-change: transform;
+      z-index: 1;
     }
 
     /* Animation styles */
@@ -213,7 +220,7 @@ console.log('animations.js version 1.1.6 loading...');
         lerp: 0.1,
         normalizeWheel: true,
         infinite: false,
-        wrapper: window,
+        wrapper: document.body,
         content: document.documentElement,
         autoResize: true
       });
@@ -223,21 +230,33 @@ console.log('animations.js version 1.1.6 loading...');
       console.log('Found sticky elements:', stickyElements.length);
       
       stickyElements.forEach(el => {
-        // Remove any transform that might interfere with sticky positioning
-        el.style.transform = 'none';
+        // Force hardware acceleration and prevent any transform issues
+        el.style.transform = 'translate3d(0, 0, 0)';
+        el.style.backfaceVisibility = 'hidden';
+        el.style.webkitBackfaceVisibility = 'hidden';
         el.style.willChange = 'transform';
         el.style.zIndex = '1';
       });
 
-      // Proper RAF setup for Lenis
+      // Proper RAF setup for Lenis with power mode detection
       let rafId = null;
+      let lastTime = performance.now();
       
       function raf(time) {
         if (lenis.isStopped) {
           cancelAnimationFrame(rafId);
           return;
         }
-        lenis.raf(time);
+
+        // Check for low power mode (30fps cap on Safari)
+        const deltaTime = time - lastTime;
+        const isLowPowerMode = deltaTime > 32; // ~30fps threshold
+        
+        if (!isLowPowerMode) {
+          lenis.raf(time);
+        }
+        
+        lastTime = time;
         rafId = requestAnimationFrame(raf);
       }
       
@@ -265,10 +284,15 @@ console.log('animations.js version 1.1.6 loading...');
       });
 
       // Handle window resize
+      let resizeTimeout;
       window.addEventListener('resize', () => {
-        if (lenis) {
-          lenis.resize();
-        }
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          if (lenis) {
+            lenis.resize();
+            ScrollTrigger.refresh();
+          }
+        }, 100);
       });
 
       console.log('Lenis initialized successfully');
