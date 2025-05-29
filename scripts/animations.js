@@ -18,26 +18,54 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Split text for hover effect if not already split
       if (!link.dataset.splitDone) {
         const text = link.textContent.trim();
+        // Create wrapper for both layers
+        const wrapper = document.createElement('span');
+        wrapper.style.position = 'relative';
+        wrapper.style.display = 'inline-block';
+        
+        // Create top layer (animated)
+        const topLayer = document.createElement('span');
+        topLayer.style.position = 'relative';
+        topLayer.style.display = 'block';
+        topLayer.className = 'top-layer';
+        
+        // Create bottom layer (static)
+        const bottomLayer = document.createElement('span');
+        bottomLayer.style.position = 'absolute';
+        bottomLayer.style.top = '0';
+        bottomLayer.style.left = '0';
+        bottomLayer.style.display = 'block';
+        
+        // Split text into characters
         const chars = text.split('');
-        link.innerHTML = chars.map(char => 
-          `<span class="char" style="display: inline-block; transform-origin: 50% 100%;">${char === ' ' ? '&nbsp;' : char}</span>`
+        const topHTML = chars.map(char => 
+          `<span class="char" style="display: inline-block; position: relative;">${char === ' ' ? '&nbsp;' : char}</span>`
         ).join('');
+        
+        // Set content for both layers
+        topLayer.innerHTML = topHTML;
+        bottomLayer.innerHTML = topHTML;
+        
+        // Assemble the layers
+        wrapper.appendChild(bottomLayer);
+        wrapper.appendChild(topLayer);
+        link.innerHTML = '';
+        link.appendChild(wrapper);
         link.dataset.splitDone = 'true';
       }
 
       // Create hover animation timeline
       const hoverTimeline = window.gsap.timeline({ paused: true });
-      const chars = link.querySelectorAll('.char');
+      const chars = link.querySelectorAll('.top-layer .char');
       
       // Setup the timeline with wave-like stagger
       hoverTimeline.to(chars, {
-        y: -8,
-        rotateX: -90,
+        y: -10,
         opacity: 0,
-        duration: 0.6,
+        duration: 0.35,
         ease: "power1.inOut",
         stagger: {
-          amount: 0.4,
+          amount: 0.2,
           from: "start",
           ease: "power1.in"
         }
