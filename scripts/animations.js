@@ -149,8 +149,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       initHoverEffects();
     }
 
+    // Animate slide-in elements from right
+    const slideInElements = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    if (slideInElements.length) {
+      // Set initial state
+      window.gsap.set(slideInElements, {
+        x: 40,
+        opacity: 0
+      });
+      
+      // Animate to final position
+      window.gsap.to(slideInElements, {
+        x: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.3
+      });
+    }
+
     // Animate everything else
-    const selectors = ['h1:not(.heading.large)', 'h2:not(.heading.large)', 'h3:not(.heading.large)', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+    const selectors = ['h1:not(.heading.large)', 'h2:not(.heading.large)', 'h3:not(.heading.large)', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down:not(.grid-down.project-down.mobile-down)'];
     const elements = document.querySelectorAll(selectors.join(','));
     
     window.gsap.to(elements, {
@@ -225,9 +245,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Function to add initial-hidden class
   function addInitialHiddenClass() {
-    document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => {
+    document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
+      }
+    });
+    
+    // Set initial state for slide-in elements
+    document.querySelectorAll('.grid-down.project-down.mobile-down').forEach(el => {
+      if (!el.classList.contains('initial-hidden')) {
+        el.classList.add('initial-hidden');
+        el.style.transform = 'translateX(40px)';
+        el.style.opacity = '0';
       }
     });
   }
