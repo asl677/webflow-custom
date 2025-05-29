@@ -11,41 +11,52 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Initialize hover effects
   function initHoverEffects() {
+    console.log('Initializing hover effects...');
+    
     // Handle heading link hover effects
     const headingLinks = document.querySelectorAll('.heading.small.link.large-link');
     
     headingLinks.forEach(link => {
-      // Track mouse position and animation
-      let isHovering = false;
+      // Only set up the effect if not already done
+      if (link.dataset.hoverInit) return;
       
-      // Add mousemove listener
-      link.addEventListener('mousemove', (e) => {
-        if (!isHovering) return;
-        
-        const rect = link.getBoundingClientRect();
-        const x = e.clientX - rect.left; // mouse position within element
-        const progress = Math.min(Math.max(x / rect.width, 0), 1); // normalize to 0-1
-        
-        window.gsap.to(link, {
-          opacity: 0.3 + (progress * 0.7), // opacity ranges from 0.3 to 1
-          duration: 0.2,
-          ease: "power1.out"
-        });
+      // Split text into characters if not already done
+      if (!link.dataset.splitDone) {
+        const text = link.textContent.trim();
+        const chars = text.split('');
+        const wrappedChars = chars.map(char => 
+          `<span class="char" style="display: inline-block; transform: translateY(0); opacity: 1;">${char === ' ' ? '&nbsp;' : char}</span>`
+        ).join('');
+        link.innerHTML = wrappedChars;
+        link.dataset.splitDone = 'true';
+      }
+
+      // Create hover timeline
+      const chars = link.querySelectorAll('.char');
+      const hoverTimeline = window.gsap.timeline({ paused: true });
+      
+      // Animation for hover in
+      hoverTimeline.to(chars, {
+        y: -10,
+        opacity: 0.5,
+        duration: 0.3,
+        stagger: {
+          each: 0.02,
+          ease: "power2.inOut"
+        },
+        ease: "power2.out"
       });
-      
+
       // Add hover listeners
       link.addEventListener('mouseenter', () => {
-        isHovering = true;
+        hoverTimeline.play();
       });
-      
+
       link.addEventListener('mouseleave', () => {
-        isHovering = false;
-        window.gsap.to(link, {
-          opacity: 1,
-          duration: 0.3,
-          ease: "power1.out"
-        });
+        hoverTimeline.reverse();
       });
+
+      link.dataset.hoverInit = 'true';
     });
   }
 
@@ -63,9 +74,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Function to start animations
   function startAnimations() {
+    console.log('Starting animations...');
+    
     // Split and animate large headings first
     const largeHeadings = document.querySelectorAll('.heading.large');
     if (largeHeadings.length) {
+      console.log('Found large headings:', largeHeadings.length);
       largeHeadings.forEach(heading => {
         const lines = wrapLines(heading);
         window.gsap.to(lines, {
@@ -74,9 +88,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           duration: 0.8,
           stagger: 0.15,
           ease: "power2.out",
-          onComplete: () => initHoverEffects()
+          onComplete: () => {
+            console.log('Large heading animation complete, initializing hover effects');
+            initHoverEffects();
+          }
         });
       });
+    } else {
+      console.log('No large headings found, initializing hover effects directly');
+      initHoverEffects();
     }
 
     // Animate everything else

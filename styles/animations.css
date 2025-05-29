@@ -302,11 +302,29 @@ body.ready {
   overflow: visible;
 }
 
-/* Hover effects */
+/* Hover effects - ensure these are not being overridden */
 .heading.small.link.large-link {
-  transition: opacity 0.2s ease;
-  will-change: opacity;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.heading.small.link.large-link .char {
+  display: inline-block;
+  transform-origin: center bottom;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+/* Ensure proper inline display */
+.heading.small.link.large-link {
+  display: inline-block !important;
+  white-space: nowrap;
+}
+
+/* Remove any hover states that might interfere */
+.heading.small.link.large-link:hover {
+  opacity: 1; /* Let GSAP handle opacity changes */
 }
 
 /* Remove unused split text styles */
