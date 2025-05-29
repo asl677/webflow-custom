@@ -213,8 +213,9 @@ console.log('animations.js version 1.1.6 loading...');
         lerp: 0.1,
         normalizeWheel: true,
         infinite: false,
-        wrapper: window, // Ensure proper wrapper is set
-        content: document.documentElement // Ensure proper content is set
+        wrapper: window,
+        content: document.documentElement,
+        autoResize: true
       });
 
       // Handle sticky elements
@@ -225,24 +226,49 @@ console.log('animations.js version 1.1.6 loading...');
         // Remove any transform that might interfere with sticky positioning
         el.style.transform = 'none';
         el.style.willChange = 'transform';
+        el.style.zIndex = '1';
       });
 
       // Proper RAF setup for Lenis
+      let rafId = null;
+      
       function raf(time) {
+        if (lenis.isStopped) {
+          cancelAnimationFrame(rafId);
+          return;
+        }
         lenis.raf(time);
-        requestAnimationFrame(raf);
+        rafId = requestAnimationFrame(raf);
       }
-      requestAnimationFrame(raf);
+      
+      rafId = requestAnimationFrame(raf);
 
-      // Sync Lenis with ScrollTrigger
-      lenis.on('scroll', ScrollTrigger.update);
+      // Handle scroll events
+      lenis.on('scroll', (e) => {
+        ScrollTrigger.update();
+        document.documentElement.classList.toggle('lenis-scrolling', true);
+      });
+
+      // Handle stop/start events
+      lenis.on('stop', () => {
+        document.documentElement.classList.remove('lenis-scrolling');
+      });
 
       // Disable GSAP ticker lag smoothing
       gsap.ticker.lagSmoothing(0);
 
       // Add Lenis's raf to GSAP's ticker
       gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
+        if (!lenis.isStopped) {
+          lenis.raf(time * 1000);
+        }
+      });
+
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        if (lenis) {
+          lenis.resize();
+        }
       });
 
       console.log('Lenis initialized successfully');
