@@ -12,15 +12,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (link.dataset.hoverInit) return;
       
       const text = link.textContent.trim();
-      const wrappedChars = text.split('').map(char => 
-        `<span class="char" data-char="${char}" style="display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
-      ).join('');
-      link.innerHTML = wrappedChars;
+      const words = text.split(' ');
+      const wrappedText = words.map(word => {
+        const wrappedChars = word.split('').map(char => 
+          `<span class="char" data-char="${char}" style="display: inline-block;">${char}</span>`
+        ).join('');
+        return `<span class="word">${wrappedChars}</span>`;
+      }).join('<span class="space">&nbsp;</span>');
+      
+      link.innerHTML = wrappedText;
       
       const charEls = link.querySelectorAll('.char');
       let scrambling = false, interval;
 
-      function scramble(duration = 600) {
+      function scramble(duration = 1200) {
         if (scrambling) {
           clearInterval(interval);
         }
@@ -31,8 +36,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         interval = setInterval(() => {
           const progress = Math.min((Date.now() - start) / duration, 1);
           charEls.forEach((char, i) => {
-            if (char.dataset.char === ' ') return;
-            const charProgress = Math.max(0, (progress - (i * 0.05)) * 2);
+            if (char.parentElement.classList.contains('space')) return;
+            const charProgress = Math.max(0, (progress - (i * 0.1)) * 1.5);
             char.textContent = charProgress >= 1 ? originals[i] : chars[Math.floor(Math.random() * chars.length)];
           });
           
@@ -42,7 +47,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 30);
+        }, 50);
       }
 
       function reset() {
@@ -55,7 +60,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         charEls.forEach((char, i) => char.textContent = originals[i]);
       }
 
-      link.addEventListener('mouseenter', () => scramble(600));
+      link.addEventListener('mouseenter', () => scramble(1200));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });

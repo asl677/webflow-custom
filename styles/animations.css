@@ -53,7 +53,9 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 .heading.large .split-line{padding:0;margin:0}
 
 /* Heading Link Styles */
-.heading.small.link.large-link{cursor:pointer;user-select:none;-webkit-user-select:none;font-family:monospace,sans-serif;font-kerning:normal;-webkit-font-kerning:normal;letter-spacing:0.02em;word-spacing:normal}
+.heading.small.link.large-link{cursor:pointer;user-select:none;-webkit-user-select:none;font-family:monospace,sans-serif;font-kerning:normal;-webkit-font-kerning:normal;letter-spacing:0.02em;word-spacing:0.4em}
+.heading.small.link.large-link .word{display:inline-block}
+.heading.small.link.large-link .space{display:inline-block;width:0.4em}
 .heading.small.link.large-link .char{display:inline-block;transition:none;will-change:contents;font-kerning:normal;-webkit-font-kerning:normal;margin-right:0.01em}
 
 /* Container and Navigation */
