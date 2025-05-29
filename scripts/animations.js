@@ -1,5 +1,5 @@
-// Version 1.5.6
-console.log('animations.js version 1.5.6 loading...');
+// Version 1.5.7
+console.log('animations.js version 1.5.7 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -14,6 +14,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.querySelectorAll(selectors.join(',')).forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
+        // Add will-change for better performance on fixed elements
+        if (window.getComputedStyle(el).position === 'fixed') {
+          el.style.willChange = 'transform';
+          el.style.transform = 'translateZ(0)';
+        }
       }
     });
   }
