@@ -1,5 +1,5 @@
-// Version 1.5.17 - Simplified
-console.log('animations.js v1.5.17 loading...');
+// Version 1.5.18 - Performance Optimized
+console.log('animations.js v1.5.18 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -81,18 +81,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
+    // Initialize hover immediately to prevent delay
+    initHover();
+
+    // Create a single timeline for better performance
+    const tl = window.gsap.timeline();
+
     if (largeHeadings.length) {
       largeHeadings.forEach(h => {
-        window.gsap.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: "power2.out", onComplete: initHover });
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 0);
       });
-    } else initHover();
+    }
 
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      window.gsap.to(slideEls, { x: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out", delay: 0.7 });
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 0.6, stagger: 0.05, ease: "power2.out" }, 0.2);
     }
 
-    window.gsap.to(otherEls, { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" });
+    // Batch animate other elements for better performance
+    const batchSize = 10;
+    for (let i = 0; i < otherEls.length; i += batchSize) {
+      const batch = Array.from(otherEls).slice(i, i + batchSize);
+      tl.to(batch, { opacity: 1, y: 0, duration: 0.4, stagger: 0.02, ease: "power2.out" }, 0.1);
+    }
   }
 
   function initLenis() {
@@ -119,15 +130,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function addHidden() {
-    document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)').forEach(el => {
-      if (!el.classList.contains('initial-hidden')) el.classList.add('initial-hidden');
-    });
-    
-    document.querySelectorAll('.grid-down.project-down.mobile-down').forEach(el => {
+    // Use a single query for better performance
+    document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
-        el.style.transform = 'translateX(40px)';
-        el.style.opacity = '0';
+        if (el.matches('.grid-down.project-down.mobile-down')) {
+          el.style.transform = 'translateX(40px)';
+          el.style.opacity = '0';
+        }
       }
     });
   }
@@ -145,18 +155,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideOut = document.querySelectorAll('.grid-down.project-down.mobile-down');
     
     if (slideOut.length) {
-      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.4, stagger: 0.05, delay: 0.3, ease: "power2.inOut" }, 0);
+      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.3, stagger: 0.02, ease: "power2.inOut" }, 0);
     }
-    tl.to('body', { opacity: 0, duration: 0.6, ease: "power2.inOut" }, 0.2);
+    tl.to('body', { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 0.1);
   }
 
+  // Initialize immediately
   addHidden();
+  initLenis();
 
   function init() {
     if (isInit) return;
-    startAnims();
-    isInit = true;
-    initLenis();
+    requestAnimationFrame(() => {
+      startAnims();
+      isInit = true;
+    });
   }
 
   document.addEventListener('click', (e) => {
@@ -170,5 +183,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
   
-  init();
+  // Start animations on next frame
+  requestAnimationFrame(init);
 })(window.portfolioAnimations);
