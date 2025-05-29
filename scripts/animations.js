@@ -1,4 +1,4 @@
-// Version 1.2.1 - Remove remaining Lenis references
+// Version 1.2.1
 console.log('animations.js version 1.2.1 loading...');
 
 // Create a global namespace for our functions
