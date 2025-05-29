@@ -1,257 +1,115 @@
-// Version 1.5.16 - Scramble Hover Effects
-console.log('animations.js version 1.5.16 loading...');
+// Version 1.5.17 - Simplified
+console.log('animations.js v1.5.17 loading...');
 
-// Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  // Global initialization flag
-  let isInitialized = false;
-  let lenis = null;
+  let isInit = false, lenis = null;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-  // Characters for scrambling effect
-  const scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-
-  // Initialize hover effects with scramble animation
-  function initHoverEffects() {
-    console.log('Initializing scramble hover effects...');
-    
-    // Handle heading link hover effects
-    const headingLinks = document.querySelectorAll('.heading.small.link.large-link');
-    
-    headingLinks.forEach(link => {
-      // Only set up the effect if not already done
+  function initHover() {
+    document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
-      // Store original text
-      const originalText = link.textContent.trim();
+      const text = link.textContent.trim();
+      const wrappedChars = text.split('').map(char => 
+        `<span class="char" data-char="${char}" style="display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
+      ).join('');
+      link.innerHTML = wrappedChars;
       
-      // Split text into characters if not already done
-      if (!link.dataset.splitDone) {
-        const chars = originalText.split('');
-        const wrappedChars = chars.map(char => 
-          `<span class="char" data-char="${char}" style="display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
-        ).join('');
-        link.innerHTML = wrappedChars;
-        link.dataset.splitDone = 'true';
-      }
+      const charEls = link.querySelectorAll('.char');
+      let scrambling = false, interval;
 
-      const chars = link.querySelectorAll('.char');
-      let isScrambling = false;
-      let scrambleInterval;
-
-      // Scramble function
-      function scrambleText(duration = 600) {
-        if (isScrambling) return;
-        isScrambling = true;
+      function scramble(duration = 600) {
+        if (scrambling) return;
+        scrambling = true;
+        const start = Date.now();
+        const originals = Array.from(charEls).map(el => el.dataset.char);
         
-        const startTime = Date.now();
-        const charElements = Array.from(chars);
-        
-        // Store original characters
-        const originalChars = charElements.map(el => el.dataset.char);
-        
-        scrambleInterval = setInterval(() => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          
-          charElements.forEach((char, index) => {
-            if (char.dataset.char === ' ') return; // Skip spaces
-            
-            // Determine if this character should be resolved
-            const charProgress = Math.max(0, (progress - (index * 0.05)) * 2);
-            
-            if (charProgress >= 1) {
-              // Character is resolved
-              char.textContent = originalChars[index];
-            } else {
-              // Character is still scrambling
-              const randomChar = scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
-              char.textContent = randomChar;
-            }
+        interval = setInterval(() => {
+          const progress = Math.min((Date.now() - start) / duration, 1);
+          charEls.forEach((char, i) => {
+            if (char.dataset.char === ' ') return;
+            const charProgress = Math.max(0, (progress - (i * 0.05)) * 2);
+            char.textContent = charProgress >= 1 ? originals[i] : chars[Math.floor(Math.random() * chars.length)];
           });
           
           if (progress >= 1) {
-            clearInterval(scrambleInterval);
-            isScrambling = false;
-            // Ensure all characters are correct
-            charElements.forEach((char, index) => {
-              if (char.dataset.char !== ' ') {
-                char.textContent = originalChars[index];
-              }
-            });
+            clearInterval(interval);
+            scrambling = false;
           }
-        }, 50); // Update every 50ms for smooth effect
+        }, 50);
       }
 
-      // Reset to original text
-      function resetText() {
-        if (scrambleInterval) {
-          clearInterval(scrambleInterval);
-          isScrambling = false;
-        }
-        chars.forEach(char => {
-          if (char.dataset.char !== ' ') {
-            char.textContent = char.dataset.char;
-          }
-        });
+      function reset() {
+        if (interval) clearInterval(interval);
+        scrambling = false;
+        charEls.forEach(char => char.textContent = char.dataset.char);
       }
 
-      // Add hover listeners
-      link.addEventListener('mouseenter', () => {
-        scrambleText();
-      });
-
-      link.addEventListener('mouseleave', () => {
-        resetText();
-      });
-
+      link.addEventListener('mouseenter', scramble);
+      link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
   }
 
-  // Function to split text into lines
-  function wrapLines(element) {
-    if (!element.dataset.splitDone) {
-      const text = element.innerHTML;
-      element.innerHTML = text.split('<br>').map(line => 
+  function wrapLines(el) {
+    if (!el.dataset.splitDone) {
+      el.innerHTML = el.innerHTML.split('<br>').map(line => 
         `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
       ).join('');
-      element.dataset.splitDone = 'true';
+      el.dataset.splitDone = 'true';
     }
-    return element.querySelectorAll('.line-inner');
+    return el.querySelectorAll('.line-inner');
   }
 
-  // Function to start animations
-  function startAnimations() {
-    console.log('Starting animations...');
-    
-    // Split and animate large headings first
+  function startAnims() {
     const largeHeadings = document.querySelectorAll('.heading.large');
+    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+
     if (largeHeadings.length) {
-      console.log('Found large headings:', largeHeadings.length);
-      largeHeadings.forEach(heading => {
-        const lines = wrapLines(heading);
-        window.gsap.to(lines, {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power2.out",
-          onComplete: () => {
-            console.log('Large heading animation complete, initializing hover effects');
-            initHoverEffects();
-          }
-        });
+      largeHeadings.forEach(h => {
+        window.gsap.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: "power2.out", onComplete: initHover });
       });
-    } else {
-      console.log('No large headings found, initializing hover effects directly');
-      initHoverEffects();
+    } else initHover();
+
+    if (slideEls.length) {
+      window.gsap.set(slideEls, { x: 40, opacity: 0 });
+      window.gsap.to(slideEls, { x: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out", delay: 0.7 });
     }
 
-    // Animate slide-in elements from right
-    const slideInElements = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    if (slideInElements.length) {
-      // Set initial state
-      window.gsap.set(slideInElements, {
-        x: 40,
-        opacity: 0
-      });
-      
-      // Animate to final position
-      window.gsap.to(slideInElements, {
-        x: 0,
-        opacity: 1,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "power2.out",
-        delay: 0.7
-      });
-    }
-
-    // Animate everything else
-    const selectors = ['h1:not(.heading.large)', 'h2:not(.heading.large)', 'h3:not(.heading.large)', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down:not(.grid-down.project-down.mobile-down)'];
-    const elements = document.querySelectorAll(selectors.join(','));
-    
-    window.gsap.to(elements, {
-      opacity: 1,
-      y: 0,
-      duration: 0.5,
-      stagger: 0.05,
-      ease: "power2.out"
-    });
+    window.gsap.to(otherEls, { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" });
   }
 
-  // Initialize Lenis
   function initLenis() {
-    if (lenis) return;
+    if (lenis || typeof window.Lenis === 'undefined') return;
     
-    // Check if Lenis is available
-    if (typeof window.Lenis === 'undefined') {
-      console.warn('Lenis not loaded, waiting...');
-      return false;
-    }
-
     try {
-      // Basic Lenis setup with essential settings
       lenis = new window.Lenis({
-        duration: 1.2,
-        orientation: 'vertical',
-        smoothWheel: true,
-        wheelMultiplier: 1,
-        infinite: false,
-        gestureOrientation: 'vertical',
-        normalizeWheel: true,
-        smoothTouch: false
+        duration: 1.2, orientation: 'vertical', smoothWheel: true, wheelMultiplier: 1,
+        infinite: false, gestureOrientation: 'vertical', normalizeWheel: true, smoothTouch: false
       });
 
-      // Add Lenis CSS classes
       document.documentElement.classList.add('lenis');
       document.body.classList.add('lenis-smooth');
-
-      // Ensure proper height setup
       document.documentElement.style.height = 'auto';
       document.body.style.minHeight = '100vh';
       document.body.style.position = 'relative';
 
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-
-      // Start RAF loop
+      function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
       requestAnimationFrame(raf);
 
-      // GSAP ScrollTrigger integration if available
-      if (window.ScrollTrigger) {
-        lenis.on('scroll', () => {
-          if (window.ScrollTrigger) {
-            window.ScrollTrigger.update();
-          }
-        });
-      }
-
-      // Stop Lenis on low power mode in Safari
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        lenis.destroy();
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error initializing Lenis:', error);
-      return false;
-    }
+      if (window.ScrollTrigger) lenis.on('scroll', () => window.ScrollTrigger?.update());
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) lenis.destroy();
+    } catch (e) { console.error('Lenis error:', e); }
   }
 
-  // Function to add initial-hidden class
-  function addInitialHiddenClass() {
+  function addHidden() {
     document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)').forEach(el => {
-      if (!el.classList.contains('initial-hidden')) {
-        el.classList.add('initial-hidden');
-      }
+      if (!el.classList.contains('initial-hidden')) el.classList.add('initial-hidden');
     });
     
-    // Set initial state for slide-in elements
     document.querySelectorAll('.grid-down.project-down.mobile-down').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
@@ -261,23 +119,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Add the class immediately
-  addInitialHiddenClass();
-
-  // Initialize everything
-  function initialize() {
-    if (isInitialized) return;
-    
-    // Start animations immediately
-    startAnimations();
-    isInitialized = true;
-
-    // Initialize Lenis
-    initLenis();
-  }
-
-  // Handle page transitions
-  function handlePageTransition(e, href) {
+  function handleTransition(e, href) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -286,50 +128,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       lenis.destroy();
     }
 
-    // Create transition timeline
-    const transitionTimeline = window.gsap.timeline({
-      onComplete: () => {
-        window.location.href = href;
-      }
-    });
-
-    // Slide out the grid elements to the right
-    const slideOutElements = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    if (slideOutElements.length) {
-      transitionTimeline.to(slideOutElements, {
-        x: 20,
-        opacity: 0,
-        duration: 0.4,
-        stagger: 0.05,
-        delay: 0.3,
-        ease: "power2.inOut"
-      }, 0);
+    const tl = window.gsap.timeline({ onComplete: () => window.location.href = href });
+    const slideOut = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    
+    if (slideOut.length) {
+      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.4, stagger: 0.05, delay: 0.3, ease: "power2.inOut" }, 0);
     }
-
-    // Fade out the body
-    transitionTimeline.to('body', {
-      opacity: 0,
-      duration: 0.6,
-      ease: "power2.inOut"
-    }, 0.2);
+    tl.to('body', { opacity: 0, duration: 0.6, ease: "power2.inOut" }, 0.2);
   }
 
-  // Event delegation for link handling
+  addHidden();
+
+  function init() {
+    if (isInit) return;
+    startAnims();
+    isInit = true;
+    initLenis();
+  }
+
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href]');
     if (!link) return;
-
     const href = link.getAttribute('href');
-    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
-      handlePageTransition(e, href);
-    }
+    if (href.startsWith('/') || href.startsWith(window.location.origin)) handleTransition(e, href);
   }, true);
 
-  // Export necessary functions
-  exports.initialize = initialize;
-  exports.startAnimations = startAnimations;
-  exports.handlePageTransition = handlePageTransition;
+  exports.initialize = init;
+  exports.startAnimations = startAnims;
+  exports.handlePageTransition = handleTransition;
   
-  // Start initialization immediately
-  initialize();
+  init();
 })(window.portfolioAnimations);
