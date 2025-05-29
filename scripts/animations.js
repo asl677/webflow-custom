@@ -1,5 +1,5 @@
-// Version 1.5.8 - Integrated Lenis
-console.log('animations.js version 1.5.8 loading...');
+// Version 1.5.9 - Immediate Animations
+console.log('animations.js version 1.5.9 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -79,7 +79,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Create timeline with reduced duration
     const mainTL = gsap.timeline({
-      defaults: { ease: 'power2.out', duration: 0.5 },
+      defaults: { ease: 'power2.out', duration: 0.3 }, // Reduced duration
       onStart: () => {
         document.body.classList.add('content-loaded');
         allElements.forEach(el => {
@@ -95,26 +95,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const media = allElements.filter(el => el.tagName.toLowerCase() === 'img' || el.tagName.toLowerCase() === 'video');
     const ui = allElements.filter(el => !headings.includes(el) && !text.includes(el) && !media.includes(el));
 
-    // Animate in sequence with minimal delays
+    // Animate with minimal delays
     mainTL
-      .fromTo(headings, 
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.02 }
-      )
-      .fromTo(text, 
+      .fromTo(headings.concat(text), // Combine headings and text
         { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.01 }, 
-        '-=0.3'
+        { opacity: 1, y: 0, duration: 0.3, stagger: 0.01 }
       )
-      .fromTo(media, 
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.02 }, 
-        '-=0.2'
-      )
-      .fromTo(ui, 
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.01 }, 
-        '-=0.2'
+      .fromTo(media.concat(ui), // Combine media and UI
+        { opacity: 0, y: 5 },
+        { opacity: 1, y: 0, duration: 0.2, stagger: 0.01 }, 
+        '-=0.2' // Start slightly before previous animation ends
       );
   }
 
@@ -126,19 +116,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Initialize Lenis first
     initLenis();
 
-    // Start animations immediately if GSAP is available
+    // Start animations immediately
     if (window.gsap) {
       startAnimations();
     } else {
-      // Minimal wait for GSAP
+      // Quick GSAP check with shorter timeout
+      const maxWaitTime = 100; // Reduced wait time
       const startTime = Date.now();
-      const checkGSAP = () => {
-        if (window.gsap || Date.now() - startTime > 300) {
+      
+      function checkGSAP() {
+        if (window.gsap || Date.now() - startTime > maxWaitTime) {
           startAnimations();
         } else {
           requestAnimationFrame(checkGSAP);
         }
-      };
+      }
       requestAnimationFrame(checkGSAP);
     }
   }
@@ -155,7 +147,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     gsap.to('body', {
       opacity: 0,
-      duration: 0.3,
+      duration: 0.2, // Faster transition
       onComplete: () => {
         window.location.href = href;
       }
@@ -178,10 +170,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnimations;
   exports.handlePageTransition = handlePageTransition;
   
-  // Start initialization
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
-  }
+  // Start initialization immediately
+  initialize();
 })(window.portfolioAnimations);
