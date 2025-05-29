@@ -1,5 +1,5 @@
-// Version 1.1.1 - Fix module error and ensure script runs as regular JavaScript
-console.log('animations.js version 1.1.1 loading...');
+// Version 1.1.2 - Fix Lenis scrolling issues
+console.log('animations.js version 1.1.2 loading...');
 
 // Create and inject the critical styles
 const criticalStyles = document.createElement('style');
@@ -31,6 +31,22 @@ criticalStyles.textContent = `
   }
   body.content-loaded {
     opacity: 1;
+  }
+  /* Lenis recommended styles */
+  html.lenis {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
   }
 `;
 document.head.appendChild(criticalStyles);
@@ -156,20 +172,15 @@ function initializeScripts(retries = 0, maxRetries = 50) {
   initializeAnimations();
 }
 
-// Function to initialize animations
-function initializeAnimations() {
-  if (isInitialized || window.animationsInitialized) {
-    console.log('Animations already initialized');
-    return;
-  }
-  
-  console.log('Initializing animations...');
-  isInitialized = true;
-  window.animationsInitialized = true;
-
-  // Initialize Lenis
+// Function to initialize Lenis with proper RAF
+function initLenis() {
   try {
     console.log('Initializing Lenis...');
+    
+    // Add Lenis class to HTML
+    document.documentElement.classList.add('lenis');
+    
+    // Initialize Lenis
     lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -181,17 +192,39 @@ function initializeAnimations() {
       infinite: false
     });
 
+    // Proper RAF setup for Lenis
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
     // Sync Lenis with ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
-    
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
-    });
-    
-    gsap.ticker.lagSmoothing(0);
+
     console.log('Lenis initialized successfully');
+    return true;
   } catch (error) {
     console.error('Failed to initialize Lenis:', error);
+    return false;
+  }
+}
+
+// Function to initialize animations
+function initializeAnimations() {
+  if (isInitialized || window.animationsInitialized) {
+    console.log('Animations already initialized');
+    return;
+  }
+  
+  console.log('Initializing animations...');
+  isInitialized = true;
+  window.animationsInitialized = true;
+
+  // Initialize Lenis first
+  if (!initLenis()) {
+    console.error('Failed to initialize Lenis, animations may not work properly');
+    return;
   }
 
   // Start animations when DOM and fonts are ready
