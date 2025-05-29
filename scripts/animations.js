@@ -12,7 +12,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     .initial-hidden {
       opacity: 0 !important;
       visibility: hidden !important;
-      transform: translateY(20px) !important;
+      transform: translateY(10px) !important;
       will-change: transform, opacity;
     }
 
@@ -35,7 +35,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     body {
       opacity: 0;
-      transition: opacity 0.3s ease-out;
+      transition: opacity 0.8s ease-out;
     }
 
     body.content-loaded {
@@ -178,7 +178,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Add staggered animations
     mainTL.to(allElements, {
       opacity: 1,
-      y: 0,
+      y: -10,
       stagger: {
         amount: 0.8,
         from: "top"
