@@ -1,46 +1,10 @@
-// Version 1.1.8 - Fix sticky elements with body wrapper
-console.log('animations.js version 1.1.8 loading...');
+// Version 1.1.9 - Make Lenis optional and fix native scrolling
+console.log('animations.js version 1.1.9 loading...');
 
 (function() {
   // Create and inject the critical styles
   const criticalStyles = document.createElement('style');
   criticalStyles.textContent = `
-    /* Lenis recommended styles */
-    html.lenis {
-      height: auto;
-    }
-
-    html.lenis body {
-      height: auto;
-    }
-
-    .lenis.lenis-smooth {
-      scroll-behavior: auto !important;
-    }
-
-    .lenis.lenis-smooth [data-lenis-prevent] {
-      overscroll-behavior: contain;
-    }
-
-    .lenis.lenis-stopped {
-      overflow: hidden;
-    }
-
-    .lenis.lenis-scrolling iframe {
-      pointer-events: none;
-    }
-
-    /* Custom styles for sticky elements */
-    [style*="position: sticky"],
-    [style*="position:sticky"] {
-      position: sticky !important;
-      transform: translate3d(0, 0, 0) !important;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      will-change: transform;
-      z-index: 1;
-    }
-
     /* Animation styles */
     .initial-hidden {
       opacity: 0 !important;
@@ -73,6 +37,13 @@ console.log('animations.js version 1.1.8 loading...');
 
     body.content-loaded {
       opacity: 1;
+    }
+
+    /* Ensure sticky elements work properly */
+    [style*="position: sticky"],
+    [style*="position:sticky"] {
+      position: sticky !important;
+      z-index: 1;
     }
   `;
   document.head.appendChild(criticalStyles);
@@ -127,7 +98,7 @@ console.log('animations.js version 1.1.8 loading...');
 
   // Function to check if all required scripts are loaded
   function areScriptsLoaded() {
-    return scriptsLoaded.gsap && scriptsLoaded.scrollTrigger && scriptsLoaded.lenis;
+    return scriptsLoaded.gsap && scriptsLoaded.scrollTrigger;
   }
 
   // Function to force style application with logging
@@ -141,12 +112,10 @@ console.log('animations.js version 1.1.8 loading...');
 
   // Function to ensure elements are hidden with improved logging
   function ensureElementsHidden() {
-    // Check if already initialized
     if (window.animationsInitialized) {
       console.log('Animations already initialized, skipping element hiding');
       return;
     }
-
     addInitialHiddenClass();
   }
 
@@ -165,17 +134,11 @@ console.log('animations.js version 1.1.8 loading...');
       }
     }
     
-    if (typeof Lenis !== 'undefined') {
-      console.log('Lenis found');
-      scriptsLoaded.lenis = true;
-    }
-    
     return areScriptsLoaded();
   }
 
   // Initialize scripts with retry mechanism
   function initializeScripts(retries = 0, maxRetries = 50) {
-    // Check if already initialized globally
     if (window.animationsInitialized) {
       console.log('Animations already initialized globally, skipping initialization');
       return;
@@ -198,111 +161,6 @@ console.log('animations.js version 1.1.8 loading...');
     initializeAnimations();
   }
 
-  // Function to initialize Lenis with proper RAF
-  function initLenis() {
-    try {
-      console.log('Initializing Lenis...');
-      
-      // Add Lenis class to HTML
-      document.documentElement.classList.add('lenis');
-      document.documentElement.classList.add('lenis-smooth');
-      
-      // Initialize Lenis with updated configuration
-      lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        wheelMultiplier: 1,
-        lerp: 0.1,
-        normalizeWheel: true,
-        infinite: false,
-        wrapper: document.body,
-        content: document.documentElement,
-        autoResize: true
-      });
-
-      // Handle sticky elements
-      const stickyElements = document.querySelectorAll('[style*="position:sticky"], [style*="position: sticky"]');
-      console.log('Found sticky elements:', stickyElements.length);
-      
-      stickyElements.forEach(el => {
-        // Force hardware acceleration and prevent any transform issues
-        el.style.transform = 'translate3d(0, 0, 0)';
-        el.style.backfaceVisibility = 'hidden';
-        el.style.webkitBackfaceVisibility = 'hidden';
-        el.style.willChange = 'transform';
-        el.style.zIndex = '1';
-      });
-
-      // Proper RAF setup for Lenis with power mode detection
-      let rafId = null;
-      let lastTime = performance.now();
-      
-      function raf(time) {
-        if (lenis.isStopped) {
-          cancelAnimationFrame(rafId);
-          return;
-        }
-
-        // Check for low power mode (30fps cap on Safari)
-        const deltaTime = time - lastTime;
-        const isLowPowerMode = deltaTime > 32; // ~30fps threshold
-        
-        if (!isLowPowerMode) {
-          lenis.raf(time);
-        }
-        
-        lastTime = time;
-        rafId = requestAnimationFrame(raf);
-      }
-      
-      rafId = requestAnimationFrame(raf);
-
-      // Handle scroll events
-      lenis.on('scroll', (e) => {
-        ScrollTrigger.update();
-        document.documentElement.classList.toggle('lenis-scrolling', true);
-      });
-
-      // Handle stop/start events
-      lenis.on('stop', () => {
-        document.documentElement.classList.remove('lenis-scrolling');
-      });
-
-      // Disable GSAP ticker lag smoothing
-      gsap.ticker.lagSmoothing(0);
-
-      // Add Lenis's raf to GSAP's ticker
-      gsap.ticker.add((time) => {
-        if (!lenis.isStopped) {
-          lenis.raf(time * 1000);
-        }
-      });
-
-      // Handle window resize
-      let resizeTimeout;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          if (lenis) {
-            lenis.resize();
-            ScrollTrigger.refresh();
-          }
-        }, 100);
-      });
-
-      console.log('Lenis initialized successfully');
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize Lenis:', error);
-      return false;
-    }
-  }
-
   // Function to initialize animations
   function initializeAnimations() {
     if (isInitialized || window.animationsInitialized) {
@@ -313,12 +171,6 @@ console.log('animations.js version 1.1.8 loading...');
     console.log('Initializing animations...');
     isInitialized = true;
     window.animationsInitialized = true;
-
-    // Initialize Lenis first
-    if (!initLenis()) {
-      console.error('Failed to initialize Lenis, animations may not work properly');
-      return;
-    }
 
     // Start animations when DOM and fonts are ready
     if (document.readyState === 'loading') {
@@ -334,7 +186,7 @@ console.log('animations.js version 1.1.8 loading...');
     
     Promise.all([
       document.fonts.ready,
-      new Promise(resolve => setTimeout(resolve, 500)) // Increased delay for safety
+      new Promise(resolve => setTimeout(resolve, 500))
     ]).then(() => {
       console.log('Fonts loaded and delay complete, starting animations');
       startAnimations();
@@ -436,8 +288,6 @@ console.log('animations.js version 1.1.8 loading...');
     e.preventDefault();
     e.stopPropagation();
 
-    if (lenis) lenis.stop();
-
     gsap.to('body *', {
       opacity: 0,
       y: -10,
@@ -460,18 +310,6 @@ console.log('animations.js version 1.1.8 loading...');
     }
   }, true);
 
-  document.addEventListener('focusin', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) lenis.stop();
-    }
-  });
-
-  document.addEventListener('focusout', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) lenis.start();
-    }
-  });
-
   console.log('animations.js setup complete');
 
   // Make necessary functions available globally
@@ -480,14 +318,14 @@ console.log('animations.js version 1.1.8 loading...');
   window.handlePageTransition = handlePageTransition;
   
   // Auto-initialize if all dependencies are available
-  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined' && typeof Lenis !== 'undefined') {
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     console.log('Dependencies found, auto-initializing...');
     initializeScripts();
   } else {
     console.log('Waiting for dependencies...');
     // Check periodically for dependencies
     const checkInterval = setInterval(() => {
-      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined' && typeof Lenis !== 'undefined') {
+      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
         console.log('Dependencies loaded, initializing...');
         clearInterval(checkInterval);
         initializeScripts();
