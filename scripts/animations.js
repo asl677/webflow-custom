@@ -1,5 +1,5 @@
-// Version 1.5.13 - Basic Lenis Setup
-console.log('animations.js version 1.5.13 loading...');
+// Version 1.5.14 - Scroll Fix + Stagger Animations
+console.log('animations.js version 1.5.14 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -20,8 +20,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     try {
-      // Basic Lenis setup following documentation
-      lenis = new window.Lenis();
+      // Basic Lenis setup with essential settings
+      lenis = new window.Lenis({
+        duration: 1.2,
+        orientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        infinite: false
+      });
+
+      // Add Lenis CSS classes
+      document.documentElement.classList.add('lenis');
+      document.body.classList.add('lenis-smooth');
+
+      // Ensure proper height setup
+      document.documentElement.style.height = 'auto';
+      document.body.style.height = 'auto';
 
       function raf(time) {
         lenis.raf(time);
@@ -34,10 +48,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (window.ScrollTrigger) {
         lenis.on('scroll', ScrollTrigger.update);
       }
-
-      // Add Lenis CSS classes
-      document.documentElement.classList.add('lenis');
-      document.body.classList.add('lenis-smooth');
 
       console.log('Lenis initialized successfully');
       return true;
@@ -84,9 +94,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Create timeline with reduced duration
+    // Create timeline with proper duration
     const mainTL = gsap.timeline({
-      defaults: { ease: 'power2.out', duration: 0.3 },
+      defaults: { ease: 'power2.out', duration: 0.5 },
       onStart: () => {
         document.body.classList.add('content-loaded');
         allElements.forEach(el => {
@@ -102,15 +112,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const media = allElements.filter(el => el.tagName.toLowerCase() === 'img' || el.tagName.toLowerCase() === 'video');
     const ui = allElements.filter(el => !headings.includes(el) && !text.includes(el) && !media.includes(el));
 
-    // Animate with minimal delays
+    // Animate with proper stagger timing
     mainTL
-      .fromTo(headings.concat(text),
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.3, stagger: 0.01 }
+      .fromTo(headings, 
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, stagger: { amount: 0.3 } }
       )
-      .fromTo(media.concat(ui),
-        { opacity: 0, y: 5 },
-        { opacity: 1, y: 0, duration: 0.2, stagger: 0.01 }, 
+      .fromTo(text, 
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, stagger: { amount: 0.4 } }, 
+        '-=0.2'
+      )
+      .fromTo(media, 
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, stagger: { amount: 0.3 } }, 
+        '-=0.3'
+      )
+      .fromTo(ui, 
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, stagger: { amount: 0.2 } }, 
         '-=0.2'
       );
   }
