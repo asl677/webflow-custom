@@ -302,29 +302,33 @@ body.ready {
   overflow: visible;
 }
 
-/* Hover effects - ensure these are not being overridden */
+/* Scramble hover effect styles */
 .heading.small.link.large-link {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
+  font-family: monospace, sans-serif; /* Better for scramble effect */
 }
 
 .heading.small.link.large-link .char {
   display: inline-block;
-  transform-origin: center bottom;
-  transition: none;
-  will-change: transform, opacity;
+  transition: none; /* Let GSAP handle all transitions */
+  will-change: contents; /* Optimize for text content changes */
+  font-kerning: none; /* Prevent character shifting during scramble */
+  -webkit-font-kerning: none;
 }
 
-/* Ensure proper inline display */
+/* Ensure consistent character spacing during scramble */
 .heading.small.link.large-link {
-  display: inline-block !important;
-  white-space: nowrap;
+  font-kerning: none;
+  -webkit-font-kerning: none;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 /* Remove any hover states that might interfere */
 .heading.small.link.large-link:hover {
-  opacity: 1; /* Let GSAP handle opacity changes */
+  /* Let GSAP handle all hover effects */
 }
 
 /* Remove unused split text styles */

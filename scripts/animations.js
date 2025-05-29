@@ -1,5 +1,5 @@
-// Version 1.5.15 - Hover Effects
-console.log('animations.js version 1.5.15 loading...');
+// Version 1.5.16 - Scramble Hover Effects
+console.log('animations.js version 1.5.16 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -9,9 +9,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   let isInitialized = false;
   let lenis = null;
 
-  // Initialize hover effects
+  // Characters for scrambling effect
+  const scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  // Initialize hover effects with scramble animation
   function initHoverEffects() {
-    console.log('Initializing hover effects...');
+    console.log('Initializing scramble hover effects...');
     
     // Handle heading link hover effects
     const headingLinks = document.querySelectorAll('.heading.small.link.large-link');
@@ -20,40 +23,87 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Only set up the effect if not already done
       if (link.dataset.hoverInit) return;
       
+      // Store original text
+      const originalText = link.textContent.trim();
+      
       // Split text into characters if not already done
       if (!link.dataset.splitDone) {
-        const text = link.textContent.trim();
-        const chars = text.split('');
+        const chars = originalText.split('');
         const wrappedChars = chars.map(char => 
-          `<span class="char" style="display: inline-block; transform: translateY(0); opacity: 1;">${char === ' ' ? '&nbsp;' : char}</span>`
+          `<span class="char" data-char="${char}" style="display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
         ).join('');
         link.innerHTML = wrappedChars;
         link.dataset.splitDone = 'true';
       }
 
-      // Create hover timeline
       const chars = link.querySelectorAll('.char');
-      const hoverTimeline = window.gsap.timeline({ paused: true });
-      
-      // Animation for hover in
-      hoverTimeline.to(chars, {
-        y: -10,
-        opacity: 0.5,
-        duration: 0.3,
-        stagger: {
-          each: 0.02,
-          ease: "power2.inOut"
-        },
-        ease: "power2.out"
-      });
+      let isScrambling = false;
+      let scrambleInterval;
+
+      // Scramble function
+      function scrambleText(duration = 600) {
+        if (isScrambling) return;
+        isScrambling = true;
+        
+        const startTime = Date.now();
+        const charElements = Array.from(chars);
+        
+        // Store original characters
+        const originalChars = charElements.map(el => el.dataset.char);
+        
+        scrambleInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          charElements.forEach((char, index) => {
+            if (char.dataset.char === ' ') return; // Skip spaces
+            
+            // Determine if this character should be resolved
+            const charProgress = Math.max(0, (progress - (index * 0.05)) * 2);
+            
+            if (charProgress >= 1) {
+              // Character is resolved
+              char.textContent = originalChars[index];
+            } else {
+              // Character is still scrambling
+              const randomChar = scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+              char.textContent = randomChar;
+            }
+          });
+          
+          if (progress >= 1) {
+            clearInterval(scrambleInterval);
+            isScrambling = false;
+            // Ensure all characters are correct
+            charElements.forEach((char, index) => {
+              if (char.dataset.char !== ' ') {
+                char.textContent = originalChars[index];
+              }
+            });
+          }
+        }, 50); // Update every 50ms for smooth effect
+      }
+
+      // Reset to original text
+      function resetText() {
+        if (scrambleInterval) {
+          clearInterval(scrambleInterval);
+          isScrambling = false;
+        }
+        chars.forEach(char => {
+          if (char.dataset.char !== ' ') {
+            char.textContent = char.dataset.char;
+          }
+        });
+      }
 
       // Add hover listeners
       link.addEventListener('mouseenter', () => {
-        hoverTimeline.play();
+        scrambleText();
       });
 
       link.addEventListener('mouseleave', () => {
-        hoverTimeline.reverse();
+        resetText();
       });
 
       link.dataset.hoverInit = 'true';
