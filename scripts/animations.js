@@ -1,5 +1,5 @@
-// Version 1.2.1
-console.log('animations.js version 1.2.1 loading...');
+// Version 1.5.1
+console.log('animations.js version 1.5.1 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -191,28 +191,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
       }
     });
-
-    // Setup scroll triggers with modified configuration
-    allElements.forEach((element) => {
-      ScrollTrigger.create({
-        trigger: element,
-        start: 'top bottom-=100',
-        end: 'bottom top+=100',
-        toggleActions: 'play none none none', // Changed from 'play none none reverse'
-        onEnter: () => {
-          console.log('Element entering viewport:', element);
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            visibility: 'visible',
-            ease: 'power2.out',
-            overwrite: 'auto'
-          });
-        }
-        // Removed onLeave handler to prevent elements from disappearing
-      });
-    });
   }
 
   // Handle page transitions
@@ -252,18 +230,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   ensureElementsHidden();
   
   // Auto-initialize if GSAP is available
-  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  if (typeof gsap !== 'undefined') {
     console.log('Dependencies found, auto-initializing...');
-    gsap.registerPlugin(ScrollTrigger);
     initializeAnimations();
   } else {
     console.log('Waiting for dependencies...');
     // Check periodically for dependencies
     const checkInterval = setInterval(() => {
-      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+      if (typeof gsap !== 'undefined') {
         console.log('Dependencies loaded, initializing...');
         clearInterval(checkInterval);
-        gsap.registerPlugin(ScrollTrigger);
         initializeAnimations();
       }
     }, 100);
