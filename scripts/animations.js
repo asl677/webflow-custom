@@ -1,5 +1,5 @@
-// Version 1.5.10 - Lenis Loading Fix
-console.log('animations.js version 1.5.10 loading...');
+// Version 1.5.11 - Lenis Scroll Fix
+console.log('animations.js version 1.5.11 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -26,36 +26,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     try {
       // Initialize with optimized settings
       lenis = new window.Lenis({
-        wrapper: document.body, // Fix for Safari flickering
-        duration: isSafari ? 1.2 : 1.4,
+        duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
         smoothWheel: true,
-        wheelMultiplier: isSafari ? 0.8 : 1,
+        wheelMultiplier: 1,
         smoothTouch: false,
-        touchMultiplier: 2
+        touchMultiplier: 2,
+        infinite: false,
+        wheelEventsTarget: document.body // Fix for Safari scrolling
       });
 
       // Add Lenis CSS classes
       document.documentElement.classList.add('lenis', 'lenis-smooth');
 
-      // Basic RAF loop
+      // Basic RAF loop with time multiplication for smoother scrolling
       function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
+        if (lenis) {
+          lenis.raf(time * 1000);
+          requestAnimationFrame(raf);
+        }
       }
       requestAnimationFrame(raf);
 
       // GSAP ScrollTrigger integration if available
       if (window.ScrollTrigger) {
         lenis.on('scroll', ScrollTrigger.update);
+
+        // Use GSAP ticker instead of requestAnimationFrame
         gsap.ticker.add((time) => {
-          lenis.raf(time * 1000);
+          if (lenis) {
+            lenis.raf(time * 1000);
+          }
         });
         gsap.ticker.lagSmoothing(0);
       }
 
+      // Log successful initialization
+      console.log('Lenis initialized successfully');
       return true;
     } catch (error) {
       console.error('Error initializing Lenis:', error);
