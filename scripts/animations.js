@@ -25,33 +25,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         link.dataset.splitDone = 'true';
       }
 
-      // Add hover animation
-      link.addEventListener('mouseenter', () => {
-        const chars = link.querySelectorAll('.char');
-        gsap.to(chars, {
-          y: -10,
-          opacity: 0.5,
-          duration: 0.3,
+      // Create hover animation timeline
+      const hoverTimeline = gsap.timeline({ paused: true });
+      const chars = link.querySelectorAll('.char');
+      
+      // Setup the timeline
+      hoverTimeline
+        .to(chars, {
+          y: -20,
+          rotateX: -90,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power2.inOut",
           stagger: {
-            amount: 0.2,
-            from: "start"
-          },
-          ease: "power2.out"
+            amount: 0.3,
+            from: "start",
+            ease: "power2.inOut"
+          }
         });
+
+      // Add hover event listeners
+      link.addEventListener('mouseenter', () => {
+        hoverTimeline.play();
       });
 
       link.addEventListener('mouseleave', () => {
-        const chars = link.querySelectorAll('.char');
-        gsap.to(chars, {
-          y: 0,
-          opacity: 1,
-          duration: 0.3,
-          stagger: {
-            amount: 0.1,
-            from: "end"
-          },
-          ease: "power2.out"
-        });
+        hoverTimeline.reverse();
       });
     });
   }
@@ -122,6 +121,53 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Add the class immediately
   addInitialHiddenClass();
 
+  // Function to split text into lines for animation
+  function splitTextIntoLines(element) {
+    if (!element.dataset.splitDone) {
+      const text = element.textContent;
+      const words = text.split(' ');
+      let lines = [];
+      let currentLine = [];
+      
+      // Create a temporary element to measure text
+      const temp = document.createElement('div');
+      temp.style.cssText = `
+        position: absolute; 
+        visibility: hidden; 
+        height: auto; 
+        width: auto;
+        white-space: nowrap;
+      `;
+      element.parentNode.appendChild(temp);
+      
+      words.forEach(word => {
+        currentLine.push(word);
+        temp.textContent = currentLine.join(' ');
+        if (temp.offsetWidth > element.offsetWidth) {
+          currentLine.pop();
+          if (currentLine.length) {
+            lines.push(currentLine.join(' '));
+          }
+          currentLine = [word];
+        }
+      });
+      
+      if (currentLine.length) {
+        lines.push(currentLine.join(' '));
+      }
+      
+      element.parentNode.removeChild(temp);
+      
+      // Create spans for each line
+      element.innerHTML = lines.map(line => 
+        `<span class="split-line"><span class="line-inner">${line}</span></span>`
+      ).join('');
+      
+      element.dataset.splitDone = 'true';
+    }
+    return element.querySelectorAll('.line-inner');
+  }
+
   // Function to start animations
   function startAnimations() {
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
@@ -157,8 +203,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
 
-    // Group elements by type for better performance
-    const headings = allElements.filter(el => /^h[1-3]$/.test(el.tagName.toLowerCase()));
+    // Split and animate large headings separately
+    const largeHeadings = document.querySelectorAll('.heading.large');
+    largeHeadings.forEach(heading => {
+      const lines = splitTextIntoLines(heading);
+      mainTL.fromTo(lines,
+        { 
+          opacity: 0,
+          y: 20
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: "power2.out",
+          stagger: {
+            amount: 0.3,
+            from: "start"
+          }
+        },
+        "-=0.4" // Overlap with previous animations
+      );
+    });
+
+    // Group remaining elements by type for better performance
+    const headings = allElements.filter(el => /^h[1-3]$/.test(el.tagName.toLowerCase()) && !el.classList.contains('large'));
     const text = allElements.filter(el => el.tagName.toLowerCase() === 'p' || el.tagName.toLowerCase() === 'a');
     const media = allElements.filter(el => el.tagName.toLowerCase() === 'img' || el.tagName.toLowerCase() === 'video');
     const ui = allElements.filter(el => !headings.includes(el) && !text.includes(el) && !media.includes(el));
