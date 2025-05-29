@@ -1,5 +1,5 @@
-// Version 1.5.11 - Lenis Scroll Fix
-console.log('animations.js version 1.5.11 loading...');
+// Version 1.5.12 - Full Page Scroll Fix
+console.log('animations.js version 1.5.12 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -18,50 +18,56 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.warn('Lenis not loaded, waiting...');
       return false;
     }
-    
-    // Check for Safari and low power mode
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
+
     try {
-      // Initialize with optimized settings
+      // Ensure proper height setup for Webflow
+      document.documentElement.style.height = '100%';
+      document.body.style.height = '100%';
+      document.body.style.overflow = 'hidden';
+
+      // Initialize with basic settings first
       lenis = new window.Lenis({
+        lerp: 0.1,
         duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
         smoothWheel: true,
-        wheelMultiplier: 1,
         smoothTouch: false,
         touchMultiplier: 2,
-        infinite: false,
-        wheelEventsTarget: document.body // Fix for Safari scrolling
+        wheelMultiplier: 1,
+        normalizeWheel: true,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
       });
 
       // Add Lenis CSS classes
       document.documentElement.classList.add('lenis', 'lenis-smooth');
 
-      // Basic RAF loop with time multiplication for smoother scrolling
+      // Basic RAF loop
       function raf(time) {
         if (lenis) {
-          lenis.raf(time * 1000);
+          lenis.raf(time);
           requestAnimationFrame(raf);
         }
       }
+
+      // Start the animation loop
       requestAnimationFrame(raf);
 
       // GSAP ScrollTrigger integration if available
       if (window.ScrollTrigger) {
         lenis.on('scroll', ScrollTrigger.update);
+      }
 
-        // Use GSAP ticker instead of requestAnimationFrame
-        gsap.ticker.add((time) => {
-          if (lenis) {
-            lenis.raf(time * 1000);
+      // Handle anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href');
+          if (targetId !== '#') {
+            lenis.scrollTo(targetId);
           }
         });
-        gsap.ticker.lagSmoothing(0);
-      }
+      });
 
       // Log successful initialization
       console.log('Lenis initialized successfully');
@@ -71,7 +77,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return false;
     }
   }
-  
+
   // Function to add initial-hidden class to elements
   function addInitialHiddenClass() {
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
@@ -175,6 +181,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       function retryLenis() {
         if (retryCount >= maxRetries) {
           console.warn('Failed to initialize Lenis after', maxRetries, 'attempts');
+          // Reset body styles if Lenis fails
+          document.body.style.overflow = '';
+          document.body.style.height = '';
+          document.documentElement.style.height = '';
           return;
         }
         
