@@ -1,460 +1,65 @@
-/* CSS Variables for theming */
-:root {
-  --gainsboro: #fff;
-  --onyx: #000;
-  
-  /* Default light theme */
-  --background-color: var(--gainsboro);
-  --text-color: var(--onyx);
-  --overlay-color: var(--gainsboro);
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: var(--onyx);
-    --text-color: var(--gainsboro);
-    --overlay-color: var(--onyx);
-  }
-} 
-
-/* Hide scrollbars but keep scrolling functionality - refined approach */
-html {
-  overflow: scroll;
-  overflow-x: hidden;
-  -ms-overflow-style: none;  /* Internet Explorer and Edge */
-  scrollbar-width: none !important;  /* Firefox */
-}
-::-webkit-scrollbar {
-  display: none;
-  width: 0;  /* Remove scrollbar space */
-  background: transparent;  /* Optional: just make scrollbar invisible */
-}
-
-/* Preserve proper stickiness for sticky elements */
-.sticky-element {
-  position: sticky !important;
-  top: 0; /* Default, can be customized based on needs */
-  z-index: 100; /* Ensure sticky elements appear above regular content */
-}
-
-/* Use a wrapper approach for scrollable elements to maintain sticky positioning */
-.scrollable-wrapper {
-  position: relative;
-  overflow: hidden; /* Hide scrollbars on the wrapper */
-}
-
-/* Scrollable content inside the wrapper */
-.scrollable-content {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto; /* Enable scrolling */
-  padding-right: 20px; /* Hide scrollbar by pushing it outside the container */
-  box-sizing: content-box; /* Ensure padding doesn't affect width */
-  margin-right: -20px; /* Compensate for the padding */
-}
-
-/* Custom scrollable elements with hidden scrollbars */
-.scrollable {
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-.scrollable::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-/* For dynamically added elements that need hidden scrollbars */
-.no-scrollbar {
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* IE and Edge */
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important; /* Chrome, Safari, Opera */
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-}
-
-/* Additional animation classes */
-h1, h2, h3, p, a, img, video, .nav, .mobile-down {
-  will-change: transform, opacity;
-  overflow: hidden;
-  color: var(--text-color);
-}
-
-body {
-  background-color: var(--background-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-y: auto; /* Keep scrolling enabled */
-  overflow-x: hidden;
-}
-
-/* Essential Lenis styles */
-html.lenis {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
-}
-
-/* Exclude navigation links from animations */
-.nav a {
-  opacity: 1 !important;
-  transform: none !important;
-}
-
-/* Page overlay styling */
-.page-overlay,
-.page-exit-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--overlay-color) !important;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.page-exit-overlay {
-  opacity: 0;
-}
-
-/* GSAP animation classes */
-.text-animate,
-.media-animate {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.text-animate.visible,
-.media-animate.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Mobile-down height animation */
-.mobile-down {
-  height: 0;
-  opacity: 0;
-  visibility: hidden;
-  overflow: hidden;
-  will-change: height, opacity, visibility;
-}
-
-/* Media element animation base */
-.media-animate {
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  will-change: opacity, transform;
-}
-
-.media-animate.visible {
-  transition: opacity 0.5s, transform 0.5s;
-}
-
-/* Project card styles - only show when loaded */
-.card-project {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: translateY(10px) !important;
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
-  will-change: opacity, transform, visibility;
-}
-
-/* Visible state - applied by JS or GSAP */
-.card-project.visible,
-.card-project[style*="opacity: 1"] {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0) !important;
-}
-
-/* A parent wrapper class to apply when nesting elements inside containers with overflow */
-.overflow-hidden-container {
-  overflow: hidden;
-}
-
-/* Media element animations */
-.media-animate {
-  will-change: transform, opacity;
-}
-
-/* Dynamic classes added by JS */
-.media-visible {
-  visibility: visible !important;
-}
-
-@media (min-width: 768px) {
-  .mobile-down.animated {
-    height: auto;
-    opacity: 1;
-    visibility: visible;
-    overflow: visible;
-  }
-}
-
-/* Base styles */
-html, body {
-  background: #000 !important;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  opacity: 0 !important;
-}
-
-body.ready {
-  opacity: 1 !important;
-  transition: opacity 0.4s ease-out;
-}
-
-/* Overlay */
-.page-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 1;
-  will-change: opacity;
-}
-
-/* Sticky elements */
-[data-lenis-prevent] {
-  position: relative !important;
-  z-index: 1;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-/* Animation states */
-[data-split] {
-  visibility: visible !important;
-  will-change: transform;
-}
-
-.split-line {
-  display: block;
-  overflow: hidden;
-  transform-origin: 0% 50% -50;
-}
-
-.split-line.white {
-  color: #fff;
-}
-
-/* Ensure proper rendering of split lines */
-.heading.large {
-  visibility: visible !important;
-  will-change: transform;
-}
-
-.heading.large .split-line {
-  display: block;
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-}
-
-/* Fix for split text container heights */
-[data-split="regular"],
-[data-split="white"] {
-  height: auto !important;
-  min-height: 0 !important;
-  visibility: visible !important;
-  display: block !important;
-}
-
-/* Optimize performance for animations */
-.split-line {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
-}
-
-/* Mobile-down */
-.mobile-down {
-  height: auto;
-  visibility: visible;
-  overflow: visible;
-}
-
-/* Scramble hover effect styles */
-.heading.small.link.large-link {
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  font-family: monospace, sans-serif; /* Better for scramble effect */
-}
-
-.heading.small.link.large-link .char {
-  display: inline-block;
-  transition: none; /* Let GSAP handle all transitions */
-  will-change: contents; /* Optimize for text content changes */
-  font-kerning: none; /* Prevent character shifting during scramble */
-  -webkit-font-kerning: none;
-}
-
-/* Ensure consistent character spacing during scramble */
-.heading.small.link.large-link {
-  font-kerning: none;
-  -webkit-font-kerning: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-}
-
-/* Remove any hover states that might interfere */
-.heading.small.link.large-link:hover {
-  /* Let GSAP handle all hover effects */
-}
-
-/* Remove unused split text styles */
-[data-split],
-.split-line,
-[data-split="regular"],
-[data-split="white"] {
-  /* Reset any split text styles since we're not using them */
-  height: auto !important;
-  min-height: 0 !important;
-  visibility: visible !important;
-  display: inline !important;
-  overflow: visible !important;
-}
-
-/* Ensure proper stacking context */
-.sticky-element {
-  position: sticky !important;
-  top: 0;
-  z-index: 100;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-/* Hide scrollbars but keep functionality */
-html {
-  overflow: scroll;
-  overflow-x: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  background: transparent;
-}
-
-/* Ensure proper visibility */
-.visible {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0) !important;
-}
-
-/* Sticky Container Styles */
-.sticky-container {
-  position: relative;
-  overflow: hidden;
-  will-change: transform;
-}
-
-/* Sticky Element Styles */
-[data-sticky="true"] {
-  position: relative;
-  top: 0;
-  left: 0;
-  width: 100%;
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Ensure proper z-index stacking */
-.sticky-container {
-  z-index: 1;
-}
-
-[data-sticky="true"] {
-  z-index: 2;
-}
-
-/* Optimize performance */
-.lenis {
-  scroll-behavior: smooth;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-/* Fix for iOS sticky behavior */
-@supports (-webkit-overflow-scrolling: touch) {
-  [data-sticky="true"] {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-}
-
-/* Animation styles */
-.initial-hidden {
-  opacity: 0;
-  transform: translateY(10px);
-  will-change: transform, opacity;
-}
-
-/* Ensure sticky elements work properly */
-[style*="position: sticky"],
-[style*="position:sticky"] {
-  position: sticky !important;
-  z-index: 1;
-}
-
-/* Performance optimizations */
-.nav, 
-.fake-nav,
-.inner-top {
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Smooth transitions */
-.content-loaded * {
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-
-/* Prevent FOUC */
-body {
-  opacity: 1 !important;
-}
+/* CSS Variables and Dark Mode */
+:root{--gainsboro:#fff;--onyx:#000;--background-color:var(--gainsboro);--text-color:var(--onyx);--overlay-color:var(--gainsboro)}
+@media (prefers-color-scheme:dark){:root{--background-color:var(--onyx);--text-color:var(--gainsboro);--overlay-color:var(--onyx)}}
+
+/* Base Scrolling Styles */
+html{overflow:scroll;overflow-x:hidden;-ms-overflow-style:none;scrollbar-width:none}
+::-webkit-scrollbar{display:none;width:0;background:0 0}
+html.lenis{height:auto}
+
+/* Body and Page Setup */
+body{background:#000!important;min-height:100vh;margin:0;padding:0;opacity:0!important;background-color:var(--background-color);transition:background-color .3s ease,color .3s ease,opacity .4s ease-out;overflow-x:hidden;overflow-y:auto}
+body.ready{opacity:1!important}
+
+/* Lenis Smooth Scroll */
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
+.lenis.lenis-smooth iframe{pointer-events:none}
+
+/* Sticky Elements and Scrollable Content */
+.sticky-element,[data-sticky=true],[data-lenis-prevent]{position:sticky!important;top:0;z-index:1;transform:translate3d(0,0,0);-webkit-transform:translate3d(0,0,0)}
+.scrollable-wrapper{position:relative;overflow:hidden}
+.scrollable-content{width:100%;height:100%;overflow-y:auto;padding-right:20px;box-sizing:content-box;margin-right:-20px}
+.scrollable,.no-scrollbar{overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+.scrollable::-webkit-scrollbar,.no-scrollbar::-webkit-scrollbar{display:none;width:0!important;height:0!important;background:transparent!important}
+
+/* Base Element Styles */
+h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,opacity;overflow:hidden;color:var(--text-color)}
+.nav a{opacity:1!important;transform:none!important}
+
+/* Page Overlay */
+.page-overlay,.page-exit-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--overlay-color)!important;z-index:9999;pointer-events:none}
+.page-exit-overlay{opacity:0}
+
+/* Animation Classes */
+.text-animate,.media-animate,.card-project{opacity:0;transform:translateY(20px);will-change:transform,opacity}
+.text-animate.visible,.media-animate.visible,.card-project.visible,.card-project[style*="opacity: 1"]{opacity:1!important;visibility:visible!important;transform:translateY(0)!important}
+.media-animate{backface-visibility:hidden;transform:translateZ(0)}
+.media-animate.visible{transition:opacity .5s,transform .5s}
+.card-project{visibility:hidden!important;transform:translateY(10px)!important;transition:opacity .5s ease-out,transform .5s ease-out,visibility .5s ease-out}
+
+/* Utility Classes */
+.overflow-hidden-container{overflow:hidden}
+.media-visible{visibility:visible!important}
+
+/* Mobile Responsive */
+@media (min-width:768px){.mobile-down.animated{height:auto;opacity:1;visibility:visible;overflow:visible}}
+
+/* Text Split Animation */
+[data-split],.heading.large{visibility:visible!important;will-change:transform}
+.split-line{display:block;overflow:hidden;transform-origin:0 50% -50;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);-webkit-transform:translateZ(0);perspective:1000px;-webkit-perspective:1000px}
+.split-line.white{color:#fff}
+.heading.large .split-line{padding:0;margin:0}
+
+/* Heading Link Styles */
+.heading.small.link.large-link{cursor:pointer;user-select:none;-webkit-user-select:none;font-family:monospace,sans-serif;font-kerning:none;-webkit-font-kerning:none;letter-spacing:normal;word-spacing:normal}
+.heading.small.link.large-link .char{display:inline-block;transition:none;will-change:contents;font-kerning:none;-webkit-font-kerning:none}
+
+/* Container and Navigation */
+.sticky-container{position:relative;overflow:hidden;will-change:transform;z-index:1}
+[data-sticky=true]{z-index:2}
+.nav,.fake-nav,.inner-top{will-change:transform;transform:translateZ(0);backface-visibility:hidden}
+
+/* Global Transitions */
+.content-loaded *{transition:opacity .3s ease-out,transform .3s ease-out}
