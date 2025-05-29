@@ -1,15 +1,45 @@
-// Version 1.1.2 - Fix Lenis scrolling issues
-console.log('animations.js version 1.1.2 loading...');
+// Version 1.1.4 - Update Lenis configuration and CSS
+console.log('animations.js version 1.1.4 loading...');
 
 // Create and inject the critical styles
 const criticalStyles = document.createElement('style');
 criticalStyles.textContent = `
+  /* Lenis recommended styles */
+  html.lenis {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+
+  /* Custom styles for sticky elements */
+  .lenis.lenis-smooth [data-sticky] {
+    position: sticky;
+    transform: none !important;
+    will-change: transform;
+  }
+
+  /* Animation styles */
   .initial-hidden {
     opacity: 0 !important;
     visibility: hidden !important;
     transform: translateY(20px) !important;
     will-change: transform, opacity;
   }
+
   .loading-overlay {
     position: fixed;
     top: 0;
@@ -22,31 +52,18 @@ criticalStyles.textContent = `
     transition: opacity 0.5s ease-out;
     pointer-events: none;
   }
+
   .loading-overlay.fade-out {
     opacity: 0;
   }
+
   body {
     opacity: 0;
     transition: opacity 0.3s ease-out;
   }
+
   body.content-loaded {
     opacity: 1;
-  }
-  /* Lenis recommended styles */
-  html.lenis {
-    height: auto;
-  }
-  .lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-  }
-  .lenis.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-  }
-  .lenis.lenis-stopped {
-    overflow: hidden;
-  }
-  .lenis.lenis-smooth iframe {
-    pointer-events: none;
   }
 `;
 document.head.appendChild(criticalStyles);
@@ -179,17 +196,27 @@ function initLenis() {
     
     // Add Lenis class to HTML
     document.documentElement.classList.add('lenis');
+    document.documentElement.classList.add('lenis-smooth');
     
-    // Initialize Lenis
+    // Initialize Lenis with updated configuration
     lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
+      gestureOrientation: 'vertical',
       smoothWheel: true,
       smoothTouch: false,
       touchMultiplier: 2,
       wheelMultiplier: 1,
+      lerp: 0.1,
+      normalizeWheel: true,
       infinite: false
+    });
+
+    // Mark sticky elements
+    document.querySelectorAll('[style*="position:sticky"], [style*="position: sticky"]').forEach(el => {
+      el.setAttribute('data-sticky', '');
+      el.setAttribute('data-lenis-prevent', '');
     });
 
     // Proper RAF setup for Lenis
@@ -201,6 +228,14 @@ function initLenis() {
 
     // Sync Lenis with ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
+
+    // Disable GSAP ticker lag smoothing
+    gsap.ticker.lagSmoothing(0);
+
+    // Add Lenis's raf to GSAP's ticker
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
 
     console.log('Lenis initialized successfully');
     return true;
