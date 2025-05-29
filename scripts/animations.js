@@ -1,5 +1,5 @@
-// Version 1.5.3
-console.log('animations.js version 1.5.3 loading...');
+// Version 1.5.2
+console.log('animations.js version 1.5.2 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
