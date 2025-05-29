@@ -1,5 +1,5 @@
-// Version 1.5.2
-console.log('animations.js version 1.5.2 loading...');
+// Version 1.5.3
+console.log('animations.js version 1.5.3 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -62,10 +62,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Function to add initial-hidden class to elements
   function addInitialHiddenClass() {
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
-    const selectorString = selectors.join(',');
-    
-    console.log('Adding initial-hidden class to elements...');
-    const elements = document.querySelectorAll(selectorString);
+    const elements = document.querySelectorAll(selectors.join(','));
     elements.forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
@@ -73,17 +70,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Add the class immediately when the script loads
+  // Add the class immediately
   addInitialHiddenClass();
 
   // Function to remove overlay and show content
   function showContent() {
-    console.log('Showing content...');
     document.body.classList.add('content-loaded');
     overlay.classList.add('fade-out');
-    setTimeout(() => {
-      overlay.remove();
-    }, 500);
+    setTimeout(() => overlay.remove(), 500);
   }
 
   // Function to force style application
@@ -94,16 +88,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Function to ensure elements are hidden
-  function ensureElementsHidden() {
-    if (isInitialized) return;
-    addInitialHiddenClass();
-  }
-
   // Function to start animations
   function startAnimations() {
-    console.log('Starting animations');
-    
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
     const allElements = [];
     
@@ -112,19 +98,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       elements.forEach(el => allElements.push(el));
     });
 
-    // Make sure GSAP is available
+    // If GSAP isn't available, just show content
     if (!window.gsap) {
-      console.error('GSAP not found');
+      allElements.forEach(el => {
+        el.classList.remove('initial-hidden');
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
       showContent();
       return;
     }
 
     // Create timeline
     const mainTL = gsap.timeline({
-      defaults: {
-        ease: 'power2.out',
-        duration: 0.8
-      },
+      defaults: { ease: 'power2.out', duration: 0.8 },
       onStart: () => {
         allElements.forEach(el => {
           el.classList.remove('initial-hidden');
@@ -155,20 +142,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Function to initialize animations
-  function initializeAnimations() {
+  // Initialize immediately or wait for GSAP
+  function initialize() {
     if (isInitialized) return;
     isInitialized = true;
 
-    // Wait for fonts and a small delay
-    Promise.all([
-      document.fonts.ready,
-      new Promise(resolve => setTimeout(resolve, 100))
-    ]).then(() => {
+    if (window.gsap) {
       startAnimations();
-    }).catch(() => {
-      startAnimations();
-    });
+    } else {
+      // Only wait a maximum of 1 second for GSAP
+      let attempts = 0;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (window.gsap || attempts >= 10) {
+          clearInterval(checkInterval);
+          startAnimations();
+        }
+      }, 100);
+    }
   }
 
   // Handle page transitions
@@ -199,30 +190,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }, true);
 
   // Export necessary functions
-  exports.initializeAnimations = initializeAnimations;
+  exports.initialize = initialize;
   exports.startAnimations = startAnimations;
   exports.handlePageTransition = handlePageTransition;
   
-  // Run initial setup
-  ensureElementsHidden();
-  
-  // Initialize when GSAP is ready
-  if (window.gsap) {
-    initializeAnimations();
-  } else {
-    let attempts = 0;
-    const maxAttempts = 50;
-    const checkInterval = setInterval(() => {
-      attempts++;
-      if (window.gsap || attempts >= maxAttempts) {
-        clearInterval(checkInterval);
-        if (window.gsap) {
-          initializeAnimations();
-        } else {
-          console.error('GSAP not found after maximum attempts');
-          showContent();
-        }
-      }
-    }, 100);
-  }
+  // Start initialization
+  initialize();
 })(window.portfolioAnimations);
