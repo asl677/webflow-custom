@@ -1,5 +1,5 @@
-// Version 1.5.2
-console.log('animations.js version 1.5.2 loading...');
+// Version 1.5.3
+console.log('animations.js version 1.5.3 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -62,106 +62,57 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Function to add initial-hidden class to elements
   function addInitialHiddenClass() {
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
-    const selectorString = selectors.join(',');
-    
-    console.log('Adding initial-hidden class to elements...');
-    const elements = document.querySelectorAll(selectorString);
+    const elements = document.querySelectorAll(selectors.join(','));
     elements.forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
-        console.log('Added initial-hidden class to:', el);
       }
     });
   }
 
-  // Add the class immediately when the script loads
+  // Add the class immediately
   addInitialHiddenClass();
-
-  // Also add the class when DOM content loads (backup)
-  document.addEventListener('DOMContentLoaded', addInitialHiddenClass);
 
   // Function to remove overlay and show content
   function showContent() {
-    console.log('Showing content...');
     document.body.classList.add('content-loaded');
     overlay.classList.add('fade-out');
-    setTimeout(() => {
-      overlay.remove();
-    }, 500);
+    setTimeout(() => overlay.remove(), 500);
   }
 
-  // Function to force style application with logging
+  // Function to force style application
   function forceStyles(element, styles) {
     if (!element) return;
-    console.log('Forcing styles on:', element, styles);
     Object.entries(styles).forEach(([property, value]) => {
       element.style.setProperty(property, value, 'important');
     });
   }
 
-  // Function to ensure elements are hidden with improved logging
-  function ensureElementsHidden() {
-    if (isInitialized) {
-      console.log('Animations already initialized, skipping element hiding');
-      return;
-    }
-    addInitialHiddenClass();
-  }
-
-  // Function to initialize animations
-  function initializeAnimations() {
-    if (isInitialized) {
-      console.log('Animations already initialized');
-      return;
-    }
-    
-    console.log('Initializing animations...');
-    isInitialized = true;
-
-    // Start animations when DOM and fonts are ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', startAnimationsWhenReady);
-    } else {
-      startAnimationsWhenReady();
-    }
-  }
-
-  // Function to start animations when everything is ready
-  function startAnimationsWhenReady() {
-    console.log('Preparing to start animations...');
-    
-    Promise.all([
-      document.fonts.ready,
-      new Promise(resolve => setTimeout(resolve, 500))
-    ]).then(() => {
-      console.log('Fonts loaded and delay complete, starting animations');
-      startAnimations();
-    }).catch(error => {
-      console.error('Error waiting for fonts:', error);
-      setTimeout(startAnimations, 600);
-    });
-  }
-
-  // Function to start the actual animations
+  // Function to start animations
   function startAnimations() {
-    console.log('Starting animations');
-    
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
     const allElements = [];
     
     selectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
-      console.log(`Found ${elements.length} ${selector} elements to animate`);
       elements.forEach(el => allElements.push(el));
     });
 
+    // If GSAP isn't available, just show content
+    if (!window.gsap) {
+      allElements.forEach(el => {
+        el.classList.remove('initial-hidden');
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      showContent();
+      return;
+    }
+
+    // Create timeline
     const mainTL = gsap.timeline({
-      defaults: {
-        ease: 'power2.out',
-        duration: 1
-      },
+      defaults: { ease: 'power2.out', duration: 0.8 },
       onStart: () => {
-        console.log('Animation timeline started');
         allElements.forEach(el => {
           el.classList.remove('initial-hidden');
           forceStyles(el, {
@@ -170,27 +121,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         });
       },
-      onComplete: () => {
-        showContent();
-      }
+      onComplete: showContent
     });
 
     // Add staggered animations
     mainTL.to(allElements, {
       opacity: 1,
       y: 0,
+      duration: 0.8,
       stagger: {
-        amount: 0.8,
-        from: "top"
+        each: 0.05,
+        from: "start"
       },
       onComplete: () => {
-        console.log('Initial animations complete');
         allElements.forEach(el => {
           el.style.removeProperty('transform');
           el.style.removeProperty('will-change');
         });
       }
     });
+  }
+
+  // Initialize immediately or wait for GSAP
+  function initialize() {
+    if (isInitialized) return;
+    isInitialized = true;
+
+    if (window.gsap) {
+      startAnimations();
+    } else {
+      // Only wait a maximum of 1 second for GSAP
+      let attempts = 0;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (window.gsap || attempts >= 10) {
+          clearInterval(checkInterval);
+          startAnimations();
+        }
+      }, 100);
+    }
   }
 
   // Handle page transitions
@@ -209,7 +178,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Event listeners for links and forms
+  // Event listeners for links
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href]');
     if (!link) return;
@@ -220,28 +189,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }, true);
 
-  // Export necessary functions to the global namespace
-  exports.initializeAnimations = initializeAnimations;
+  // Export necessary functions
+  exports.initialize = initialize;
   exports.startAnimations = startAnimations;
   exports.handlePageTransition = handlePageTransition;
   
-  // Run initial setup
-  console.log('Running initial setup...');
-  ensureElementsHidden();
-  
-  // Auto-initialize if GSAP is available
-  if (typeof gsap !== 'undefined') {
-    console.log('Dependencies found, auto-initializing...');
-    initializeAnimations();
-  } else {
-    console.log('Waiting for dependencies...');
-    // Check periodically for dependencies
-    const checkInterval = setInterval(() => {
-      if (typeof gsap !== 'undefined') {
-        console.log('Dependencies loaded, initializing...');
-        clearInterval(checkInterval);
-        initializeAnimations();
-      }
-    }, 100);
-  }
+  // Start initialization
+  initialize();
 })(window.portfolioAnimations);
