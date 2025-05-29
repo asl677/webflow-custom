@@ -1,224 +1,280 @@
-// Version 1.0.13 - Fix mobile and exit animations timing
-// Version 1.0.14 - Fix mobile-down visibility
-// Version 1.0.15 - Fix white lines stagger animation
-// Version 1.0.16 - Fix mobile-down visibility persistence
-// Version 1.0.16.1 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.17 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.18 - Fix mobile-down visibility and white lines stagger animation
-// Version 1.0.19 - Simplify text animations
-// Version 1.0.20 - Streamline animations code
-// Version 1.0.21 - Fix smooth text animations
-// Version 1.0.22 - Fix viewport animations
-// Version 1.0.23 - Streamlined code
-// Version 1.0.24 - Remove redundant heading animations
-// Version 1.0.25 - Consistent animation directions
-// Version 1.0.26 - Consistent top-to-bottom animations
-// Version 1.0.27 - Fix text animation consistency
-// Version 1.0.28 - Fix animation consistency and version compatibility
-// Version 1.0.29 - Fix dynamic text animations
-// Version 1.0.30 - Fix font loading issues
-// Version 1.0.31 - Add SplitText animations
-// Version 1.0.32 - Fix font loading for SplitText
-// Version 1.0.33 - Fix text selector syntax
-// Version 1.0.34 - Improved script loading and animation handling
-console.log('animations.js version 1.0.34 loaded');
+// Version 1.2.1
+console.log('animations.js version 1.2.1 loading...');
 
-// Simple animations v1.0.12
-console.log('Initializing animations.js...');
+// Create a global namespace for our functions
+window.portfolioAnimations = window.portfolioAnimations || {};
 
-// Add Lenis CSS classes to html element
-document.documentElement.classList.add('lenis', 'lenis-smooth');
+(function(exports) {
+  // Create and inject the critical styles
+  const criticalStyles = document.createElement('style');
+  criticalStyles.textContent = `
+    /* Animation styles */
+    .initial-hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(20px) !important;
+      will-change: transform, opacity;
+    }
 
-// Create and append the transition overlay
-const overlay = document.createElement('div');
-overlay.style.cssText = `
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 9999;
-  transition: opacity 0.5s ease;
-`;
-document.body.appendChild(overlay);
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+      pointer-events: none;
+    }
 
-// Check if GSAP is loaded
-if (typeof gsap === 'undefined') {
-  console.error('GSAP not loaded! Please check script loading order.');
-  throw new Error('GSAP not loaded');
-}
+    .loading-overlay.fade-out {
+      opacity: 0;
+    }
 
-// Register ScrollTrigger
-try {
-  gsap.registerPlugin(ScrollTrigger);
-  console.log('ScrollTrigger registered successfully');
-} catch (error) {
-  console.error('Failed to register ScrollTrigger:', error);
-  throw error;
-}
+    body {
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+    }
 
-// Initialize smooth scroll
-let lenis;
-try {
-  lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    orientation: 'vertical',
-    smoothWheel: true,
-    smoothTouch: false,
-    touchMultiplier: 2,
-    wheelMultiplier: 1,
-    infinite: false
-  });
+    body.content-loaded {
+      opacity: 1;
+    }
 
-  // Sync Lenis with ScrollTrigger
-  lenis.on('scroll', ScrollTrigger.update);
+    /* Ensure sticky elements work properly */
+    [style*="position: sticky"],
+    [style*="position:sticky"] {
+      position: sticky !important;
+      z-index: 1;
+    }
+  `;
+  document.head.appendChild(criticalStyles);
 
-  // Create a single RAF loop
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
+  // Create and inject the overlay element
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  document.body.appendChild(overlay);
 
-  // Disable smooth scrolling during GSAP animations
-  gsap.ticker.lagSmoothing(0);
+  // Global initialization flag
+  let isInitialized = false;
   
-  console.log('Lenis initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize Lenis:', error);
-}
-
-// Handle page transitions
-function handlePageTransition(e, href) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  // Stop Lenis scroll during transition
-  if (lenis) {
-    lenis.stop();
+  // Function to add initial-hidden class to elements
+  function addInitialHiddenClass() {
+    const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+    const selectorString = selectors.join(',');
+    
+    console.log('Adding initial-hidden class to elements...');
+    const elements = document.querySelectorAll(selectorString);
+    elements.forEach(el => {
+      if (!el.classList.contains('initial-hidden')) {
+        el.classList.add('initial-hidden');
+        console.log('Added initial-hidden class to:', el);
+      }
+    });
   }
 
-  // Simple fade out and move up
-  gsap.to('body *', {
-    opacity: 0,
-    y: -10,
-    duration: 0.5,
-    ease: 'power2.inOut',
-    onComplete: () => {
-      window.location.href = href;
+  // Add the class immediately when the script loads
+  addInitialHiddenClass();
+
+  // Also add the class when DOM content loads (backup)
+  document.addEventListener('DOMContentLoaded', addInitialHiddenClass);
+
+  // Function to remove overlay and show content
+  function showContent() {
+    console.log('Showing content...');
+    document.body.classList.add('content-loaded');
+    overlay.classList.add('fade-out');
+    setTimeout(() => {
+      overlay.remove();
+    }, 500);
+  }
+
+  // Function to force style application with logging
+  function forceStyles(element, styles) {
+    if (!element) return;
+    console.log('Forcing styles on:', element, styles);
+    Object.entries(styles).forEach(([property, value]) => {
+      element.style.setProperty(property, value, 'important');
+    });
+  }
+
+  // Function to ensure elements are hidden with improved logging
+  function ensureElementsHidden() {
+    if (isInitialized) {
+      console.log('Animations already initialized, skipping element hiding');
+      return;
     }
-  });
-}
+    addInitialHiddenClass();
+  }
 
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, starting animations');
+  // Function to initialize animations
+  function initializeAnimations() {
+    if (isInitialized) {
+      console.log('Animations already initialized');
+      return;
+    }
+    
+    console.log('Initializing animations...');
+    isInitialized = true;
 
-  // Initial page load animations with stagger
-  const allElements = gsap.utils.toArray('h1, h2, h3, p, img, video');
-  gsap.from(allElements, {
-    opacity: 0,
-    y: 20,
-    duration: 1,
-    stagger: {
-      amount: 0.5,
-      from: "top"
-    },
-    ease: 'power2.out'
-  });
+    // Start animations when DOM and fonts are ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startAnimationsWhenReady);
+    } else {
+      startAnimationsWhenReady();
+    }
+  }
 
-  // Setup scroll-triggered animations
-  const textElements = document.querySelectorAll('h1, h2, h3, p');
-  console.log('Found text elements:', textElements.length);
-  
-  textElements.forEach((element) => {
-    gsap.from(element, {
-      scrollTrigger: {
+  // Function to start animations when everything is ready
+  function startAnimationsWhenReady() {
+    console.log('Preparing to start animations...');
+    
+    Promise.all([
+      document.fonts.ready,
+      new Promise(resolve => setTimeout(resolve, 500))
+    ]).then(() => {
+      console.log('Fonts loaded and delay complete, starting animations');
+      startAnimations();
+    }).catch(error => {
+      console.error('Error waiting for fonts:', error);
+      setTimeout(startAnimations, 600);
+    });
+  }
+
+  // Function to start the actual animations
+  function startAnimations() {
+    console.log('Starting animations');
+    
+    const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
+    const allElements = [];
+    
+    selectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      console.log(`Found ${elements.length} ${selector} elements to animate`);
+      elements.forEach(el => allElements.push(el));
+    });
+
+    const mainTL = gsap.timeline({
+      defaults: {
+        ease: 'power2.out',
+        duration: 1
+      },
+      onStart: () => {
+        console.log('Animation timeline started');
+        allElements.forEach(el => {
+          el.classList.remove('initial-hidden');
+          forceStyles(el, {
+            'visibility': 'visible',
+            'will-change': 'transform, opacity'
+          });
+        });
+      },
+      onComplete: () => {
+        showContent();
+      }
+    });
+
+    // Add staggered animations
+    mainTL.to(allElements, {
+      opacity: 1,
+      y: 0,
+      stagger: {
+        amount: 0.8,
+        from: "top"
+      },
+      onComplete: () => {
+        console.log('Initial animations complete');
+        allElements.forEach(el => {
+          el.style.removeProperty('transform');
+          el.style.removeProperty('will-change');
+        });
+      }
+    });
+
+    // Setup scroll triggers
+    allElements.forEach((element) => {
+      ScrollTrigger.create({
         trigger: element,
         start: 'top bottom-=100',
         end: 'bottom top+=100',
         toggleActions: 'play none none reverse',
-        onLeaveBack: () => {
-          gsap.to(element, {
-            opacity: 0,
-            y: 20,
-            duration: 0.3,
-            ease: 'power1.in'
-          });
-        },
-        onEnterBack: () => {
+        onEnter: () => {
+          console.log('Element entering viewport:', element);
           gsap.to(element, {
             opacity: 1,
             y: 0,
             duration: 0.5,
-            ease: 'power2.out'
+            visibility: 'visible',
+            ease: 'power2.out',
+            overwrite: 'auto'
           });
-        }
-      }
-    });
-  });
-
-  // Animate media elements with stagger
-  const mediaElements = document.querySelectorAll('img, video');
-  console.log('Found media elements:', mediaElements.length);
-  
-  mediaElements.forEach((element) => {
-    gsap.from(element, {
-      scrollTrigger: {
-        trigger: element,
-        start: 'top bottom-=100',
-        end: 'bottom top+=100',
-        toggleActions: 'play none none reverse',
-        onLeaveBack: () => {
+        },
+        onLeave: () => {
+          console.log('Element leaving viewport:', element);
           gsap.to(element, {
             opacity: 0,
             y: 20,
             duration: 0.3,
-            ease: 'power1.in'
-          });
-        },
-        onEnterBack: () => {
-          gsap.to(element, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: 'power2.out'
+            ease: 'power1.in',
+            overwrite: 'auto'
           });
         }
+      });
+    });
+  }
+
+  // Handle page transitions
+  function handlePageTransition(e, href) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    gsap.to('body *', {
+      opacity: 0,
+      y: -10,
+      duration: 0.5,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        window.location.href = href;
       }
     });
-  });
+  }
 
-  // Handle all link clicks, including those in sticky elements
+  // Event listeners for links and forms
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href]');
     if (!link) return;
 
     const href = link.getAttribute('href');
-    // Only handle internal links
     if (href.startsWith('/') || href.startsWith(window.location.origin)) {
       handlePageTransition(e, href);
     }
   }, true);
 
-  // Handle form inputs
-  document.addEventListener('focusin', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) {
-        lenis.stop();
+  // Export necessary functions to the global namespace
+  exports.initializeAnimations = initializeAnimations;
+  exports.startAnimations = startAnimations;
+  exports.handlePageTransition = handlePageTransition;
+  
+  // Run initial setup
+  console.log('Running initial setup...');
+  ensureElementsHidden();
+  
+  // Auto-initialize if GSAP is available
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    console.log('Dependencies found, auto-initializing...');
+    gsap.registerPlugin(ScrollTrigger);
+    initializeAnimations();
+  } else {
+    console.log('Waiting for dependencies...');
+    // Check periodically for dependencies
+    const checkInterval = setInterval(() => {
+      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+        console.log('Dependencies loaded, initializing...');
+        clearInterval(checkInterval);
+        gsap.registerPlugin(ScrollTrigger);
+        initializeAnimations();
       }
-    }
-  });
-
-  document.addEventListener('focusout', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      if (lenis) {
-        lenis.start();
-      }
-    }
-  });
-
-  console.log('All animations initialized');
-});
+    }, 100);
+  }
+})(window.portfolioAnimations);
