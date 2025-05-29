@@ -297,11 +297,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideOutElements = document.querySelectorAll('.grid-down.project-down.mobile-down');
     if (slideOutElements.length) {
       transitionTimeline.to(slideOutElements, {
-        x: 40,
+        x: 20,
         opacity: 0,
         duration: 0.4,
         stagger: 0.05,
-        ease: "power2.in"
+        delay: 0.3,
+        ease: "power2.inOut"
       }, 0);
     }
 
