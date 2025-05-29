@@ -1,5 +1,5 @@
-// Version 1.5.1
-console.log('animations.js version 1.5.1 loading...');
+// Version 1.5.2
+console.log('animations.js version 1.5.2 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -12,7 +12,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     .initial-hidden {
       opacity: 0 !important;
       visibility: hidden !important;
-      transform: translateY(20px) !important;
+      transform: translateY(10px) !important;
       will-change: transform, opacity;
     }
 
@@ -35,7 +35,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     body {
       opacity: 0;
-      transition: opacity 0.3s ease-out;
+      transition: opacity 0.8s ease-out;
     }
 
     body.content-loaded {
