@@ -1,5 +1,5 @@
-// Version 1.2.0 - Fix module loading error
-console.log('animations.js version 1.2.0 loading...');
+// Version 1.2.1 - Remove remaining Lenis references
+console.log('animations.js version 1.2.1 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
