@@ -259,7 +259,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     window.gsap.to('body', {
       opacity: 0,
-      duration: 0.2,
+      duration: 0.5,
       onComplete: () => {
         window.location.href = href;
       }
