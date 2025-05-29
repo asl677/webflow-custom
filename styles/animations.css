@@ -392,3 +392,36 @@ html {
     transform: translateZ(0);
   }
 }
+
+/* Animation styles */
+.initial-hidden {
+  opacity: 0;
+  transform: translateY(10px);
+  will-change: transform, opacity;
+}
+
+/* Ensure sticky elements work properly */
+[style*="position: sticky"],
+[style*="position:sticky"] {
+  position: sticky !important;
+  z-index: 1;
+}
+
+/* Performance optimizations */
+.nav, 
+.fake-nav,
+.inner-top {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smooth transitions */
+.content-loaded * {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* Prevent FOUC */
+body {
+  opacity: 1 !important;
+}
