@@ -15,46 +15,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const headingLinks = document.querySelectorAll('.heading.small.link.large-link');
     
     headingLinks.forEach(link => {
-      // Split text for hover effect if not already split
-      if (!link.dataset.splitDone) {
-        const text = link.textContent.trim();
-        const chars = text.split('');
-        link.innerHTML = chars.map(char => 
-          `<span class="char" style="display: inline-block; transform-origin: 50% 100%; position: relative;">${char === ' ' ? '&nbsp;' : char}</span>`
-        ).join('');
-        link.dataset.splitDone = 'true';
-      }
-
-      // Create hover animation timeline
-      const hoverTimeline = window.gsap.timeline({ paused: true });
-      const chars = link.querySelectorAll('.char');
+      // Track mouse position and animation
+      let isHovering = false;
       
-      // Setup the timeline with HELLO WORLD style stagger
-      hoverTimeline
-        .to(chars, {
-          yPercent: -50,
+      // Add mousemove listener
+      link.addEventListener('mousemove', (e) => {
+        if (!isHovering) return;
+        
+        const rect = link.getBoundingClientRect();
+        const x = e.clientX - rect.left; // mouse position within element
+        const progress = Math.min(Math.max(x / rect.width, 0), 1); // normalize to 0-1
+        
+        window.gsap.to(link, {
+          opacity: 0.3 + (progress * 0.7), // opacity ranges from 0.3 to 1
           duration: 0.2,
-          stagger: { 
-            amount: 0.3,
-            from: "start"
-          }
-        })
-        .to(chars, {
-          yPercent: 0,
-          duration: 0.2,
-          stagger: { 
-            amount: 0.3,
-            from: "start"
-          }
+          ease: "power1.out"
         });
-
-      // Add hover event listeners
-      link.addEventListener('mouseenter', () => {
-        hoverTimeline.restart();
       });
-
+      
+      // Add hover listeners
+      link.addEventListener('mouseenter', () => {
+        isHovering = true;
+      });
+      
       link.addEventListener('mouseleave', () => {
-        // Don't reverse, let it complete the animation
+        isHovering = false;
+        window.gsap.to(link, {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power1.out"
+        });
       });
     });
   }

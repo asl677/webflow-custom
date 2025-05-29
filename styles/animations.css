@@ -304,11 +304,22 @@ body.ready {
 
 /* Hover effects */
 .heading.small.link.large-link {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
+  will-change: opacity;
+  cursor: pointer;
 }
 
-.heading.small.link.large-link:hover {
-  opacity: 0.7;
+/* Remove unused split text styles */
+[data-split],
+.split-line,
+[data-split="regular"],
+[data-split="white"] {
+  /* Reset any split text styles since we're not using them */
+  height: auto !important;
+  min-height: 0 !important;
+  visibility: visible !important;
+  display: inline !important;
+  overflow: visible !important;
 }
 
 /* Ensure proper stacking context */
