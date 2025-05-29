@@ -1,5 +1,5 @@
-// Version 1.5.14 - Scroll Fix + Stagger Animations
-console.log('animations.js version 1.5.14 loading...');
+// Version 1.5.15 - Hover Effects
+console.log('animations.js version 1.5.15 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -8,6 +8,53 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Global initialization flag
   let isInitialized = false;
   let lenis = null;
+
+  // Initialize hover effects
+  function initHoverEffects() {
+    // Handle heading link hover effects
+    const headingLinks = document.querySelectorAll('.heading.small.link.large-link');
+    
+    headingLinks.forEach(link => {
+      // Split text for hover effect if not already split
+      if (!link.dataset.splitDone) {
+        const text = link.textContent;
+        const chars = text.split('');
+        link.innerHTML = chars.map(char => 
+          `<span class="char">${char === ' ' ? '&nbsp;' : char}</span>`
+        ).join('');
+        link.dataset.splitDone = 'true';
+      }
+
+      // Add hover animation
+      link.addEventListener('mouseenter', () => {
+        const chars = link.querySelectorAll('.char');
+        gsap.to(chars, {
+          y: -10,
+          opacity: 0.5,
+          duration: 0.3,
+          stagger: {
+            amount: 0.2,
+            from: "start"
+          },
+          ease: "power2.out"
+        });
+      });
+
+      link.addEventListener('mouseleave', () => {
+        const chars = link.querySelectorAll('.char');
+        gsap.to(chars, {
+          y: 0,
+          opacity: 1,
+          duration: 0.3,
+          stagger: {
+            amount: 0.1,
+            from: "end"
+          },
+          ease: "power2.out"
+        });
+      });
+    });
+  }
 
   // Initialize Lenis
   function initLenis() {
@@ -103,6 +150,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.classList.remove('initial-hidden');
           el.style.visibility = 'visible';
         });
+      },
+      onComplete: () => {
+        // Initialize hover effects after initial animation
+        initHoverEffects();
       }
     });
 
