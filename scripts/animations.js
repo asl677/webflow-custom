@@ -165,7 +165,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         duration: 0.8,
         stagger: 0.1,
         ease: "power2.out",
-        delay: 0.3
+        delay: 0.7
       });
     }
 
@@ -308,7 +308,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Fade out the body
     transitionTimeline.to('body', {
       opacity: 0,
-      duration: 0.3,
+      duration: 0.6,
       ease: "power2.inOut"
     }, 0.2);
   }
