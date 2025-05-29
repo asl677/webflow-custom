@@ -1,7 +1,10 @@
-// Version 1.1.9 - Make Lenis optional and fix native scrolling
-console.log('animations.js version 1.1.9 loading...');
+// Version 1.2.0 - Fix module loading error
+console.log('animations.js version 1.2.0 loading...');
 
-(function() {
+// Create a global namespace for our functions
+window.portfolioAnimations = window.portfolioAnimations || {};
+
+(function(exports) {
   // Create and inject the critical styles
   const criticalStyles = document.createElement('style');
   criticalStyles.textContent = `
@@ -54,17 +57,8 @@ console.log('animations.js version 1.1.9 loading...');
   document.body.appendChild(overlay);
 
   // Global initialization flag
-  window.animationsInitialized = window.animationsInitialized || false;
-
-  // Create flags to track initialization and loading
   let isInitialized = false;
-  let lenis = null;
-  let scriptsLoaded = {
-    gsap: false,
-    scrollTrigger: false,
-    lenis: false
-  };
-
+  
   // Function to add initial-hidden class to elements
   function addInitialHiddenClass() {
     const selectors = ['h1', 'h2', 'h3', 'p', 'a', 'img', 'video', '.nav', '.preloader-counter', '.card-project', '.fake-nav', '.inner-top', '.mobile-down'];
@@ -96,11 +90,6 @@ console.log('animations.js version 1.1.9 loading...');
     }, 500);
   }
 
-  // Function to check if all required scripts are loaded
-  function areScriptsLoaded() {
-    return scriptsLoaded.gsap && scriptsLoaded.scrollTrigger;
-  }
-
   // Function to force style application with logging
   function forceStyles(element, styles) {
     if (!element) return;
@@ -112,65 +101,22 @@ console.log('animations.js version 1.1.9 loading...');
 
   // Function to ensure elements are hidden with improved logging
   function ensureElementsHidden() {
-    if (window.animationsInitialized) {
+    if (isInitialized) {
       console.log('Animations already initialized, skipping element hiding');
       return;
     }
     addInitialHiddenClass();
   }
 
-  // Check for GSAP and its plugins
-  function checkScripts() {
-    console.log('Checking for required scripts...');
-    
-    if (typeof gsap !== 'undefined') {
-      console.log('GSAP found');
-      scriptsLoaded.gsap = true;
-      
-      if (typeof ScrollTrigger !== 'undefined') {
-        console.log('ScrollTrigger found');
-        scriptsLoaded.scrollTrigger = true;
-        gsap.registerPlugin(ScrollTrigger);
-      }
-    }
-    
-    return areScriptsLoaded();
-  }
-
-  // Initialize scripts with retry mechanism
-  function initializeScripts(retries = 0, maxRetries = 50) {
-    if (window.animationsInitialized) {
-      console.log('Animations already initialized globally, skipping initialization');
-      return;
-    }
-
-    console.log(`Attempting to initialize scripts (attempt ${retries + 1}/${maxRetries})`);
-    
-    if (retries >= maxRetries) {
-      console.error('Failed to initialize scripts after maximum retries');
-      return;
-    }
-    
-    if (!checkScripts()) {
-      console.log('Not all scripts loaded, retrying in 100ms...');
-      setTimeout(() => initializeScripts(retries + 1, maxRetries), 100);
-      return;
-    }
-    
-    console.log('All scripts loaded, proceeding with initialization');
-    initializeAnimations();
-  }
-
   // Function to initialize animations
   function initializeAnimations() {
-    if (isInitialized || window.animationsInitialized) {
+    if (isInitialized) {
       console.log('Animations already initialized');
       return;
     }
     
     console.log('Initializing animations...');
     isInitialized = true;
-    window.animationsInitialized = true;
 
     // Start animations when DOM and fonts are ready
     if (document.readyState === 'loading') {
@@ -278,11 +224,6 @@ console.log('animations.js version 1.1.9 loading...');
     });
   }
 
-  // Run initial setup
-  console.log('Running initial setup...');
-  ensureElementsHidden();
-  initializeScripts();
-
   // Handle page transitions
   function handlePageTransition(e, href) {
     e.preventDefault();
@@ -310,17 +251,20 @@ console.log('animations.js version 1.1.9 loading...');
     }
   }, true);
 
-  console.log('animations.js setup complete');
-
-  // Make necessary functions available globally
-  window.initializeAnimations = initializeAnimations;
-  window.startAnimations = startAnimations;
-  window.handlePageTransition = handlePageTransition;
+  // Export necessary functions to the global namespace
+  exports.initializeAnimations = initializeAnimations;
+  exports.startAnimations = startAnimations;
+  exports.handlePageTransition = handlePageTransition;
   
-  // Auto-initialize if all dependencies are available
+  // Run initial setup
+  console.log('Running initial setup...');
+  ensureElementsHidden();
+  
+  // Auto-initialize if GSAP is available
   if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     console.log('Dependencies found, auto-initializing...');
-    initializeScripts();
+    gsap.registerPlugin(ScrollTrigger);
+    initializeAnimations();
   } else {
     console.log('Waiting for dependencies...');
     // Check periodically for dependencies
@@ -328,8 +272,9 @@ console.log('animations.js version 1.1.9 loading...');
       if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
         console.log('Dependencies loaded, initializing...');
         clearInterval(checkInterval);
-        initializeScripts();
+        gsap.registerPlugin(ScrollTrigger);
+        initializeAnimations();
       }
     }, 100);
   }
-})();
+})(window.portfolioAnimations);
