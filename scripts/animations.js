@@ -1,5 +1,5 @@
-// Version 1.1.5 - Fix module definition error
-console.log('animations.js version 1.1.5 loading...');
+// Version 1.1.6 - Fix sticky positioning
+console.log('animations.js version 1.1.6 loading...');
 
 (function() {
   // Create and inject the critical styles
@@ -27,8 +27,9 @@ console.log('animations.js version 1.1.5 loading...');
     }
 
     /* Custom styles for sticky elements */
-    .lenis.lenis-smooth [data-sticky] {
-      position: sticky;
+    [style*="position: sticky"],
+    [style*="position:sticky"] {
+      position: sticky !important;
       transform: none !important;
       will-change: transform;
     }
@@ -211,13 +212,19 @@ console.log('animations.js version 1.1.5 loading...');
         wheelMultiplier: 1,
         lerp: 0.1,
         normalizeWheel: true,
-        infinite: false
+        infinite: false,
+        wrapper: window, // Ensure proper wrapper is set
+        content: document.documentElement // Ensure proper content is set
       });
 
-      // Mark sticky elements
-      document.querySelectorAll('[style*="position:sticky"], [style*="position: sticky"]').forEach(el => {
-        el.setAttribute('data-sticky', '');
-        el.setAttribute('data-lenis-prevent', '');
+      // Handle sticky elements
+      const stickyElements = document.querySelectorAll('[style*="position:sticky"], [style*="position: sticky"]');
+      console.log('Found sticky elements:', stickyElements.length);
+      
+      stickyElements.forEach(el => {
+        // Remove any transform that might interfere with sticky positioning
+        el.style.transform = 'none';
+        el.style.willChange = 'transform';
       });
 
       // Proper RAF setup for Lenis
