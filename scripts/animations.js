@@ -1,5 +1,5 @@
-// Version 1.5.7
-console.log('animations.js version 1.5.7 loading...');
+// Version 1.5.8 - Integrated Lenis
+console.log('animations.js version 1.5.8 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -7,6 +7,38 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 (function(exports) {
   // Global initialization flag
   let isInitialized = false;
+  let lenis = null;
+
+  // Initialize Lenis
+  function initLenis() {
+    if (lenis) return;
+    
+    // Check for Safari and low power mode
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    // Initialize with optimized settings
+    lenis = new Lenis({
+      duration: isSafari ? 1.2 : 1.4,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: isSafari ? 0.8 : 1,
+      smoothTouch: false,
+      touchMultiplier: 2
+    });
+
+    // Add Lenis CSS classes
+    document.documentElement.classList.add('lenis', 'lenis-smooth');
+
+    // Basic RAF loop
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  }
   
   // Function to add initial-hidden class to elements
   function addInitialHiddenClass() {
@@ -86,10 +118,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       );
   }
 
-  // Initialize immediately
+  // Initialize everything
   function initialize() {
     if (isInitialized) return;
     isInitialized = true;
+
+    // Initialize Lenis first
+    initLenis();
 
     // Start animations immediately if GSAP is available
     if (window.gsap) {
@@ -112,6 +147,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function handlePageTransition(e, href) {
     e.preventDefault();
     e.stopPropagation();
+
+    // Stop Lenis during transition
+    if (lenis) {
+      document.documentElement.classList.add('lenis-stopped');
+    }
 
     gsap.to('body', {
       opacity: 0,
