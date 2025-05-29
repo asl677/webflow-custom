@@ -1,5 +1,5 @@
-// Version 1.5.9 - Immediate Animations
-console.log('animations.js version 1.5.9 loading...');
+// Version 1.5.10 - Lenis Loading Fix
+console.log('animations.js version 1.5.10 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -13,31 +13,54 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLenis() {
     if (lenis) return;
     
+    // Check if Lenis is available
+    if (typeof window.Lenis === 'undefined') {
+      console.warn('Lenis not loaded, waiting...');
+      return false;
+    }
+    
     // Check for Safari and low power mode
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
-    // Initialize with optimized settings
-    lenis = new Lenis({
-      duration: isSafari ? 1.2 : 1.4,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: isSafari ? 0.8 : 1,
-      smoothTouch: false,
-      touchMultiplier: 2
-    });
+    try {
+      // Initialize with optimized settings
+      lenis = new window.Lenis({
+        wrapper: document.body, // Fix for Safari flickering
+        duration: isSafari ? 1.2 : 1.4,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: isSafari ? 0.8 : 1,
+        smoothTouch: false,
+        touchMultiplier: 2
+      });
 
-    // Add Lenis CSS classes
-    document.documentElement.classList.add('lenis', 'lenis-smooth');
+      // Add Lenis CSS classes
+      document.documentElement.classList.add('lenis', 'lenis-smooth');
 
-    // Basic RAF loop
-    function raf(time) {
-      lenis.raf(time);
+      // Basic RAF loop
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
       requestAnimationFrame(raf);
+
+      // GSAP ScrollTrigger integration if available
+      if (window.ScrollTrigger) {
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => {
+          lenis.raf(time * 1000);
+        });
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error initializing Lenis:', error);
+      return false;
     }
-    requestAnimationFrame(raf);
   }
   
   // Function to add initial-hidden class to elements
@@ -79,7 +102,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Create timeline with reduced duration
     const mainTL = gsap.timeline({
-      defaults: { ease: 'power2.out', duration: 0.3 }, // Reduced duration
+      defaults: { ease: 'power2.out', duration: 0.3 },
       onStart: () => {
         document.body.classList.add('content-loaded');
         allElements.forEach(el => {
@@ -97,41 +120,62 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Animate with minimal delays
     mainTL
-      .fromTo(headings.concat(text), // Combine headings and text
+      .fromTo(headings.concat(text),
         { opacity: 0, y: 10 },
         { opacity: 1, y: 0, duration: 0.3, stagger: 0.01 }
       )
-      .fromTo(media.concat(ui), // Combine media and UI
+      .fromTo(media.concat(ui),
         { opacity: 0, y: 5 },
         { opacity: 1, y: 0, duration: 0.2, stagger: 0.01 }, 
-        '-=0.2' // Start slightly before previous animation ends
+        '-=0.2'
       );
   }
 
   // Initialize everything
   function initialize() {
     if (isInitialized) return;
-    isInitialized = true;
 
-    // Initialize Lenis first
-    initLenis();
+    // Try to initialize Lenis
+    const lenisInitialized = initLenis();
 
     // Start animations immediately
     if (window.gsap) {
       startAnimations();
+      isInitialized = true;
     } else {
       // Quick GSAP check with shorter timeout
-      const maxWaitTime = 100; // Reduced wait time
+      const maxWaitTime = 100;
       const startTime = Date.now();
       
       function checkGSAP() {
         if (window.gsap || Date.now() - startTime > maxWaitTime) {
           startAnimations();
+          isInitialized = true;
         } else {
           requestAnimationFrame(checkGSAP);
         }
       }
       requestAnimationFrame(checkGSAP);
+    }
+
+    // If Lenis failed to initialize, retry
+    if (!lenisInitialized) {
+      const maxRetries = 5;
+      let retryCount = 0;
+      
+      function retryLenis() {
+        if (retryCount >= maxRetries) {
+          console.warn('Failed to initialize Lenis after', maxRetries, 'attempts');
+          return;
+        }
+        
+        if (!initLenis()) {
+          retryCount++;
+          setTimeout(retryLenis, 100);
+        }
+      }
+      
+      setTimeout(retryLenis, 100);
     }
   }
 
@@ -143,11 +187,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Stop Lenis during transition
     if (lenis) {
       document.documentElement.classList.add('lenis-stopped');
+      lenis.destroy();
     }
 
     gsap.to('body', {
       opacity: 0,
-      duration: 0.2, // Faster transition
+      duration: 0.2,
       onComplete: () => {
         window.location.href = href;
       }
