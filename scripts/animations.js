@@ -286,13 +286,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       lenis.destroy();
     }
 
-    window.gsap.to('body', {
-      opacity: 0,
-      duration: 0.5,
+    // Create transition timeline
+    const transitionTimeline = window.gsap.timeline({
       onComplete: () => {
         window.location.href = href;
       }
     });
+
+    // Slide out the grid elements to the right
+    const slideOutElements = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    if (slideOutElements.length) {
+      transitionTimeline.to(slideOutElements, {
+        x: 40,
+        opacity: 0,
+        duration: 0.4,
+        stagger: 0.05,
+        ease: "power2.in"
+      }, 0);
+    }
+
+    // Fade out the body
+    transitionTimeline.to('body', {
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.inOut"
+    }, 0.2);
   }
 
   // Event delegation for link handling
