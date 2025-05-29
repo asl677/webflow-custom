@@ -17,10 +17,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     headingLinks.forEach(link => {
       // Split text for hover effect if not already split
       if (!link.dataset.splitDone) {
-        const text = link.textContent;
+        const text = link.textContent.trim();
         const chars = text.split('');
         link.innerHTML = chars.map(char => 
-          `<span class="char">${char === ' ' ? '&nbsp;' : char}</span>`
+          `<span class="char" style="display: inline-block; transform-origin: 50% 100%;">${char === ' ' ? '&nbsp;' : char}</span>`
         ).join('');
         link.dataset.splitDone = 'true';
       }
@@ -29,26 +29,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const hoverTimeline = window.gsap.timeline({ paused: true });
       const chars = link.querySelectorAll('.char');
       
-      // Setup the timeline
-      hoverTimeline
-        .to(chars, {
-          y: -20,
-          opacity: 0,
-          duration: 0.4,
-          ease: "power2.inOut",
-          stagger: {
-            amount: 0.3,
-            from: "start"
-          }
-        });
+      // Setup the timeline with wave-like stagger
+      hoverTimeline.to(chars, {
+        y: -8,
+        rotateX: -90,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power1.inOut",
+        stagger: {
+          amount: 0.4,
+          from: "start",
+          ease: "power1.in"
+        }
+      });
 
-      // Add hover event listeners
+      // Add hover event listeners with quick debounce
+      let timeout;
       link.addEventListener('mouseenter', () => {
+        clearTimeout(timeout);
         hoverTimeline.play();
       });
 
       link.addEventListener('mouseleave', () => {
-        hoverTimeline.reverse();
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          hoverTimeline.reverse();
+        }, 50);
       });
     });
   }
@@ -113,23 +119,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         orientation: 'vertical',
         smoothWheel: true,
         wheelMultiplier: 1,
-        infinite: false
+        infinite: false,
+        gestureOrientation: 'vertical',
+        normalizeWheel: true,
+        smoothTouch: false
       });
 
       // Add Lenis CSS classes
       document.documentElement.classList.add('lenis');
       document.body.classList.add('lenis-smooth');
 
+      // Ensure proper height setup
+      document.documentElement.style.height = 'auto';
+      document.body.style.minHeight = '100vh';
+      document.body.style.position = 'relative';
+
       function raf(time) {
         lenis.raf(time);
         requestAnimationFrame(raf);
       }
 
+      // Start RAF loop
       requestAnimationFrame(raf);
 
       // GSAP ScrollTrigger integration if available
       if (window.ScrollTrigger) {
-        lenis.on('scroll', ScrollTrigger.update);
+        lenis.on('scroll', () => {
+          if (window.ScrollTrigger) {
+            window.ScrollTrigger.update();
+          }
+        });
+      }
+
+      // Stop Lenis on low power mode in Safari
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        lenis.destroy();
       }
 
       return true;
