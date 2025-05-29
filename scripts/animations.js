@@ -1,5 +1,5 @@
-// Version 1.5.12 - Full Page Scroll Fix
-console.log('animations.js version 1.5.12 loading...');
+// Version 1.5.13 - Basic Lenis Setup
+console.log('animations.js version 1.5.13 loading...');
 
 // Create a global namespace for our functions
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -20,37 +20,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     try {
-      // Ensure proper height setup for Webflow
-      document.documentElement.style.height = '100%';
-      document.body.style.height = '100%';
-      document.body.style.overflow = 'hidden';
+      // Basic Lenis setup following documentation
+      lenis = new window.Lenis();
 
-      // Initialize with basic settings first
-      lenis = new window.Lenis({
-        lerp: 0.1,
-        duration: 1.2,
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        wheelMultiplier: 1,
-        normalizeWheel: true,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-      });
-
-      // Add Lenis CSS classes
-      document.documentElement.classList.add('lenis', 'lenis-smooth');
-
-      // Basic RAF loop
       function raf(time) {
-        if (lenis) {
-          lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
+        lenis.raf(time);
+        requestAnimationFrame(raf);
       }
 
-      // Start the animation loop
       requestAnimationFrame(raf);
 
       // GSAP ScrollTrigger integration if available
@@ -58,18 +35,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         lenis.on('scroll', ScrollTrigger.update);
       }
 
-      // Handle anchor links
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          const targetId = this.getAttribute('href');
-          if (targetId !== '#') {
-            lenis.scrollTo(targetId);
-          }
-        });
-      });
+      // Add Lenis CSS classes
+      document.documentElement.classList.add('lenis');
+      document.body.classList.add('lenis-smooth');
 
-      // Log successful initialization
       console.log('Lenis initialized successfully');
       return true;
     } catch (error) {
