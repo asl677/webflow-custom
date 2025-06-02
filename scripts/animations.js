@@ -1,5 +1,5 @@
-// Version 1.5.18 - Performance Optimized
-console.log('animations.js v1.5.18 loading...');
+// Version 1.5.19 - Enhanced Scramble
+console.log('animations.js v1.5.19 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -25,20 +25,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const charEls = link.querySelectorAll('.char');
       let scrambling = false, interval;
 
-      function scramble(duration = 2400) {
+      function scramble(duration = 1200) {
         if (scrambling) {
           clearInterval(interval);
         }
         scrambling = true;
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
+        let lastScrambleIndexes = new Array(charEls.length).fill(-1);
         
         interval = setInterval(() => {
           const progress = Math.min((Date.now() - start) / duration, 1);
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
-            const charProgress = Math.max(0, (progress - (i * 0.15)) * 1.2);
-            char.textContent = charProgress >= 1 ? originals[i] : chars[Math.floor(Math.random() * chars.length)];
+            
+            // More organic wave effect with variable timing
+            const charDelay = i * 0.08;
+            const charProgress = Math.max(0, (progress - charDelay) * 1.5);
+            
+            // Only scramble if within the active window
+            if (charProgress > 0 && charProgress < 1) {
+              // Ensure each character gets a new random character
+              let newIndex;
+              do {
+                newIndex = Math.floor(Math.random() * chars.length);
+              } while (newIndex === lastScrambleIndexes[i]);
+              lastScrambleIndexes[i] = newIndex;
+              char.textContent = chars[newIndex];
+            } else if (charProgress >= 1) {
+              char.textContent = originals[i];
+            }
           });
           
           if (progress >= 1) {
@@ -47,7 +63,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 80);
+        }, 60);
       }
 
       function reset() {
@@ -60,7 +76,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         charEls.forEach((char, i) => char.textContent = originals[i]);
       }
 
-      link.addEventListener('mouseenter', () => scramble(2400));
+      link.addEventListener('mouseenter', () => scramble(1200));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
