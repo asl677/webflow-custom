@@ -33,37 +33,42 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
         let lastScrambleIndexes = new Array(charEls.length).fill(-1);
+        let cycleCount = new Array(charEls.length).fill(0);
+        const minCycles = 3; // Minimum number of character changes before settling
         
         interval = setInterval(() => {
           const progress = Math.min((Date.now() - start) / duration, 1);
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
             
-            // More organic wave effect with variable timing
-            const charDelay = i * 0.08;
-            const charProgress = Math.max(0, (progress - charDelay) * 1.5);
+            // Smoother wave effect with consistent timing
+            const charDelay = i * 0.05; // Reduced delay for tighter wave
+            const charProgress = Math.max(0, Math.min(1, (progress - charDelay) * 1.2));
             
-            // Only scramble if within the active window
-            if (charProgress > 0 && charProgress < 1) {
+            // Ensure each character completes its cycles
+            if (charProgress > 0 && (charProgress < 1 || cycleCount[i] < minCycles)) {
               // Ensure each character gets a new random character
               let newIndex;
               do {
                 newIndex = Math.floor(Math.random() * chars.length);
               } while (newIndex === lastScrambleIndexes[i]);
+              
               lastScrambleIndexes[i] = newIndex;
               char.textContent = chars[newIndex];
-            } else if (charProgress >= 1) {
+              cycleCount[i]++;
+            } else if (charProgress >= 1 && cycleCount[i] >= minCycles) {
               char.textContent = originals[i];
             }
           });
           
-          if (progress >= 1) {
+          // Only complete when all characters have finished their minimum cycles
+          if (progress >= 1 && cycleCount.every(count => count >= minCycles)) {
             clearInterval(interval);
             interval = null;
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 60);
+        }, 50); // Slightly slower interval for more consistent updates
       }
 
       function reset() {
