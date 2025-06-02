@@ -25,7 +25,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const charEls = link.querySelectorAll('.char');
       let scrambling = false, interval;
 
-      function scramble(duration = 1200) {
+      function scramble(duration = 2400) {
         if (scrambling) {
           clearInterval(interval);
         }
@@ -37,7 +37,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const progress = Math.min((Date.now() - start) / duration, 1);
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
-            const charProgress = Math.max(0, (progress - (i * 0.1)) * 1.5);
+            const charProgress = Math.max(0, (progress - (i * 0.15)) * 1.2);
             char.textContent = charProgress >= 1 ? originals[i] : chars[Math.floor(Math.random() * chars.length)];
           });
           
@@ -47,7 +47,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 50);
+        }, 80);
       }
 
       function reset() {
@@ -60,7 +60,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         charEls.forEach((char, i) => char.textContent = originals[i]);
       }
 
-      link.addEventListener('mouseenter', () => scramble(1200));
+      link.addEventListener('mouseenter', () => scramble(2400));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
