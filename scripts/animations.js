@@ -32,56 +32,39 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         scrambling = true;
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
-        let lastScrambleIndexes = new Array(charEls.length).fill(-1);
-        let scrambleCount = new Array(charEls.length).fill(0);
-        const scrambleSteps = 5; // Number of random characters before settling
+        const frameRate = 1000/30; // 30fps for smooth animation
+        const scramblePerChar = 10; // How many times each character changes
         
         interval = setInterval(() => {
-          const progress = Math.min((Date.now() - start) / duration, 1);
-          let allComplete = true;
+          const elapsed = Date.now() - start;
+          const progress = Math.min(elapsed / duration, 1);
           
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
             
-            // Wave effect timing
-            const charDelay = i * 0.03; // Tighter wave
-            const charProgress = Math.max(0, Math.min(1, (progress - charDelay) * 1.2));
+            // Calculate individual character timing
+            const startPoint = (i * 0.05); // When this character starts
+            const endPoint = startPoint + 0.4; // Character animation duration
+            const charProgress = (progress - startPoint) / (endPoint - startPoint);
             
             if (charProgress > 0 && charProgress < 1) {
-              // Calculate how many scrambles should have occurred by now
-              const expectedScrambles = Math.floor(charProgress * scrambleSteps);
-              
-              // Only scramble if we haven't hit our count for this progress point
-              if (scrambleCount[i] < expectedScrambles) {
-                let newIndex;
-                do {
-                  newIndex = Math.floor(Math.random() * chars.length);
-                } while (newIndex === lastScrambleIndexes[i]);
-                
-                lastScrambleIndexes[i] = newIndex;
-                char.textContent = chars[newIndex];
-                scrambleCount[i]++;
-                allComplete = false;
-              }
+              // During active scramble period
+              const randomChar = chars[Math.floor(Math.random() * chars.length)];
+              char.textContent = randomChar;
             } else if (charProgress >= 1) {
-              // Ensure final state
-              if (char.textContent !== originals[i]) {
-                char.textContent = originals[i];
-                allComplete = false;
-              }
-            } else {
-              allComplete = false;
+              // Animation complete for this character
+              char.textContent = originals[i];
             }
           });
           
-          // Stop when all characters have completed their scrambles and returned to original
-          if (allComplete && progress >= 1) {
+          // Stop animation when complete
+          if (progress >= 1) {
             clearInterval(interval);
             interval = null;
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 30); // Faster interval for smoother animation
+        }, frameRate);
       }
 
       function reset() {
