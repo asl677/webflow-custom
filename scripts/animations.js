@@ -1,5 +1,5 @@
-// Version 1.5.26 - GSAP Text Effect
-console.log('animations.js v1.5.26 loading...');
+// Version 1.5.27 - GSAP SplitText Effect
+console.log('animations.js v1.5.27 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -8,6 +8,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
   function initHover() {
+    if (!window.gsap || !window.gsap.SplitText) {
+      console.error('GSAP or SplitText plugin not loaded');
+      return;
+    }
+
     document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
@@ -18,9 +23,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         <span class="link-text-2">${text}</span>
       `;
       
-      // Split both layers into characters
-      const text1 = new window.SplitType(link.querySelector('.link-text-1'));
-      const text2 = new window.SplitType(link.querySelector('.link-text-2'));
+      // Split both layers into characters using GSAP SplitText
+      const text1 = new window.gsap.SplitText(link.querySelector('.link-text-1'), {type: "chars"});
+      const text2 = new window.gsap.SplitText(link.querySelector('.link-text-2'), {type: "chars"});
       
       // Create GSAP timeline
       const tl = window.gsap.timeline({ paused: true });
