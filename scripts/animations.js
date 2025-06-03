@@ -33,8 +33,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
         let lastScrambleIndexes = new Array(charEls.length).fill(-1);
-        let cycleCount = new Array(charEls.length).fill(0);
-        const minCycles = 3; // Minimum number of character changes before settling
+        let hasCompletedCycle = new Array(charEls.length).fill(false);
         
         interval = setInterval(() => {
           const progress = Math.min((Date.now() - start) / duration, 1);
@@ -45,8 +44,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             const charDelay = i * 0.05; // Reduced delay for tighter wave
             const charProgress = Math.max(0, Math.min(1, (progress - charDelay) * 1.2));
             
-            // Ensure each character completes its cycles
-            if (charProgress > 0 && (charProgress < 1 || cycleCount[i] < minCycles)) {
+            // Only scramble if character hasn't completed its cycle
+            if (charProgress > 0 && !hasCompletedCycle[i]) {
               // Ensure each character gets a new random character
               let newIndex;
               do {
@@ -55,14 +54,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               lastScrambleIndexes[i] = newIndex;
               char.textContent = chars[newIndex];
-              cycleCount[i]++;
-            } else if (charProgress >= 1 && cycleCount[i] >= minCycles) {
+              
+              // Mark character as complete after it has changed once
+              hasCompletedCycle[i] = true;
+            } else if (charProgress >= 1 || hasCompletedCycle[i]) {
               char.textContent = originals[i];
             }
           });
           
-          // Only complete when all characters have finished their minimum cycles
-          if (progress >= 1 && cycleCount.every(count => count >= minCycles)) {
+          // Stop when all characters have completed their cycle
+          if (progress >= 1 && hasCompletedCycle.every(completed => completed)) {
             clearInterval(interval);
             interval = null;
             scrambling = false;
