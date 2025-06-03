@@ -1,5 +1,5 @@
-// Version 1.5.20 - Enhanced Scramble with CodePen Timing
-console.log('animations.js v1.5.20 loading...');
+// Version 1.5.21 - Refined Scramble Effect
+console.log('animations.js v1.5.21 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -32,7 +32,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         scrambling = true;
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
-        const frameRate = 1000/30; // Back to 30fps for more visible changes
+        const frameRate = 1000/24; // 24fps for more visible character changes
+        let completedChars = new Set();
         
         interval = setInterval(() => {
           const elapsed = Date.now() - start;
@@ -41,24 +42,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
             
-            // Match CodePen timing with faster wave and shorter active period
-            const startPoint = reverse ? (1 - (i * 0.1)) : (i * 0.1); // Faster wave movement
-            const endPoint = reverse ? (startPoint - 0.3) : (startPoint + 0.3); // Shorter active period
+            // Smoother wave timing
+            const startPoint = reverse ? (1 - (i * 0.15)) : (i * 0.15);
+            const endPoint = reverse ? (startPoint - 0.2) : (startPoint + 0.2);
             const charProgress = reverse ? 
               1 - ((progress - Math.min(startPoint, endPoint)) / Math.abs(endPoint - startPoint)) :
               (progress - startPoint) / (endPoint - startPoint);
             
-            if (charProgress > 0 && charProgress < 1) {
-              // Faster character changes with eased timing
-              const randomChar = chars[Math.floor(Math.random() * chars.length)];
-              char.textContent = randomChar;
-              
-              // Add subtle scale effect during active period
-              const scale = 1 + Math.sin(charProgress * Math.PI) * 0.05;
-              char.style.transform = `scale(${scale})`;
-            } else if ((reverse && charProgress <= 0) || (!reverse && charProgress >= 1)) {
-              char.textContent = originals[i];
-              char.style.transform = '';
+            // Ensure character completes to original once it reaches near end of its progress
+            if (charProgress > 0 && charProgress < 0.85) {
+              // During active scramble period
+              if (Math.random() < 0.5) { // Reduce frequency of character changes
+                const randomChar = chars[Math.floor(Math.random() * chars.length)];
+                char.textContent = randomChar;
+              }
+            } else if (charProgress >= 0.85 || (reverse && charProgress <= 0)) {
+              // Lock in the original character near the end of its progress
+              if (!completedChars.has(i)) {
+                char.textContent = originals[i];
+                completedChars.add(i);
+              }
             }
           });
           
@@ -68,17 +71,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             scrambling = false;
             charEls.forEach((char, i) => {
               char.textContent = originals[i];
-              char.style.transform = '';
             });
+            completedChars.clear();
           }
         }, frameRate);
       }
 
       function reset() {
-        scramble(400, true); // Much faster reverse animation like CodePen
+        scramble(400, true); // Quick reverse animation
       }
 
-      link.addEventListener('mouseenter', () => scramble(800, false)); // Faster forward animation
+      link.addEventListener('mouseenter', () => scramble(600, false)); // Faster forward animation
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
