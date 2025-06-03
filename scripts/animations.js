@@ -1,5 +1,5 @@
-// Version 1.5.25 - Exact CodePen Text Effect
-console.log('animations.js v1.5.25 loading...');
+// Version 1.5.26 - GSAP Text Effect
+console.log('animations.js v1.5.26 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -11,39 +11,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
+      // Create two layers of text
       const text = link.textContent.trim();
-      const words = text.split(' ');
-      const wrappedText = words.map(word => {
-        const wrappedChars = word.split('').map(char => 
-          `<span class="char-wrapper"><span class="char">${char}</span></span>`
-        ).join('');
-        return `<span class="word">${wrappedChars}</span>`;
-      }).join('<span class="space">&nbsp;</span>');
+      link.innerHTML = `
+        <span class="link-text-1">${text}</span>
+        <span class="link-text-2">${text}</span>
+      `;
       
-      link.innerHTML = wrappedText;
+      // Split both layers into characters
+      const text1 = new window.SplitType(link.querySelector('.link-text-1'));
+      const text2 = new window.SplitType(link.querySelector('.link-text-2'));
       
-      function animateIn() {
-        const chars = link.querySelectorAll('.char');
-        chars.forEach((char, i) => {
-          if (char.parentElement.parentElement.classList.contains('space')) return;
-          setTimeout(() => {
-            char.style.transform = 'translateY(-100%)';
-          }, i * 30);
-        });
-      }
-
-      function animateOut() {
-        const chars = link.querySelectorAll('.char');
-        chars.forEach((char, i) => {
-          if (char.parentElement.parentElement.classList.contains('space')) return;
-          setTimeout(() => {
-            char.style.transform = 'translateY(0)';
-          }, i * 20);
-        });
-      }
-
-      link.addEventListener('mouseenter', animateIn);
-      link.addEventListener('mouseleave', animateOut);
+      // Create GSAP timeline
+      const tl = window.gsap.timeline({ paused: true });
+      window.gsap.defaults({ stagger: 0.015, duration: 0.35, ease: 'power3.easeOut' });
+      
+      tl.to(text1.chars, { yPercent: -120 })
+        .to(text2.chars, { yPercent: -100 }, 0);
+      
+      link.addEventListener('mouseenter', () => tl.play());
+      link.addEventListener('mouseleave', () => tl.reverse());
+      
       link.dataset.hoverInit = 'true';
     });
   }

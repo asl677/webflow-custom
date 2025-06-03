@@ -61,23 +61,26 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   font-kerning: normal;
   -webkit-font-kerning: normal;
   letter-spacing: 0.02em;
-  word-spacing: 0.4em;
-}
-.heading.small.link.large-link .word {
-  display: inline-block;
-}
-.heading.small.link.large-link .space {
-  display: inline-block;
-  width: 0.4em;
-}
-.heading.small.link.large-link .char-wrapper {
-  display: inline-block;
+  position: relative;
   overflow: hidden;
 }
+
+.heading.small.link.large-link .link-text-1,
+.heading.small.link.large-link .link-text-2 {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.heading.small.link.large-link .link-text-2 {
+  top: 100%;
+}
+
 .heading.small.link.large-link .char {
   display: inline-block;
-  transform: translateY(0);
-  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+  will-change: transform;
 }
 
 /* Container and Navigation */
