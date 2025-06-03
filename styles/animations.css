@@ -74,12 +74,26 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   display: inline-block;
   overflow: hidden;
   vertical-align: bottom;
+  height: 1.1em;
+  position: relative;
 }
 .heading.small.link.large-link .char {
-  display: inline-block;
-  transform: translateY(0%);
+  display: block;
+  position: relative;
   transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
-  will-change: transform;
+}
+.heading.small.link.large-link .char-inner {
+  display: block;
+  height: 1.1em;
+  line-height: 1.1em;
+}
+.heading.small.link.large-link .char-inner:nth-child(2) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+.heading.small.link.large-link .char.reveal {
+  transform: translateY(-50%);
 }
 
 /* Container and Navigation */

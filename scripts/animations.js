@@ -1,5 +1,5 @@
-// Version 1.5.23 - Sliding Text Reveal Effect
-console.log('animations.js v1.5.23 loading...');
+// Version 1.5.24 - Fixed Text Reveal Effect
+console.log('animations.js v1.5.24 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -15,10 +15,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const words = text.split(' ');
       const wrappedText = words.map(word => {
         const wrappedChars = word.split('').map(char => 
-          `<span class="char-wrapper" style="display: inline-block; overflow: hidden; vertical-align: bottom;">
-            <span class="char" data-char="${char}" style="display: inline-block; transform: translateY(0%); transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);">
-              ${char}
-              <span style="display: block; transform: translateY(100%);">${char}</span>
+          `<span class="char-wrapper">
+            <span class="char" data-char="${char}">
+              <span class="char-inner">${char}</span>
+              <span class="char-inner">${char}</span>
             </span>
           </span>`
         ).join('');
@@ -32,8 +32,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         chars.forEach((char, i) => {
           if (char.parentElement.parentElement.classList.contains('space')) return;
           setTimeout(() => {
-            char.style.transform = 'translateY(-50%)';
-          }, i * 30); // Wave timing
+            char.classList.add('reveal');
+          }, i * 30);
         });
       }
 
@@ -42,8 +42,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         chars.forEach((char, i) => {
           if (char.parentElement.parentElement.classList.contains('space')) return;
           setTimeout(() => {
-            char.style.transform = 'translateY(0%)';
-          }, i * 20); // Faster reverse wave
+            char.classList.remove('reveal');
+          }, i * 20);
         });
       }
 
