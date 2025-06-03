@@ -69,9 +69,12 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 .heading.small.link.large-link .link-text-2 {
   display: block;
   position: absolute;
-  top: 0;
   left: 0;
   width: 100%;
+}
+
+.heading.small.link.large-link .link-text-1 {
+  top: 0;
 }
 
 .heading.small.link.large-link .link-text-2 {
@@ -81,6 +84,7 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 .heading.small.link.large-link .char {
   display: inline-block;
   will-change: transform;
+  transform: translateY(0);
 }
 
 /* Container and Navigation */
