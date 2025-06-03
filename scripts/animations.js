@@ -1,44 +1,33 @@
-// Version 1.5.29 - Pure GSAP Text Effect
-console.log('animations.js v1.5.29 loading...');
+// Version 1.5.31 - Fixed Hover Effect
+console.log('animations.js v1.5.31 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, lenis = null;
 
-  function splitTextIntoSpans(text) {
-    return text.split('').map(char => 
-      `<span class="char">${char}</span>`
-    ).join('');
-  }
-
   function initHover() {
-    if (!window.gsap) {
-      console.error('GSAP not loaded');
-      return;
-    }
-
     document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
       // Create two layers of text
       const text = link.textContent.trim();
       link.innerHTML = `
-        <span class="link-text-1">${splitTextIntoSpans(text)}</span>
-        <span class="link-text-2">${splitTextIntoSpans(text)}</span>
+        <span class="link-text-1">${text}</span>
+        <span class="link-text-2">${text}</span>
       `;
       
-      // Get all characters
-      const chars1 = link.querySelector('.link-text-1').querySelectorAll('.char');
-      const chars2 = link.querySelector('.link-text-2').querySelectorAll('.char');
+      // Split text into characters
+      const text1 = new window.gsap.SplitText(link.querySelector('.link-text-1'), { type: 'chars' });
+      const text2 = new window.gsap.SplitText(link.querySelector('.link-text-2'), { type: 'chars' });
       
-      // Create GSAP timeline
-      const tl = window.gsap.timeline({ paused: true });
+      // Create timeline
       window.gsap.defaults({ stagger: 0.015, duration: 0.35, ease: 'power3.easeOut' });
+      const tl = window.gsap.timeline({ paused: true })
+        .to(text1.chars, { yPercent: -120 })
+        .to(text2.chars, { yPercent: -100 }, 0);
       
-      tl.to(chars1, { yPercent: -120 })
-        .to(chars2, { yPercent: -100 }, 0);
-      
+      // Add hover events
       link.addEventListener('mouseenter', () => tl.play());
       link.addEventListener('mouseleave', () => tl.reverse());
       

@@ -54,13 +54,6 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 
 /* Heading Link Styles */
 .heading.small.link.large-link {
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  font-family: monospace, sans-serif;
-  font-kerning: normal;
-  -webkit-font-kerning: normal;
-  letter-spacing: 0.02em;
   position: relative;
   overflow: hidden;
   display: inline-block;
@@ -72,24 +65,14 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   position: absolute;
   left: 0;
   width: 100%;
-  white-space: nowrap;
 }
 
 .heading.small.link.large-link .link-text-1 {
-  top: 0;
   position: relative;
 }
 
 .heading.small.link.large-link .link-text-2 {
   top: 100%;
-}
-
-.heading.small.link.large-link .char {
-  display: inline-block;
-  will-change: transform;
-  transform: translateY(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 /* Container and Navigation */
