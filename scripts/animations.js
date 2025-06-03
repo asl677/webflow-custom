@@ -1,5 +1,5 @@
-// Version 1.5.21 - Refined Scramble Effect
-console.log('animations.js v1.5.21 loading...');
+// Version 1.5.22 - Simplified Wave Scramble
+console.log('animations.js v1.5.22 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -25,15 +25,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const charEls = link.querySelectorAll('.char');
       let scrambling = false, interval;
 
-      function scramble(duration = 1200, reverse = false) {
+      function scramble(duration = 600, reverse = false) {
         if (scrambling) {
           clearInterval(interval);
         }
         scrambling = true;
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
-        const frameRate = 1000/24; // 24fps for more visible character changes
-        let completedChars = new Set();
+        const frameRate = 1000/30;
         
         interval = setInterval(() => {
           const elapsed = Date.now() - start;
@@ -42,25 +41,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
             
-            // Smoother wave timing
-            const startPoint = reverse ? (1 - (i * 0.15)) : (i * 0.15);
-            const endPoint = reverse ? (startPoint - 0.2) : (startPoint + 0.2);
+            // Simple wave timing
+            const charDelay = reverse ? (1 - (i * 0.1)) : (i * 0.1);
+            const charDuration = 0.2;
             const charProgress = reverse ? 
-              1 - ((progress - Math.min(startPoint, endPoint)) / Math.abs(endPoint - startPoint)) :
-              (progress - startPoint) / (endPoint - startPoint);
+              1 - ((progress - charDelay) / charDuration) :
+              (progress - charDelay) / charDuration;
             
-            // Ensure character completes to original once it reaches near end of its progress
-            if (charProgress > 0 && charProgress < 0.85) {
-              // During active scramble period
-              if (Math.random() < 0.5) { // Reduce frequency of character changes
+            // Only scramble during the character's active period
+            if (charProgress > 0 && charProgress <= 1) {
+              // Single character change
+              if (charProgress <= 0.5) {
                 const randomChar = chars[Math.floor(Math.random() * chars.length)];
                 char.textContent = randomChar;
-              }
-            } else if (charProgress >= 0.85 || (reverse && charProgress <= 0)) {
-              // Lock in the original character near the end of its progress
-              if (!completedChars.has(i)) {
+              } else {
                 char.textContent = originals[i];
-                completedChars.add(i);
               }
             }
           });
@@ -72,7 +67,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             charEls.forEach((char, i) => {
               char.textContent = originals[i];
             });
-            completedChars.clear();
           }
         }, frameRate);
       }
@@ -81,7 +75,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         scramble(400, true); // Quick reverse animation
       }
 
-      link.addEventListener('mouseenter', () => scramble(600, false)); // Faster forward animation
+      link.addEventListener('mouseenter', () => scramble(600, false));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
