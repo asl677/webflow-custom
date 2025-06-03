@@ -1,5 +1,5 @@
-// Version 1.5.24 - Fixed Text Reveal Effect
-console.log('animations.js v1.5.24 loading...');
+// Version 1.5.25 - Exact CodePen Text Effect
+console.log('animations.js v1.5.25 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -15,12 +15,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const words = text.split(' ');
       const wrappedText = words.map(word => {
         const wrappedChars = word.split('').map(char => 
-          `<span class="char-wrapper">
-            <span class="char" data-char="${char}">
-              <span class="char-inner">${char}</span>
-              <span class="char-inner">${char}</span>
-            </span>
-          </span>`
+          `<span class="char-wrapper"><span class="char">${char}</span></span>`
         ).join('');
         return `<span class="word">${wrappedChars}</span>`;
       }).join('<span class="space">&nbsp;</span>');
@@ -32,7 +27,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         chars.forEach((char, i) => {
           if (char.parentElement.parentElement.classList.contains('space')) return;
           setTimeout(() => {
-            char.classList.add('reveal');
+            char.style.transform = 'translateY(-100%)';
           }, i * 30);
         });
       }
@@ -42,7 +37,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         chars.forEach((char, i) => {
           if (char.parentElement.parentElement.classList.contains('space')) return;
           setTimeout(() => {
-            char.classList.remove('reveal');
+            char.style.transform = 'translateY(0)';
           }, i * 20);
         });
       }

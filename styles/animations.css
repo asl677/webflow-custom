@@ -73,27 +73,11 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 .heading.small.link.large-link .char-wrapper {
   display: inline-block;
   overflow: hidden;
-  vertical-align: bottom;
-  height: 1.1em;
-  position: relative;
 }
 .heading.small.link.large-link .char {
-  display: block;
-  position: relative;
-  transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
-}
-.heading.small.link.large-link .char-inner {
-  display: block;
-  height: 1.1em;
-  line-height: 1.1em;
-}
-.heading.small.link.large-link .char-inner:nth-child(2) {
-  position: absolute;
-  top: 100%;
-  left: 0;
-}
-.heading.small.link.large-link .char.reveal {
-  transform: translateY(-50%);
+  display: inline-block;
+  transform: translateY(0);
+  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* Container and Navigation */
