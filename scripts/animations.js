@@ -1,5 +1,5 @@
-// Version 1.5.34 - Fixed Hover Dimensions
-console.log('animations.js v1.5.34 loading...');
+// Version 1.5.35 - Refined Animation Easing
+console.log('animations.js v1.5.35 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -40,29 +40,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 100%;">${text}</span>
       `;
       
-      // Create timeline
-      const tl = window.gsap.timeline({ paused: true });
+      // Create timeline with refined easing
+      const tl = window.gsap.timeline({ 
+        paused: true,
+        defaults: {
+          duration: 0.6,
+          ease: "power2.out"
+        }
+      });
       
       tl.to(link.querySelector('.link-text-1'), {
         yPercent: -100,
-        duration: 0.35,
-        ease: 'power3.easeOut'
       })
       .to(link.querySelector('.link-text-2'), {
         yPercent: -100,
-        duration: 0.35,
-        ease: 'power3.easeOut'
-      }, 0);
+      }, 0.08); // Slight delay for second text
       
-      // Add hover events
+      // Add hover events with smoother reversing
       link.addEventListener('mouseenter', () => {
         console.log('Mouse enter:', link.textContent);
-        tl.play();
+        tl.timeScale(1).play();
       });
       
       link.addEventListener('mouseleave', () => {
         console.log('Mouse leave:', link.textContent);
-        tl.reverse();
+        tl.timeScale(1.2).reverse(); // Slightly faster reverse
       });
       
       link.dataset.hoverInit = 'true';
