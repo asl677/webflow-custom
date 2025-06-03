@@ -1,61 +1,49 @@
-// Version 1.5.28 - GSAP SplitText Effect with Load Check
-console.log('animations.js v1.5.28 loading...');
+// Version 1.5.29 - Pure GSAP Text Effect
+console.log('animations.js v1.5.29 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, lenis = null;
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-  // Wait for GSAP and SplitText to be available
-  function waitForGSAP() {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (window.gsap && window.gsap.SplitText) {
-          console.log('GSAP and SplitText loaded');
-          resolve();
-        } else {
-          console.log('Waiting for GSAP and SplitText...');
-          setTimeout(check, 100);
-        }
-      };
-      check();
-    });
+  function splitTextIntoSpans(text) {
+    return text.split('').map(char => 
+      `<span class="char">${char}</span>`
+    ).join('');
   }
 
-  async function initHover() {
-    try {
-      await waitForGSAP();
-      
-      document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
-        if (link.dataset.hoverInit) return;
-        
-        // Create two layers of text
-        const text = link.textContent.trim();
-        link.innerHTML = `
-          <span class="link-text-1">${text}</span>
-          <span class="link-text-2">${text}</span>
-        `;
-        
-        // Split both layers into characters using GSAP SplitText
-        const text1 = new window.gsap.SplitText(link.querySelector('.link-text-1'), {type: "chars"});
-        const text2 = new window.gsap.SplitText(link.querySelector('.link-text-2'), {type: "chars"});
-        
-        // Create GSAP timeline
-        const tl = window.gsap.timeline({ paused: true });
-        window.gsap.defaults({ stagger: 0.015, duration: 0.35, ease: 'power3.easeOut' });
-        
-        tl.to(text1.chars, { yPercent: -120 })
-          .to(text2.chars, { yPercent: -100 }, 0);
-        
-        link.addEventListener('mouseenter', () => tl.play());
-        link.addEventListener('mouseleave', () => tl.reverse());
-        
-        link.dataset.hoverInit = 'true';
-      });
-    } catch (error) {
-      console.error('Error initializing hover effect:', error);
+  function initHover() {
+    if (!window.gsap) {
+      console.error('GSAP not loaded');
+      return;
     }
+
+    document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
+      if (link.dataset.hoverInit) return;
+      
+      // Create two layers of text
+      const text = link.textContent.trim();
+      link.innerHTML = `
+        <span class="link-text-1">${splitTextIntoSpans(text)}</span>
+        <span class="link-text-2">${splitTextIntoSpans(text)}</span>
+      `;
+      
+      // Get all characters
+      const chars1 = link.querySelector('.link-text-1').querySelectorAll('.char');
+      const chars2 = link.querySelector('.link-text-2').querySelectorAll('.char');
+      
+      // Create GSAP timeline
+      const tl = window.gsap.timeline({ paused: true });
+      window.gsap.defaults({ stagger: 0.015, duration: 0.35, ease: 'power3.easeOut' });
+      
+      tl.to(chars1, { yPercent: -120 })
+        .to(chars2, { yPercent: -100 }, 0);
+      
+      link.addEventListener('mouseenter', () => tl.play());
+      link.addEventListener('mouseleave', () => tl.reverse());
+      
+      link.dataset.hoverInit = 'true';
+    });
   }
 
   function wrapLines(el) {

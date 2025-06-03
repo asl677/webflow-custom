@@ -63,6 +63,7 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   letter-spacing: 0.02em;
   position: relative;
   overflow: hidden;
+  display: inline-block;
 }
 
 .heading.small.link.large-link .link-text-1,
@@ -71,10 +72,12 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   position: absolute;
   left: 0;
   width: 100%;
+  white-space: nowrap;
 }
 
 .heading.small.link.large-link .link-text-1 {
   top: 0;
+  position: relative;
 }
 
 .heading.small.link.large-link .link-text-2 {
@@ -85,6 +88,8 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
   display: inline-block;
   will-change: transform;
   transform: translateY(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Container and Navigation */
