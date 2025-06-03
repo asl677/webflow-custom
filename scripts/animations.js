@@ -44,8 +44,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const tl = window.gsap.timeline({ 
         paused: true,
         defaults: {
-          duration: 1.2,
-          ease: "power1.inOut"
+          duration: 0.5,
+          ease: "power3.inOut"
         }
       });
       
@@ -54,7 +54,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       })
       .to(link.querySelector('.link-text-2'), {
         yPercent: -100,
-      }, 1); // Slight delay for second text
+      }, 0.15); // Shorter delay for second text
       
       // Add hover events with smoother reversing
       link.addEventListener('mouseenter', () => {
