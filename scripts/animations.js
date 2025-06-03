@@ -1,5 +1,5 @@
-// Version 1.5.22 - Simplified Wave Scramble
-console.log('animations.js v1.5.22 loading...');
+// Version 1.5.23 - Sliding Text Reveal Effect
+console.log('animations.js v1.5.23 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -15,68 +15,40 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const words = text.split(' ');
       const wrappedText = words.map(word => {
         const wrappedChars = word.split('').map(char => 
-          `<span class="char" data-char="${char}" style="display: inline-block;">${char}</span>`
+          `<span class="char-wrapper" style="display: inline-block; overflow: hidden; vertical-align: bottom;">
+            <span class="char" data-char="${char}" style="display: inline-block; transform: translateY(0%); transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);">
+              ${char}
+              <span style="display: block; transform: translateY(100%);">${char}</span>
+            </span>
+          </span>`
         ).join('');
         return `<span class="word">${wrappedChars}</span>`;
       }).join('<span class="space">&nbsp;</span>');
       
       link.innerHTML = wrappedText;
       
-      const charEls = link.querySelectorAll('.char');
-      let scrambling = false, interval;
-
-      function scramble(duration = 600, reverse = false) {
-        if (scrambling) {
-          clearInterval(interval);
-        }
-        scrambling = true;
-        const start = Date.now();
-        const originals = Array.from(charEls).map(el => el.dataset.char);
-        const frameRate = 1000/30;
-        
-        interval = setInterval(() => {
-          const elapsed = Date.now() - start;
-          const progress = Math.min(elapsed / duration, 1);
-          
-          charEls.forEach((char, i) => {
-            if (char.parentElement.classList.contains('space')) return;
-            
-            // Simple wave timing
-            const charDelay = reverse ? (1 - (i * 0.1)) : (i * 0.1);
-            const charDuration = 0.2;
-            const charProgress = reverse ? 
-              1 - ((progress - charDelay) / charDuration) :
-              (progress - charDelay) / charDuration;
-            
-            // Only scramble during the character's active period
-            if (charProgress > 0 && charProgress <= 1) {
-              // Single character change
-              if (charProgress <= 0.5) {
-                const randomChar = chars[Math.floor(Math.random() * chars.length)];
-                char.textContent = randomChar;
-              } else {
-                char.textContent = originals[i];
-              }
-            }
-          });
-          
-          if (progress >= 1) {
-            clearInterval(interval);
-            interval = null;
-            scrambling = false;
-            charEls.forEach((char, i) => {
-              char.textContent = originals[i];
-            });
-          }
-        }, frameRate);
+      function animateIn() {
+        const chars = link.querySelectorAll('.char');
+        chars.forEach((char, i) => {
+          if (char.parentElement.parentElement.classList.contains('space')) return;
+          setTimeout(() => {
+            char.style.transform = 'translateY(-50%)';
+          }, i * 30); // Wave timing
+        });
       }
 
-      function reset() {
-        scramble(400, true); // Quick reverse animation
+      function animateOut() {
+        const chars = link.querySelectorAll('.char');
+        chars.forEach((char, i) => {
+          if (char.parentElement.parentElement.classList.contains('space')) return;
+          setTimeout(() => {
+            char.style.transform = 'translateY(0%)';
+          }, i * 20); // Faster reverse wave
+        });
       }
 
-      link.addEventListener('mouseenter', () => scramble(600, false));
-      link.addEventListener('mouseleave', reset);
+      link.addEventListener('mouseenter', animateIn);
+      link.addEventListener('mouseleave', animateOut);
       link.dataset.hoverInit = 'true';
     });
   }
