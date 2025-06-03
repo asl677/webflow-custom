@@ -110,20 +110,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     if (largeHeadings.length) {
       largeHeadings.forEach(h => {
-        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }, 0);
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.1, ease: "power2.out" }, 0);
       });
     }
 
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      tl.to(slideEls, { x: 0, opacity: 1, duration: 0.6, stagger: 0.05, ease: "power2.out" }, 0.2);
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
     }
 
     // Batch animate other elements for better performance
     const batchSize = 10;
     for (let i = 0; i < otherEls.length; i += batchSize) {
       const batch = Array.from(otherEls).slice(i, i + batchSize);
-      tl.to(batch, { opacity: 1, y: 0, duration: 0.4, stagger: 0.02, ease: "power2.out" }, 0.1);
+      tl.to(batch, { opacity: 1, y: 0, duration: 0.9, stagger: 0.02, ease: "power2.out" }, 0.1);
     }
   }
 
@@ -176,9 +176,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideOut = document.querySelectorAll('.grid-down.project-down.mobile-down');
     
     if (slideOut.length) {
-      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.3, stagger: 0.02, ease: "power2.inOut" }, 0);
+      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.8, stagger: 0.02, ease: "power2.inOut" }, 0);
     }
-    tl.to('body', { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 0.1);
+    tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
   // Initialize immediately
