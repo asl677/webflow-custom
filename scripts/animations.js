@@ -1,5 +1,5 @@
-// Version 1.5.19 - Enhanced Scramble
-console.log('animations.js v1.5.19 loading...');
+// Version 1.5.20 - Enhanced Scramble with CodePen Timing
+console.log('animations.js v1.5.20 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
