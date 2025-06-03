@@ -98,9 +98,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function startAnims() {
+    // Get all elements upfront
     const largeHeadings = document.querySelectorAll('.heading.large');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    const mediaEls = document.querySelectorAll('img, video');
+    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+
+    // Initialize hover immediately to prevent delay
+    initHover();
 
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
@@ -115,13 +120,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
     }
-
-    // Separate media elements and other elements for different timing
-    const mediaEls = document.querySelectorAll('img, video');
-    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
-
-    // Initialize hover immediately to prevent delay
-    initHover();
 
     // Animate media elements with longer duration and stagger
     if (mediaEls.length) {
