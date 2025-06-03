@@ -33,43 +33,55 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
         let lastScrambleIndexes = new Array(charEls.length).fill(-1);
-        let hasCompletedCycle = new Array(charEls.length).fill(false);
+        let scrambleCount = new Array(charEls.length).fill(0);
+        const scrambleSteps = 5; // Number of random characters before settling
         
         interval = setInterval(() => {
           const progress = Math.min((Date.now() - start) / duration, 1);
+          let allComplete = true;
+          
           charEls.forEach((char, i) => {
             if (char.parentElement.classList.contains('space')) return;
             
-            // Smoother wave effect with consistent timing
-            const charDelay = i * 0.05; // Reduced delay for tighter wave
+            // Wave effect timing
+            const charDelay = i * 0.03; // Tighter wave
             const charProgress = Math.max(0, Math.min(1, (progress - charDelay) * 1.2));
             
-            // Only scramble if character hasn't completed its cycle
-            if (charProgress > 0 && !hasCompletedCycle[i]) {
-              // Ensure each character gets a new random character
-              let newIndex;
-              do {
-                newIndex = Math.floor(Math.random() * chars.length);
-              } while (newIndex === lastScrambleIndexes[i]);
+            if (charProgress > 0 && charProgress < 1) {
+              // Calculate how many scrambles should have occurred by now
+              const expectedScrambles = Math.floor(charProgress * scrambleSteps);
               
-              lastScrambleIndexes[i] = newIndex;
-              char.textContent = chars[newIndex];
-              
-              // Mark character as complete after it has changed once
-              hasCompletedCycle[i] = true;
-            } else if (charProgress >= 1 || hasCompletedCycle[i]) {
-              char.textContent = originals[i];
+              // Only scramble if we haven't hit our count for this progress point
+              if (scrambleCount[i] < expectedScrambles) {
+                let newIndex;
+                do {
+                  newIndex = Math.floor(Math.random() * chars.length);
+                } while (newIndex === lastScrambleIndexes[i]);
+                
+                lastScrambleIndexes[i] = newIndex;
+                char.textContent = chars[newIndex];
+                scrambleCount[i]++;
+                allComplete = false;
+              }
+            } else if (charProgress >= 1) {
+              // Ensure final state
+              if (char.textContent !== originals[i]) {
+                char.textContent = originals[i];
+                allComplete = false;
+              }
+            } else {
+              allComplete = false;
             }
           });
           
-          // Stop when all characters have completed their cycle
-          if (progress >= 1 && hasCompletedCycle.every(completed => completed)) {
+          // Stop when all characters have completed their scrambles and returned to original
+          if (allComplete && progress >= 1) {
             clearInterval(interval);
             interval = null;
             scrambling = false;
             charEls.forEach((char, i) => char.textContent = originals[i]);
           }
-        }, 50); // Slightly slower interval for more consistent updates
+        }, 30); // Faster interval for smoother animation
       }
 
       function reset() {
