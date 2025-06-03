@@ -1,5 +1,5 @@
-// Version 1.5.31 - Fixed Hover Effect
-console.log('animations.js v1.5.31 loading...');
+// Version 1.5.32 - Pure GSAP Hover Effect
+console.log('animations.js v1.5.32 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -17,15 +17,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         <span class="link-text-2">${text}</span>
       `;
       
-      // Split text into characters
-      const text1 = new window.gsap.SplitText(link.querySelector('.link-text-1'), { type: 'chars' });
-      const text2 = new window.gsap.SplitText(link.querySelector('.link-text-2'), { type: 'chars' });
-      
       // Create timeline
-      window.gsap.defaults({ stagger: 0.015, duration: 0.35, ease: 'power3.easeOut' });
-      const tl = window.gsap.timeline({ paused: true })
-        .to(text1.chars, { yPercent: -120 })
-        .to(text2.chars, { yPercent: -100 }, 0);
+      const tl = window.gsap.timeline({ paused: true });
+      window.gsap.defaults({ duration: 0.35, ease: 'power3.easeOut' });
+      
+      tl.to(link.querySelector('.link-text-1'), { yPercent: -120 })
+        .to(link.querySelector('.link-text-2'), { yPercent: -100 }, 0);
       
       // Add hover events
       link.addEventListener('mouseenter', () => tl.play());
