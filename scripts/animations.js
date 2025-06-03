@@ -119,6 +119,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
     }
 
+    // Separate media elements for different timing
+    const mediaEls = document.querySelectorAll('img, video');
+    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+
+    // Animate media elements with longer duration and stagger
+    if (mediaEls.length) {
+      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, 0.1);
+    }
+
     // Batch animate other elements for better performance
     const batchSize = 10;
     for (let i = 0; i < otherEls.length; i += batchSize) {
