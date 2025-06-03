@@ -25,7 +25,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const charEls = link.querySelectorAll('.char');
       let scrambling = false, interval;
 
-      function scramble(duration = 1200) {
+      function scramble(duration = 1200, reverse = false) {
         if (scrambling) {
           clearInterval(interval);
         }
@@ -33,7 +33,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const start = Date.now();
         const originals = Array.from(charEls).map(el => el.dataset.char);
         const frameRate = 1000/30; // 30fps for smooth animation
-        const scramblePerChar = 10; // How many times each character changes
         
         interval = setInterval(() => {
           const elapsed = Date.now() - start;
@@ -43,15 +42,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (char.parentElement.classList.contains('space')) return;
             
             // Calculate individual character timing
-            const startPoint = (i * 0.05); // When this character starts
-            const endPoint = startPoint + 0.4; // Character animation duration
-            const charProgress = (progress - startPoint) / (endPoint - startPoint);
+            const startPoint = reverse ? (1 - (i * 0.05)) : (i * 0.05); // Reverse the wave direction
+            const endPoint = reverse ? (startPoint - 0.4) : (startPoint + 0.4);
+            const charProgress = reverse ? 
+              1 - ((progress - Math.min(startPoint, endPoint)) / Math.abs(endPoint - startPoint)) :
+              (progress - startPoint) / (endPoint - startPoint);
             
             if (charProgress > 0 && charProgress < 1) {
               // During active scramble period
               const randomChar = chars[Math.floor(Math.random() * chars.length)];
               char.textContent = randomChar;
-            } else if (charProgress >= 1) {
+            } else if ((reverse && charProgress <= 0) || (!reverse && charProgress >= 1)) {
               // Animation complete for this character
               char.textContent = originals[i];
             }
@@ -68,16 +69,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
 
       function reset() {
-        if (interval) {
-          clearInterval(interval);
-          interval = null;
-        }
-        scrambling = false;
-        const originals = Array.from(charEls).map(el => el.dataset.char);
-        charEls.forEach((char, i) => char.textContent = originals[i]);
+        scramble(800, true); // Reverse scramble on hover out with shorter duration
       }
 
-      link.addEventListener('mouseenter', () => scramble(1200));
+      link.addEventListener('mouseenter', () => scramble(1200, false));
       link.addEventListener('mouseleave', reset);
       link.dataset.hoverInit = 'true';
     });
