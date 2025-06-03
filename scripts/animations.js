@@ -183,7 +183,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideOut = document.querySelectorAll('.grid-down.project-down.mobile-down');
     
     if (slideOut.length) {
-      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.8, stagger: 0.02, ease: "power2.inOut" }, 0);
+      tl.to(slideOut, { x: 20, opacity: 0, duration: 0.8, stagger: 0.02, ease: "power2.inOut" }, 0.2);
     }
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
