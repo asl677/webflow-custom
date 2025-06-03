@@ -1,5 +1,5 @@
-// Version 1.5.32 - Pure GSAP Hover Effect
-console.log('animations.js v1.5.32 loading...');
+// Version 1.5.34 - Fixed Hover Dimensions
+console.log('animations.js v1.5.34 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -7,26 +7,63 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   let isInit = false, lenis = null;
 
   function initHover() {
-    document.querySelectorAll('.heading.small.link.large-link').forEach(link => {
-      if (link.dataset.hoverInit) return;
+    console.log('Initializing hover effects...');
+    const links = document.querySelectorAll('.heading.small.link.large-link');
+    console.log('Found links:', links.length);
+    
+    links.forEach(link => {
+      if (link.dataset.hoverInit) {
+        console.log('Link already initialized:', link.textContent);
+        return;
+      }
+      
+      console.log('Setting up hover for:', link.textContent);
+      
+      // Store original dimensions
+      const rect = link.getBoundingClientRect();
+      const height = rect.height;
       
       // Create two layers of text
       const text = link.textContent.trim();
+      
+      // Set container styles
+      Object.assign(link.style, {
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'inline-block',
+        height: height + 'px',
+        lineHeight: height + 'px'
+      });
+      
       link.innerHTML = `
-        <span class="link-text-1">${text}</span>
-        <span class="link-text-2">${text}</span>
+        <span class="link-text-1" style="display: block; position: relative; height: ${height}px; line-height: ${height}px;">${text}</span>
+        <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 100%;">${text}</span>
       `;
       
       // Create timeline
       const tl = window.gsap.timeline({ paused: true });
-      window.gsap.defaults({ duration: 0.35, ease: 'power3.easeOut' });
       
-      tl.to(link.querySelector('.link-text-1'), { yPercent: -120 })
-        .to(link.querySelector('.link-text-2'), { yPercent: -100 }, 0);
+      tl.to(link.querySelector('.link-text-1'), {
+        yPercent: -100,
+        duration: 0.35,
+        ease: 'power3.easeOut'
+      })
+      .to(link.querySelector('.link-text-2'), {
+        yPercent: -100,
+        duration: 0.35,
+        ease: 'power3.easeOut'
+      }, 0);
       
       // Add hover events
-      link.addEventListener('mouseenter', () => tl.play());
-      link.addEventListener('mouseleave', () => tl.reverse());
+      link.addEventListener('mouseenter', () => {
+        console.log('Mouse enter:', link.textContent);
+        tl.play();
+      });
+      
+      link.addEventListener('mouseleave', () => {
+        console.log('Mouse leave:', link.textContent);
+        tl.reverse();
+      });
       
       link.dataset.hoverInit = 'true';
     });

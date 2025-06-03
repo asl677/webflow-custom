@@ -54,29 +54,20 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:transform,op
 
 /* Heading Link Styles */
 .heading.small.link.large-link {
-  position: relative;
-  overflow: hidden;
-  display: inline-block;
+  position: relative !important;
+  overflow: hidden !important;
+  display: inline-block !important;
   cursor: pointer;
+  vertical-align: top !important;
+  text-decoration: none !important;
 }
 
 .heading.small.link.large-link .link-text-1,
 .heading.small.link.large-link .link-text-2 {
-  display: block;
-  position: absolute;
-  left: 0;
-  width: 100%;
   will-change: transform;
-}
-
-.heading.small.link.large-link .link-text-1 {
-  position: relative;
-  transform: translateY(0);
-}
-
-.heading.small.link.large-link .link-text-2 {
-  top: 100%;
-  transform: translateY(0);
+  white-space: nowrap !important;
+  display: block !important;
+  text-align: inherit !important;
 }
 
 /* Container and Navigation */
