@@ -96,7 +96,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Set initial state for media elements
     if (mediaEls.length) {
-      window.gsap.set(mediaEls, { opacity: 0, y: 20 });
+      window.gsap.set(mediaEls, { opacity: 0, y: 10 });
     }
 
     if (largeHeadings.length) {
@@ -112,7 +112,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Animate media elements with longer duration and stagger, starting much later
     if (mediaEls.length) {
-      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, "+=0.4");
+      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.5, stagger: 0.4, ease: "power2.out" }, "+=0.2");
     }
 
     // Batch animate other elements for better performance
