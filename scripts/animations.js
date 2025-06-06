@@ -112,7 +112,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Animate media elements with longer duration and stagger, starting much later
     if (mediaEls.length) {
-      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, "+=1.2");
+      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, "+=0.7");
     }
 
     // Batch animate other elements for better performance
