@@ -53,7 +53,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         yPercent: -100,
       })
       .to(link.querySelector('.link-text-2'), {
-        yPercent: -100,
+        yPercent: -100
       }, 0.15); // Shorter delay for second text
       
       // Add hover events with smoother reversing
@@ -107,7 +107,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Animate media elements with longer duration and stagger
     if (mediaEls.length) {
-      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, 0.1);
+      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, 0.6);
     }
 
     // Batch animate other elements for better performance
