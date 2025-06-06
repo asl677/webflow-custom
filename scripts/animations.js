@@ -94,9 +94,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Set initial state for media elements
+    // Set initial state for media elements with will-change
     if (mediaEls.length) {
-      window.gsap.set(mediaEls, { opacity: 0, y: 0 });
+      mediaEls.forEach(el => {
+        el.style.willChange = 'opacity';
+        window.gsap.set(el, { opacity: 0 });
+      });
     }
 
     if (largeHeadings.length) {
@@ -110,9 +113,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
     }
 
-    // Animate media elements with longer duration and stagger, starting much later
+    // Batch animate media elements for better performance
     if (mediaEls.length) {
-      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1, stagger: 0.9, ease: "power2.out" }, "+=0.2");
+      const batchSize = 3;
+      for (let i = 0; i < mediaEls.length; i += batchSize) {
+        const batch = Array.from(mediaEls).slice(i, i + batchSize);
+        tl.to(batch, { 
+          opacity: 1, 
+          duration: 0.6,
+          stagger: 0.15,
+          ease: "power1.out",
+          onComplete: () => batch.forEach(el => el.style.willChange = 'auto')
+        }, "+=0.1");
+      }
     }
 
     // Batch animate other elements for better performance
