@@ -94,11 +94,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Set initial state for media elements with will-change
+    // Set initial state for media elements
     if (mediaEls.length) {
-      mediaEls.forEach(el => {
-        el.style.willChange = 'opacity';
-        window.gsap.set(el, { opacity: 0 });
+      window.gsap.set(mediaEls, { opacity: 0 });
+      
+      // Create separate timeline for media elements
+      mediaEls.forEach((el, i) => {
+        window.gsap.to(el, {
+          opacity: 1,
+          duration: 0.5,
+          ease: "power1.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top bottom-=100",
+            end: "bottom top+=100",
+            toggleActions: "play none none reverse"
+          }
+        });
       });
     }
 
@@ -111,21 +123,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
-    }
-
-    // Batch animate media elements for better performance
-    if (mediaEls.length) {
-      const batchSize = 3;
-      for (let i = 0; i < mediaEls.length; i += batchSize) {
-        const batch = Array.from(mediaEls).slice(i, i + batchSize);
-        tl.to(batch, { 
-          opacity: 1, 
-          duration: 0.6,
-          stagger: 0.15,
-          ease: "power1.out",
-          onComplete: () => batch.forEach(el => el.style.willChange = 'auto')
-        }, "+=0.1");
-      }
     }
 
     // Batch animate other elements for better performance
