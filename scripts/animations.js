@@ -94,6 +94,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
+    // Set initial state for media elements
+    if (mediaEls.length) {
+      window.gsap.set(mediaEls, { opacity: 0, y: 20 });
+    }
+
     if (largeHeadings.length) {
       largeHeadings.forEach(h => {
         tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.1, ease: "power2.out" }, 0);
@@ -105,9 +110,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
     }
 
-    // Animate media elements with longer duration and stagger
+    // Animate media elements with longer duration and stagger, starting much later
     if (mediaEls.length) {
-      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, 0.6);
+      tl.to(mediaEls, { opacity: 1, y: 0, duration: 1.3, stagger: 0.22, ease: "power2.out" }, "+=1.2");
     }
 
     // Batch animate other elements for better performance
