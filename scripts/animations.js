@@ -8,7 +8,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   function initHover() {
     console.log('Initializing hover effects...');
-    const links = document.querySelectorAll('.heading.small.link.large-link');
+    const links = document.querySelectorAll('.link');
     console.log('Found links:', links.length);
     
     links.forEach(link => {
