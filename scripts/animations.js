@@ -1,5 +1,5 @@
-// Version 1.5.37 - Fixed Preloader Width & Media Detection + Bottom Nav Animation
-console.log('animations.js v1.5.37 loading...');
+// Version 1.5.38 - Simplified & More Reliable Preloader
+console.log('animations.js v1.5.38 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -22,7 +22,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         z-index: 10000;
         border-radius: 1px;
         opacity: 0;
-        transition: opacity 0.6s ease-in-out;
+        transition: opacity 0.4s ease-in-out;
       }
       
       #white-line-preloader.visible {
@@ -43,12 +43,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       #white-line-preloader.loading::after {
         width: 100%;
-        transition: width 2s ease-out;
+        transition: width 1.5s ease-out;
       }
       
       #white-line-preloader.complete {
         opacity: 0;
-        transition: opacity 0.8s ease-in-out;
+        transition: opacity 0.4s ease-in-out;
         pointer-events: none;
       }
       
@@ -81,133 +81,114 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return preloader;
   }
 
-  // More robust media loading detection
+  // Simplified and more reliable media loading
   function waitForMediaLoad() {
     return new Promise((resolve) => {
       const mediaElements = document.querySelectorAll('img, video');
+      const totalCount = mediaElements.length;
       let loadedCount = 0;
-      let totalCount = mediaElements.length;
+      let hasResolved = false;
       
-      console.log(`Found ${totalCount} media elements to load`);
+      console.log(`Found ${totalCount} media elements`);
       
-      // If no media elements, resolve after short delay
+      // Force resolve function to ensure it only runs once
+      function forceResolve(reason) {
+        if (hasResolved) return;
+        hasResolved = true;
+        console.log(`Preloader complete: ${reason}`);
+        resolve();
+      }
+      
+      // If no media, resolve quickly
       if (totalCount === 0) {
-        console.log('No media elements found, proceeding with animations');
-        setTimeout(resolve, 500);
+        setTimeout(() => forceResolve('no media'), 200);
         return;
       }
-
+      
+      // Simple counter-based completion
       function checkComplete() {
         loadedCount++;
-        console.log(`Media loaded: ${loadedCount}/${totalCount}`);
-        
+        console.log(`Loaded: ${loadedCount}/${totalCount}`);
         if (loadedCount >= totalCount) {
-          console.log('All media loaded, starting animations');
-          setTimeout(resolve, 200); // Small delay to ensure everything is ready
+          setTimeout(() => forceResolve('all loaded'), 100);
         }
       }
-
-      mediaElements.forEach((el, index) => {
+      
+      // Simplified media loading detection
+      mediaElements.forEach((el, i) => {
         if (el.tagName === 'IMG') {
-          // More robust image loading check
-          if (el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
-            console.log(`Image ${index} already loaded`);
-            checkComplete();
-          } else if (el.complete && el.naturalWidth === 0) {
-            // Broken image
-            console.warn(`Image ${index} failed to load (broken):`, el.src);
+          if (el.complete) {
             checkComplete();
           } else {
-            // Wait for image to load
-            const onLoad = () => checkComplete();
-            const onError = () => {
-              console.warn(`Image ${index} failed to load:`, el.src);
-              checkComplete();
-            };
-            
-            el.addEventListener('load', onLoad, { once: true });
-            el.addEventListener('error', onError, { once: true });
-            
-            // Force trigger if src is empty or data URL
-            if (!el.src || el.src.startsWith('data:')) {
-              setTimeout(checkComplete, 100);
-            }
+            el.addEventListener('load', checkComplete, { once: true });
+            el.addEventListener('error', checkComplete, { once: true });
           }
         } else if (el.tagName === 'VIDEO') {
-          if (el.readyState >= 2) { // HAVE_CURRENT_DATA or higher
-            console.log(`Video ${index} already loaded`);
+          if (el.readyState >= 1) {
             checkComplete();
           } else {
-            const onReady = () => checkComplete();
-            const onError = () => {
-              console.warn(`Video ${index} failed to load:`, el.src);
-              checkComplete();
-            };
-            
-            el.addEventListener('loadeddata', onReady, { once: true });
-            el.addEventListener('error', onError, { once: true });
-            
-            // Force load if not loading
-            if (el.networkState === 0) {
-              el.load();
-            }
+            el.addEventListener('loadstart', checkComplete, { once: true });
+            el.addEventListener('error', checkComplete, { once: true });
           }
         }
       });
       
-      // Shorter fallback timeout
-      setTimeout(() => {
-        if (!preloaderComplete) {
-          console.log('Preloader timeout - proceeding with animations');
-          resolve();
-        }
-      }, 5000); // Reduced to 5 seconds
+      // Multiple aggressive timeouts to ensure it never gets stuck
+      setTimeout(() => forceResolve('2s timeout'), 2000);
+      setTimeout(() => forceResolve('3s timeout'), 3000);
+      setTimeout(() => forceResolve('5s timeout'), 5000);
     });
   }
 
-  // Initialize preloader
-  async function initPreloader() {
-    const preloader = createPreloader();
-    
-    // Fade in the preloader first
-    requestAnimationFrame(() => {
-      preloader.classList.add('visible');
-    });
-
-    // Start the loading animation after fade in
-    setTimeout(() => {
-      preloader.classList.add('loading');
-    }, 300);
-
-    // Wait for all media to load
-    try {
-      await waitForMediaLoad();
-    } catch (error) {
-      console.error('Error during media loading:', error);
-    }
-
-    // Complete the preloader with fade out
+  // Force cleanup preloader - this will always work
+  function forceCleanupPreloader() {
     preloaderComplete = true;
-    preloader.classList.add('complete');
     document.body.classList.remove('preloader-active');
     
-    // Animate bottom nav in
+    const preloader = document.getElementById('white-line-preloader');
+    if (preloader) {
+      preloader.classList.add('complete');
+      setTimeout(() => {
+        if (preloader.parentNode) {
+          preloader.parentNode.removeChild(preloader);
+        }
+      }, 500);
+    }
+    
+    // Animate bottom nav
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) {
       bottomNav.classList.add('nav-loaded');
     }
     
-    // Remove preloader after fade out completes
+    // Start animations
     setTimeout(() => {
-      if (preloader.parentNode) {
-        preloader.parentNode.removeChild(preloader);
-      }
-    }, 800);
+      if (!isInit) init();
+    }, 100);
+  }
 
-    // Start animations after preloader fade out begins
-    setTimeout(() => {
-      init();
-    }, 200);
+  // Simplified preloader initialization
+  async function initPreloader() {
+    const preloader = createPreloader();
+    
+    // Start immediately - no delay
+    requestAnimationFrame(() => {
+      preloader.classList.add('visible');
+      preloader.classList.add('loading');
+    });
+
+    // Multiple cleanup attempts to ensure it always works
+    setTimeout(() => forceCleanupPreloader(), 2500); // Force cleanup at 2.5s
+    setTimeout(() => forceCleanupPreloader(), 4000); // Force cleanup at 4s
+    setTimeout(() => forceCleanupPreloader(), 6000); // Emergency cleanup at 6s
+
+    try {
+      await waitForMediaLoad();
+      forceCleanupPreloader();
+    } catch (error) {
+      console.error('Media loading error:', error);
+      forceCleanupPreloader();
+    }
   }
 
   function initHover() {
