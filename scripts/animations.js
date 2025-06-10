@@ -1,5 +1,5 @@
-// Version 1.5.38 - Simplified & More Reliable Preloader
-console.log('animations.js v1.5.38 loading...');
+// Version 1.5.39 - Real Preloader with Actual Media Loading
+console.log('animations.js v1.5.39 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -22,7 +22,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         z-index: 10000;
         border-radius: 1px;
         opacity: 0;
-        transition: opacity 0.4s ease-in-out;
+        transition: opacity 0.3s ease-in-out;
       }
       
       #white-line-preloader.visible {
@@ -43,12 +43,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       #white-line-preloader.loading::after {
         width: 100%;
-        transition: width 1.5s ease-out;
+        transition: width 2s ease-out;
       }
       
       #white-line-preloader.complete {
         opacity: 0;
-        transition: opacity 0.4s ease-in-out;
+        transition: opacity 0.15s ease-out;
         pointer-events: none;
       }
       
@@ -56,7 +56,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         overflow: hidden;
       }
       
-      /* Bottom nav animation */
+      /* Bottom nav animation - hidden until preloader completes */
       .nav:not(.fake-nav) {
         transform: translateY(100%);
         opacity: 0;
@@ -81,113 +81,141 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return preloader;
   }
 
-  // Simplified and more reliable media loading
+  // Real media loading detection
   function waitForMediaLoad() {
     return new Promise((resolve) => {
       const mediaElements = document.querySelectorAll('img, video');
       const totalCount = mediaElements.length;
       let loadedCount = 0;
-      let hasResolved = false;
       
-      console.log(`Found ${totalCount} media elements`);
+      console.log(`Preloader: Found ${totalCount} media elements to load`);
       
-      // Force resolve function to ensure it only runs once
-      function forceResolve(reason) {
-        if (hasResolved) return;
-        hasResolved = true;
-        console.log(`Preloader complete: ${reason}`);
-        resolve();
-      }
-      
-      // If no media, resolve quickly
+      // If no media, resolve after minimum display time
       if (totalCount === 0) {
-        setTimeout(() => forceResolve('no media'), 200);
+        console.log('No media found, minimum preloader time');
+        setTimeout(resolve, 1000);
         return;
       }
       
-      // Simple counter-based completion
       function checkComplete() {
         loadedCount++;
-        console.log(`Loaded: ${loadedCount}/${totalCount}`);
+        console.log(`Preloader: ${loadedCount}/${totalCount} media loaded`);
+        
         if (loadedCount >= totalCount) {
-          setTimeout(() => forceResolve('all loaded'), 100);
+          console.log('Preloader: All media loaded!');
+          // Small delay to ensure everything is ready
+          setTimeout(resolve, 300);
         }
       }
       
-      // Simplified media loading detection
-      mediaElements.forEach((el, i) => {
+      // Check each media element properly
+      mediaElements.forEach((el, index) => {
         if (el.tagName === 'IMG') {
-          if (el.complete) {
+          // For images - check if already loaded or wait for load
+          if (el.complete && el.naturalWidth > 0) {
+            console.log(`Image ${index} already loaded`);
             checkComplete();
           } else {
-            el.addEventListener('load', checkComplete, { once: true });
-            el.addEventListener('error', checkComplete, { once: true });
+            console.log(`Waiting for image ${index}:`, el.src);
+            el.addEventListener('load', () => {
+              console.log(`Image ${index} loaded`);
+              checkComplete();
+            }, { once: true });
+            
+            el.addEventListener('error', () => {
+              console.warn(`Image ${index} failed, continuing`);
+              checkComplete();
+            }, { once: true });
           }
         } else if (el.tagName === 'VIDEO') {
-          if (el.readyState >= 1) {
+          // For videos - wait for enough data to play
+          if (el.readyState >= 3) {
+            console.log(`Video ${index} already loaded`);
             checkComplete();
           } else {
-            el.addEventListener('loadstart', checkComplete, { once: true });
-            el.addEventListener('error', checkComplete, { once: true });
+            console.log(`Waiting for video ${index}:`, el.src);
+            el.addEventListener('canplaythrough', () => {
+              console.log(`Video ${index} loaded`);
+              checkComplete();
+            }, { once: true });
+            
+            el.addEventListener('error', () => {
+              console.warn(`Video ${index} failed, continuing`);
+              checkComplete();
+            }, { once: true });
           }
         }
       });
       
-      // Multiple aggressive timeouts to ensure it never gets stuck
-      setTimeout(() => forceResolve('2s timeout'), 2000);
-      setTimeout(() => forceResolve('3s timeout'), 3000);
-      setTimeout(() => forceResolve('5s timeout'), 5000);
+      // Safety timeout - but longer to allow real loading
+      setTimeout(() => {
+        console.log('Preloader: Safety timeout reached');
+        resolve();
+      }, 8000);
     });
   }
 
-  // Force cleanup preloader - this will always work
-  function forceCleanupPreloader() {
+  // Complete preloader and start animations
+  function completePreloader() {
+    if (preloaderComplete) return;
     preloaderComplete = true;
-    document.body.classList.remove('preloader-active');
+    
+    console.log('Preloader: Completing...');
     
     const preloader = document.getElementById('white-line-preloader');
     if (preloader) {
       preloader.classList.add('complete');
+      
+      // Remove preloader after fade completes
       setTimeout(() => {
         if (preloader.parentNode) {
           preloader.parentNode.removeChild(preloader);
         }
-      }, 500);
+      }, 200);
     }
     
-    // Animate bottom nav
-    const bottomNav = document.querySelector('.nav:not(.fake-nav)');
-    if (bottomNav) {
-      bottomNav.classList.add('nav-loaded');
-    }
+    // Re-enable scrolling
+    document.body.classList.remove('preloader-active');
     
-    // Start animations
+    // Start animations sequence after preloader fade completes
     setTimeout(() => {
-      if (!isInit) init();
-    }, 100);
+      console.log('Preloader: Starting animations');
+      
+      // Animate bottom nav first
+      const bottomNav = document.querySelector('.nav:not(.fake-nav)');
+      if (bottomNav) {
+        bottomNav.classList.add('nav-loaded');
+      }
+      
+      // Start main animations
+      if (!isInit) {
+        init();
+      }
+    }, 200); // Wait for preloader fade to complete
   }
 
-  // Simplified preloader initialization
+  // Initialize preloader
   async function initPreloader() {
+    console.log('Preloader: Initializing...');
     const preloader = createPreloader();
     
-    // Start immediately - no delay
+    // Show preloader
     requestAnimationFrame(() => {
       preloader.classList.add('visible');
-      preloader.classList.add('loading');
+      
+      // Start loading animation after short delay
+      setTimeout(() => {
+        preloader.classList.add('loading');
+      }, 100);
     });
 
-    // Multiple cleanup attempts to ensure it always works
-    setTimeout(() => forceCleanupPreloader(), 2500); // Force cleanup at 2.5s
-    setTimeout(() => forceCleanupPreloader(), 4000); // Force cleanup at 4s
-    setTimeout(() => forceCleanupPreloader(), 6000); // Emergency cleanup at 6s
-
     try {
+      // Actually wait for media to load
       await waitForMediaLoad();
-      forceCleanupPreloader();
+      completePreloader();
     } catch (error) {
       console.error('Media loading error:', error);
-      forceCleanupPreloader();
+      completePreloader();
     }
   }
 
@@ -372,12 +400,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
-  // Initialize immediately
+  // Initialize immediately - but block animations until preloader completes
   addHidden();
   initLenis();
 
   function init() {
-    if (isInit) return;
+    if (isInit || !preloaderComplete) {
+      console.log('Init blocked - preloader not complete');
+      return;
+    }
+    console.log('Starting main animations...');
     requestAnimationFrame(() => {
       startAnims();
       isInit = true;
@@ -395,7 +427,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
   
-  // Start preloader instead of immediate animations
+  // Start preloader - animations will only start after preloader completes
   document.addEventListener('DOMContentLoaded', () => {
     initPreloader();
   });
