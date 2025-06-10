@@ -1,7 +1,7 @@
-// Version 1.5.42 - Clean Width-Only Progress Animation
+// Version 1.5.43 - Subtle Hover Effects with Fade & Short Distance
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.42 loading...');
+console.log('animations.js v1.5.43 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -204,27 +204,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
       
       link.innerHTML = `
-        <span class="link-text-1" style="display: block; position: relative; height: ${height}px; line-height: ${height}px;">${text}</span>
-        <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 100%;">${text}</span>
+        <span class="link-text-1" style="display: block; position: relative; height: ${height}px; line-height: ${height}px; opacity: 1;">${text}</span>
+        <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 50%; opacity: 0;">${text}</span>
       `;
       
-      // Create timeline with refined easing
+      // Create timeline with subtle animation
       const tl = window.gsap.timeline({ 
         paused: true,
         defaults: {
-          duration: 0.5,
-          ease: "power3.inOut"
+          duration: 0.4,
+          ease: "power2.out"
         }
       });
       
       tl.to(link.querySelector('.link-text-1'), {
-        yPercent: -100,
+        yPercent: -50,
+        opacity: 0
       })
       .to(link.querySelector('.link-text-2'), {
-        yPercent: -100
-      }, 0.15); // Shorter delay for second text
+        yPercent: -50,
+        opacity: 1
+      }, 0.1); // Small delay for smoother transition
       
-      // Add hover events with smoother reversing
+      // Add hover events
       link.addEventListener('mouseenter', () => {
         console.log('Mouse enter:', link.textContent);
         tl.timeScale(1).play();
@@ -232,7 +234,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       link.addEventListener('mouseleave', () => {
         console.log('Mouse leave:', link.textContent);
-        tl.timeScale(1.2).reverse(); // Slightly faster reverse
+        tl.timeScale(1.1).reverse();
       });
       
       link.dataset.hoverInit = 'true';
