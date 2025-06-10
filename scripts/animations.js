@@ -1,5 +1,5 @@
-// Version 1.5.36 - Added 1px White Line Preloader
-console.log('animations.js v1.5.36 loading...');
+// Version 1.5.37 - Fixed Preloader Width & Media Detection + Bottom Nav Animation
+console.log('animations.js v1.5.37 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -16,8 +16,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 600px;
+        width: 50px;
         height: 1px;
         background: rgba(255, 255, 255, 0.2);
         z-index: 10000;
@@ -56,6 +55,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.preloader-active {
         overflow: hidden;
       }
+      
+      /* Bottom nav animation */
+      .nav:not(.fake-nav) {
+        transform: translateY(100%);
+        opacity: 0;
+        transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+      }
+      
+      .nav:not(.fake-nav).nav-loaded {
+        transform: translateY(0%);
+        opacity: 1;
+      }
     `;
     document.head.appendChild(style);
 
@@ -70,21 +81,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return preloader;
   }
 
-  // Wait for all media to load
+  // More robust media loading detection
   function waitForMediaLoad() {
     return new Promise((resolve) => {
       const mediaElements = document.querySelectorAll('img, video');
       let loadedCount = 0;
       let totalCount = mediaElements.length;
       
-      // If no media elements, resolve immediately
+      console.log(`Found ${totalCount} media elements to load`);
+      
+      // If no media elements, resolve after short delay
       if (totalCount === 0) {
         console.log('No media elements found, proceeding with animations');
-        resolve();
+        setTimeout(resolve, 500);
         return;
       }
-
-      console.log(`Waiting for ${totalCount} media elements to load...`);
 
       function checkComplete() {
         loadedCount++;
@@ -92,45 +103,65 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (loadedCount >= totalCount) {
           console.log('All media loaded, starting animations');
-          resolve();
+          setTimeout(resolve, 200); // Small delay to ensure everything is ready
         }
       }
 
       mediaElements.forEach((el, index) => {
         if (el.tagName === 'IMG') {
-          if (el.complete && el.naturalWidth > 0) {
-            // Image already loaded
+          // More robust image loading check
+          if (el.complete && el.naturalWidth > 0 && el.naturalHeight > 0) {
+            console.log(`Image ${index} already loaded`);
+            checkComplete();
+          } else if (el.complete && el.naturalWidth === 0) {
+            // Broken image
+            console.warn(`Image ${index} failed to load (broken):`, el.src);
             checkComplete();
           } else {
             // Wait for image to load
-            el.addEventListener('load', checkComplete, { once: true });
-            el.addEventListener('error', () => {
+            const onLoad = () => checkComplete();
+            const onError = () => {
               console.warn(`Image ${index} failed to load:`, el.src);
               checkComplete();
-            }, { once: true });
+            };
+            
+            el.addEventListener('load', onLoad, { once: true });
+            el.addEventListener('error', onError, { once: true });
+            
+            // Force trigger if src is empty or data URL
+            if (!el.src || el.src.startsWith('data:')) {
+              setTimeout(checkComplete, 100);
+            }
           }
         } else if (el.tagName === 'VIDEO') {
-          if (el.readyState >= 3) {
-            // Video already loaded enough to play
+          if (el.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+            console.log(`Video ${index} already loaded`);
             checkComplete();
           } else {
-            // Wait for video to load
-            el.addEventListener('canplaythrough', checkComplete, { once: true });
-            el.addEventListener('error', () => {
+            const onReady = () => checkComplete();
+            const onError = () => {
               console.warn(`Video ${index} failed to load:`, el.src);
               checkComplete();
-            }, { once: true });
+            };
+            
+            el.addEventListener('loadeddata', onReady, { once: true });
+            el.addEventListener('error', onError, { once: true });
+            
+            // Force load if not loading
+            if (el.networkState === 0) {
+              el.load();
+            }
           }
         }
       });
       
-      // Fallback timeout after 10 seconds
+      // Shorter fallback timeout
       setTimeout(() => {
         if (!preloaderComplete) {
           console.log('Preloader timeout - proceeding with animations');
           resolve();
         }
-      }, 10000);
+      }, 5000); // Reduced to 5 seconds
     });
   }
 
@@ -159,6 +190,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     preloaderComplete = true;
     preloader.classList.add('complete');
     document.body.classList.remove('preloader-active');
+    
+    // Animate bottom nav in
+    const bottomNav = document.querySelector('.nav:not(.fake-nav)');
+    if (bottomNav) {
+      bottomNav.classList.add('nav-loaded');
+    }
     
     // Remove preloader after fade out completes
     setTimeout(() => {
