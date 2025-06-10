@@ -1,10 +1,177 @@
-// Version 1.5.35 - Refined Animation Easing
-console.log('animations.js v1.5.35 loading...');
+// Version 1.5.36 - Added 1px White Line Preloader
+console.log('animations.js v1.5.36 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  let isInit = false, lenis = null;
+  let isInit = false, lenis = null, preloaderComplete = false;
+
+  // Create and inject preloader styles and HTML
+  function createPreloader() {
+    // Create preloader styles
+    const style = document.createElement('style');
+    style.textContent = `
+      #white-line-preloader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 600px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+        z-index: 10000;
+        border-radius: 1px;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+      }
+      
+      #white-line-preloader.visible {
+        opacity: 1;
+      }
+      
+      #white-line-preloader::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 1%;
+        background: white;
+        border-radius: 1px;
+        transition: width 0.1s ease-out;
+      }
+      
+      #white-line-preloader.loading::after {
+        width: 100%;
+        transition: width 2s ease-out;
+      }
+      
+      #white-line-preloader.complete {
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+        pointer-events: none;
+      }
+      
+      body.preloader-active {
+        overflow: hidden;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Create preloader element
+    const preloader = document.createElement('div');
+    preloader.id = 'white-line-preloader';
+    document.body.appendChild(preloader);
+    
+    // Prevent scrolling during preload
+    document.body.classList.add('preloader-active');
+    
+    return preloader;
+  }
+
+  // Wait for all media to load
+  function waitForMediaLoad() {
+    return new Promise((resolve) => {
+      const mediaElements = document.querySelectorAll('img, video');
+      let loadedCount = 0;
+      let totalCount = mediaElements.length;
+      
+      // If no media elements, resolve immediately
+      if (totalCount === 0) {
+        console.log('No media elements found, proceeding with animations');
+        resolve();
+        return;
+      }
+
+      console.log(`Waiting for ${totalCount} media elements to load...`);
+
+      function checkComplete() {
+        loadedCount++;
+        console.log(`Media loaded: ${loadedCount}/${totalCount}`);
+        
+        if (loadedCount >= totalCount) {
+          console.log('All media loaded, starting animations');
+          resolve();
+        }
+      }
+
+      mediaElements.forEach((el, index) => {
+        if (el.tagName === 'IMG') {
+          if (el.complete && el.naturalWidth > 0) {
+            // Image already loaded
+            checkComplete();
+          } else {
+            // Wait for image to load
+            el.addEventListener('load', checkComplete, { once: true });
+            el.addEventListener('error', () => {
+              console.warn(`Image ${index} failed to load:`, el.src);
+              checkComplete();
+            }, { once: true });
+          }
+        } else if (el.tagName === 'VIDEO') {
+          if (el.readyState >= 3) {
+            // Video already loaded enough to play
+            checkComplete();
+          } else {
+            // Wait for video to load
+            el.addEventListener('canplaythrough', checkComplete, { once: true });
+            el.addEventListener('error', () => {
+              console.warn(`Video ${index} failed to load:`, el.src);
+              checkComplete();
+            }, { once: true });
+          }
+        }
+      });
+      
+      // Fallback timeout after 10 seconds
+      setTimeout(() => {
+        if (!preloaderComplete) {
+          console.log('Preloader timeout - proceeding with animations');
+          resolve();
+        }
+      }, 10000);
+    });
+  }
+
+  // Initialize preloader
+  async function initPreloader() {
+    const preloader = createPreloader();
+    
+    // Fade in the preloader first
+    requestAnimationFrame(() => {
+      preloader.classList.add('visible');
+    });
+
+    // Start the loading animation after fade in
+    setTimeout(() => {
+      preloader.classList.add('loading');
+    }, 300);
+
+    // Wait for all media to load
+    try {
+      await waitForMediaLoad();
+    } catch (error) {
+      console.error('Error during media loading:', error);
+    }
+
+    // Complete the preloader with fade out
+    preloaderComplete = true;
+    preloader.classList.add('complete');
+    document.body.classList.remove('preloader-active');
+    
+    // Remove preloader after fade out completes
+    setTimeout(() => {
+      if (preloader.parentNode) {
+        preloader.parentNode.removeChild(preloader);
+      }
+    }, 800);
+
+    // Start animations after preloader fade out begins
+    setTimeout(() => {
+      init();
+    }, 200);
+  }
 
   function initHover() {
     console.log('Initializing hover effects...');
@@ -210,6 +377,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
   
-  // Start animations on next frame
-  requestAnimationFrame(init);
+  // Start preloader instead of immediate animations
+  document.addEventListener('DOMContentLoaded', () => {
+    initPreloader();
+  });
+  
+  // Fallback if DOMContentLoaded already fired
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPreloader);
+  } else {
+    initPreloader();
+  }
 })(window.portfolioAnimations);
