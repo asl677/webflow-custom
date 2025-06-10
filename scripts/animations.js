@@ -1,7 +1,7 @@
-// Version 1.5.41 - Smooth Fade In/Out Preloader Animations
+// Version 1.5.42 - Clean Width-Only Progress Animation
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.41 loading...');
+console.log('animations.js v1.5.42 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -24,7 +24,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity 0.6s ease-out;
+        transition: opacity 0.5s ease-out;
       }
       
       #preloader.visible {
@@ -37,12 +37,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         background: rgba(255, 255, 255, 0.2);
         position: relative;
         border-radius: 1px;
-        transform: scale(0.8);
-        transition: transform 0.8s ease-out;
-      }
-      
-      #preloader.visible .progress-line {
-        transform: scale(1);
       }
       
       #preloader .progress-fill {
@@ -144,10 +138,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('Completing preloader...');
     
     const preloader = document.getElementById('preloader');
-    const progressLine = preloader.querySelector('.progress-line');
     
-    // Smooth fade out with subtle scale effect
-    const tl = window.gsap.timeline({
+    // Simple smooth fade out
+    window.gsap.to(preloader, {
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.out",
       onComplete: function() {
         preloader.remove();
         document.body.classList.remove('loading');
@@ -157,17 +153,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         startPageAnimations();
       }
     });
-    
-    tl.to(progressLine, {
-      scale: 0.9,
-      duration: 0.4,
-      ease: "power2.in"
-    })
-    .to(preloader, {
-      opacity: 0,
-      duration: 0.5,
-      ease: "power2.inOut"
-    }, 0.2); // Start fade out 0.2s after scale begins
   }
 
   // Start all page animations
