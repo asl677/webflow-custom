@@ -1,7 +1,7 @@
-// Version 1.5.43 - Subtle Hover Effects with Fade & Short Distance
+// Version 1.5.44 - Safari Mobile Lenis Optimizations
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.43 loading...');
+console.log('animations.js v1.5.44 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -306,24 +306,77 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLenis() {
     if (lenis || typeof window.Lenis === 'undefined') return;
     
+    // Detect iOS for potential fallback
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
     try {
       lenis = new window.Lenis({
-        duration: 1.2, orientation: 'vertical', smoothWheel: true, wheelMultiplier: 1,
-        infinite: false, gestureOrientation: 'vertical', normalizeWheel: true, smoothTouch: false
+        autoRaf: true, // Let Lenis handle requestAnimationFrame
+        duration: 1.2,
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        smoothTouch: false, // Better iOS compatibility
+        wheelMultiplier: 1,
+        touchMultiplier: isIOS ? 0.8 : 1, // Slightly reduced for iOS
+        infinite: false,
+        normalizeWheel: true,
+        syncTouch: false, // Avoid iOS < 16 issues
+        touchInertiaMultiplier: isIOS ? 25 : 35 // Gentler on iOS
       });
+
+      // Add recommended CSS for better iOS support
+      const lenisCSS = document.createElement('style');
+      lenisCSS.textContent = `
+        html.lenis, html.lenis body {
+          height: auto;
+        }
+        
+        .lenis.lenis-smooth {
+          scroll-behavior: auto !important;
+        }
+        
+        .lenis.lenis-smooth [data-lenis-prevent] {
+          overscroll-behavior: contain;
+        }
+        
+        /* iOS-specific improvements */
+        @supports (-webkit-touch-callout: none) {
+          html.lenis {
+            -webkit-overflow-scrolling: auto;
+            overscroll-behavior: none;
+          }
+        }
+      `;
+      document.head.appendChild(lenisCSS);
 
       document.documentElement.classList.add('lenis');
       document.body.classList.add('lenis-smooth');
-      document.documentElement.style.height = 'auto';
-      document.body.style.minHeight = '100vh';
-      document.body.style.position = 'relative';
 
-      function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-      requestAnimationFrame(raf);
+      // Only set up manual RAF if autoRaf fails
+      if (!lenis.options.autoRaf) {
+        function raf(time) { 
+          lenis.raf(time); 
+          requestAnimationFrame(raf); 
+        }
+        requestAnimationFrame(raf);
+      }
 
-      if (window.ScrollTrigger) lenis.on('scroll', () => window.ScrollTrigger?.update());
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) lenis.destroy();
-    } catch (e) { console.error('Lenis error:', e); }
+      if (window.ScrollTrigger) {
+        lenis.on('scroll', () => window.ScrollTrigger?.update());
+      }
+      
+      // Disable on reduced motion preference
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        lenis.destroy();
+      }
+      
+      console.log(`Lenis initialized (iOS: ${isIOS})`);
+    } catch (e) { 
+      console.error('Lenis error:', e);
+      // Fallback to native scroll
+      document.documentElement.style.scrollBehavior = 'smooth';
+    }
   }
 
   function addHidden() {
