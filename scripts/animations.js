@@ -1,7 +1,7 @@
-// Version 1.5.46 - Balanced Stagger Animations (Smart Batching)
+// Version 1.5.47 - Natural Line Break Detection for True Line-by-Line Animation
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.46 loading...');
+console.log('animations.js v1.5.47 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -243,9 +243,67 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   function wrapLines(el) {
     if (!el.dataset.splitDone) {
-      el.innerHTML = el.innerHTML.split('<br>').map(line => 
-        `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
-      ).join('');
+      // Store original text and styles
+      const originalText = el.textContent;
+      const computedStyle = window.getComputedStyle(el);
+      const lineHeight = parseFloat(computedStyle.lineHeight);
+      const fontSize = parseFloat(computedStyle.fontSize);
+      
+      // If lineHeight is 'normal', estimate it
+      const actualLineHeight = isNaN(lineHeight) ? fontSize * 1.2 : lineHeight;
+      
+      // Create a temporary element to measure text
+      const temp = document.createElement('div');
+      temp.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        height: auto;
+        width: ${el.offsetWidth}px;
+        font-family: ${computedStyle.fontFamily};
+        font-size: ${computedStyle.fontSize};
+        font-weight: ${computedStyle.fontWeight};
+        line-height: ${computedStyle.lineHeight};
+        letter-spacing: ${computedStyle.letterSpacing};
+        word-spacing: ${computedStyle.wordSpacing};
+      `;
+      document.body.appendChild(temp);
+      
+      // Split text into words and find line breaks
+      const words = originalText.split(' ');
+      const lines = [];
+      let currentLine = '';
+      
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + words[i];
+        temp.textContent = testLine;
+        
+        if (temp.offsetHeight > actualLineHeight && currentLine !== '') {
+          lines.push(currentLine);
+          currentLine = words[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      // Clean up
+      document.body.removeChild(temp);
+      
+      // If we couldn't detect lines properly, fall back to BR splitting
+      if (lines.length <= 1) {
+        el.innerHTML = el.innerHTML.split('<br>').map(line => 
+          `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
+        ).join('');
+      } else {
+        // Wrap each detected line
+        el.innerHTML = lines.map(line => 
+          `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
+        ).join('');
+      }
+      
       el.dataset.splitDone = 'true';
     }
     return el.querySelectorAll('.line-inner');
