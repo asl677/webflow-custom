@@ -287,7 +287,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Large headings - keep the nice stagger
     if (largeHeadings.length) {
       largeHeadings.forEach(h => {
-        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.1, ease: "power2.out" }, 0);
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0);
       });
     }
 
