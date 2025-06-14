@@ -1,7 +1,7 @@
-// Version 1.5.44 - Safari Mobile Lenis Optimizations
+// Version 1.5.45 - Enhanced Stagger Animations for All Elements
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.44 loading...');
+console.log('animations.js v1.5.45 loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -284,22 +284,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
+    // Large headings with line wrapping - keep prominent stagger
     if (largeHeadings.length) {
       largeHeadings.forEach(h => {
         tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.1, ease: "power2.out" }, 0);
       });
     }
 
+    // Slide elements - increased stagger for better visibility
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.05, ease: "power2.out" }, 0.7);
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.08, ease: "power2.out" }, 0.7);
     }
 
-    // Batch animate other elements for better performance
-    const batchSize = 10;
-    for (let i = 0; i < otherEls.length; i += batchSize) {
-      const batch = Array.from(otherEls).slice(i, i + batchSize);
-      tl.to(batch, { opacity: 1, y: 0, duration: 0.9, stagger: 0.02, ease: "power2.out" }, 0.1);
+    // Other elements - much more noticeable stagger without batching
+    if (otherEls.length) {
+      tl.to(otherEls, { opacity: 1, y: 0, duration: 0.9, stagger: 0.06, ease: "power2.out" }, 0.3);
     }
   }
 
