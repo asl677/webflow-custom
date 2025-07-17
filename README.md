@@ -1,51 +1,50 @@
-# Webflow Custom Code
+# Webflow Custom Code Repository
 
-This directory contains custom CSS and JavaScript files for the Alex Lakas portfolio site.
+Custom JavaScript and CSS files for the Alex Lakas portfolio website.
 
-## Setup Instructions
+## GSAP Stagger Animations
 
-1. In Webflow, go to Site Settings > Custom Code
-2. Add these script tags to the Head Code section:
-   ```html
-   <!-- GSAP Library -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-   
-   <!-- Custom CSS -->
-   <link rel="stylesheet" href="https://YOUR-HOSTING-URL/styles/animations.css">
-   ```
+Enhanced image and content staggering animations using GSAP and ScrollTrigger.
 
-3. Add this script tag to the Footer Code section:
-   ```html
-   <!-- Custom JavaScript -->
-   <script src="https://YOUR-HOSTING-URL/scripts/animations.js"></script>
-   ```
+### Implementation in Webflow
 
-## Hosting Options
+Add this single line to your Webflow project's **Custom Code** section:
 
-You can host these files in several ways:
-1. GitHub Pages
-2. Netlify
-3. Vercel
-4. CDN service
-5. Your own server
+**Project Settings → Custom Code → Before `</body>` tag:**
 
-## File Structure
+```html
+<script src="https://raw.githubusercontent.com/asl677/webflow-custom/main/scripts/gsap-loader.js"></script>
+```
 
-- `styles/animations.css`: Contains custom animation styles
-- `scripts/animations.js`: Contains GSAP animation setup
+### What it does:
+
+- ✨ **Staggered image animations** - Images fade in with smooth timing as you scroll
+- 🎯 **Scroll-triggered** - Animations only play when elements come into view  
+- 📱 **Performance optimized** - Animations run once and don't repeat
+- 🔧 **Auto-refreshing** - Handles font loading and resize events
+
+### Animation Details:
+
+- **Images**: Fade in from bottom with scale effect (0.15s stagger)
+- **Project cards**: Subtle entrance animation (0.1s stagger)
+- **Timing**: Triggers 100px before elements enter viewport
+- **Duration**: 0.6-0.8 seconds per element
+
+### Files Structure:
+
+```
+scripts/
+├── gsap-loader.js          # Main loader (include this in Webflow)
+└── stagger-animations.js   # Custom animation logic
+```
+
+## Usage
+
+1. **Copy the script tag above** 
+2. **Paste into Webflow** Custom Code section
+3. **Publish your site**
+4. **Enjoy smooth staggered animations!**
 
 ## Customization
 
-To modify animations:
-1. Edit `animations.css` for style changes
-2. Edit `animations.js` for behavior changes
-3. Test locally before deploying
-4. Update the hosted files
-
-## Development
-
-1. Make changes to the files
-2. Test locally
-3. Deploy to your hosting service
-4. Update the URLs in Webflow if needed 
+To modify animation timing or effects, edit `scripts/stagger-animations.js` and commit changes to this repo. The animations will update automatically on your live site. 
