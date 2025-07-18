@@ -33,148 +33,37 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function startGSAPAnimations() {
       console.log('🎬 Starting GSAP stagger animations');
       
-      // More specific selectors for Alex's site
-      const images = document.querySelectorAll("img:not(#preloader img), .w-node img, [class*='image']:not(#preloader [class*='image'])");
-      const allImages = document.querySelectorAll("img");
-      const components = document.querySelectorAll("[id*='component'], [class*='component'], .w-node");
-      const headings = document.querySelectorAll(".heading, h1, h2, h3");
+      // Simple selectors for images
+      const allImages = document.querySelectorAll("img:not(#preloader img)");
       
-      console.log(`📊 Found elements - Images: ${images.length} (total imgs: ${allImages.length}), Components: ${components.length}, Headings: ${headings.length}`);
-      console.log('🔍 All images on page:', Array.from(allImages).map(img => ({ src: img.src, classes: img.className, style: img.style.cssText })));
+      console.log(`📊 Found ${allImages.length} images for stagger fade`);
       
-      // Force set initial state for ALL images to be sure
+      // Simple initial state - just hidden
       allImages.forEach((img, index) => {
-        if (!img.closest('#preloader')) {
-          console.log(`🖼️ Force setting up image ${index + 1}:`, { 
-            src: img.src, 
-            classes: img.className,
-            currentOpacity: getComputedStyle(img).opacity,
-            currentTransform: getComputedStyle(img).transform
-          });
-          
-          // Force override any existing styles
-          gsap.set(img, {
-            opacity: 0,
-            y: 100,
-            rotation: 2,
-            force3D: true
-          });
-        }
+        console.log(`🖼️ Setting up image ${index + 1}`);
+        gsap.set(img, {
+          opacity: 0
+        });
       });
       
-      // More aggressive scroll-triggered animation for ALL images
+      // Simple scroll-triggered fade-in stagger
       ScrollTrigger.batch("img:not(#preloader img)", {
         onEnter: (elements) => {
-          console.log(`🎯 Animating ${elements.length} images:`, elements);
-          elements.forEach((el, i) => {
-            console.log(`  - Image ${i + 1}:`, el.src);
-          });
+          console.log(`🎯 Fading in ${elements.length} images`);
           
           gsap.to(elements, {
             opacity: 1,
-            y: 0,
-            rotation: 0,
-            duration: 1.6,
-            stagger: 0.2,
-            ease: "power3.out",
-            force3D: true,
-            onStart: () => console.log('🎬 Image animation started'),
-            onComplete: () => console.log('✅ Image animation completed')
-          });
-        },
-        start: "top bottom-=50",
-        end: "bottom top",
-        once: true,
-        onEnter: (batch) => console.log('📍 ScrollTrigger fired for images:', batch.length),
-        onLeave: (batch) => console.log('📍 ScrollTrigger left for images:', batch.length)
-      });
-      
-      // Also try a simple immediate animation for testing
-      setTimeout(() => {
-        const testImages = document.querySelectorAll("img:not(#preloader img)");
-        console.log('🧪 Testing immediate animation on', testImages.length, 'images');
-        gsap.to(testImages, {
-          opacity: 1,
-          y: 0,
-          rotation: 0,
-          duration: 2,
-          stagger: 0.3,
-          ease: "power3.out",
-          force3D: true
-        });
-      }, 2000);
-      
-      // Set initial state for components (exclude preloader elements)
-      components.forEach((comp, index) => {
-        if (!comp.closest('[class*="preload"]') && !comp.closest('[class*="loader"]') && !comp.closest('#preloader')) {
-          console.log(`🎭 Setting up component ${index + 1}:`, comp);
-          gsap.set(comp, {
-            opacity: 0,
-            y: 50
-          });
-        }
-      });
-      
-      // Staggered animation for components
-      ScrollTrigger.batch("[id*='component'], [class*='component'], .w-node", {
-        onEnter: (elements) => {
-          const filteredElements = elements.filter(el => 
-            !el.closest('[class*="preload"]') && !el.closest('[class*="loader"]') && !el.closest('#preloader')
-          );
-          
-          if (filteredElements.length > 0) {
-            console.log(`🎯 Animating ${filteredElements.length} components`);
-            gsap.to(filteredElements, {
-              opacity: 1,
-              y: 0,
-              duration: 1.0,
-              stagger: 0.1,
-              ease: "power2.out"
-            });
-          }
-        },
-        start: "top bottom-=80",
-        once: true
-      });
-      
-      // Set initial state for headings (avoid hero text)
-      headings.forEach((heading, index) => {
-        if (!heading.classList.contains('large') && !heading.classList.contains('large-2')) {
-          console.log(`📝 Setting up heading ${index + 1}:`, heading);
-          gsap.set(heading, {
-            opacity: 0,
-            y: 30
-          });
-        }
-      });
-      
-      // Staggered animation for headings
-      ScrollTrigger.batch(".heading:not(.large):not(.large-2), h1, h2, h3", {
-        onEnter: (elements) => {
-          console.log(`🎯 Animating ${elements.length} headings`);
-          gsap.to(elements, {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.06,
+            duration: 0.6,
+            stagger: 0.5,
             ease: "power2.out"
           });
         },
-        start: "top bottom-=60",
+        start: "top bottom-=100",
         once: true
       });
       
-      // Debug ScrollTrigger
-      console.log('🔧 ScrollTrigger refresh...');
+      console.log('✅ Simple GSAP fade stagger initialized');
       ScrollTrigger.refresh();
-      
-      // Log all ScrollTrigger instances
-      setTimeout(() => {
-        console.log('📊 Active ScrollTriggers:', ScrollTrigger.getAll());
-      }, 1000);
-      
-      // Debug logging
-      console.log('✅ GSAP Stagger initialized - Images:', images.length, 'Components:', components.length, 'Headings:', headings.length);
     }
     
     // Wait for existing preloader to complete
