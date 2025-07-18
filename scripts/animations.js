@@ -153,7 +153,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log('🎬 Starting viewport image stagger...');
             gsap.to(viewportImages, {
               opacity: 1,
-              duration: 0.8,
+              duration: 1.2,
               stagger: 0.5, // 0.5s as requested
               ease: "power2.out",
               onStart: () => console.log('🎬 Viewport stagger started'),
