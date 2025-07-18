@@ -33,31 +33,44 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function startGSAPAnimations() {
       console.log('🎬 Starting simple GSAP stagger');
       
-      // Don't interfere with existing reveal system - just add stagger to loaded images
-      const images = document.querySelectorAll("img:not(#preloader img)");
-      console.log(`📊 Found ${images.length} images`);
+      // Target ALL images including carousel/marquee ones
+      const allImages = document.querySelectorAll("img:not(#preloader img)");
+      const carouselImages = document.querySelectorAll("[class*='carousel'] img, [class*='marquee'] img, .w-slider img");
       
-      // Set images to invisible immediately
-      gsap.set(images, { opacity: 0 });
-      console.log('🖼️ Images hidden, waiting for load...');
+      console.log(`📊 Found ${allImages.length} total images, ${carouselImages.length} carousel images`);
+      
+      // Set all images to invisible immediately (no ScrollTrigger conflicts)
+      gsap.set(allImages, { opacity: 0 });
+      console.log('🖼️ All images hidden, waiting for load...');
       
       // Simple approach: wait for images to load, then stagger them in
       if (typeof imagesLoaded === 'function') {
         imagesLoaded(document.body, function() {
           console.log('✅ All images loaded, starting stagger');
           
-          // Simple stagger animation
-          gsap.to(images, {
+          // Stagger ALL images including carousel ones
+          gsap.to(allImages, {
             opacity: 1, 
             duration: 0.6,
-            stagger: 0.2,
+            stagger: 0.3, // Slightly longer for better visibility
             ease: "power2.out",
             onComplete: () => console.log('✅ Stagger complete')
           });
         });
       } else {
         console.log('⚠️ imagesLoaded not available, showing images immediately');
-        gsap.set(images, { opacity: 1 });
+        gsap.set(allImages, { opacity: 1 });
+      }
+      
+      // IMPORTANT: Disable any existing ScrollTrigger that might cause flickering
+      if (typeof ScrollTrigger !== 'undefined') {
+        // Kill any existing ScrollTriggers on images to prevent conflicts
+        ScrollTrigger.getAll().forEach(trigger => {
+          if (trigger.trigger && trigger.trigger.tagName === 'IMG') {
+            trigger.kill();
+            console.log('🚫 Killed conflicting image ScrollTrigger');
+          }
+        });
       }
     }
     
