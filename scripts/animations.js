@@ -62,7 +62,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           gsap.to(viewportImages, {
             opacity: 1,
             duration: 0.8,
-            stagger: 0.5,
+            stagger: 0.8,
             ease: "power2.out",
             onComplete: () => console.log('✅ Page load stagger complete')
           });
