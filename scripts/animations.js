@@ -38,25 +38,55 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`📊 Found ${allImages.length} images for stagger fade`);
       
-      // Simple initial state - just hidden
+      // Aggressively hide all images immediately
       allImages.forEach((img, index) => {
-        console.log(`🖼️ Setting up image ${index + 1}`);
+        console.log(`🖼️ Hiding image ${index + 1}`);
+        // Use both GSAP and direct style to ensure they're hidden
+        img.style.opacity = '0';
         gsap.set(img, {
-          opacity: 0
+          opacity: 0,
+          clearProps: false
         });
       });
       
-      // Simple scroll-triggered fade-in stagger
+      // Immediate stagger animation for images in viewport (page load effect)
+      setTimeout(() => {
+        const viewportImages = Array.from(allImages).filter(img => {
+          const rect = img.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        });
+        
+        console.log(`🎯 Immediate stagger for ${viewportImages.length} viewport images`);
+        
+        if (viewportImages.length > 0) {
+          gsap.to(viewportImages, {
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.5,
+            ease: "power2.out",
+            onComplete: () => console.log('✅ Page load stagger complete')
+          });
+        }
+      }, 100);
+      
+      // Scroll-triggered fade-in stagger for other images
       ScrollTrigger.batch("img:not(#preloader img)", {
         onEnter: (elements) => {
-          console.log(`🎯 Fading in ${elements.length} images`);
+          // Filter out images that are already animated
+          const hiddenElements = elements.filter(img => 
+            getComputedStyle(img).opacity === "0" || img.style.opacity === "0"
+          );
           
-          gsap.to(elements, {
-            opacity: 1,
-            duration: 0.6,
-            stagger: 0.5,
-            ease: "power2.out"
-          });
+          if (hiddenElements.length > 0) {
+            console.log(`🎯 Scroll stagger for ${hiddenElements.length} images`);
+            
+            gsap.to(hiddenElements, {
+              opacity: 1,
+              duration: 0.6,
+              stagger: 0.5,
+              ease: "power2.out"
+            });
+          }
         },
         start: "top bottom-=100",
         once: true
