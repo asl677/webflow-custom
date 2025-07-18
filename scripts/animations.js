@@ -31,76 +31,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
-      console.log('🎬 Starting GSAP stagger animations');
+      console.log('🎬 Starting simple GSAP stagger');
       
-      // Target images inside reveal containers specifically
-      const allImages = document.querySelectorAll(".reveal.reveal-full.thumbnail-container img, img:not(#preloader img)");
-      const revealContainers = document.querySelectorAll(".reveal.reveal-full.thumbnail-container");
+      // Don't interfere with existing reveal system - just add stagger to loaded images
+      const images = document.querySelectorAll("img:not(#preloader img)");
+      console.log(`📊 Found ${images.length} images`);
       
-      console.log(`📊 Found ${allImages.length} images and ${revealContainers.length} reveal containers`);
-      
-      // Disable existing reveal animations by overriding classes
-      revealContainers.forEach((container, index) => {
-        console.log(`🚫 Disabling reveal ${index + 1}`);
-        // Remove reveal classes to prevent default animation
-        container.classList.remove('reveal', 'reveal-full');
-        container.style.opacity = '1'; // Keep container visible
-      });
-      
-      // More conservative hiding - only hide if we're confident we can animate them back
-      allImages.forEach((img, index) => {
-        console.log(`🖼️ Setting up image ${index + 1}`);
-        // Only hide via GSAP, not direct style, for easier recovery
-        gsap.set(img, {
-          opacity: 0
-        });
-      });
-      
-      // Failsafe: Show all images after 3 seconds regardless of animation state
-      setTimeout(() => {
-        console.log('🛡️ Failsafe: Ensuring all images are visible');
-        gsap.set(allImages, { opacity: 1 });
-      }, 3000);
-      
-      // Simple immediate stagger with shorter delay
-      setTimeout(() => {
-        console.log('🎯 Starting immediate stagger for all images');
+      // Simple approach: wait for images to load, then stagger them in
+      if (typeof imagesLoaded === 'function') {
+        console.log('🖼️ Waiting for images to load...');
         
-        gsap.to(allImages, {
-          opacity: 1,
-          duration: 0.6,
-          stagger: 0.3, // Faster stagger to reduce loading time
-          ease: "power2.out",
-          onStart: () => console.log('🎬 Stagger started'),
-          onComplete: () => console.log('✅ Stagger complete')
-        });
-      }, 300); // Much shorter delay
-      
-      // Scroll-triggered fade-in stagger for other images (as backup)
-      ScrollTrigger.batch(".reveal.reveal-full.thumbnail-container img, img:not(#preloader img)", {
-        onEnter: (elements) => {
-          // Only animate if still hidden
-          const hiddenElements = elements.filter(img => 
-            getComputedStyle(img).opacity === "0"
-          );
+        imagesLoaded(document.body, function() {
+          console.log('✅ All images loaded, starting stagger');
           
-          if (hiddenElements.length > 0) {
-            console.log(`🎯 Scroll stagger backup for ${hiddenElements.length} images`);
-            
-            gsap.to(hiddenElements, {
-              opacity: 1,
-              duration: 0.4,
+          // Simple stagger animation
+          gsap.fromTo(images, 
+            { opacity: 0 },
+            { 
+              opacity: 1, 
+              duration: 0.6,
               stagger: 0.2,
-              ease: "power2.out"
-            });
-          }
-        },
-        start: "top bottom-=50",
-        once: true
-      });
-      
-      console.log('✅ GSAP stagger with failsafes initialized');
-      ScrollTrigger.refresh();
+              ease: "power2.out",
+              onComplete: () => console.log('✅ Stagger complete')
+            }
+          );
+        });
+      } else {
+        console.log('⚠️ imagesLoaded not available, skipping stagger');
+      }
     }
     
     // Wait for existing preloader to complete
