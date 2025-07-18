@@ -1,7 +1,7 @@
-// Version 1.5.48 - Respect Manual Line Breaks + Natural Detection + GSAP Stagger
+// Version 1.5.50 - Respect Manual Line Breaks + Natural Detection + GSAP Stagger
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.48 with GSAP stagger loading...');
+console.log('animations.js v1.5.50 with GSAP stagger loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -31,21 +31,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
-      console.log('Starting GSAP stagger animations');
+      console.log('🎬 Starting GSAP stagger animations');
       
       // Only animate elements that aren't already visible/animated
       const images = document.querySelectorAll("img, [class*='image']");
       const components = document.querySelectorAll("[id*='component'], [class*='component'], .w-node");
       const headings = document.querySelectorAll(".heading, h1, h2, h3");
       
-      // Set initial state for images
-      images.forEach(img => {
+      console.log(`📊 Found elements - Images: ${images.length}, Components: ${components.length}, Headings: ${headings.length}`);
+      
+      // Set initial state for images with more dramatic effect
+      images.forEach((img, index) => {
         if (getComputedStyle(img).opacity !== "0") {
+          console.log(`🖼️ Setting up image ${index + 1}:`, img);
           gsap.set(img, {
             opacity: 0,
-            y: 60,
-            scale: 0.85,
-            rotation: 0.5
+            y: 80,
+            scale: 0.8,
+            rotation: 1
           });
         }
       });
@@ -53,27 +56,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Staggered scroll-triggered animation for images
       ScrollTrigger.batch("img, [class*='image']", {
         onEnter: (elements) => {
+          console.log(`🎯 Animating ${elements.length} images`);
           gsap.to(elements, {
             opacity: 1,
             y: 0,
             scale: 1,
             rotation: 0,
-            duration: 1.2,
-            stagger: 0.12,
+            duration: 1.4,
+            stagger: 0.15,
             ease: "power3.out"
           });
         },
-        start: "top bottom-=80",
+        start: "top bottom-=100",
         once: true
       });
       
       // Set initial state for components (exclude preloader elements)
-      components.forEach(comp => {
+      components.forEach((comp, index) => {
         if (!comp.closest('[class*="preload"]') && !comp.closest('[class*="loader"]') && !comp.closest('#preloader')) {
+          console.log(`🎭 Setting up component ${index + 1}:`, comp);
           gsap.set(comp, {
             opacity: 0,
-            y: 40,
-            scale: 0.92
+            y: 50,
+            scale: 0.9
           });
         }
       });
@@ -86,26 +91,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           );
           
           if (filteredElements.length > 0) {
+            console.log(`🎯 Animating ${filteredElements.length} components`);
             gsap.to(filteredElements, {
               opacity: 1,
               y: 0,
               scale: 1,
-              duration: 0.8,
-              stagger: 0.08,
+              duration: 1.0,
+              stagger: 0.1,
               ease: "power2.out"
             });
           }
         },
-        start: "top bottom-=60",
+        start: "top bottom-=80",
         once: true
       });
       
       // Set initial state for headings (avoid hero text)
-      headings.forEach(heading => {
+      headings.forEach((heading, index) => {
         if (!heading.classList.contains('large') && !heading.classList.contains('large-2')) {
+          console.log(`📝 Setting up heading ${index + 1}:`, heading);
           gsap.set(heading, {
             opacity: 0,
-            y: 20
+            y: 30
           });
         }
       });
@@ -113,20 +120,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Staggered animation for headings
       ScrollTrigger.batch(".heading:not(.large):not(.large-2), h1, h2, h3", {
         onEnter: (elements) => {
+          console.log(`🎯 Animating ${elements.length} headings`);
           gsap.to(elements, {
             opacity: 1,
             y: 0,
-            duration: 0.6,
-            stagger: 0.05,
+            duration: 0.8,
+            stagger: 0.06,
             ease: "power2.out"
           });
         },
-        start: "top bottom-=40",
+        start: "top bottom-=60",
         once: true
       });
       
       // Debug logging
-      console.log('GSAP Stagger initialized - Images:', images.length, 'Components:', components.length, 'Headings:', headings.length);
+      console.log('✅ GSAP Stagger initialized - Images:', images.length, 'Components:', components.length, 'Headings:', headings.length);
       
       ScrollTrigger.refresh();
     }
@@ -190,10 +198,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;¬
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        z-index: 10000;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 99999;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -205,12 +213,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         opacity: 1;
       }
       
+      #preloader .progress-container {
+        text-align: center;
+      }
+      
       #preloader .progress-line {
-        width: 50px;
-        height: 1px;
+        width: 80px;
+        height: 2px;
         background: rgba(255, 255, 255, 0.2);
         position: relative;
         border-radius: 1px;
+        margin: 0 auto;
       }
       
       #preloader .progress-fill {
@@ -218,6 +231,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         height: 100%;
         background: white;
         border-radius: 1px;
+        transition: width 0.3s ease;
+      }
+      
+      #preloader .progress-text {
+        color: white;
+        font-size: 12px;
+        margin-top: 10px;
+        opacity: 0.7;
+        font-family: system-ui, -apple-system, sans-serif;
       }
       
       body.loading {
@@ -235,8 +257,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const preloader = document.createElement('div');
     preloader.id = 'preloader';
     preloader.innerHTML = `
-      <div class="progress-line">
-        <div class="progress-fill"></div>
+      <div class="progress-container">
+        <div class="progress-line">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text">Loading...</div>
       </div>
     `;
     document.body.appendChild(preloader);
