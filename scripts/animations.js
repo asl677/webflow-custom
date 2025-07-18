@@ -33,16 +33,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function startGSAPAnimations() {
       console.log('🎬 Starting GSAP stagger animations');
       
-      // Simple selectors for images
-      const allImages = document.querySelectorAll("img:not(#preloader img)");
+      // Target images inside reveal containers specifically
+      const allImages = document.querySelectorAll(".reveal.reveal-full.thumbnail-container img, img:not(#preloader img)");
+      const revealContainers = document.querySelectorAll(".reveal.reveal-full.thumbnail-container");
       
-      console.log(`📊 Found ${allImages.length} images for stagger fade`);
+      console.log(`📊 Found ${allImages.length} images and ${revealContainers.length} reveal containers`);
+      
+      // Disable existing reveal animations by overriding classes
+      revealContainers.forEach((container, index) => {
+        console.log(`🚫 Disabling reveal ${index + 1}`);
+        // Remove reveal classes to prevent default animation
+        container.classList.remove('reveal', 'reveal-full');
+        container.style.opacity = '1'; // Keep container visible
+      });
       
       // Aggressively hide all images immediately
       allImages.forEach((img, index) => {
         console.log(`🖼️ Hiding image ${index + 1}`);
         // Use both GSAP and direct style to ensure they're hidden
         img.style.opacity = '0';
+        img.style.visibility = 'visible'; // Ensure not hidden by other CSS
         gsap.set(img, {
           opacity: 0,
           clearProps: false
@@ -64,13 +74,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             duration: 0.8,
             stagger: 0.8,
             ease: "power2.out",
+            onStart: () => console.log('🎬 Page load stagger started'),
             onComplete: () => console.log('✅ Page load stagger complete')
           });
         }
-      }, 100);
+      }, 200); // Slightly longer delay to ensure reveal is disabled
       
       // Scroll-triggered fade-in stagger for other images
-      ScrollTrigger.batch("img:not(#preloader img)", {
+      ScrollTrigger.batch(".reveal.reveal-full.thumbnail-container img, img:not(#preloader img)", {
         onEnter: (elements) => {
           // Filter out images that are already animated
           const hiddenElements = elements.filter(img => 
@@ -83,7 +94,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             gsap.to(hiddenElements, {
               opacity: 1,
               duration: 0.6,
-              stagger: 0.5,
+              stagger: 0.8,
               ease: "power2.out"
             });
           }
@@ -92,7 +103,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         once: true
       });
       
-      console.log('✅ Simple GSAP fade stagger initialized');
+      console.log('✅ GSAP stagger with reveal override initialized');
       ScrollTrigger.refresh();
     }
     
