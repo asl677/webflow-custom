@@ -37,27 +37,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const images = document.querySelectorAll("img:not(#preloader img)");
       console.log(`📊 Found ${images.length} images`);
       
+      // Set images to invisible immediately
+      gsap.set(images, { opacity: 0 });
+      console.log('🖼️ Images hidden, waiting for load...');
+      
       // Simple approach: wait for images to load, then stagger them in
       if (typeof imagesLoaded === 'function') {
-        console.log('🖼️ Waiting for images to load...');
-        
         imagesLoaded(document.body, function() {
           console.log('✅ All images loaded, starting stagger');
           
           // Simple stagger animation
-          gsap.fromTo(images, 
-            { opacity: 0 },
-            { 
-              opacity: 1, 
-              duration: 0.6,
-              stagger: 0.2,
-              ease: "power2.out",
-              onComplete: () => console.log('✅ Stagger complete')
-            }
-          );
+          gsap.to(images, {
+            opacity: 1, 
+            duration: 0.6,
+            stagger: 0.2,
+            ease: "power2.out",
+            onComplete: () => console.log('✅ Stagger complete')
+          });
         });
       } else {
-        console.log('⚠️ imagesLoaded not available, skipping stagger');
+        console.log('⚠️ imagesLoaded not available, showing images immediately');
+        gsap.set(images, { opacity: 1 });
       }
     }
     
