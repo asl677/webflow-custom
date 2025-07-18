@@ -1,7 +1,9 @@
-// Version 1.5.50 - Respect Manual Line Breaks + Natural Detection + GSAP Stagger
+// Version 1.5.51 - DEBUG VERSION - Finding why nothing animates
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.50 with GSAP stagger loading...');
+console.log('🔥 animations.js v1.5.51 DEBUG VERSION loading...');
+console.log('🔍 Current URL:', window.location.href);
+console.log('🔍 Document ready state:', document.readyState);
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -9,58 +11,157 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   let isInit = false, lenis = null, preloaderComplete = false;
   let gsapLoaded = false, scrollTriggerLoaded = false;
 
+  // Add global error handler
+  window.addEventListener('error', function(e) {
+    console.error('🚨 Global JavaScript error:', e.error);
+    console.error('🚨 Error in file:', e.filename, 'at line:', e.lineno);
+  });
+
+  // Test function to verify script is running
+  function testBasicFunctionality() {
+    console.log('🧪 Testing basic functionality...');
+    
+    // Test element selection
+    const allElements = document.querySelectorAll('*');
+    console.log(`🔍 Total elements in DOM: ${allElements.length}`);
+    
+    const images = document.querySelectorAll('img');
+    console.log(`🖼️ Total images found: ${images.length}`);
+    
+    const headings = document.querySelectorAll('h1, h2, h3');
+    console.log(`📝 Total headings found: ${headings.length}`);
+    
+    const paragraphs = document.querySelectorAll('p');
+    console.log(`📄 Total paragraphs found: ${paragraphs.length}`);
+    
+    // Test if jQuery is available
+    console.log('💲 jQuery available:', typeof $ !== 'undefined');
+    
+    // Test if imagesLoaded is available
+    console.log('🖼️ imagesLoaded available:', typeof imagesLoaded !== 'undefined');
+    
+    // Test GSAP availability
+    console.log('🎬 GSAP available:', typeof gsap !== 'undefined');
+    console.log('🎬 ScrollTrigger available:', typeof ScrollTrigger !== 'undefined');
+  }
+
+  // Run basic test immediately
+  testBasicFunctionality();
+
   // GSAP Loader Function
   function loadGSAPScript(src, callback) {
+    console.log('📦 Loading GSAP script:', src);
     const script = document.createElement('script');
     script.src = src;
-    script.onload = callback;
+    script.onload = function() {
+      console.log('✅ Successfully loaded:', src);
+      callback();
+    };
     script.onerror = function() {
-      console.error('Failed to load GSAP script:', src);
+      console.error('❌ Failed to load GSAP script:', src);
     };
     document.head.appendChild(script);
   }
 
+  // Simplified test animation
+  function runSimpleTest() {
+    console.log('🧪 Running simple animation test...');
+    
+    // Find any element to test with
+    const testElement = document.querySelector('h1, h2, h3, p');
+    if (testElement) {
+      console.log('🎯 Found test element:', testElement.tagName, testElement.textContent?.substring(0, 50));
+      
+      // Simple opacity animation
+      testElement.style.opacity = '0.3';
+      testElement.style.background = 'rgba(255, 0, 0, 0.1)';
+      
+      if (typeof gsap !== 'undefined') {
+        console.log('🎬 Running GSAP test animation...');
+        gsap.to(testElement, {
+          opacity: 1,
+          duration: 2,
+          ease: "power2.out",
+          onComplete: () => {
+            console.log('✅ GSAP animation completed!');
+            testElement.style.background = 'rgba(0, 255, 0, 0.1)';
+          }
+        });
+      } else {
+        console.log('❌ GSAP not available for test');
+      }
+    } else {
+      console.log('❌ No test element found');
+    }
+  }
+
   // Initialize GSAP Stagger Animations
   function initGSAPStagger() {
-    if (!gsapLoaded || !scrollTriggerLoaded) return;
+    if (!gsapLoaded || !scrollTriggerLoaded) {
+      console.log('⏳ GSAP not ready yet, gsapLoaded:', gsapLoaded, 'scrollTriggerLoaded:', scrollTriggerLoaded);
+      return;
+    }
     
-    console.log('Initializing GSAP stagger animations');
+    console.log('🎬 Initializing GSAP stagger animations');
     
     // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
+    console.log('✅ ScrollTrigger registered');
+    
+    // Run simple test first
+    runSimpleTest();
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
       console.log('🎬 Starting viewport + scroll stagger system');
       
       const allImages = document.querySelectorAll("img:not(#preloader img)");
-      console.log(`📊 Found ${allImages.length} total images`);
+      console.log(`📊 Found ${allImages.length} total images for stagger`);
+      
+      if (allImages.length === 0) {
+        console.log('⚠️ No images found for stagger animation');
+        return;
+      }
+      
+      // Log each image found
+      allImages.forEach((img, i) => {
+        console.log(`🖼️ Image ${i + 1}:`, img.src, 'visible:', img.offsetParent !== null);
+      });
       
       // Set all images to invisible initially
+      console.log('🙈 Setting all images to opacity 0');
       gsap.set(allImages, { opacity: 0 });
       
       // Wait for images to load, then implement stagger system
       if (typeof imagesLoaded === 'function') {
+        console.log('📦 Using imagesLoaded library');
         imagesLoaded(document.body, function() {
           console.log('✅ Images loaded, setting up stagger system');
           
           // Find images in viewport (above the fold)
           const viewportImages = Array.from(allImages).filter(img => {
             const rect = img.getBoundingClientRect();
-            return rect.top < window.innerHeight && rect.bottom > 0;
+            const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+            console.log(`🎯 Image viewport check: top=${rect.top}, bottom=${rect.bottom}, inViewport=${inViewport}`);
+            return inViewport;
           });
           
           console.log(`🎯 Found ${viewportImages.length} viewport images for immediate stagger`);
           
           // Immediate stagger for viewport images (0.5s between each)
           if (viewportImages.length > 0) {
+            console.log('🎬 Starting viewport image stagger...');
             gsap.to(viewportImages, {
               opacity: 1,
               duration: 0.8,
               stagger: 0.5, // 0.5s as requested
               ease: "power2.out",
-              onComplete: () => console.log('✅ Viewport stagger complete')
+              onStart: () => console.log('🎬 Viewport stagger started'),
+              onComplete: () => console.log('✅ Viewport stagger complete'),
+              onUpdate: () => console.log('🔄 Viewport stagger updating...')
             });
+          } else {
+            console.log('⚠️ No viewport images found for stagger');
           }
           
           // ScrollTrigger batch for images outside viewport
@@ -91,16 +192,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
           
           ScrollTrigger.refresh();
+          console.log('🔄 ScrollTrigger refreshed');
         });
       } else {
-        console.log('⚠️ imagesLoaded not available, showing all images');
+        console.log('⚠️ imagesLoaded not available, showing all images immediately');
         gsap.set(allImages, { opacity: 1 });
       }
     }
     
     // Wait for existing preloader to complete
     function waitForPreloaderComplete() {
+      console.log('⏳ Waiting for preloader to complete, current state:', preloaderComplete);
       if (preloaderComplete) {
+        console.log('✅ Preloader complete, starting GSAP animations in 500ms');
         setTimeout(startGSAPAnimations, 500);
       } else {
         setTimeout(waitForPreloaderComplete, 100);
@@ -111,10 +215,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Enhanced refresh handling
     window.addEventListener('load', () => {
+      console.log('🔄 Window load event triggered');
       setTimeout(() => {
         if (typeof ScrollTrigger !== 'undefined') {
           ScrollTrigger.refresh();
-          console.log('GSAP ScrollTrigger refreshed after load');
+          console.log('✅ GSAP ScrollTrigger refreshed after load');
         }
       }, 1000);
     });
@@ -126,6 +231,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       resizeTimer = setTimeout(() => {
         if (typeof ScrollTrigger !== 'undefined') {
           ScrollTrigger.refresh();
+          console.log('🔄 ScrollTrigger refreshed after resize');
         }
       }, 250);
     });
@@ -133,16 +239,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Load GSAP Dependencies
   function loadGSAP() {
-    console.log('Loading GSAP dependencies...');
+    console.log('📦 Loading GSAP dependencies...');
     
     // Load GSAP core
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', function() {
-      console.log('GSAP core loaded');
+      console.log('✅ GSAP core loaded successfully');
       gsapLoaded = true;
+      
+      // Test GSAP immediately
+      if (typeof gsap !== 'undefined') {
+        console.log('🎬 GSAP is now available:', typeof gsap);
+        runSimpleTest();
+      }
       
       // Load ScrollTrigger plugin
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', function() {
-        console.log('GSAP ScrollTrigger loaded');
+        console.log('✅ GSAP ScrollTrigger loaded successfully');
         scrollTriggerLoaded = true;
         initGSAPStagger();
       });
@@ -151,6 +263,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Create preloader
   function createPreloader() {
+    console.log('🔄 Creating preloader...');
     const style = document.createElement('style');
     style.textContent = `
       #preloader {
@@ -228,6 +341,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Smooth fade in
     requestAnimationFrame(() => {
       preloader.classList.add('visible');
+      console.log('✅ Preloader visible');
     });
     
     return preloader;
@@ -235,7 +349,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Simple GSAP + imagesLoaded preloader
   function initPreloader() {
-    console.log('Starting simple preloader...');
+    console.log('🚀 Starting simple preloader...');
     
     // Load GSAP dependencies
     loadGSAP();
@@ -243,20 +357,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const preloader = createPreloader();
     const progressFill = preloader.querySelector('.progress-fill');
     
+    console.log('📦 Checking for imagesLoaded:', typeof imagesLoaded);
+    
     // Check if imagesLoaded is available, if not use fallback
     if (typeof imagesLoaded === 'function') {
-      console.log('Using imagesLoaded library');
+      console.log('✅ Using imagesLoaded library');
       
       // Use imagesLoaded to track all images
       const imgLoad = imagesLoaded(document.body, { background: true });
       let loadedCount = 0;
       const totalImages = imgLoad.images.length;
       
-      console.log(`Found ${totalImages} images to load`);
+      console.log(`📊 Found ${totalImages} images to load`);
       
       // If no images, complete immediately
       if (totalImages === 0) {
-        window.gsap.to(progressFill, { width: '100%', duration: 0.3, onComplete: completePreloader });
+        console.log('⚠️ No images found, completing preloader immediately');
+        if (typeof gsap !== 'undefined') {
+          gsap.to(progressFill, { width: '100%', duration: 0.3, onComplete: completePreloader });
+        } else {
+          setTimeout(completePreloader, 300);
+        }
         return;
       }
       
@@ -264,74 +385,114 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imgLoad.on('progress', function(instance, image) {
         loadedCount++;
         const progress = (loadedCount / totalImages) * 100;
-        console.log(`Loading progress: ${Math.round(progress)}%`);
+        console.log(`📈 Loading progress: ${Math.round(progress)}% (${loadedCount}/${totalImages})`);
         
-        window.gsap.to(progressFill, { 
-          width: progress + '%', 
-          duration: 0.3,
-          ease: "power2.out"
-        });
+        if (typeof gsap !== 'undefined') {
+          gsap.to(progressFill, { 
+            width: progress + '%', 
+            duration: 0.3,
+            ease: "power2.out"
+          });
+        } else {
+          progressFill.style.width = progress + '%';
+        }
       });
       
       // Complete when all images are loaded
       imgLoad.on('always', function() {
-        console.log('All images loaded!');
+        console.log('✅ All images loaded!');
         setTimeout(completePreloader, 200);
       });
       
     } else {
-      console.log('imagesLoaded not available, using fallback');
+      console.log('⚠️ imagesLoaded not available, using fallback');
       // Simple fallback - just animate progress and complete
-      window.gsap.to(progressFill, { 
-        width: '100%', 
-        duration: 1.5,
-        ease: "power2.out",
-        onComplete: completePreloader
-      });
+      if (typeof gsap !== 'undefined') {
+        gsap.to(progressFill, { 
+          width: '100%', 
+          duration: 1.5,
+          ease: "power2.out",
+          onComplete: completePreloader
+        });
+      } else {
+        setTimeout(() => {
+          progressFill.style.width = '100%';
+          setTimeout(completePreloader, 300);
+        }, 1500);
+      }
     }
   }
 
   // Complete preloader and start animations
   function completePreloader() {
-    if (preloaderComplete) return;
+    if (preloaderComplete) {
+      console.log('⚠️ Preloader already completed, skipping');
+      return;
+    }
     preloaderComplete = true;
     
-    console.log('Completing preloader...');
+    console.log('🎉 Completing preloader...');
     
     const preloader = document.getElementById('preloader');
     
     // Simple smooth fade out
-    window.gsap.to(preloader, {
-      opacity: 0,
-      duration: 0.4,
-      ease: "power2.out",
-      onComplete: function() {
-        preloader.remove();
-        document.body.classList.remove('loading');
-        
-        // Start animations
-        console.log('Starting page animations');
-        startPageAnimations();
-      }
-    });
+    if (typeof gsap !== 'undefined') {
+      gsap.to(preloader, {
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.out",
+        onComplete: function() {
+          preloader.remove();
+          document.body.classList.remove('loading');
+          console.log('✅ Preloader removed');
+          
+          // Start animations
+          console.log('🎬 Starting page animations');
+          startPageAnimations();
+        }
+      });
+    } else {
+      setTimeout(() => {
+        preloader.style.opacity = '0';
+        setTimeout(() => {
+          preloader.remove();
+          document.body.classList.remove('loading');
+          console.log('✅ Preloader removed (fallback)');
+          startPageAnimations();
+        }, 400);
+      }, 100);
+    }
   }
 
   // Start all page animations
   function startPageAnimations() {
+    console.log('🎬 Starting page animations...');
+    
     // Animate bottom nav
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) {
-      window.gsap.to(bottomNav, {
-        y: 0,
-        opacity: 1,
-        duration: 0.8,
-        ease: "power2.out"
-      });
+      console.log('🧭 Found bottom nav, animating...');
+      if (typeof gsap !== 'undefined') {
+        gsap.to(bottomNav, {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out"
+        });
+      } else {
+        bottomNav.style.transform = 'translateY(0)';
+        bottomNav.style.opacity = '1';
+      }
+    } else {
+      console.log('⚠️ No bottom nav found');
     }
     
     // Start main animations
     if (!isInit) {
+      console.log('🎬 Initializing main animations...');
       init();
+    } else {
+      console.log('⚠️ Animations already initialized');
     }
   }
 
