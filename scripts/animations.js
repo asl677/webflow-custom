@@ -61,24 +61,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Immediate stagger animation for images in viewport (page load effect)
       setTimeout(() => {
+        console.log('🔍 Starting viewport check for stagger animation...');
+        
         const viewportImages = Array.from(allImages).filter(img => {
           const rect = img.getBoundingClientRect();
-          return rect.top < window.innerHeight && rect.bottom > 0;
+          const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+          console.log(`📍 Image ${img.src.split('/').pop()}: top=${Math.round(rect.top)}, inViewport=${inViewport}`);
+          return inViewport;
         });
         
-        console.log(`🎯 Immediate stagger for ${viewportImages.length} viewport images`);
+        console.log(`🎯 Found ${viewportImages.length} viewport images out of ${allImages.length} total`);
         
         if (viewportImages.length > 0) {
+          console.log('🎬 Starting stagger animation...');
           gsap.to(viewportImages, {
             opacity: 1,
             duration: 0.8,
             stagger: 0.8,
             ease: "power2.out",
             onStart: () => console.log('🎬 Page load stagger started'),
+            onUpdate: () => console.log('📈 Animation updating...'),
             onComplete: () => console.log('✅ Page load stagger complete')
           });
+        } else {
+          console.log('⚠️ No viewport images found - trying all images');
+          // Fallback: animate all images if viewport detection fails
+          gsap.to(allImages, {
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.8,
+            ease: "power2.out",
+            onStart: () => console.log('🎬 Fallback stagger started'),
+            onComplete: () => console.log('✅ Fallback stagger complete')
+          });
         }
-      }, 200); // Slightly longer delay to ensure reveal is disabled
+      }, 500); // Increased delay to ensure everything is ready
       
       // Scroll-triggered fade-in stagger for other images
       ScrollTrigger.batch(".reveal.reveal-full.thumbnail-container img, img:not(#preloader img)", {
