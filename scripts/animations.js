@@ -31,46 +31,70 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
-      console.log('🎬 Starting simple GSAP stagger');
+      console.log('🎬 Starting viewport + scroll stagger system');
       
-      // Target ALL images including carousel/marquee ones
       const allImages = document.querySelectorAll("img:not(#preloader img)");
-      const carouselImages = document.querySelectorAll("[class*='carousel'] img, [class*='marquee'] img, .w-slider img");
+      console.log(`📊 Found ${allImages.length} total images`);
       
-      console.log(`📊 Found ${allImages.length} total images, ${carouselImages.length} carousel images`);
-      
-      // Set all images to invisible immediately (no ScrollTrigger conflicts)
+      // Set all images to invisible initially
       gsap.set(allImages, { opacity: 0 });
-      console.log('🖼️ All images hidden, waiting for load...');
       
-      // Simple approach: wait for images to load, then stagger them in
+      // Wait for images to load, then implement stagger system
       if (typeof imagesLoaded === 'function') {
         imagesLoaded(document.body, function() {
-          console.log('✅ All images loaded, starting stagger');
+          console.log('✅ Images loaded, setting up stagger system');
           
-          // Stagger ALL images including carousel ones
-          gsap.to(allImages, {
-            opacity: 1, 
-            duration: 0.6,
-            stagger: 0.3, // Slightly longer for better visibility
-            ease: "power2.out",
-            onComplete: () => console.log('✅ Stagger complete')
+          // Find images in viewport (above the fold)
+          const viewportImages = Array.from(allImages).filter(img => {
+            const rect = img.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
           });
+          
+          console.log(`🎯 Found ${viewportImages.length} viewport images for immediate stagger`);
+          
+          // Immediate stagger for viewport images (0.5s between each)
+          if (viewportImages.length > 0) {
+            gsap.to(viewportImages, {
+              opacity: 1,
+              duration: 0.8,
+              stagger: 0.5, // 0.5s as requested
+              ease: "power2.out",
+              onComplete: () => console.log('✅ Viewport stagger complete')
+            });
+          }
+          
+          // ScrollTrigger batch for images outside viewport
+          const remainingImages = Array.from(allImages).filter(img => {
+            const rect = img.getBoundingClientRect();
+            return !(rect.top < window.innerHeight && rect.bottom > 0);
+          });
+          
+          console.log(`📜 Setting up scroll triggers for ${remainingImages.length} remaining images`);
+          
+          if (remainingImages.length > 0) {
+            // Create ScrollTrigger for each remaining image
+            remainingImages.forEach((img, index) => {
+              ScrollTrigger.create({
+                trigger: img,
+                start: "top bottom-=100",
+                onEnter: () => {
+                  console.log(`📍 Scrolled to image ${index + 1}`);
+                  gsap.to(img, {
+                    opacity: 1,
+                    duration: 0.6,
+                    ease: "power2.out"
+                  });
+                },
+                once: true
+              });
+            });
+          }
+          
+          ScrollTrigger.refresh();
         });
       } else {
-        console.log('⚠️ imagesLoaded not available, showing images immediately');
+        console.log('⚠️ imagesLoaded not available, showing all images');
         gsap.set(allImages, { opacity: 1 });
-      }
-      
-      // IMPORTANT: Disable any existing ScrollTrigger that might cause flickering
-      if (typeof ScrollTrigger !== 'undefined') {
-        // Kill any existing ScrollTriggers on images to prevent conflicts
-        ScrollTrigger.getAll().forEach(trigger => {
-          if (trigger.trigger && trigger.trigger.tagName === 'IMG') {
-            trigger.kill();
-            console.log('🚫 Killed conflicting image ScrollTrigger');
-          }
-        });
       }
     }
     
