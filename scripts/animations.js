@@ -56,7 +56,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           gsap.set(img, {
             opacity: 0,
             y: 100,
-            scale: 0.7,
             rotation: 2,
             force3D: true
           });
@@ -74,7 +73,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           gsap.to(elements, {
             opacity: 1,
             y: 0,
-            scale: 1,
             rotation: 0,
             duration: 1.6,
             stagger: 0.2,
@@ -98,7 +96,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         gsap.to(testImages, {
           opacity: 1,
           y: 0,
-          scale: 1,
           rotation: 0,
           duration: 2,
           stagger: 0.3,
@@ -113,8 +110,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log(`🎭 Setting up component ${index + 1}:`, comp);
           gsap.set(comp, {
             opacity: 0,
-            y: 50,
-            scale: 0.9
+            y: 50
           });
         }
       });
@@ -131,7 +127,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             gsap.to(filteredElements, {
               opacity: 1,
               y: 0,
-              scale: 1,
               duration: 1.0,
               stagger: 0.1,
               ease: "power2.out"
