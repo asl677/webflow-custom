@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 scale: 1,
                 rotation: 0,
                 duration: 1.2,
-                stagger: 0.12,
+                stagger: 0.3,
                 ease: "power3.out"
             });
         },
