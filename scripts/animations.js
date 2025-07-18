@@ -1,12 +1,186 @@
-// Version 1.5.48 - Respect Manual Line Breaks + Natural Detection
+// Version 1.5.48 - Respect Manual Line Breaks + Natural Detection + GSAP Stagger
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('animations.js v1.5.48 loading...');
+console.log('animations.js v1.5.48 with GSAP stagger loading...');
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, lenis = null, preloaderComplete = false;
+  let gsapLoaded = false, scrollTriggerLoaded = false;
+
+  // GSAP Loader Function
+  function loadGSAPScript(src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = callback;
+    script.onerror = function() {
+      console.error('Failed to load GSAP script:', src);
+    };
+    document.head.appendChild(script);
+  }
+
+  // Initialize GSAP Stagger Animations
+  function initGSAPStagger() {
+    if (!gsapLoaded || !scrollTriggerLoaded) return;
+    
+    console.log('Initializing GSAP stagger animations');
+    
+    // Register ScrollTrigger plugin
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // Wait for preloader to complete before starting animations
+    function startGSAPAnimations() {
+      console.log('Starting GSAP stagger animations');
+      
+      // Only animate elements that aren't already visible/animated
+      const images = document.querySelectorAll("img, [class*='image']");
+      const components = document.querySelectorAll("[id*='component'], [class*='component'], .w-node");
+      const headings = document.querySelectorAll(".heading, h1, h2, h3");
+      
+      // Set initial state for images
+      images.forEach(img => {
+        if (getComputedStyle(img).opacity !== "0") {
+          gsap.set(img, {
+            opacity: 0,
+            y: 60,
+            scale: 0.85,
+            rotation: 0.5
+          });
+        }
+      });
+      
+      // Staggered scroll-triggered animation for images
+      ScrollTrigger.batch("img, [class*='image']", {
+        onEnter: (elements) => {
+          gsap.to(elements, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotation: 0,
+            duration: 1.2,
+            stagger: 0.12,
+            ease: "power3.out"
+          });
+        },
+        start: "top bottom-=80",
+        once: true
+      });
+      
+      // Set initial state for components (exclude preloader elements)
+      components.forEach(comp => {
+        if (!comp.closest('[class*="preload"]') && !comp.closest('[class*="loader"]') && !comp.closest('#preloader')) {
+          gsap.set(comp, {
+            opacity: 0,
+            y: 40,
+            scale: 0.92
+          });
+        }
+      });
+      
+      // Staggered animation for components
+      ScrollTrigger.batch("[id*='component'], [class*='component'], .w-node", {
+        onEnter: (elements) => {
+          const filteredElements = elements.filter(el => 
+            !el.closest('[class*="preload"]') && !el.closest('[class*="loader"]') && !el.closest('#preloader')
+          );
+          
+          if (filteredElements.length > 0) {
+            gsap.to(filteredElements, {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.8,
+              stagger: 0.08,
+              ease: "power2.out"
+            });
+          }
+        },
+        start: "top bottom-=60",
+        once: true
+      });
+      
+      // Set initial state for headings (avoid hero text)
+      headings.forEach(heading => {
+        if (!heading.classList.contains('large') && !heading.classList.contains('large-2')) {
+          gsap.set(heading, {
+            opacity: 0,
+            y: 20
+          });
+        }
+      });
+      
+      // Staggered animation for headings
+      ScrollTrigger.batch(".heading:not(.large):not(.large-2), h1, h2, h3", {
+        onEnter: (elements) => {
+          gsap.to(elements, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.05,
+            ease: "power2.out"
+          });
+        },
+        start: "top bottom-=40",
+        once: true
+      });
+      
+      // Debug logging
+      console.log('GSAP Stagger initialized - Images:', images.length, 'Components:', components.length, 'Headings:', headings.length);
+      
+      ScrollTrigger.refresh();
+    }
+    
+    // Wait for existing preloader to complete
+    function waitForPreloaderComplete() {
+      if (preloaderComplete) {
+        setTimeout(startGSAPAnimations, 500);
+      } else {
+        setTimeout(waitForPreloaderComplete, 100);
+      }
+    }
+    
+    waitForPreloaderComplete();
+    
+    // Enhanced refresh handling
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (typeof ScrollTrigger !== 'undefined') {
+          ScrollTrigger.refresh();
+          console.log('GSAP ScrollTrigger refreshed after load');
+        }
+      }, 1000);
+    });
+    
+    // Optimized resize handler
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (typeof ScrollTrigger !== 'undefined') {
+          ScrollTrigger.refresh();
+        }
+      }, 250);
+    });
+  }
+
+  // Load GSAP Dependencies
+  function loadGSAP() {
+    console.log('Loading GSAP dependencies...');
+    
+    // Load GSAP core
+    loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', function() {
+      console.log('GSAP core loaded');
+      gsapLoaded = true;
+      
+      // Load ScrollTrigger plugin
+      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', function() {
+        console.log('GSAP ScrollTrigger loaded');
+        scrollTriggerLoaded = true;
+        initGSAPStagger();
+      });
+    });
+  }
 
   // Create preloader
   function createPreloader() {
@@ -79,6 +253,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Simple GSAP + imagesLoaded preloader
   function initPreloader() {
     console.log('Starting simple preloader...');
+    
+    // Load GSAP dependencies
+    loadGSAP();
+    
     const preloader = createPreloader();
     const progressFill = preloader.querySelector('.progress-fill');
     
