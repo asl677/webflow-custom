@@ -33,43 +33,79 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function startGSAPAnimations() {
       console.log('🎬 Starting GSAP stagger animations');
       
-      // Only animate elements that aren't already visible/animated
-      const images = document.querySelectorAll("img, [class*='image']");
+      // More specific selectors for Alex's site
+      const images = document.querySelectorAll("img:not(#preloader img), .w-node img, [class*='image']:not(#preloader [class*='image'])");
+      const allImages = document.querySelectorAll("img");
       const components = document.querySelectorAll("[id*='component'], [class*='component'], .w-node");
       const headings = document.querySelectorAll(".heading, h1, h2, h3");
       
-      console.log(`📊 Found elements - Images: ${images.length}, Components: ${components.length}, Headings: ${headings.length}`);
+      console.log(`📊 Found elements - Images: ${images.length} (total imgs: ${allImages.length}), Components: ${components.length}, Headings: ${headings.length}`);
+      console.log('🔍 All images on page:', Array.from(allImages).map(img => ({ src: img.src, classes: img.className, style: img.style.cssText })));
       
-      // Set initial state for images with more dramatic effect
-      images.forEach((img, index) => {
-        if (getComputedStyle(img).opacity !== "0") {
-          console.log(`🖼️ Setting up image ${index + 1}:`, img);
+      // Force set initial state for ALL images to be sure
+      allImages.forEach((img, index) => {
+        if (!img.closest('#preloader')) {
+          console.log(`🖼️ Force setting up image ${index + 1}:`, { 
+            src: img.src, 
+            classes: img.className,
+            currentOpacity: getComputedStyle(img).opacity,
+            currentTransform: getComputedStyle(img).transform
+          });
+          
+          // Force override any existing styles
           gsap.set(img, {
             opacity: 0,
-            y: 80,
-            scale: 0.8,
-            rotation: 1
+            y: 100,
+            scale: 0.7,
+            rotation: 2,
+            force3D: true
           });
         }
       });
       
-      // Staggered scroll-triggered animation for images
-      ScrollTrigger.batch("img, [class*='image']", {
+      // More aggressive scroll-triggered animation for ALL images
+      ScrollTrigger.batch("img:not(#preloader img)", {
         onEnter: (elements) => {
-          console.log(`🎯 Animating ${elements.length} images`);
+          console.log(`🎯 Animating ${elements.length} images:`, elements);
+          elements.forEach((el, i) => {
+            console.log(`  - Image ${i + 1}:`, el.src);
+          });
+          
           gsap.to(elements, {
             opacity: 1,
             y: 0,
             scale: 1,
             rotation: 0,
-            duration: 1.4,
-            stagger: 0.15,
-            ease: "power3.out"
+            duration: 1.6,
+            stagger: 0.2,
+            ease: "power3.out",
+            force3D: true,
+            onStart: () => console.log('🎬 Image animation started'),
+            onComplete: () => console.log('✅ Image animation completed')
           });
         },
-        start: "top bottom-=100",
-        once: true
+        start: "top bottom-=50",
+        end: "bottom top",
+        once: true,
+        onEnter: (batch) => console.log('📍 ScrollTrigger fired for images:', batch.length),
+        onLeave: (batch) => console.log('📍 ScrollTrigger left for images:', batch.length)
       });
+      
+      // Also try a simple immediate animation for testing
+      setTimeout(() => {
+        const testImages = document.querySelectorAll("img:not(#preloader img)");
+        console.log('🧪 Testing immediate animation on', testImages.length, 'images');
+        gsap.to(testImages, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotation: 0,
+          duration: 2,
+          stagger: 0.3,
+          ease: "power3.out",
+          force3D: true
+        });
+      }, 2000);
       
       // Set initial state for components (exclude preloader elements)
       components.forEach((comp, index) => {
@@ -133,10 +169,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         once: true
       });
       
+      // Debug ScrollTrigger
+      console.log('🔧 ScrollTrigger refresh...');
+      ScrollTrigger.refresh();
+      
+      // Log all ScrollTrigger instances
+      setTimeout(() => {
+        console.log('📊 Active ScrollTriggers:', ScrollTrigger.getAll());
+      }, 1000);
+      
       // Debug logging
       console.log('✅ GSAP Stagger initialized - Images:', images.length, 'Components:', components.length, 'Headings:', headings.length);
-      
-      ScrollTrigger.refresh();
     }
     
     // Wait for existing preloader to complete
@@ -261,7 +304,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         <div class="progress-line">
           <div class="progress-fill"></div>
         </div>
-        <div class="progress-text">Loading...</div>
       </div>
     `;
     document.body.appendChild(preloader);
