@@ -556,7 +556,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       link.addEventListener('mouseleave', () => {
         console.log('Mouse leave:', link.textContent);
-        tl.timeScale(1.1).reverse();
+        tl.timeScale(1).reverse();
       });
       
       link.dataset.hoverInit = 'true';
@@ -668,7 +668,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         width: '90%',
         duration: 1,
         ease: "power2.out",
-        delay: 0.2,
+        delay: 0,
         onStart: () => console.log('🎭 Starting width reveal animations'),
         onComplete: () => console.log('✅ Width reveal animations complete')
       });
