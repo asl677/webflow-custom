@@ -1,7 +1,7 @@
-// Version 1.5.51 - DEBUG VERSION - Finding why nothing animates
+// Version 1.6.0 - Fixed Image Flickering + Added Width Reveal Animation
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.5.51 DEBUG VERSION loading...');
+console.log('🔥 animations.js v1.6.0 - Fixed flickering + width reveals loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -647,10 +647,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Initialize hover immediately to prevent delay
     initHover();
 
+    // Animate reveal containers width from 0 to 90% on page load
+    const revealContainers = document.querySelectorAll('.reveal.reveal-full.thumbnail-container.video-container.video-large.video-fixed');
+    console.log(`🎬 Found ${revealContainers.length} reveal containers for width animation`);
+    
+    if (revealContainers.length) {
+      // Set initial width to 0
+      window.gsap.set(revealContainers, { width: 0, overflow: 'hidden' });
+      
+      // Animate to 90% width on page load
+      window.gsap.to(revealContainers, {
+        width: '90%',
+        duration: 1,
+        ease: "power2.out",
+        delay: 0.2,
+        onStart: () => console.log('🎭 Starting width reveal animations'),
+        onComplete: () => console.log('✅ Width reveal animations complete')
+      });
+    }
+
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Set initial state for media elements
+    // Set initial state for media elements - FIXED: No more flickering
     if (mediaEls.length) {
       window.gsap.set(mediaEls, { opacity: 0 });
       
@@ -658,13 +677,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       mediaEls.forEach((el, i) => {
         window.gsap.to(el, {
           opacity: 1,
-          duration: 0.5,
-          ease: "power1.out",
+          duration: 0.6,
+          ease: "power2.out",
           scrollTrigger: {
             trigger: el,
             start: "top bottom-=100",
-            end: "bottom top+=100",
-            toggleActions: "play none none reverse"
+            toggleActions: "play none none none", // FIXED: Removed reverse to prevent flickering
+            once: true // ADDED: Animation only plays once
           }
         });
       });
