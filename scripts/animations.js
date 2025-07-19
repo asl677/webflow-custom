@@ -1,4 +1,4 @@
-// Version 1.6.1 - Simple Image Scaling During Reveal
+// Version 1.6.5 - Simple Image Scaling During Reveal
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 console.log('🔥 animations.js v1.6.1 - Simple image scaling during reveal loading...');
@@ -652,18 +652,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎬 Found ${revealContainers.length} reveal containers for width animation`);
     
     if (revealContainers.length) {
-      // Find images/videos inside reveal containers for scaling
-      const imagesInReveals = [];
-      revealContainers.forEach(container => {
-        const images = container.querySelectorAll('img, video');
-        images.forEach(img => imagesInReveals.push(img));
-      });
-      
       // Set initial states
       window.gsap.set(revealContainers, { width: 0, overflow: 'hidden' });
-      window.gsap.set(imagesInReveals, { scale: 1, transformOrigin: 'center center' });
       
-      // Animate width AND scale simultaneously
+      // Animate width only (no scaling)
       window.gsap.to(revealContainers, {
         width: '90%',
         duration: 1,
@@ -672,15 +664,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         onStart: () => console.log('🎭 Starting width reveal animations'),
         onComplete: () => console.log('✅ Width reveal animations complete')
       });
-      
-      // Scale images down at the same time
-      // window.gsap.to(imagesInReveals, {
-      //   scale: 1,
-      //   duration: 1,
-      //   ease: "power2.out",
-      //   delay: 0.2,
-      //   onStart: () => console.log('📐 Scaling down images in reveals')
-      // });
     }
 
     // Create a single timeline for better performance
