@@ -674,13 +674,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
       
       // Scale images down at the same time
-      window.gsap.to(imagesInReveals, {
-        scale: 1,
-        duration: 1,
-        ease: "power2.out",
-        delay: 0.2,
-        onStart: () => console.log('📐 Scaling down images in reveals')
-      });
+      // window.gsap.to(imagesInReveals, {
+      //   scale: 1,
+      //   duration: 1,
+      //   ease: "power2.out",
+      //   delay: 0.2,
+      //   onStart: () => console.log('📐 Scaling down images in reveals')
+      // });
     }
 
     // Create a single timeline for better performance
