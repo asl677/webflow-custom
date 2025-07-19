@@ -37,7 +37,6 @@
                     gsap.set(img, {
                         opacity: 0,
                         y: 60,
-                        scale: 0.85,
                         rotation: 0.5
                     });
                 }
@@ -49,7 +48,6 @@
                     gsap.to(elements, {
                         opacity: 1,
                         y: 0,
-                        scale: 1,
                         rotation: 0,
                         duration: 1.2,
                         stagger: 0.12,
@@ -65,8 +63,7 @@
                 if (!comp.closest('[class*="preload"]') && !comp.closest('[class*="loader"]')) {
                     gsap.set(comp, {
                         opacity: 0,
-                        y: 40,
-                        scale: 0.92
+                        y: 40
                     });
                 }
             });
@@ -82,7 +79,6 @@
                         gsap.to(filteredElements, {
                             opacity: 1,
                             y: 0,
-                            scale: 1,
                             duration: 0.8,
                             stagger: 0.08,
                             ease: "power2.out"
