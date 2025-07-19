@@ -661,7 +661,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Set initial states
       window.gsap.set(revealContainers, { width: 0, overflow: 'hidden' });
-      window.gsap.set(imagesInReveals, { scale: 1.3, transformOrigin: 'center center' });
+      window.gsap.set(imagesInReveals, { scale: 1, transformOrigin: 'center center' });
       
       // Animate width AND scale simultaneously
       window.gsap.to(revealContainers, {
