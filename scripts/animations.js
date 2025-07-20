@@ -1,7 +1,7 @@
-// Version 1.6.9 - ADDED .HEADING.SMALL STAGGER ANIMATION
+// Version 1.7.0 - FIXED IMAGE FLICKERING ON SCROLL
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.6.9 - ADDED .HEADING.SMALL STAGGER ANIMATION loading...');
+console.log('🔥 animations.js v1.7.0 - FIXED IMAGE FLICKERING ON SCROLL loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -113,6 +113,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
+      // Prevent multiple initializations
+      if (window.gsapStaggerInitialized) {
+        console.log('⚠️ GSAP stagger already initialized, skipping to prevent conflicts');
+        return;
+      }
+      window.gsapStaggerInitialized = true;
+      
       console.log('🎬 Starting viewport + scroll stagger system');
       
       const allImages = document.querySelectorAll("img:not(#preloader img)");
@@ -128,9 +135,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`🖼️ Image ${i + 1}:`, img.src, 'visible:', img.offsetParent !== null);
       });
       
-      // Set all images to invisible initially
+      // Set all images to invisible initially (only if not already animated)
       console.log('🙈 Setting all images to opacity 0');
-      gsap.set(allImages, { opacity: 0 });
+      allImages.forEach(img => {
+        // Only set opacity if not already animated to prevent conflicts
+        if (!img.dataset.gsapAnimated) {
+          gsap.set(img, { opacity: 0 });
+          img.dataset.gsapAnimated = 'initializing';
+        }
+      });
       
       // Wait for images to load, then implement stagger system
       if (typeof imagesLoaded === 'function') {
@@ -148,17 +161,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           console.log(`🎯 Found ${viewportImages.length} viewport images for immediate stagger`);
           
-          // Immediate stagger for viewport images (0.5s between each)
+                    // Immediate stagger for viewport images (0.5s between each)
           if (viewportImages.length > 0) {
             console.log('🎬 Starting viewport image stagger...');
-                    gsap.to(viewportImages, {
-          opacity: 1,
-          duration: 1,
-          stagger: 0.5, // 0.5s as requested
-          ease: "power2.out",
-          onStart: () => console.log('🎬 Viewport stagger started'),
-          onComplete: () => console.log('✅ Viewport stagger complete')
-        });
+            gsap.to(viewportImages, {
+              opacity: 1,
+              duration: 1,
+              stagger: 0.5, // 0.5s as requested
+              ease: "power2.out",
+              onStart: () => console.log('🎬 Viewport stagger started'),
+              onComplete: () => {
+                console.log('✅ Viewport stagger complete');
+                // Mark as completed to prevent re-animation
+                viewportImages.forEach(img => img.dataset.gsapAnimated = 'completed');
+              }
+            });
           } else {
             console.log('⚠️ No viewport images found for stagger');
           }
@@ -172,17 +189,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log(`📜 Setting up scroll triggers for ${remainingImages.length} remaining images`);
           
           if (remainingImages.length > 0) {
-            // Create ScrollTrigger for each remaining image
+            // Create ScrollTrigger for each remaining image (with flicker protection)
             remainingImages.forEach((img, index) => {
+              // Skip if already animated
+              if (img.dataset.gsapAnimated === 'completed') {
+                console.log(`⏭️ Skipping already animated image ${index + 1}`);
+                return;
+              }
+              
               ScrollTrigger.create({
                 trigger: img,
                 start: "top bottom-=100",
                 onEnter: () => {
+                  // Double-check to prevent duplicate animations
+                  if (img.dataset.gsapAnimated === 'completed') return;
+                  
                   console.log(`📍 Scrolled to image ${index + 1}`);
+                  img.dataset.gsapAnimated = 'animating';
+                  
                   gsap.to(img, {
                     opacity: 1,
                     duration: 0.6,
-                    ease: "power2.out"
+                    ease: "power2.out",
+                    onComplete: () => {
+                      img.dataset.gsapAnimated = 'completed';
+                    }
                   });
                 },
                 once: true
@@ -669,25 +700,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Set initial state for media elements - FIXED: No more flickering
-    if (mediaEls.length) {
-      window.gsap.set(mediaEls, { opacity: 0 });
-      
-      // Create separate timeline for media elements
-      mediaEls.forEach((el, i) => {
-        window.gsap.to(el, {
-          opacity: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top bottom-=100",
-            toggleActions: "play none none none", // FIXED: Removed reverse to prevent flickering
-            once: true // ADDED: Animation only plays once
-          }
-        });
-      });
-    }
+    // Media elements are now handled by the dedicated GSAP stagger system
+    // This prevents conflicting animations that cause flickering
+    console.log(`📊 Media elements (${mediaEls.length}) handled by GSAP stagger system to prevent flickering`);
 
     // Large headings - keep the nice stagger
     if (largeHeadings.length) {
