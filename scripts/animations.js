@@ -1,7 +1,7 @@
-// Version 1.6.7 - NO SCALING EFFECTS - CDN Cache Bust
+// Version 1.6.8 - 90% WIDTH WITH ANTI-SCALING CSS PROTECTION
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.6.7 - NO SCALING EFFECTS loading...');
+console.log('🔥 animations.js v1.6.8 - 90% WIDTH + ANTI-SCALING PROTECTION loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
