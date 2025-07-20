@@ -1,7 +1,7 @@
-// Version 1.7.2 - FIXED MASKED IMAGE LOADING + MAINTAINED STAGGER ANIMATIONS
+// Version 1.7.3 - FIXED MASK REVEAL ANIMATION - EXCLUDED REVEAL CONTAINER IMAGES FROM STAGGER
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.2 - FIXED MASKED IMAGE LOADING + MAINTAINED STAGGER ANIMATIONS loading...');
+console.log('🔥 animations.js v1.7.3 - FIXED MASK REVEAL ANIMATION - EXCLUDED REVEAL CONTAINER IMAGES FROM STAGGER loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -138,6 +138,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Set all images to invisible initially (only if not already animated)
       console.log('🙈 Setting all images to opacity 0');
       allImages.forEach(img => {
+        // Skip images inside reveal containers - they need to be visible for mask effect
+        if (img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
+          console.log('🎭 Skipping image in reveal container for mask effect');
+          gsap.set(img, { opacity: 1 });
+          img.dataset.gsapAnimated = 'reveal-container';
+          return;
+        }
+        
         // Only set opacity if not already animated to prevent conflicts
         if (!img.dataset.gsapAnimated) {
           gsap.set(img, { opacity: 0 });
@@ -151,8 +159,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesLoaded(document.body, function() {
           console.log('✅ Images loaded, setting up stagger system');
           
-          // Find images in viewport (above the fold)
+          // Find images in viewport (above the fold) - excluding reveal container images
           const viewportImages = Array.from(allImages).filter(img => {
+            // Skip reveal container images
+            if (img.dataset.gsapAnimated === 'reveal-container') {
+              return false;
+            }
+            
             const rect = img.getBoundingClientRect();
             const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
             console.log(`🎯 Image viewport check: top=${rect.top}, bottom=${rect.bottom}, inViewport=${inViewport}`);
@@ -180,8 +193,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log('⚠️ No viewport images found for stagger');
           }
           
-          // ScrollTrigger batch for images outside viewport
+          // ScrollTrigger batch for images outside viewport - excluding reveal container images
           const remainingImages = Array.from(allImages).filter(img => {
+            // Skip reveal container images
+            if (img.dataset.gsapAnimated === 'reveal-container') {
+              return false;
+            }
+            
             const rect = img.getBoundingClientRect();
             return !(rect.top < window.innerHeight && rect.bottom > 0);
           });
@@ -711,6 +729,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Skip if already handled by GSAP stagger system
         if (el.dataset.gsapAnimated) {
           console.log(`⏭️ Skipping media element ${i + 1} - already handled by stagger system`);
+          return;
+        }
+        
+        // CRITICAL: Skip images inside reveal containers - they should be visible for mask effect
+        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
+          console.log(`🎭 Skipping media element ${i + 1} - inside reveal container (mask effect)`);
+          // Ensure these images are visible for the mask reveal effect
+          window.gsap.set(el, { opacity: 1 });
+          el.dataset.gsapAnimated = 'reveal-container';
           return;
         }
         
