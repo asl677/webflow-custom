@@ -1,7 +1,7 @@
-// Version 1.7.3 - FIXED MASK REVEAL ANIMATION - EXCLUDED REVEAL CONTAINER IMAGES FROM STAGGER
+// Version 1.7.4 - FIXED TEXT TIMING + ADDED LINE-BY-LINE PARAGRAPH ANIMATIONS
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.3 - FIXED MASK REVEAL ANIMATION - EXCLUDED REVEAL CONTAINER IMAGES FROM STAGGER loading...');
+console.log('🔥 animations.js v1.7.4 - FIXED TEXT TIMING + ADDED LINE-BY-LINE PARAGRAPH ANIMATIONS loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -790,43 +790,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Small headings - line by line stagger animation
     if (smallHeadings.length) {
       console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
-      window.gsap.set(smallHeadings, { opacity: 0, y: 20 });
-      tl.to(smallHeadings, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.8, 
-        stagger: 0.15, // 0.15s between each heading
-        ease: "power2.out" 
-      }, 0.3); // Start after 0.3s delay
+      smallHeadings.forEach(h => {
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.2);
+      });
     }
 
-    // Regular headings (h1, h2, h3) - stagger animation
+    // Regular headings (h1, h2, h3) - line by line stagger animation
     if (regularHeadings.length) {
       console.log(`📋 Found ${regularHeadings.length} regular headings for stagger animation`);
-      window.gsap.set(regularHeadings, { opacity: 0, y: 25 });
-      tl.to(regularHeadings, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.9, 
-        stagger: 0.12, // 0.12s between each heading
-        ease: "power2.out" 
-      }, 0.4); // Start after 0.4s delay
+      regularHeadings.forEach(h => {
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.9, stagger: 0.08, ease: "power2.out" }, 0.3);
+      });
     }
 
-    // Paragraphs - stagger animation  
+    // Paragraphs - line by line stagger animation (like headings)
     if (paragraphs.length) {
-      console.log(`📝 Found ${paragraphs.length} paragraphs for stagger animation`);
-      window.gsap.set(paragraphs, { opacity: 0, y: 15 });
-      tl.to(paragraphs, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.7, 
-        stagger: 0.08, // 0.08s between each paragraph
-        ease: "power2.out" 
-      }, 0.5); // Start after 0.5s delay
+      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger animation`);
+      paragraphs.forEach(p => {
+        tl.to(wrapLines(p), { y: 0, opacity: 1, duration: 0.7, stagger: 0.06, ease: "power2.out" }, 0.4);
+      });
     }
 
-    // Links - stagger animation
+    // Links - simple stagger animation
     if (links.length) {
       console.log(`🔗 Found ${links.length} links for stagger animation`);
       window.gsap.set(links, { opacity: 0, y: 10 });
@@ -834,15 +819,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         opacity: 1, 
         y: 0, 
         duration: 0.6, 
-        stagger: 0.05, // 0.05s between each link
+        stagger: 0.04, // 0.04s between each link
         ease: "power2.out" 
-      }, 0.6); // Start after 0.6s delay
+      }, 0.5); // Start after 0.5s delay
     }
 
     // Slide elements - subtle but noticeable stagger
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 0.7);
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.04, ease: "power2.out" }, 0.6);
     }
 
     // Other UI elements - simple stagger for nav, cards, etc.
@@ -853,9 +838,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         opacity: 1, 
         y: 0, 
         duration: 0.6, 
-        stagger: 0.08, // 0.08s between each element
+        stagger: 0.06, // 0.06s between each element
         ease: "power2.out" 
-      }, 0.7); // Start after 0.7s delay
+      }, 0.5); // Start after 0.5s delay
     }
   }
 
