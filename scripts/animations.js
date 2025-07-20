@@ -656,7 +656,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Animate width only (no scaling)
       window.gsap.to(revealContainers, {
-        width: '70%',
+        width: '90%',
         duration: 1,
         ease: "power2.out",
         delay: 0,
