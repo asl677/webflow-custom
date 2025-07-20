@@ -1,7 +1,7 @@
-// Version 1.6.6 - Simple Image Scaling During Reveal
+// Version 1.6.7 - NO SCALING EFFECTS - CDN Cache Bust
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.6.1 - Simple image scaling during reveal loading...');
+console.log('🔥 animations.js v1.6.7 - NO SCALING EFFECTS loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
