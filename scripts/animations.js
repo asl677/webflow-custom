@@ -1,7 +1,7 @@
-// Version 1.6.8 - 90% WIDTH WITH ANTI-SCALING CSS PROTECTION
+// Version 1.6.9 - ADDED .HEADING.SMALL STAGGER ANIMATION
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.6.8 - 90% WIDTH + ANTI-SCALING PROTECTION loading...');
+console.log('🔥 animations.js v1.6.9 - ADDED .HEADING.SMALL STAGGER ANIMATION loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -639,9 +639,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startAnims() {
     // Get all elements upfront
     const largeHeadings = document.querySelectorAll('.heading.large');
+    const smallHeadings = document.querySelectorAll('.heading.small');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
-    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    const otherEls = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), p, a, .nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     // Initialize hover immediately to prevent delay
     initHover();
@@ -693,6 +694,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       largeHeadings.forEach(h => {
         tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0);
       });
+    }
+
+    // Small headings - line by line stagger animation
+    if (smallHeadings.length) {
+      console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
+      window.gsap.set(smallHeadings, { opacity: 0, y: 20 });
+      tl.to(smallHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.8, 
+        stagger: 0.15, // 0.15s between each heading
+        ease: "power2.out" 
+      }, 0.3); // Start after 0.3s delay
     }
 
     // Slide elements - subtle but noticeable stagger
