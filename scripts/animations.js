@@ -1,7 +1,7 @@
-// Version 1.7.7 - UNIFIED TEXT STAGGER - FIXED TIMING AND ORDER
+// Version 1.7.8 - RESTORED ORIGINAL WORKING STAGGER SYSTEM
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.7 - UNIFIED TEXT STAGGER - FIXED TIMING AND ORDER loading...');
+console.log('🔥 animations.js v1.7.8 - RESTORED ORIGINAL WORKING STAGGER SYSTEM loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -719,74 +719,82 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // All text elements - unified stagger in natural reading order
-    const allTextElements = [
-      ...Array.from(largeHeadings).map(el => ({ el, type: 'large-heading' })),
-      ...Array.from(regularHeadings).map(el => ({ el, type: 'heading' })),  
-      ...Array.from(smallHeadings).map(el => ({ el, type: 'small-heading' })),
-      ...Array.from(paragraphs).map(el => ({ el, type: 'paragraph' })),
-      ...Array.from(links).map(el => ({ el, type: 'link' }))
-    ];
-
-    console.log(`📝 Found ${allTextElements.length} total text elements for unified stagger`);
-
-    if (allTextElements.length > 0) {
-      // Set initial states based on element type
-      allTextElements.forEach(({ el, type }) => {
-        if (type === 'large-heading') {
-          // Large headings use wrapLines
-          wrapLines(el);
-        } else {
-          // All other elements use simple opacity/y animation
-          const yOffset = type === 'heading' ? 25 : type === 'paragraph' ? 15 : 10;
-          window.gsap.set(el, { opacity: 0, y: yOffset });
-        }
-      });
-
-      // Animate all text elements in one unified stagger
-      allTextElements.forEach(({ el, type }, index) => {
-        const delay = index * 0.03; // Very fast 0.03s between each element
-        
-        if (type === 'large-heading') {
-          // Large headings with line animation
-          tl.to(el.querySelectorAll('.line-inner'), { 
-            y: 0, 
-            opacity: 1, 
-            duration: 0.8, 
-            stagger: 0.05, 
-            ease: "power2.out" 
-          }, delay);
-        } else {
-          // All other elements with simple animation
-          tl.to(el, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.6, 
-            ease: "power2.out" 
-          }, delay);
-        }
+    // Large headings - keep the nice stagger
+    if (largeHeadings.length) {
+      largeHeadings.forEach(h => {
+        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0);
       });
     }
 
-    // Slide elements - subtle but noticeable stagger (after text)
+    // Regular headings (h1, h2, h3) - stagger animation
+    if (regularHeadings.length) {
+      console.log(`📋 Found ${regularHeadings.length} regular headings for stagger animation`);
+      window.gsap.set(regularHeadings, { opacity: 0, y: 25 });
+      tl.to(regularHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.9, 
+        stagger: 0.08, // 0.08s between each heading
+        ease: "power2.out" 
+      }, 0.2); // Start after 0.2s
+    }
+
+    // Small headings - stagger animation  
+    if (smallHeadings.length) {
+      console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
+      window.gsap.set(smallHeadings, { opacity: 0, y: 20 });
+      tl.to(smallHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.8, 
+        stagger: 0.1, // 0.1s between each heading
+        ease: "power2.out" 
+      }, 0.3); // Start after 0.3s
+    }
+
+    // Paragraphs - stagger animation
+    if (paragraphs.length) {
+      console.log(`📝 Found ${paragraphs.length} paragraphs for stagger animation`);
+      window.gsap.set(paragraphs, { opacity: 0, y: 15 });
+      tl.to(paragraphs, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.7, 
+        stagger: 0.06, // 0.06s between each paragraph
+        ease: "power2.out" 
+      }, 0.4); // Start after 0.4s
+    }
+
+    // Links - stagger animation
+    if (links.length) {
+      console.log(`🔗 Found ${links.length} links for stagger animation`);
+      window.gsap.set(links, { opacity: 0, y: 10 });
+      tl.to(links, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.6, 
+        stagger: 0.04, // 0.04s between each link
+        ease: "power2.out" 
+      }, 0.5); // Start after 0.5s
+    }
+
+    // Slide elements - subtle but noticeable stagger
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      const slideDelay = allTextElements.length * 0.03 + 0.1; // Start after all text + small buffer
-      tl.to(slideEls, { x: 0, opacity: 1, duration: 0.8, stagger: 0.04, ease: "power2.out" }, slideDelay);
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 0.6);
     }
 
-    // Other UI elements - simple stagger for nav, cards, etc. (after slide elements)
+    // Other UI elements - simple stagger for nav, cards, etc.
     if (otherEls.length) {
       console.log(`🎛️ Found ${otherEls.length} other UI elements for stagger animation`);
       window.gsap.set(otherEls, { opacity: 0, y: 10 });
-      const uiDelay = (allTextElements.length * 0.03) + 0.2; // Start after text + buffer
       tl.to(otherEls, { 
         opacity: 1, 
         y: 0, 
         duration: 0.6, 
-        stagger: 0.05, // 0.05s between each element
+        stagger: 0.08, // 0.08s between each element
         ease: "power2.out" 
-      }, uiDelay);
+      }, 0.7); // Start after 0.7s
     }
   }
 
