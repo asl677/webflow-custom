@@ -1,7 +1,7 @@
-// Version 1.7.5 - FIXED WORD-BY-WORD BREAKING - SIMPLIFIED LINE DETECTION
+// Version 1.7.6 - EMERGENCY FIX - REVERTED TO SIMPLE BLOCK ANIMATIONS
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.5 - FIXED WORD-BY-WORD BREAKING - SIMPLIFIED LINE DETECTION loading...');
+console.log('🔥 animations.js v1.7.6 - EMERGENCY FIX - REVERTED TO SIMPLE BLOCK ANIMATIONS loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -613,44 +613,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   function wrapLines(el) {
     if (!el.dataset.splitDone) {
-      // First check if element has manual line breaks
-      if (el.innerHTML.includes('<br>')) {
-        // Use existing BR splitting logic for manual breaks
-        el.innerHTML = el.innerHTML.split('<br>').map(line => 
-          `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
-        ).join('');
-      } else {
-        // For most text elements, treat as single line to avoid word-by-word breaking
-        const originalText = el.textContent;
-        
-        // Simple approach: treat the entire text as one line unless it's very long
-        const wordCount = originalText.split(' ').length;
-        
-        if (wordCount > 20) {
-          // For very long text, split roughly in half at a sentence boundary
-          const sentences = originalText.split(/[.!?]+/);
-          if (sentences.length > 2) {
-            const midPoint = Math.floor(sentences.length / 2);
-            const firstHalf = sentences.slice(0, midPoint).join('. ').trim();
-            const secondHalf = sentences.slice(midPoint).join('. ').trim();
-            
-            if (firstHalf && secondHalf) {
-              el.innerHTML = [firstHalf, secondHalf].map(line => 
-                `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
-              ).join('');
-            } else {
-              // Fallback to single line
-              el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
-            }
-          } else {
-            // Single line for short content
-            el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
-          }
-        } else {
-          // Single line for normal length text
-          el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
-        }
-      }
+      // Store original text safely
+      const originalText = el.textContent.trim();
+      
+      // Always treat as single line to avoid complications
+      el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
       
       el.dataset.splitDone = 'true';
     }
@@ -759,28 +726,43 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Small headings - line by line stagger animation
+    // Small headings - simple stagger animation
     if (smallHeadings.length) {
       console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
-      smallHeadings.forEach(h => {
-        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.2);
-      });
+      window.gsap.set(smallHeadings, { opacity: 0, y: 20 });
+      tl.to(smallHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.8, 
+        stagger: 0.1, // 0.1s between each heading
+        ease: "power2.out" 
+      }, 0.2); // Start after 0.2s delay
     }
 
-    // Regular headings (h1, h2, h3) - line by line stagger animation
+    // Regular headings (h1, h2, h3) - simple stagger animation
     if (regularHeadings.length) {
       console.log(`📋 Found ${regularHeadings.length} regular headings for stagger animation`);
-      regularHeadings.forEach(h => {
-        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 0.9, stagger: 0.08, ease: "power2.out" }, 0.3);
-      });
+      window.gsap.set(regularHeadings, { opacity: 0, y: 25 });
+      tl.to(regularHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.9, 
+        stagger: 0.08, // 0.08s between each heading
+        ease: "power2.out" 
+      }, 0.3); // Start after 0.3s delay
     }
 
-    // Paragraphs - line by line stagger animation (like headings)
+    // Paragraphs - simple block stagger animation
     if (paragraphs.length) {
-      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger animation`);
-      paragraphs.forEach(p => {
-        tl.to(wrapLines(p), { y: 0, opacity: 1, duration: 0.7, stagger: 0.06, ease: "power2.out" }, 0.4);
-      });
+      console.log(`📝 Found ${paragraphs.length} paragraphs for stagger animation`);
+      window.gsap.set(paragraphs, { opacity: 0, y: 15 });
+      tl.to(paragraphs, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.7, 
+        stagger: 0.06, // 0.06s between each paragraph
+        ease: "power2.out" 
+      }, 0.4); // Start after 0.4s delay
     }
 
     // Links - simple stagger animation
