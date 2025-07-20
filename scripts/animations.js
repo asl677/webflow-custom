@@ -654,7 +654,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Set initial states
       window.gsap.set(revealContainers, { width: 0, overflow: 'hidden' });
       
-      // Animate width only (no scaling)
+      // Animate width only (no scaling) - Protected by CSS anti-scaling rules
       window.gsap.to(revealContainers, {
         width: '90%',
         duration: 1,

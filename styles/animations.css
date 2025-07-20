@@ -18,7 +18,7 @@ body.ready{opacity:1!important}
 .lenis.lenis-smooth iframe{pointer-events:none}
 
 /* Sticky Elements and Scrollable Content */
-.sticky-element,[data-sticky=true],[data-lenis-prevent]{position:sticky!important;top:0;z-index:1;transform:translate3d(0,0,0);-webkit-transform:translate3d(0,0,0)}
+.sticky-element,[data-sticky=true],[data-lenis-prevent]{position:sticky!important;top:0;z-index:1}
 .scrollable-wrapper{position:relative;overflow:hidden}
 .scrollable-content{width:100%;height:100%;overflow-y:auto;padding-right:20px;box-sizing:content-box;margin-right:-20px}
 .scrollable,.no-scrollbar{overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
@@ -76,3 +76,24 @@ h1,h2,h3,p,a,img,video,.nav,.mobile-down,.media-animate{will-change:opacity;over
 
 /* Global Transitions */
 .content-loaded *{transition:opacity .3s ease-out}
+
+/* Video Anti-Scaling Rules */
+video, img {
+  object-fit: cover !important;
+  object-position: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+  scale: none !important;
+}
+
+/* Reveal Container Anti-Scaling */
+.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed {
+  transform: none !important;
+  scale: none !important;
+}
+
+.reveal *, .reveal-full *, .thumbnail-container *, .video-container *, .video-large *, .video-fixed * {
+  transform: none !important;
+  scale: none !important;
+}
