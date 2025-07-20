@@ -1,4 +1,4 @@
-// Version 1.6.5 - Simple Image Scaling During Reveal
+// Version 1.6.6 - Simple Image Scaling During Reveal
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 console.log('🔥 animations.js v1.6.1 - Simple image scaling during reveal loading...');
@@ -151,15 +151,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Immediate stagger for viewport images (0.5s between each)
           if (viewportImages.length > 0) {
             console.log('🎬 Starting viewport image stagger...');
-            gsap.to(viewportImages, {
-              opacity: 1,
-              duration: 1,
-              stagger: 0.5, // 0.5s as requested
-              ease: "power2.out",
-              onStart: () => console.log('🎬 Viewport stagger started'),
-              onComplete: () => console.log('✅ Viewport stagger complete'),
-              onUpdate: () => console.log('🔄 Viewport stagger updating...')
-            });
+                    gsap.to(viewportImages, {
+          opacity: 1,
+          duration: 1,
+          stagger: 0.5, // 0.5s as requested
+          ease: "power2.out",
+          onStart: () => console.log('🎬 Viewport stagger started'),
+          onComplete: () => console.log('✅ Viewport stagger complete')
+        });
           } else {
             console.log('⚠️ No viewport images found for stagger');
           }

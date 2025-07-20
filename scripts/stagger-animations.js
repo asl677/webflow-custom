@@ -36,8 +36,7 @@
                 if (getComputedStyle(img).opacity !== "0") {
                     gsap.set(img, {
                         opacity: 0,
-                        y: 60,
-                        rotation: 0.5
+                        y: 60
                     });
                 }
             });
@@ -48,7 +47,6 @@
                     gsap.to(elements, {
                         opacity: 1,
                         y: 0,
-                        rotation: 0,
                         duration: 1.2,
                         stagger: 0.12,
                         ease: "power3.out"
