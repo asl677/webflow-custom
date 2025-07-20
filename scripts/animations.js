@@ -641,7 +641,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
-    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    const otherEls = document.querySelectorAll('h1:not(.heading.large), h2:not(.heading.large), h3:not(.heading.large), p, a, .nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     // Initialize hover immediately to prevent delay
     initHover();
