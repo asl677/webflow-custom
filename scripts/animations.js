@@ -1,7 +1,7 @@
-// Version 1.7.1 - IMPROVED TEXT STAGGER ANIMATIONS FOR H1, P, A
+// Version 1.7.2 - FIXED MASKED IMAGE LOADING + MAINTAINED STAGGER ANIMATIONS
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.1 - IMPROVED TEXT STAGGER ANIMATIONS FOR H1, P, A loading...');
+console.log('🔥 animations.js v1.7.2 - FIXED MASKED IMAGE LOADING + MAINTAINED STAGGER ANIMATIONS loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -703,9 +703,55 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Media elements are now handled by the dedicated GSAP stagger system
-    // This prevents conflicting animations that cause flickering
-    console.log(`📊 Media elements (${mediaEls.length}) handled by GSAP stagger system to prevent flickering`);
+    // Media elements - immediate loading for visible/masked images (with conflict protection)
+    if (mediaEls.length) {
+      console.log(`📊 Found ${mediaEls.length} media elements for immediate/scroll animation`);
+      
+      mediaEls.forEach((el, i) => {
+        // Skip if already handled by GSAP stagger system
+        if (el.dataset.gsapAnimated) {
+          console.log(`⏭️ Skipping media element ${i + 1} - already handled by stagger system`);
+          return;
+        }
+        
+        // Check if image is in viewport (visible immediately - like masked images)
+        const rect = el.getBoundingClientRect();
+        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (inViewport) {
+          // Immediate animation for visible images (masked images, hero images, etc.)
+          console.log(`🎭 Immediate animation for visible media element ${i + 1}`);
+          window.gsap.set(el, { opacity: 0 });
+          window.gsap.to(el, {
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            delay: 0.2 + (i * 0.1), // Small stagger for multiple visible images
+            onComplete: () => {
+              el.dataset.gsapAnimated = 'completed';
+            }
+          });
+        } else {
+          // Scroll trigger for off-screen images
+          window.gsap.set(el, { opacity: 0 });
+          window.gsap.to(el, {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top bottom-=100",
+              toggleActions: "play none none none",
+              once: true,
+              onEnter: () => {
+                console.log(`🎬 Media element ${i + 1} animated via scroll trigger`);
+                el.dataset.gsapAnimated = 'completed';
+              }
+            }
+          });
+        }
+      });
+    }
 
     // Large headings - keep the nice stagger
     if (largeHeadings.length) {
