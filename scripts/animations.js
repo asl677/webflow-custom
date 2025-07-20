@@ -1,7 +1,7 @@
-// Version 1.7.4 - FIXED TEXT TIMING + ADDED LINE-BY-LINE PARAGRAPH ANIMATIONS
+// Version 1.7.5 - FIXED WORD-BY-WORD BREAKING - SIMPLIFIED LINE DETECTION
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.4 - FIXED TEXT TIMING + ADDED LINE-BY-LINE PARAGRAPH ANIMATIONS loading...');
+console.log('🔥 animations.js v1.7.5 - FIXED WORD-BY-WORD BREAKING - SIMPLIFIED LINE DETECTION loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -620,62 +620,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
         ).join('');
       } else {
-        // Only use natural line detection for text without manual breaks
+        // For most text elements, treat as single line to avoid word-by-word breaking
         const originalText = el.textContent;
-        const computedStyle = window.getComputedStyle(el);
-        const lineHeight = parseFloat(computedStyle.lineHeight);
-        const fontSize = parseFloat(computedStyle.fontSize);
         
-        // If lineHeight is 'normal', estimate it
-        const actualLineHeight = isNaN(lineHeight) ? fontSize * 1.2 : lineHeight;
+        // Simple approach: treat the entire text as one line unless it's very long
+        const wordCount = originalText.split(' ').length;
         
-        // Create a temporary element to measure text
-        const temp = document.createElement('div');
-        temp.style.cssText = `
-          position: absolute;
-          visibility: hidden;
-          height: auto;
-          width: ${el.offsetWidth}px;
-          font-family: ${computedStyle.fontFamily};
-          font-size: ${computedStyle.fontSize};
-          font-weight: ${computedStyle.fontWeight};
-          line-height: ${computedStyle.lineHeight};
-          letter-spacing: ${computedStyle.letterSpacing};
-          word-spacing: ${computedStyle.wordSpacing};
-        `;
-        document.body.appendChild(temp);
-        
-        // Split text into words and find line breaks
-        const words = originalText.split(' ');
-        const lines = [];
-        let currentLine = '';
-        
-        for (let i = 0; i < words.length; i++) {
-          const testLine = currentLine + (currentLine ? ' ' : '') + words[i];
-          temp.textContent = testLine;
-          
-          if (temp.offsetHeight > actualLineHeight && currentLine !== '') {
-            lines.push(currentLine);
-            currentLine = words[i];
+        if (wordCount > 20) {
+          // For very long text, split roughly in half at a sentence boundary
+          const sentences = originalText.split(/[.!?]+/);
+          if (sentences.length > 2) {
+            const midPoint = Math.floor(sentences.length / 2);
+            const firstHalf = sentences.slice(0, midPoint).join('. ').trim();
+            const secondHalf = sentences.slice(midPoint).join('. ').trim();
+            
+            if (firstHalf && secondHalf) {
+              el.innerHTML = [firstHalf, secondHalf].map(line => 
+                `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
+              ).join('');
+            } else {
+              // Fallback to single line
+              el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
+            }
           } else {
-            currentLine = testLine;
+            // Single line for short content
+            el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
           }
-        }
-        
-        if (currentLine) {
-          lines.push(currentLine);
-        }
-        
-        // Clean up
-        document.body.removeChild(temp);
-        
-        // If we detected multiple lines, wrap them
-        if (lines.length > 1) {
-          el.innerHTML = lines.map(line => 
-            `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${line}</div></div>`
-          ).join('');
         } else {
-          // Single line, still wrap for consistency
+          // Single line for normal length text
           el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
         }
       }
