@@ -1,7 +1,7 @@
-// Version 1.7.0 - FIXED IMAGE FLICKERING ON SCROLL
+// Version 1.7.1 - IMPROVED TEXT STAGGER ANIMATIONS FOR H1, P, A
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.0 - FIXED IMAGE FLICKERING ON SCROLL loading...');
+console.log('🔥 animations.js v1.7.1 - IMPROVED TEXT STAGGER ANIMATIONS FOR H1, P, A loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -668,12 +668,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function startAnims() {
-    // Get all elements upfront
+    // Get all elements upfront - organized for proper stagger animations
     const largeHeadings = document.querySelectorAll('.heading.large');
     const smallHeadings = document.querySelectorAll('.heading.small');
+    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small)');
+    const paragraphs = document.querySelectorAll('p');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a)');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
-    const otherEls = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), p, a, .nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     // Initialize hover immediately to prevent delay
     initHover();
@@ -724,20 +727,62 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.3); // Start after 0.3s delay
     }
 
+    // Regular headings (h1, h2, h3) - stagger animation
+    if (regularHeadings.length) {
+      console.log(`📋 Found ${regularHeadings.length} regular headings for stagger animation`);
+      window.gsap.set(regularHeadings, { opacity: 0, y: 25 });
+      tl.to(regularHeadings, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.9, 
+        stagger: 0.12, // 0.12s between each heading
+        ease: "power2.out" 
+      }, 0.4); // Start after 0.4s delay
+    }
+
+    // Paragraphs - stagger animation  
+    if (paragraphs.length) {
+      console.log(`📝 Found ${paragraphs.length} paragraphs for stagger animation`);
+      window.gsap.set(paragraphs, { opacity: 0, y: 15 });
+      tl.to(paragraphs, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.7, 
+        stagger: 0.08, // 0.08s between each paragraph
+        ease: "power2.out" 
+      }, 0.5); // Start after 0.5s delay
+    }
+
+    // Links - stagger animation
+    if (links.length) {
+      console.log(`🔗 Found ${links.length} links for stagger animation`);
+      window.gsap.set(links, { opacity: 0, y: 10 });
+      tl.to(links, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.6, 
+        stagger: 0.05, // 0.05s between each link
+        ease: "power2.out" 
+      }, 0.6); // Start after 0.6s delay
+    }
+
     // Slide elements - subtle but noticeable stagger
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 0.7);
     }
 
-    // Other elements - smart batching with better stagger
+    // Other UI elements - simple stagger for nav, cards, etc.
     if (otherEls.length) {
-      const batchSize = 6; // Smaller batches for better flow
-      for (let i = 0; i < otherEls.length; i += batchSize) {
-        const batch = Array.from(otherEls).slice(i, i + batchSize);
-        const delay = 0.2 + (i / batchSize) * 0.1; // Progressive delay between batches
-        tl.to(batch, { opacity: 1, y: 0, duration: 0.9, stagger: 0.04, ease: "power2.out" }, delay);
-      }
+      console.log(`🎛️ Found ${otherEls.length} other UI elements for stagger animation`);
+      window.gsap.set(otherEls, { opacity: 0, y: 10 });
+      tl.to(otherEls, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.6, 
+        stagger: 0.08, // 0.08s between each element
+        ease: "power2.out" 
+      }, 0.7); // Start after 0.7s delay
     }
   }
 
