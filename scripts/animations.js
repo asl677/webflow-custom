@@ -638,22 +638,60 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Initialize hover immediately to prevent delay
     initHover();
 
-    // Animate reveal containers width from 0 to 90% on page load
-    const revealContainers = document.querySelectorAll('.reveal.reveal-full.thumbnail-container.video-container.video-large.video-fixed');
-    console.log(`🎬 Found ${revealContainers.length} reveal containers for width animation`);
+    // Create proper mask reveal for ALL images
+    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    console.log(`🎬 Found ${allImages.length} media elements for proper mask reveal`);
     
-    if (revealContainers.length) {
-      // Set initial states
-      window.gsap.set(revealContainers, { width: 0, overflow: 'hidden' });
-      
-      // Animate width only (no scaling) - Protected by CSS anti-scaling rules
-      window.gsap.to(revealContainers, {
-        width: '100%',
-        duration: 1,
-        ease: "power2.out",
-        delay: 0,
-        onStart: () => console.log('🎭 Starting width reveal animations'),
-        onComplete: () => console.log('✅ Width reveal animations complete')
+    if (allImages.length) {
+      allImages.forEach((element, index) => {
+        // Skip if already processed
+        if (element.dataset.maskSetup) return;
+        
+        // Get original dimensions
+        const originalWidth = element.offsetWidth;
+        const originalHeight = element.offsetHeight;
+        
+        if (originalWidth === 0 || originalHeight === 0) return;
+        
+        console.log(`🎭 Setting up mask for element ${index + 1}: ${originalWidth}x${originalHeight}px`);
+        
+        const parent = element.parentNode;
+        
+        // Create mask container
+        const maskContainer = document.createElement('div');
+        maskContainer.className = 'proper-mask-reveal';
+        maskContainer.style.cssText = `
+          width: 0px;
+          height: ${originalHeight}px;
+          overflow: hidden;
+          display: inline-block;
+          position: relative;
+        `;
+        
+        // Insert mask and move element
+        parent.insertBefore(maskContainer, element);
+        maskContainer.appendChild(element);
+        
+        // Keep element at original size - NO SCALING
+        element.style.cssText = `
+          width: ${originalWidth}px !important;
+          height: ${originalHeight}px !important;
+          display: block !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        `;
+        
+        element.dataset.maskSetup = 'true';
+        
+        // Animate mask reveal
+        window.gsap.to(maskContainer, {
+          width: originalWidth + 'px',
+          duration: 1.2,
+          ease: "power2.out",
+          delay: index * 0.1,
+          onStart: () => console.log(`🎭 Mask reveal ${index + 1} started`),
+          onComplete: () => console.log(`✅ Mask reveal ${index + 1} complete`)
+        });
       });
     }
 
