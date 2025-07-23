@@ -880,22 +880,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     console.log(`🎯 Found ${items.length} items for infinite scroll`);
 
-    // Setup wraps function with seamless boundaries
+    // Setup wraps function exactly like CodePen
     function setupWraps() {
       const containerRect = container.getBoundingClientRect();
-      const totalHeight = items.reduce((sum, item) => sum + item.offsetHeight, 0);
 
       for (let i = 0; i < items.length; i++) {
         const itemRect = items[i].getBoundingClientRect();
-        // Create seamless wrap without gaps at top/bottom
-        const min = -totalHeight;
-        const max = totalHeight;
+        const min = containerRect.top - itemRect.bottom;
+        const max = containerRect.bottom - itemRect.bottom;
         const wrap = gsap.utils.wrap(min, max);
 
         wraps.push(wrap);
       }
       
-      console.log('✅ Wraps setup complete with seamless boundaries');
+      console.log('✅ Wraps setup complete');
     }
 
     setupWraps();
