@@ -937,71 +937,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
        touch-action: none;
      `;
 
-    // Add fade animations for images during infinite scroll
-    setupInfiniteScrollImageFades(container);
+    // Ensure images in infinite scroll are visible (no fade conflicts)
+    const scrollImages = container.querySelectorAll('img, video');
+    scrollImages.forEach(img => {
+      gsap.set(img, { opacity: 1 });
+    });
 
     console.log('✅ CodePen-style infinite scroll setup complete');
-  }
-
-  // Setup elegant fade animations for images during infinite scroll
-  function setupInfiniteScrollImageFades(container) {
-    console.log('🎨 Setting up image fade animations for infinite scroll...');
-    
-    // Get all images within the infinite scroll container
-    const scrollImages = container.querySelectorAll('img, video');
-    
-    if (scrollImages.length === 0) {
-      console.log('⚠️ No images found in infinite scroll container');
-      return;
-    }
-
-    console.log(`🖼️ Found ${scrollImages.length} images for infinite scroll fades`);
-
-    // Set initial state for all images
-    scrollImages.forEach(img => {
-      gsap.set(img, { opacity: 0 });
-    });
-
-    // Create scroll-triggered fade animations for each image
-    scrollImages.forEach((img, index) => {
-      ScrollTrigger.create({
-        trigger: img,
-        start: "top bottom-=150",
-        end: "bottom top+=150",
-        toggleActions: "play none none reverse",
-        onEnter: () => {
-          gsap.to(img, {
-            opacity: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            delay: index * 0.05 // Small stagger for multiple images
-          });
-        },
-        onLeave: () => {
-          gsap.to(img, {
-            opacity: 0,
-            duration: 0.4,
-            ease: "power2.inOut"
-          });
-        },
-        onEnterBack: () => {
-          gsap.to(img, {
-            opacity: 1,
-            duration: 0.6,
-            ease: "power2.out"
-          });
-        },
-        onLeaveBack: () => {
-          gsap.to(img, {
-            opacity: 0,
-            duration: 0.4,
-            ease: "power2.inOut"
-          });
-        }
-      });
-    });
-
-    console.log('✅ Infinite scroll image fades setup complete');
   }
 
   function initLenis() {
