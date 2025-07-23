@@ -9,7 +9,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, lenis = null, preloaderComplete = false;
-  let gsapLoaded = false, scrollTriggerLoaded = false;
+  let gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false;
 
   // Add global error handler
   window.addEventListener('error', function(e) {
@@ -97,8 +97,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Initialize GSAP Stagger Animations
   function initGSAPStagger() {
-    if (!gsapLoaded || !scrollTriggerLoaded) {
-      console.log('⏳ GSAP not ready yet, gsapLoaded:', gsapLoaded, 'scrollTriggerLoaded:', scrollTriggerLoaded);
+    if (!gsapLoaded || !scrollTriggerLoaded || !observerLoaded) {
+      console.log('⏳ GSAP not ready yet, gsapLoaded:', gsapLoaded, 'scrollTriggerLoaded:', scrollTriggerLoaded, 'observerLoaded:', observerLoaded);
       return;
     }
     
@@ -304,7 +304,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', function() {
         console.log('✅ GSAP ScrollTrigger loaded successfully');
         scrollTriggerLoaded = true;
-        initGSAPStagger();
+        
+        // Load Observer plugin for infinite scroll
+        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', function() {
+          console.log('✅ GSAP Observer loaded successfully');
+          observerLoaded = true;
+          initGSAPStagger();
+        });
       });
     });
   }
@@ -834,6 +840,100 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         ease: "power2.out" 
       }, 0.7); // Start after 0.7s
     }
+
+    // Setup infinite scroll after everything is ready
+    setTimeout(() => {
+      setupInfiniteScroll();
+    }, 1000);
+  }
+
+  // CodePen-style infinite scroll implementation
+  function setupInfiniteScroll() {
+    if (!observerLoaded || typeof Observer === 'undefined') {
+      console.log('⚠️ Observer not available for infinite scroll');
+      return;
+    }
+
+    console.log('🔄 Setting up CodePen-style infinite scroll...');
+    
+    // Target ONLY the specific container - be very specific
+    const container = document.querySelector('.flex-grid');
+    
+    if (!container) {
+      console.log('⚠️ No .flex-grid container found');
+      return;
+    }
+
+    console.log('✅ Found flex-grid container for infinite scroll');
+    
+    // Get items using GSAP utils like the CodePen
+    const items = gsap.utils.toArray(container.children);
+    const wraps = [];
+
+    if (items.length === 0) {
+      console.log('⚠️ No items found in container');
+      return;
+    }
+
+    console.log(`🎯 Found ${items.length} items for infinite scroll`);
+
+    // Setup wraps function exactly like CodePen
+    function setupWraps() {
+      const containerRect = container.getBoundingClientRect();
+
+      for (let i = 0; i < items.length; i++) {
+        const itemRect = items[i].getBoundingClientRect();
+        const min = containerRect.top - itemRect.bottom;
+        const max = containerRect.bottom - itemRect.bottom;
+        const wrap = gsap.utils.wrap(min, max);
+
+        wraps.push(wrap);
+      }
+      
+      console.log('✅ Wraps setup complete');
+    }
+
+    setupWraps();
+
+    // Register Observer and ScrollTrigger
+    gsap.registerPlugin(Observer, ScrollTrigger);
+
+    // Create Observer exactly like CodePen
+    Observer.create({
+      preventDefault: true,
+      target: container,
+      onPress: ({ target }) => {
+        target.style.cursor = "grabbing";
+      },
+      onRelease: ({ target }) => {
+        target.style.cursor = "grab";
+      },
+      onChange: ({ deltaY, isDragging, event }) => {
+        const d = event.type === "wheel" ? -deltaY : deltaY;
+        const y = isDragging ? d * 5 : d * 10;
+
+        for (let i = 0; i < items.length; i++) {
+          gsap.to(items[i], {
+            duration: 1,
+            ease: "power2.out",
+            y: `+=${y}`,
+            modifiers: {
+              y: gsap.utils.unitize(wraps[i])
+            }
+          });
+        }
+      }
+    });
+
+    // Add minimal container styles - ONLY affect this specific container
+    container.style.cssText += `
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    `;
+
+    console.log('✅ CodePen-style infinite scroll setup complete');
   }
 
   function initLenis() {
