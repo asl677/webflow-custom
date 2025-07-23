@@ -883,7 +883,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Setup wraps function with 1vw gap between repeats
     function setupWraps() {
       const containerRect = container.getBoundingClientRect();
-      const gapSize = window.innerWidth * 0.01; // 1vw in pixels
+      const gapSize = window.innerWidth * 0.005; // 1vw in pixels
 
       for (let i = 0; i < items.length; i++) {
         const itemRect = items[i].getBoundingClientRect();
