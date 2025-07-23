@@ -880,20 +880,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     console.log(`🎯 Found ${items.length} items for infinite scroll`);
 
-    // Setup wraps function exactly like CodePen
+    // Setup wraps function with 1vw gap between repeats
     function setupWraps() {
       const containerRect = container.getBoundingClientRect();
+      const gapSize = window.innerWidth * 0.01; // 1vw in pixels
 
       for (let i = 0; i < items.length; i++) {
         const itemRect = items[i].getBoundingClientRect();
-        const min = containerRect.top - itemRect.bottom;
-        const max = containerRect.bottom - itemRect.bottom;
+        const min = containerRect.top - itemRect.bottom - gapSize;
+        const max = containerRect.bottom - itemRect.bottom + gapSize;
         const wrap = gsap.utils.wrap(min, max);
 
         wraps.push(wrap);
       }
       
-      console.log('✅ Wraps setup complete');
+      console.log('✅ Wraps setup complete with 1vw gap');
     }
 
     setupWraps();
