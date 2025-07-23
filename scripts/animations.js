@@ -880,21 +880,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     console.log(`🎯 Found ${items.length} items for infinite scroll`);
 
-    // Setup wraps function with 1vw gap between repeats
+    // Setup wraps function with seamless boundaries
     function setupWraps() {
       const containerRect = container.getBoundingClientRect();
-      const gapSize = window.innerWidth * 0.005; // 1vw in pixels
+      const totalHeight = items.reduce((sum, item) => sum + item.offsetHeight, 0);
 
       for (let i = 0; i < items.length; i++) {
         const itemRect = items[i].getBoundingClientRect();
-        const min = containerRect.top - itemRect.bottom - gapSize;
-        const max = containerRect.bottom - itemRect.bottom + gapSize;
+        // Create seamless wrap without gaps at top/bottom
+        const min = -totalHeight;
+        const max = totalHeight;
         const wrap = gsap.utils.wrap(min, max);
 
         wraps.push(wrap);
       }
       
-      console.log('✅ Wraps setup complete with 1vw gap');
+      console.log('✅ Wraps setup complete with seamless boundaries');
     }
 
     setupWraps();
