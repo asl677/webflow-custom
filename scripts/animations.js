@@ -377,6 +377,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         transform: translateY(100%);
         opacity: 0;
       }
+      
+      /* Fix margin spacing for video container in infinite scroll */
+      .container.video-wrap-hide.huge.narrow {
+        margin-top: 0 !important;
+      }
     `;
     document.head.appendChild(style);
 
