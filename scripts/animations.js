@@ -450,12 +450,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         } else {
           progressFill.style.width = progress + '%';
         }
+
+        // Complete preloader when we have enough images for smooth infinite scroll
+        const minImagesForSmooth = Math.min(40, Math.ceil(totalImages * 0.8)); // At least 40 images or 80% of total
+        if (loadedCount >= minImagesForSmooth) {
+          console.log(`✅ Enough images loaded for smooth scroll: ${loadedCount}/${totalImages}`);
+          setTimeout(completePreloader, 200);
+        }
       });
       
-      // Complete when all images are loaded
+      // Fallback: Complete when all images are loaded (if we haven't hit the threshold)
       imgLoad.on('always', function() {
-        console.log('✅ All images loaded!');
-        setTimeout(completePreloader, 200);
+        if (!preloaderComplete) {
+          console.log('✅ All images loaded!');
+          setTimeout(completePreloader, 200);
+        }
       });
       
     } else {
