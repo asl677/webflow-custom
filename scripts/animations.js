@@ -382,6 +382,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       .container.video-wrap-hide.huge.narrow {
         margin-top: 0 !important;
       }
+      
+      /* Add 0.5vw gap at top of page for infinite scroll */
+      .flex-grid {
+        margin-top: 0.5vw !important;
+      }
     `;
     document.head.appendChild(style);
 
