@@ -217,7 +217,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               ScrollTrigger.create({
                 trigger: img,
-                start: "top bottom-=100",
+                start: "top bottom-=200",
                 onEnter: () => {
                   // Double-check to prevent duplicate animations
                   if (img.dataset.gsapAnimated === 'completed') return;
@@ -670,8 +670,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           width: 0px;
           height: ${originalHeight}px;
           overflow: hidden;
-          display: inline-block;
+          display: block;
           position: relative;
+          margin: 0;
+          padding: 0;
+          line-height: 0;
         `;
         
         // Insert mask and move element
@@ -750,7 +753,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             scrollTrigger: {
               trigger: el,
-              start: "top bottom-=100",
+              start: "top bottom-=200",
               toggleActions: "play none none none",
               once: true,
               onEnter: () => {
@@ -902,12 +905,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     Observer.create({
       preventDefault: true,
       target: container,
-      onPress: ({ target }) => {
-        target.style.cursor = "grabbing";
-      },
-      onRelease: ({ target }) => {
-        target.style.cursor = "grab";
-      },
+             onPress: ({ target }) => {
+         // No cursor change
+       },
+       onRelease: ({ target }) => {
+         // No cursor change
+       },
       onChange: ({ deltaY, isDragging, event }) => {
         const d = event.type === "wheel" ? -deltaY : deltaY;
         const y = isDragging ? d * 5 : d * 10;
@@ -925,13 +928,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
 
-    // Add minimal container styles - ONLY affect this specific container
-    container.style.cssText += `
-      overflow: hidden;
-      cursor: grab;
-      user-select: none;
-      touch-action: none;
-    `;
+         // Add minimal container styles - ONLY affect this specific container
+     container.style.cssText += `
+       overflow: hidden;
+       user-select: none;
+       touch-action: none;
+     `;
 
     console.log('✅ CodePen-style infinite scroll setup complete');
   }
