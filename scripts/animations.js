@@ -102,7 +102,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
     
-    console.log('🎬 Initializing GSAP stagger animations');
+    console.log('🎬 *** STARTING initGSAPStagger() - THIS MIGHT BE OVERRIDING EVERYTHING ***');
     
     // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
@@ -148,10 +148,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           // CRITICAL: Skip images inside infinite scroll containers
           if (img.closest('.flex-grid, .container.video-wrap-hide')) {
-            console.log('🔄 Skipping image in infinite scroll container');
-            gsap.set(img, { opacity: 1 });
-            img.dataset.gsapAnimated = 'infinite-scroll';
-            return;
+                    console.log('🔄 Skipping image in infinite scroll container:', img.src?.substring(0, 50));
+        gsap.set(img, { opacity: 1 });
+        img.dataset.gsapAnimated = 'infinite-scroll';
+        return;
           }
           
           // Only set opacity if not already animated to prevent conflicts
@@ -225,9 +225,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             return !(rect.top < window.innerHeight && rect.bottom > 0);
           });
           
-          console.log(`📜 Setting up scroll triggers for ${remainingImages.length} remaining images`);
-          
-          if (remainingImages.length > 0) {
+                console.log(`📜 Setting up scroll triggers for ${remainingImages.length} remaining images`);
+      console.log('🔍 DEBUGGING: Remaining images for GSAP stagger:', remainingImages.map(img => ({
+        src: img.src?.substring(0, 50) + '...',
+        classes: img.className,
+        gsapAnimated: img.dataset.gsapAnimated
+      })));
+      
+      if (remainingImages.length > 0) {
             // Create ScrollTrigger for each remaining image (with flicker protection)
             remainingImages.forEach((img, index) => {
               // Skip if already animated
@@ -692,6 +697,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function startAnims() {
+    console.log('🚀 STARTING startAnims() function');
+    
     // Get all elements upfront - organized for proper stagger animations
     const largeHeadings = document.querySelectorAll('.heading.large');
     const smallHeadings = document.querySelectorAll('.heading.small');
@@ -701,6 +708,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+
+    console.log('🔍 ELEMENT COUNTS:');
+    console.log(`📝 Media elements (img, video): ${mediaEls.length}`);
+    console.log(`🖼️ All images in DOM: ${document.querySelectorAll('img').length}`);
+    console.log(`🎬 Videos in DOM: ${document.querySelectorAll('video').length}`);
 
     // Initialize hover immediately to prevent delay
     initHover();
@@ -771,11 +783,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Media elements - SMOOTH CODEPEN-STYLE FADE-IN (no abrupt loading)
     if (mediaEls.length) {
       console.log(`📊 Found ${mediaEls.length} media elements for smooth fade-in animation`);
+      console.log('🔍 DEBUGGING: Media elements found:', Array.from(mediaEls).map(el => ({
+        tag: el.tagName,
+        src: el.src?.substring(0, 50) + '...',
+        classes: el.className,
+        closest_reveal: !!el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'),
+        closest_infinite: !!el.closest('.flex-grid, .container.video-wrap-hide'),
+        gsapAnimated: el.dataset.gsapAnimated
+      })));
       
       mediaEls.forEach((el, i) => {
         // Skip if already handled by GSAP stagger system
         if (el.dataset.gsapAnimated) {
-          console.log(`⏭️ Skipping media element ${i + 1} - already handled by stagger system`);
+          console.log(`⏭️ Skipping media element ${i + 1} - already handled by stagger system:`, el.dataset.gsapAnimated, el.src?.substring(0, 50));
           return;
         }
         
@@ -814,10 +834,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               el.dataset.gsapAnimated = 'completed';
             }
           });
-        } else {
-          // SMOOTH CODEPEN-STYLE scroll trigger for off-screen images
-          console.log(`🎬 Setting up smooth scroll fade for media element ${i + 1}`);
-          window.gsap.set(el, { opacity: 0, y: 40 });
+                  } else {
+            // SMOOTH CODEPEN-STYLE scroll trigger for off-screen images
+            console.log(`🎬 Setting up smooth scroll fade for media element ${i + 1}:`, el.src?.substring(0, 50), 'classes:', el.className);
+            window.gsap.set(el, { opacity: 0, y: 40 });
           window.gsap.to(el, {
             opacity: 1,
             y: 0,
@@ -830,7 +850,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               toggleActions: "play none none reverse", // Allow reverse on scroll up
               once: false, // Allow re-triggering
               onEnter: () => {
-                console.log(`✨ Smooth fade-in triggered for media element ${i + 1}`);
+                console.log(`✨ SCROLL TRIGGER FIRED! Smooth fade-in triggered for media element ${i + 1}:`, el.src?.substring(0, 50));
                 el.dataset.gsapAnimated = 'animating';
               },
               onComplete: () => {
