@@ -1,7 +1,7 @@
-// Version 1.7.9 - FIX MULTI-LINE LINK HOVER: Preserve original HTML and natural text flow for .heading.small.link elements
+// Version 1.8.0 - COORDINATE HOVER + STAGGER: Fix stagger animations to work with hover-processed elements
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.9 - FIX MULTI-LINE LINK HOVER: Preserve original HTML and natural text flow for .heading.small.link elements loading...');
+console.log('🔥 animations.js v1.8.0 - COORDINATE HOVER + STAGGER: Fix stagger animations to work with hover-processed elements loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -824,17 +824,37 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.2); // Start after 0.2s
     }
 
-    // Small headings - stagger animation  
+    // Small headings - stagger animation with hover coordination
     if (smallHeadings.length) {
       console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
-      window.gsap.set(smallHeadings, { opacity: 0, y: 20 });
-      tl.to(smallHeadings, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.8, 
-        stagger: 0.1, // 0.1s between each heading
-        ease: "power2.out" 
-      }, 0.3); // Start after 0.3s
+      
+      smallHeadings.forEach((heading, index) => {
+        // Check if this element has been processed by hover system
+        const linkText1 = heading.querySelector('.link-text-1');
+        const linkText2 = heading.querySelector('.link-text-2');
+        
+        if (linkText1 && linkText2) {
+          // Element has hover structure - animate the visible .link-text-1 span
+          console.log(`🔗 Animating hover-processed small heading ${index + 1}`);
+          window.gsap.set(linkText1, { opacity: 0, y: 20 });
+          tl.to(linkText1, { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.8, 
+            ease: "power2.out" 
+          }, 0.3 + (index * 0.1)); // Individual timing with stagger
+        } else {
+          // Element doesn't have hover structure - animate normally
+          console.log(`📝 Animating normal small heading ${index + 1}`);
+          window.gsap.set(heading, { opacity: 0, y: 20 });
+          tl.to(heading, { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.8, 
+            ease: "power2.out" 
+          }, 0.3 + (index * 0.1)); // Individual timing with stagger
+        }
+      });
     }
 
     // Paragraphs - stagger animation
@@ -850,17 +870,37 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.4); // Start after 0.4s
     }
 
-    // Links - stagger animation
+    // Links - stagger animation with hover coordination  
     if (links.length) {
       console.log(`🔗 Found ${links.length} links for stagger animation`);
-      window.gsap.set(links, { opacity: 0, y: 10 });
-      tl.to(links, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.6, 
-        stagger: 0.04, // 0.04s between each link
-        ease: "power2.out" 
-      }, 0.5); // Start after 0.5s
+      
+      links.forEach((link, index) => {
+        // Check if this element has been processed by hover system
+        const linkText1 = link.querySelector('.link-text-1');
+        const linkText2 = link.querySelector('.link-text-2');
+        
+        if (linkText1 && linkText2) {
+          // Element has hover structure - animate the visible .link-text-1 span
+          console.log(`🔗 Animating hover-processed link ${index + 1}`);
+          window.gsap.set(linkText1, { opacity: 0, y: 10 });
+          tl.to(linkText1, { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.6, 
+            ease: "power2.out" 
+          }, 0.5 + (index * 0.04)); // Individual timing with stagger
+        } else {
+          // Element doesn't have hover structure - animate normally
+          console.log(`📝 Animating normal link ${index + 1}`);
+          window.gsap.set(link, { opacity: 0, y: 10 });
+          tl.to(link, { 
+            opacity: 1, 
+            y: 0, 
+            duration: 0.6, 
+            ease: "power2.out" 
+          }, 0.5 + (index * 0.04)); // Individual timing with stagger
+        }
+      });
     }
 
     // Slide elements - subtle but noticeable stagger
