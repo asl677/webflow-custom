@@ -1,7 +1,7 @@
-// Version 1.7.8 - RESTORED ORIGINAL WORKING STAGGER SYSTEM
+// Version 1.7.9 - FIX MULTI-LINE LINK HOVER: Preserve original HTML and natural text flow for .heading.small.link elements
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.7.8 - RESTORED ORIGINAL WORKING STAGGER SYSTEM loading...');
+console.log('🔥 animations.js v1.7.9 - FIX MULTI-LINE LINK HOVER: Preserve original HTML and natural text flow for .heading.small.link elements loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -582,26 +582,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log('Setting up hover for:', link.textContent);
       
+      // PRESERVE ORIGINAL HTML: Use innerHTML to keep line breaks and formatting
+      const originalHTML = link.innerHTML.trim();
+      const hasLineBreaks = originalHTML.includes('<br>') || originalHTML.includes('\n') || link.offsetHeight > 25;
+      
       // Store original dimensions
       const rect = link.getBoundingClientRect();
       const height = rect.height;
       
-      // Create two layers of text
-      const text = link.textContent.trim();
-      
-      // Set container styles
-      Object.assign(link.style, {
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'inline-block',
-        height: height + 'px',
-        lineHeight: height + 'px'
-      });
-      
-      link.innerHTML = `
-        <span class="link-text-1" style="display: block; position: relative; height: ${height}px; line-height: ${height}px; opacity: 1;">${text}</span>
-        <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 50%; opacity: 0;">${text}</span>
-      `;
+      if (hasLineBreaks) {
+        console.log('🔗 Multi-line link detected, preserving natural flow:', originalHTML);
+        
+        // For multi-line elements, don't set fixed heights - let text flow naturally
+        Object.assign(link.style, {
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'block' // Use block for multi-line text
+        });
+        
+        link.innerHTML = `
+          <span class="link-text-1" style="display: block; position: relative; opacity: 1;">${originalHTML}</span>
+          <span class="link-text-2" style="display: block; position: absolute; width: 100%; left: 0; top: 0; opacity: 0;">${originalHTML}</span>
+        `;
+      } else {
+        // For single-line elements, use the original approach
+        const text = link.textContent.trim();
+        
+        Object.assign(link.style, {
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'inline-block',
+          height: height + 'px',
+          lineHeight: height + 'px'
+        });
+        
+        link.innerHTML = `
+          <span class="link-text-1" style="display: block; position: relative; height: ${height}px; line-height: ${height}px; opacity: 1;">${text}</span>
+          <span class="link-text-2" style="display: block; position: absolute; height: ${height}px; line-height: ${height}px; width: 100%; left: 0; top: 50%; opacity: 0;">${text}</span>
+        `;
+      }
       
       // Create timeline with subtle animation
       const tl = window.gsap.timeline({ 
