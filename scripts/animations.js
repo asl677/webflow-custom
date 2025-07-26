@@ -1,7 +1,7 @@
-// Version 1.8.2 - PRESERVE HOVER + LINE-BY-LINE: Protect link hover effects while adding line-by-line animations to other text
+// Version 1.8.3 - SMOOTH CODEPEN-STYLE IMAGE LOADING: Fixed abrupt image loading with early trigger + smooth fade-in
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.8.2 - PRESERVE HOVER + LINE-BY-LINE: Protect link hover effects while adding line-by-line animations to other text loading...');
+console.log('🔥 animations.js v1.8.3 - SMOOTH CODEPEN-STYLE IMAGE LOADING: Fixed abrupt image loading with early trigger + smooth fade-in loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -135,23 +135,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`🖼️ Image ${i + 1}:`, img.src, 'visible:', img.offsetParent !== null);
       });
       
-      // Set all images to invisible initially (only if not already animated)
-      console.log('🙈 Setting all images to opacity 0');
-      allImages.forEach(img => {
-        // Skip images inside reveal containers - they need to be visible for mask effect
-        if (img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
-          console.log('🎭 Skipping image in reveal container for mask effect');
-          gsap.set(img, { opacity: 1 });
-          img.dataset.gsapAnimated = 'reveal-container';
-          return;
-        }
-        
-        // Only set opacity if not already animated to prevent conflicts
-        if (!img.dataset.gsapAnimated) {
-          gsap.set(img, { opacity: 0 });
-          img.dataset.gsapAnimated = 'initializing';
-        }
-      });
+              // Set all images to invisible initially (only if not already animated)
+        console.log('🙈 Setting all images to opacity 0 for smooth loading');
+        allImages.forEach(img => {
+          // Skip images inside reveal containers - they need to be visible for mask effect
+          if (img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
+            console.log('🎭 Skipping image in reveal container for mask effect');
+            gsap.set(img, { opacity: 1 });
+            img.dataset.gsapAnimated = 'reveal-container';
+            return;
+          }
+          
+          // CRITICAL: Skip images inside infinite scroll containers
+          if (img.closest('.flex-grid, .container.video-wrap-hide')) {
+            console.log('🔄 Skipping image in infinite scroll container');
+            gsap.set(img, { opacity: 1 });
+            img.dataset.gsapAnimated = 'infinite-scroll';
+            return;
+          }
+          
+          // Only set opacity if not already animated to prevent conflicts
+          if (!img.dataset.gsapAnimated) {
+            gsap.set(img, { opacity: 0, y: 20 }); // Add initial Y position for smooth movement
+            img.dataset.gsapAnimated = 'initializing';
+          }
+        });
       
       // Wait for images to load, then implement stagger system
       if (typeof imagesLoaded === 'function') {
@@ -159,10 +167,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesLoaded(document.body, function() {
           console.log('✅ Images loaded, setting up stagger system');
           
-          // Find images in viewport (above the fold) - excluding reveal container images
+          // Find images in viewport (above the fold) - excluding reveal container and infinite scroll images
           const viewportImages = Array.from(allImages).filter(img => {
             // Skip reveal container images
             if (img.dataset.gsapAnimated === 'reveal-container') {
+              return false;
+            }
+            
+            // Skip infinite scroll images
+            if (img.dataset.gsapAnimated === 'infinite-scroll') {
               return false;
             }
             
@@ -174,17 +187,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           console.log(`🎯 Found ${viewportImages.length} viewport images for immediate stagger`);
           
-                    // Immediate stagger for viewport images (0.5s between each)
+                    // Immediate smooth stagger for viewport images
           if (viewportImages.length > 0) {
-            console.log('🎬 Starting viewport image stagger...');
+            console.log('🎬 Starting smooth viewport image stagger...');
+            // Set initial state with subtle Y position
+            gsap.set(viewportImages, { y: 20 });
             gsap.to(viewportImages, {
               opacity: 1,
-              duration: 1,
-              stagger: 0.5, // 0.5s as requested
+              y: 0,
+              duration: 1.2, // Longer duration for smoother effect
+              stagger: 0.3, // Reduced stagger for smoother flow
               ease: "power2.out",
-              onStart: () => console.log('🎬 Viewport stagger started'),
+              onStart: () => console.log('✨ Smooth viewport stagger started'),
               onComplete: () => {
-                console.log('✅ Viewport stagger complete');
+                console.log('✅ Smooth viewport stagger complete');
                 // Mark as completed to prevent re-animation
                 viewportImages.forEach(img => img.dataset.gsapAnimated = 'completed');
               }
@@ -193,10 +209,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log('⚠️ No viewport images found for stagger');
           }
           
-          // ScrollTrigger batch for images outside viewport - excluding reveal container images
+          // ScrollTrigger batch for images outside viewport - excluding reveal container and infinite scroll images
           const remainingImages = Array.from(allImages).filter(img => {
             // Skip reveal container images
             if (img.dataset.gsapAnimated === 'reveal-container') {
+              return false;
+            }
+            
+            // Skip infinite scroll images
+            if (img.dataset.gsapAnimated === 'infinite-scroll') {
               return false;
             }
             
@@ -217,17 +238,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               ScrollTrigger.create({
                 trigger: img,
-                start: "top bottom-=200",
+                start: "top bottom-=400", // Start much earlier for smoother loading
                 onEnter: () => {
                   // Double-check to prevent duplicate animations
                   if (img.dataset.gsapAnimated === 'completed') return;
                   
-                  console.log(`📍 Scrolled to image ${index + 1}`);
+                  console.log(`✨ Smooth fade triggered for image ${index + 1}`);
                   img.dataset.gsapAnimated = 'animating';
                   
+                  gsap.set(img, { y: 30 }); // Add subtle Y movement
                   gsap.to(img, {
                     opacity: 1,
-                    duration: 0.6,
+                    y: 0,
+                    duration: 1.2, // Longer duration for smoother effect
                     ease: "power2.out",
                     onComplete: () => {
                       img.dataset.gsapAnimated = 'completed';
@@ -745,9 +768,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Media elements - immediate loading for visible/masked images (with conflict protection)
+    // Media elements - SMOOTH CODEPEN-STYLE FADE-IN (no abrupt loading)
     if (mediaEls.length) {
-      console.log(`📊 Found ${mediaEls.length} media elements for immediate/scroll animation`);
+      console.log(`📊 Found ${mediaEls.length} media elements for smooth fade-in animation`);
       
       mediaEls.forEach((el, i) => {
         // Skip if already handled by GSAP stagger system
@@ -765,37 +788,52 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
-        // Check if image is in viewport (visible immediately - like masked images)
+        // Skip images inside infinite scroll containers
+        if (el.closest('.flex-grid, .container.video-wrap-hide')) {
+          console.log(`🔄 Skipping media element ${i + 1} - inside infinite scroll container`);
+          window.gsap.set(el, { opacity: 1 });
+          el.dataset.gsapAnimated = 'infinite-scroll';
+          return;
+        }
+        
+        // Check if image is in viewport (visible immediately)
         const rect = el.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport) {
-          // Immediate animation for visible images (masked images, hero images, etc.)
-          console.log(`🎭 Immediate animation for visible media element ${i + 1}`);
-          window.gsap.set(el, { opacity: 0 });
+          // Immediate smooth animation for visible images
+          console.log(`🎭 Immediate smooth fade for visible media element ${i + 1}`);
+          window.gsap.set(el, { opacity: 0, y: 30 });
           window.gsap.to(el, {
             opacity: 1,
-            duration: 0.8,
+            y: 0,
+            duration: 1.2,
             ease: "power2.out",
-            delay: 0.2 + (i * 0.1), // Small stagger for multiple visible images
+            delay: 0.2 + (i * 0.1),
             onComplete: () => {
               el.dataset.gsapAnimated = 'completed';
             }
           });
         } else {
-          // Scroll trigger for off-screen images
-          window.gsap.set(el, { opacity: 0 });
+          // SMOOTH CODEPEN-STYLE scroll trigger for off-screen images
+          console.log(`🎬 Setting up smooth scroll fade for media element ${i + 1}`);
+          window.gsap.set(el, { opacity: 0, y: 40 });
           window.gsap.to(el, {
             opacity: 1,
-            duration: 0.6,
+            y: 0,
+            duration: 1.5, // Longer duration for smoother effect
             ease: "power2.out",
             scrollTrigger: {
               trigger: el,
-              start: "top bottom-=200",
-              toggleActions: "play none none none",
-              once: true,
+              start: "top bottom-=300", // Start much earlier (300px before visible)
+              end: "top center",
+              toggleActions: "play none none reverse", // Allow reverse on scroll up
+              once: false, // Allow re-triggering
               onEnter: () => {
-                console.log(`🎬 Media element ${i + 1} animated via scroll trigger`);
+                console.log(`✨ Smooth fade-in triggered for media element ${i + 1}`);
+                el.dataset.gsapAnimated = 'animating';
+              },
+              onComplete: () => {
                 el.dataset.gsapAnimated = 'completed';
               }
             }
@@ -946,10 +984,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.7); // Start after 0.7s
     }
 
-    // Setup infinite scroll after everything is ready
-    setTimeout(() => {
-      setupInfiniteScroll();
-    }, 1000);
+    // Setup infinite scroll FIRST to mark images before stagger system processes them
+    setupInfiniteScroll();
   }
 
   // CodePen-style infinite scroll implementation
@@ -1038,10 +1074,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
        touch-action: none;
      `;
 
-    // Ensure images in infinite scroll are visible (no fade conflicts)
+    // Ensure images in infinite scroll are visible and marked (no fade conflicts)
     const scrollImages = container.querySelectorAll('img, video');
     scrollImages.forEach(img => {
       gsap.set(img, { opacity: 1 });
+      img.dataset.gsapAnimated = 'infinite-scroll'; // Mark to prevent other systems from processing
     });
 
     console.log('✅ CodePen-style infinite scroll setup complete');
