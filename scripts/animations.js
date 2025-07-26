@@ -1,7 +1,7 @@
-// Version 1.8.3 - SMOOTH CODEPEN-STYLE IMAGE LOADING: Fixed abrupt image loading with early trigger + smooth fade-in
+// Version 1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.8.3 - SMOOTH CODEPEN-STYLE IMAGE LOADING: Fixed abrupt image loading with early trigger + smooth fade-in loading...');
+console.log('🔥 animations.js v1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -769,6 +769,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         element.dataset.maskSetup = 'true';
         
+        // Check if element has img-parallax class for scaling effect
+        const hasParallax = element.classList.contains('img-parallax');
+        if (hasParallax) {
+          console.log(`🎚️ Setting up parallax scaling for element ${index + 1}`);
+          // Set initial scale to 1.2 for parallax effect
+          window.gsap.set(element, { scale: 1.2 });
+        }
+        
         // Animate mask reveal
         window.gsap.to(maskContainer, {
           width: originalWidth + 'px',
@@ -778,6 +786,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           onStart: () => console.log(`🎭 Mask reveal ${index + 1} started`),
           onComplete: () => console.log(`✅ Mask reveal ${index + 1} complete`)
         });
+        
+        // Animate parallax scaling if element has img-parallax class
+        if (hasParallax) {
+          window.gsap.to(element, {
+            scale: 1.0,
+            duration: 1.5, // 1.5s duration as requested
+            ease: "power2.out",
+            delay: index * 0.1, // Same delay as mask reveal for coordination
+            onStart: () => console.log(`🎚️ Parallax scale ${index + 1} started (1.2 → 1.0)`),
+            onComplete: () => console.log(`✅ Parallax scale ${index + 1} complete`)
+          });
+        }
       });
     }
 
