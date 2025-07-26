@@ -1,7 +1,7 @@
-// Version 1.8.0 - COORDINATE HOVER + STAGGER: Fix stagger animations to work with hover-processed elements
+// Version 1.8.1 - LINE-BY-LINE FOR ALL TEXT: Expand headings/paragraphs to use wrapLines for line-by-line stagger animations
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.8.0 - COORDINATE HOVER + STAGGER: Fix stagger animations to work with hover-processed elements loading...');
+console.log('🔥 animations.js v1.8.1 - LINE-BY-LINE FOR ALL TEXT: Expand headings/paragraphs to use wrapLines for line-by-line stagger animations loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -672,7 +672,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Get all elements upfront - organized for proper stagger animations
     const largeHeadings = document.querySelectorAll('.heading.large');
     const smallHeadings = document.querySelectorAll('.heading.small');
-    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small)');
+    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
     const paragraphs = document.querySelectorAll('p');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a)');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
@@ -811,17 +811,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Regular headings (h1, h2, h3) - stagger animation
+    // Regular headings (h1, h2, h3, h4, h5, h6) - line-by-line stagger animation
     if (regularHeadings.length) {
-      console.log(`📋 Found ${regularHeadings.length} regular headings for stagger animation`);
-      window.gsap.set(regularHeadings, { opacity: 0, y: 25 });
-      tl.to(regularHeadings, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.9, 
-        stagger: 0.08, // 0.08s between each heading
-        ease: "power2.out" 
-      }, 0.2); // Start after 0.2s
+      console.log(`📋 Found ${regularHeadings.length} regular headings for line-by-line stagger animation`);
+      regularHeadings.forEach((heading, index) => {
+        // Use wrapLines to get line-by-line effect like large headings
+        console.log(`📋 Processing regular heading ${index + 1}: "${heading.textContent?.trim()}"`);
+        const lines = wrapLines(heading);
+        if (lines.length > 0) {
+          tl.to(lines, { 
+            y: 0, 
+            opacity: 1, 
+            duration: 1.0, 
+            stagger: 0.15, // 0.15s between each line for nice effect
+            ease: "power2.out" 
+          }, 0.2 + (index * 0.1)); // Stagger start times for each heading
+        }
+      });
     }
 
     // Small headings - stagger animation with hover coordination
@@ -857,17 +863,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Paragraphs - stagger animation
+    // Paragraphs - line-by-line stagger animation
     if (paragraphs.length) {
-      console.log(`📝 Found ${paragraphs.length} paragraphs for stagger animation`);
-      window.gsap.set(paragraphs, { opacity: 0, y: 15 });
-      tl.to(paragraphs, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.7, 
-        stagger: 0.06, // 0.06s between each paragraph
-        ease: "power2.out" 
-      }, 0.4); // Start after 0.4s
+      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger animation`);
+      paragraphs.forEach((paragraph, index) => {
+        // Use wrapLines to get line-by-line effect
+        console.log(`📝 Processing paragraph ${index + 1}: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
+        const lines = wrapLines(paragraph);
+        if (lines.length > 0) {
+          tl.to(lines, { 
+            y: 0, 
+            opacity: 1, 
+            duration: 0.9, 
+            stagger: 0.12, // 0.12s between each line
+            ease: "power2.out" 
+          }, 0.4 + (index * 0.08)); // Stagger start times for each paragraph
+        }
+      });
     }
 
     // Links - stagger animation with hover coordination  
