@@ -1,7 +1,7 @@
-// Version 1.8.1 - LINE-BY-LINE FOR ALL TEXT: Expand headings/paragraphs to use wrapLines for line-by-line stagger animations
+// Version 1.8.2 - PRESERVE HOVER + LINE-BY-LINE: Protect link hover effects while adding line-by-line animations to other text
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.8.1 - LINE-BY-LINE FOR ALL TEXT: Expand headings/paragraphs to use wrapLines for line-by-line stagger animations loading...');
+console.log('🔥 animations.js v1.8.2 - PRESERVE HOVER + LINE-BY-LINE: Protect link hover effects while adding line-by-line animations to other text loading...');
 console.log('🔍 Current URL:', window.location.href);
 console.log('🔍 Document ready state:', document.readyState);
 
@@ -815,6 +815,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (regularHeadings.length) {
       console.log(`📋 Found ${regularHeadings.length} regular headings for line-by-line stagger animation`);
       regularHeadings.forEach((heading, index) => {
+        // CRITICAL: Skip elements that have hover effects (links)
+        if (heading.classList.contains('link') || heading.dataset.hoverInit) {
+          console.log(`📋 Skipping heading ${index + 1} - has hover effects: "${heading.textContent?.trim()}"`);
+          return;
+        }
+        
         // Use wrapLines to get line-by-line effect like large headings
         console.log(`📋 Processing regular heading ${index + 1}: "${heading.textContent?.trim()}"`);
         const lines = wrapLines(heading);
@@ -841,7 +847,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (linkText1 && linkText2) {
           // Element has hover structure - animate the visible .link-text-1 span
-          console.log(`🔗 Animating hover-processed small heading ${index + 1}`);
+          console.log(`🔗 Animating hover-processed small heading ${index + 1}: "${heading.textContent?.trim()}"`);
           window.gsap.set(linkText1, { opacity: 0, y: 20 });
           tl.to(linkText1, { 
             opacity: 1, 
@@ -851,7 +857,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }, 0.3 + (index * 0.1)); // Individual timing with stagger
         } else {
           // Element doesn't have hover structure - animate normally
-          console.log(`📝 Animating normal small heading ${index + 1}`);
+          console.log(`📝 Animating normal small heading ${index + 1}: "${heading.textContent?.trim()}"`);
           window.gsap.set(heading, { opacity: 0, y: 20 });
           tl.to(heading, { 
             opacity: 1, 
@@ -867,6 +873,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (paragraphs.length) {
       console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger animation`);
       paragraphs.forEach((paragraph, index) => {
+        // CRITICAL: Skip elements that have hover effects (links)
+        if (paragraph.classList.contains('link') || paragraph.dataset.hoverInit) {
+          console.log(`📝 Skipping paragraph ${index + 1} - has hover effects: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
+          return;
+        }
+        
         // Use wrapLines to get line-by-line effect
         console.log(`📝 Processing paragraph ${index + 1}: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(paragraph);
@@ -882,7 +894,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Links - stagger animation with hover coordination  
+    // Links - stagger animation with hover coordination (PRESERVED from working version)
     if (links.length) {
       console.log(`🔗 Found ${links.length} links for stagger animation`);
       
