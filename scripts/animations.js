@@ -337,7 +337,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', function() {
           console.log('✅ GSAP Observer loaded successfully');
           observerLoaded = true;
-          initGSAPStagger();
+          // DISABLED: initGSAPStagger(); // This was conflicting with startAnims text animations
+          console.log('🚫 GSAP Stagger disabled to prevent conflicts with text animations');
         });
       });
     });
@@ -687,13 +688,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (!el.dataset.splitDone) {
       // Store original text safely
       const originalText = el.textContent.trim();
+      console.log(`🔤 wrapLines processing: "${originalText.substring(0, 30)}"`);
       
       // Always treat as single line to avoid complications
       el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
       
       el.dataset.splitDone = 'true';
     }
-    return el.querySelectorAll('.line-inner');
+    const lines = el.querySelectorAll('.line-inner');
+    console.log(`🔤 wrapLines returning ${lines.length} line(s) for: "${el.textContent?.trim()?.substring(0, 30)}"`);
+    return lines;
   }
 
   function startAnims() {
@@ -816,6 +820,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
+        console.log(`🎯 Processing media element ${i + 1}:`, el.tagName, el.src?.substring(0, 50), 'classes:', el.className);
+        
         // Check if image is in viewport (visible immediately)
         const rect = el.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
@@ -845,10 +851,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             scrollTrigger: {
               trigger: el,
-              start: "top bottom-=300", // Start much earlier (300px before visible)
+              start: "top top", // Start much earlier (300px before visible)
               end: "top center",
               toggleActions: "play none none reverse", // Allow reverse on scroll up
-              once: false, // Allow re-triggering
+              once: true, // Allow re-triggering
               onEnter: () => {
                 console.log(`✨ SCROLL TRIGGER FIRED! Smooth fade-in triggered for media element ${i + 1}:`, el.src?.substring(0, 50));
                 el.dataset.gsapAnimated = 'animating';
@@ -864,7 +870,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Large headings - keep the nice stagger
     if (largeHeadings.length) {
+      console.log(`📝 Processing ${largeHeadings.length} large headings for stagger animation`);
       largeHeadings.forEach(h => {
+        console.log(`📝 Large heading: "${h.textContent?.trim()?.substring(0, 30)}"`);
         tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0);
       });
     }
