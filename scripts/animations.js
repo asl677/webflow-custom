@@ -1308,12 +1308,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     const counter = document.createElement('div');
     counter.id = 'time-counter';
-    counter.textContent = '00:00:00';
+    counter.textContent = '00:00';
     
     // Add styles
     counter.style.cssText = `
       position: fixed;
-      bottom: 2vw;
+      bottom: 1vw;
       left: 50%;
       transform: translateX(-50%);
       color: white;
@@ -1328,6 +1328,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     document.body.appendChild(counter);
     
+    // Apply GSAP line animation like other text
+    const lines = wrapLines(counter);
+    if (lines.length > 0) {
+      window.gsap.set(lines, { opacity: 0, y: 20 });
+      window.gsap.to(lines, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        delay: 1.0 // Delay so it appears after other elements
+      });
+    }
+    
     // Start the timer
     let startTime = Date.now();
     
@@ -1335,23 +1348,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const elapsed = Date.now() - startTime;
       const totalSeconds = Math.floor(elapsed / 1000);
       
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       
       const timeString = 
-        String(hours).padStart(2, '0') + ':' +
         String(minutes).padStart(2, '0') + ':' +
         String(seconds).padStart(2, '0');
       
-      counter.textContent = timeString;
+      // Update the content inside the line wrapper
+      const lineInner = counter.querySelector('.line-inner');
+      if (lineInner) {
+        lineInner.textContent = timeString;
+      } else {
+        counter.textContent = timeString;
+      }
     }
     
     // Update every second
     setInterval(updateCounter, 1000);
     updateCounter(); // Initial update
     
-    console.log('✅ Time counter created and started');
+    console.log('✅ Time counter created with GSAP animation');
     return counter;
   }
 
