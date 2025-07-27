@@ -570,6 +570,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startPageAnimations() {
     console.log('🎬 Starting page animations...');
     
+    // Create time counter
+    createTimeCounter();
+    
     // Animate bottom nav
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) {
@@ -1297,6 +1300,59 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       tl.to(slideOut, { x: 20, opacity: 0, duration: 0.8, stagger: 0.02, ease: "power2.inOut" }, 0.2);
     }
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
+  }
+
+  // Create time counter
+  function createTimeCounter() {
+    console.log('⏱️ Creating time counter...');
+    
+    const counter = document.createElement('div');
+    counter.id = 'time-counter';
+    counter.textContent = '00:00:00';
+    
+    // Add styles
+    counter.style.cssText = `
+      position: fixed;
+      bottom: 2vw;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+      font-size: 0.8vw;
+      z-index: 9999;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: 0.1em;
+      opacity: 0.8;
+    `;
+    
+    document.body.appendChild(counter);
+    
+    // Start the timer
+    let startTime = Date.now();
+    
+    function updateCounter() {
+      const elapsed = Date.now() - startTime;
+      const totalSeconds = Math.floor(elapsed / 1000);
+      
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      const timeString = 
+        String(hours).padStart(2, '0') + ':' +
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0');
+      
+      counter.textContent = timeString;
+    }
+    
+    // Update every second
+    setInterval(updateCounter, 1000);
+    updateCounter(); // Initial update
+    
+    console.log('✅ Time counter created and started');
+    return counter;
   }
 
   // Initialize
