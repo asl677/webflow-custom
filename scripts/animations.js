@@ -135,23 +135,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`🖼️ Image ${i + 1}:`, img.src, 'visible:', img.offsetParent !== null);
       });
       
-              // Set all images to invisible initially (only if not already animated)
+        // Set all images to invisible initially (only if not already animated)
         console.log('🙈 Setting all images to opacity 0 for smooth loading');
         allImages.forEach(img => {
-          // Skip images inside reveal containers - they need to be visible for mask effect
+          // Skip images inside reveal containers - they need to be visible for mask effect AND load early
           if (img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
-            console.log('🎭 Skipping image in reveal container for mask effect');
+            console.log('🎭 Reveal container image - setting visible and preloading');
             gsap.set(img, { opacity: 1 });
             img.dataset.gsapAnimated = 'reveal-container';
+            // Ensure reveal images are fully loaded early
+            if (img.loading !== 'eager') {
+              img.loading = 'eager';
+            }
             return;
           }
           
           // CRITICAL: Skip images inside infinite scroll containers
           if (img.closest('.flex-grid, .container.video-wrap-hide')) {
-                    console.log('🔄 Skipping image in infinite scroll container:', img.src?.substring(0, 50));
-        gsap.set(img, { opacity: 1 });
-        img.dataset.gsapAnimated = 'infinite-scroll';
-        return;
+            console.log('🔄 Skipping image in infinite scroll container:', img.src?.substring(0, 50));
+            gsap.set(img, { opacity: 1 });
+            img.dataset.gsapAnimated = 'infinite-scroll';
+            // Ensure infinite scroll images load eagerly too
+            if (img.loading !== 'eager') {
+              img.loading = 'eager';
+            }
+            return;
           }
           
           // Only set opacity if not already animated to prevent conflicts
@@ -243,13 +251,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               ScrollTrigger.create({
                 trigger: img,
-                start: "top bottom-=400", // Start much earlier for smoother loading
+                start: "top bottom+=500", // Start MUCH earlier - 500px before element enters viewport
                 onEnter: () => {
                   // Double-check to prevent duplicate animations
                   if (img.dataset.gsapAnimated === 'completed') return;
                   
-                  console.log(`✨ Smooth fade triggered for image ${index + 1}`);
+                  console.log(`✨ Early smooth fade triggered for image ${index + 1}`);
                   img.dataset.gsapAnimated = 'animating';
+                  
+                  // Set eager loading
+                  if (img.loading !== 'eager') {
+                    img.loading = 'eager';
+                  }
                   
                   gsap.set(img, { y: 30 }); // Add subtle Y movement
                   gsap.to(img, {
@@ -902,29 +915,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
                   } else {
             // SMOOTH CODEPEN-STYLE scroll trigger for off-screen images
-            console.log(`🎬 Setting up smooth scroll fade for media element ${i + 1}:`, el.src?.substring(0, 50), 'classes:', el.className);
+            console.log(`🎬 Setting up early scroll fade for media element ${i + 1}:`, el.src?.substring(0, 50), 'classes:', el.className);
             window.gsap.set(el, { opacity: 0, y: 40 });
-          window.gsap.to(el, {
-            opacity: 1,
-            y: 0,
-            duration: 1.5, // Longer duration for smoother effect
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: el,
-              start: "top top", // Start much earlier (300px before visible)
-              end: "top center",
-              toggleActions: "play none none reverse", // Allow reverse on scroll up
-              once: true, // Allow re-triggering
-              onEnter: () => {
-                console.log(`✨ SCROLL TRIGGER FIRED! Smooth fade-in triggered for media element ${i + 1}:`, el.src?.substring(0, 50));
-                el.dataset.gsapAnimated = 'animating';
-              },
-              onComplete: () => {
-                el.dataset.gsapAnimated = 'completed';
-              }
+            
+            // Set eager loading for early loading
+            if (el.loading !== 'eager') {
+              el.loading = 'eager';
             }
-          });
-        }
+            
+            window.gsap.to(el, {
+              opacity: 1,
+              y: 0,
+              duration: 1.5, // Longer duration for smoother effect
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: el,
+                start: "top bottom+=600", // Start VERY early - 600px before visible
+                end: "top center",
+                toggleActions: "play none none reverse",
+                once: true,
+                onEnter: () => {
+                  console.log(`✨ EARLY SCROLL TRIGGER! Smooth fade-in for media element ${i + 1}:`, el.src?.substring(0, 50));
+                  el.dataset.gsapAnimated = 'animating';
+                },
+                onComplete: () => {
+                  el.dataset.gsapAnimated = 'completed';
+                }
+              }
+            });
+          }
       });
     }
 
@@ -1217,7 +1236,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         touchInertiaMultiplier: isIOS ? 25 : 35 // Gentler on iOS
       });
 
-      // Add recommended CSS for better iOS support
+      // Add recommended CSS for better iOS support + infinite scroll exclusion
       const lenisCSS = document.createElement('style');
       lenisCSS.textContent = `
         html.lenis, html.lenis body {
@@ -1232,6 +1251,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           overscroll-behavior: contain;
         }
         
+        /* Prevent Lenis from interfering with infinite scroll container */
+        .flex-grid {
+          overscroll-behavior: none;
+        }
+        
         /* iOS-specific improvements */
         @supports (-webkit-touch-callout: none) {
           html.lenis {
@@ -1244,6 +1268,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
       document.documentElement.classList.add('lenis');
       document.body.classList.add('lenis-smooth');
+      
+      // Add data-lenis-prevent to infinite scroll container to exclude it from Lenis
+      const infiniteScrollContainer = document.querySelector('.flex-grid');
+      if (infiniteScrollContainer) {
+        infiniteScrollContainer.setAttribute('data-lenis-prevent', 'true');
+        console.log('✅ Infinite scroll container excluded from Lenis');
+      }
 
       // Only set up manual RAF if autoRaf fails
       if (!lenis.options.autoRaf) {
@@ -1263,7 +1294,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         lenis.destroy();
       }
       
-      console.log(`Lenis initialized (iOS: ${isIOS})`);
+      console.log(`Lenis initialized (iOS: ${isIOS}) with infinite scroll exclusion`);
     } catch (e) { 
       console.error('Lenis error:', e);
       // Fallback to native scroll
