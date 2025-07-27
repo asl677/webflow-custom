@@ -1217,6 +1217,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLenis() {
     if (lenis || typeof window.Lenis === 'undefined') return;
     
+    // Detect mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    if (isMobile) {
+      console.log('📱 Mobile device detected - Lenis disabled for native scroll behavior');
+      return;
+    }
+    
     // Detect iOS for potential fallback
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     
@@ -1294,7 +1302,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         lenis.destroy();
       }
       
-      console.log(`Lenis initialized (iOS: ${isIOS}) with infinite scroll exclusion`);
+      console.log(`💻 Lenis initialized on desktop (iOS: ${isIOS}) with infinite scroll exclusion`);
     } catch (e) { 
       console.error('Lenis error:', e);
       // Fallback to native scroll
