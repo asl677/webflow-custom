@@ -687,73 +687,53 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function wrapLines(el) {
     if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
 
-    const originalText = el.textContent.trim();
-    if (!originalText) return [];
+    // Preserve the original HTML content
+    const originalHTML = el.innerHTML.trim();
+    if (!originalHTML) return [];
 
-    console.log(`🔤 Wrapping lines for: "${originalText.substring(0, 50)}"`);
+    console.log(`🔤 Preserving original HTML for: "${el.textContent?.trim()?.substring(0, 50)}"`);
 
-    // Clear the element's content
-    el.innerHTML = '';
+    // For elements that already have line breaks (<br> tags), split on those
+    if (originalHTML.includes('<br>')) {
+      const lines = originalHTML.split(/<br\s*\/?>/i);
+      el.innerHTML = '';
+      
+      lines.forEach((lineHTML, index) => {
+        if (lineHTML.trim()) {
+          const lineDiv = document.createElement('div');
+          lineDiv.className = 'split-line';
+          lineDiv.style.overflow = 'hidden';
 
-    // Split text into words and wrap each in a span
-    const words = originalText.split(/\s+/);
-    words.forEach(word => {
-        const wordSpan = document.createElement('span');
-        wordSpan.className = 'word';
-        wordSpan.style.display = 'inline-block'; // Required for offsetTop to work correctly
-        wordSpan.textContent = word + ' ';
-        el.appendChild(wordSpan);
-    });
+          const lineInner = document.createElement('div');
+          lineInner.className = 'line-inner';
+          lineInner.style.transform = 'translateY(100%)';
+          lineInner.style.opacity = '0';
+          lineInner.innerHTML = lineHTML.trim();
+
+          lineDiv.appendChild(lineInner);
+          el.appendChild(lineDiv);
+        }
+      });
+    } else {
+      // For single-line content, wrap the entire thing
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'split-line';
+      lineDiv.style.overflow = 'hidden';
+
+      const lineInner = document.createElement('div');
+      lineInner.className = 'line-inner';
+      lineInner.style.transform = 'translateY(100%)';
+      lineInner.style.opacity = '0';
+      lineInner.innerHTML = originalHTML;
+
+      lineDiv.appendChild(lineInner);
+      el.innerHTML = '';
+      el.appendChild(lineDiv);
+    }
 
     el.dataset.splitDone = 'true';
-
-    // Group words into lines based on their vertical position
-    const lines = [];
-    let line = [];
-    let lastOffsetTop = -1;
-    const wordSpans = el.querySelectorAll('.word');
-    
-    if (wordSpans.length === 0) return [];
-
-    // Ensure layout is calculated before we measure
-    const initialOffsetTop = wordSpans[0].offsetTop;
-    lastOffsetTop = initialOffsetTop;
-
-    wordSpans.forEach(wordSpan => {
-        const offsetTop = wordSpan.offsetTop;
-        if (offsetTop > lastOffsetTop) {
-            lines.push(line);
-            line = [];
-        }
-        line.push(wordSpan);
-        lastOffsetTop = offsetTop;
-    });
-    lines.push(line);
-
-    // Clear element and wrap each line in a div
-    el.innerHTML = '';
-    lines.forEach(lineWords => {
-        if (lineWords.length === 0) return;
-
-        const lineDiv = document.createElement('div');
-        lineDiv.className = 'split-line';
-        lineDiv.style.overflow = 'hidden';
-
-        const lineInner = document.createElement('div');
-        lineInner.className = 'line-inner';
-        lineInner.style.transform = 'translateY(100%)';
-        lineInner.style.opacity = '0';
-
-        lineWords.forEach(wordSpan => {
-            lineInner.appendChild(wordSpan);
-        });
-
-        lineDiv.appendChild(lineInner);
-        el.appendChild(lineDiv);
-    });
-
     const lineInners = el.querySelectorAll('.line-inner');
-    console.log(`🔤 Created ${lineInners.length} lines.`);
+    console.log(`🔤 Created ${lineInners.length} lines while preserving original HTML.`);
     return lineInners;
   }
 
