@@ -251,12 +251,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               ScrollTrigger.create({
                 trigger: img,
-                start: "top bottom+=500", // Start MUCH earlier - 500px before element enters viewport
+                start: "top bottom", // Trigger when top of image hits bottom of viewport
                 onEnter: () => {
                   // Double-check to prevent duplicate animations
                   if (img.dataset.gsapAnimated === 'completed') return;
                   
-                  console.log(`✨ Early smooth fade triggered for image ${index + 1}`);
+                  console.log(`✨ Image fade triggered when top hits bottom of viewport: ${index + 1}`);
                   img.dataset.gsapAnimated = 'animating';
                   
                   // Set eager loading
@@ -427,7 +427,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       /* Add 0.5vw gap at top of page for infinite scroll */
       .flex-grid {
-        margin-top: 0.5vw !important;
+        margin-top: 0.2vw !important;
       }
     `;
     document.head.appendChild(style);
@@ -930,12 +930,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               ease: "power2.out",
               scrollTrigger: {
                 trigger: el,
-                start: "top bottom+=600", // Start VERY early - 600px before visible
+                start: "top bottom", // Trigger when top of element hits bottom of viewport
                 end: "top center",
                 toggleActions: "play none none reverse",
                 once: true,
                 onEnter: () => {
-                  console.log(`✨ EARLY SCROLL TRIGGER! Smooth fade-in for media element ${i + 1}:`, el.src?.substring(0, 50));
+                  console.log(`✨ Media element fade triggered when top hits bottom of viewport: ${i + 1}:`, el.src?.substring(0, 50));
                   el.dataset.gsapAnimated = 'animating';
                 },
                 onComplete: () => {
