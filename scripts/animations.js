@@ -685,19 +685,76 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function wrapLines(el) {
-    if (!el.dataset.splitDone) {
-      // Store original text safely
-      const originalText = el.textContent.trim();
-      console.log(`🔤 wrapLines processing: "${originalText.substring(0, 30)}"`);
-      
-      // Always treat as single line to avoid complications
-      el.innerHTML = `<div class="split-line" style="overflow: hidden;"><div class="line-inner" style="transform: translateY(20px); opacity: 0;">${originalText}</div></div>`;
-      
-      el.dataset.splitDone = 'true';
-    }
-    const lines = el.querySelectorAll('.line-inner');
-    console.log(`🔤 wrapLines returning ${lines.length} line(s) for: "${el.textContent?.trim()?.substring(0, 30)}"`);
-    return lines;
+    if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
+
+    const originalText = el.textContent.trim();
+    if (!originalText) return [];
+
+    console.log(`🔤 Wrapping lines for: "${originalText.substring(0, 50)}"`);
+
+    // Clear the element's content
+    el.innerHTML = '';
+
+    // Split text into words and wrap each in a span
+    const words = originalText.split(/\s+/);
+    words.forEach(word => {
+        const wordSpan = document.createElement('span');
+        wordSpan.className = 'word';
+        wordSpan.style.display = 'inline-block'; // Required for offsetTop to work correctly
+        wordSpan.textContent = word + ' ';
+        el.appendChild(wordSpan);
+    });
+
+    el.dataset.splitDone = 'true';
+
+    // Group words into lines based on their vertical position
+    const lines = [];
+    let line = [];
+    let lastOffsetTop = -1;
+    const wordSpans = el.querySelectorAll('.word');
+    
+    if (wordSpans.length === 0) return [];
+
+    // Ensure layout is calculated before we measure
+    const initialOffsetTop = wordSpans[0].offsetTop;
+    lastOffsetTop = initialOffsetTop;
+
+    wordSpans.forEach(wordSpan => {
+        const offsetTop = wordSpan.offsetTop;
+        if (offsetTop > lastOffsetTop) {
+            lines.push(line);
+            line = [];
+        }
+        line.push(wordSpan);
+        lastOffsetTop = offsetTop;
+    });
+    lines.push(line);
+
+    // Clear element and wrap each line in a div
+    el.innerHTML = '';
+    lines.forEach(lineWords => {
+        if (lineWords.length === 0) return;
+
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'split-line';
+        lineDiv.style.overflow = 'hidden';
+
+        const lineInner = document.createElement('div');
+        lineInner.className = 'line-inner';
+        lineInner.style.transform = 'translateY(100%)';
+        lineInner.style.opacity = '0';
+
+        lineWords.forEach(wordSpan => {
+            lineInner.appendChild(wordSpan);
+        });
+
+        lineDiv.appendChild(lineInner);
+        el.appendChild(lineDiv);
+    });
+
+    const lineInners = el.querySelectorAll('.line-inner');
+    console.log(`🔤 Created ${lineInners.length} lines.`);
+    return lineInners;
   }
 
   function startAnims() {
@@ -888,43 +945,51 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Large headings - keep the nice stagger
+    // Large headings - line-by-line stagger
     if (largeHeadings.length) {
-      console.log(`📝 Processing ${largeHeadings.length} large headings for stagger animation`);
-      largeHeadings.forEach(h => {
-        console.log(`📝 Large heading: "${h.textContent?.trim()?.substring(0, 30)}"`);
-        tl.to(wrapLines(h), { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0);
+      console.log(`📝 Processing ${largeHeadings.length} large headings for line-by-line stagger`);
+      largeHeadings.forEach((h, index) => {
+        console.log(`📝 Large heading ${index + 1}: "${h.textContent?.trim()?.substring(0, 30)}"`);
+        const lines = wrapLines(h);
+        if (lines.length > 0) {
+          tl.to(lines, { 
+            y: 0, 
+            opacity: 1, 
+            duration: 1.1, 
+            stagger: 0.2, 
+            ease: "power2.out" 
+          }, 0.1 + (index * 0.1));
+        }
       });
     }
 
-    // Regular headings (h1, h2, h3, h4, h5, h6) - line-by-line stagger animation
+    // Regular headings (h1, h2, h3, h4, h5, h6) - line-by-line stagger
     if (regularHeadings.length) {
-      console.log(`📋 Found ${regularHeadings.length} regular headings for line-by-line stagger animation`);
+      console.log(`📋 Found ${regularHeadings.length} regular headings for line-by-line stagger`);
       regularHeadings.forEach((heading, index) => {
-        // CRITICAL: Skip elements that have hover effects (links)
+        // Skip elements that have hover effects (links)
         if (heading.classList.contains('link') || heading.dataset.hoverInit) {
-          console.log(`📋 Skipping heading ${index + 1} - has hover effects: "${heading.textContent?.trim()}"`);
+          console.log(`📋 Skipping heading ${index + 1} - has hover effects`);
           return;
         }
         
-        // Use wrapLines to get line-by-line effect like large headings
-        console.log(`📋 Processing regular heading ${index + 1}: "${heading.textContent?.trim()}"`);
+        console.log(`📋 Processing regular heading ${index + 1}: "${heading.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(heading);
         if (lines.length > 0) {
           tl.to(lines, { 
             y: 0, 
             opacity: 1, 
             duration: 1.0, 
-            stagger: 0.15, // 0.15s between each line for nice effect
+            stagger: 0.15,
             ease: "power2.out" 
-          }, 0.2 + (index * 0.1)); // Stagger start times for each heading
+          }, 0.2 + (index * 0.1));
         }
       });
     }
 
-    // Small headings - stagger animation with hover coordination
+    // Small headings - line-by-line stagger with hover coordination
     if (smallHeadings.length) {
-      console.log(`🔤 Found ${smallHeadings.length} small headings for stagger animation`);
+      console.log(`🔤 Found ${smallHeadings.length} small headings for line-by-line stagger`);
       
       smallHeadings.forEach((heading, index) => {
         // Check if this element has been processed by hover system
@@ -933,39 +998,46 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (linkText1 && linkText2) {
           // Element has hover structure - animate the visible .link-text-1 span
-          console.log(`🔗 Animating hover-processed small heading ${index + 1}: "${heading.textContent?.trim()}"`);
-          window.gsap.set(linkText1, { opacity: 0, y: 20 });
-          tl.to(linkText1, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.8, 
-            ease: "power2.out" 
-          }, 0.3 + (index * 0.1)); // Individual timing with stagger
+          console.log(`🔗 Animating hover-processed small heading ${index + 1}`);
+          const lines = wrapLines(linkText1);
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 20 });
+            tl.to(lines, { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.8,
+              stagger: 0.1,
+              ease: "power2.out" 
+            }, 0.3 + (index * 0.1));
+          }
         } else {
           // Element doesn't have hover structure - animate normally
-          console.log(`📝 Animating normal small heading ${index + 1}: "${heading.textContent?.trim()}"`);
-          window.gsap.set(heading, { opacity: 0, y: 20 });
-          tl.to(heading, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.8, 
-            ease: "power2.out" 
-          }, 0.3 + (index * 0.1)); // Individual timing with stagger
+          console.log(`📝 Animating normal small heading ${index + 1}`);
+          const lines = wrapLines(heading);
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 20 });
+            tl.to(lines, { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.8,
+              stagger: 0.1,
+              ease: "power2.out" 
+            }, 0.3 + (index * 0.1));
+          }
         }
       });
     }
 
-    // Paragraphs - line-by-line stagger animation
+    // Paragraphs - line-by-line stagger
     if (paragraphs.length) {
-      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger animation`);
+      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger`);
       paragraphs.forEach((paragraph, index) => {
-        // CRITICAL: Skip elements that have hover effects (links)
+        // Skip elements that have hover effects (links)
         if (paragraph.classList.contains('link') || paragraph.dataset.hoverInit) {
-          console.log(`📝 Skipping paragraph ${index + 1} - has hover effects: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
+          console.log(`📝 Skipping paragraph ${index + 1} - has hover effects`);
           return;
         }
         
-        // Use wrapLines to get line-by-line effect
         console.log(`📝 Processing paragraph ${index + 1}: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(paragraph);
         if (lines.length > 0) {
@@ -973,16 +1045,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             y: 0, 
             opacity: 1, 
             duration: 0.9, 
-            stagger: 0.12, // 0.12s between each line
+            stagger: 0.12,
             ease: "power2.out" 
-          }, 0.4 + (index * 0.08)); // Stagger start times for each paragraph
+          }, 0.4 + (index * 0.08));
         }
       });
     }
 
-    // Links - stagger animation with hover coordination (PRESERVED from working version)
+    // Links - line-by-line stagger with hover coordination
     if (links.length) {
-      console.log(`🔗 Found ${links.length} links for stagger animation`);
+      console.log(`🔗 Found ${links.length} links for line-by-line stagger`);
       
       links.forEach((link, index) => {
         // Check if this element has been processed by hover system
@@ -992,23 +1064,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (linkText1 && linkText2) {
           // Element has hover structure - animate the visible .link-text-1 span
           console.log(`🔗 Animating hover-processed link ${index + 1}`);
-          window.gsap.set(linkText1, { opacity: 0, y: 10 });
-          tl.to(linkText1, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.6, 
-            ease: "power2.out" 
-          }, 0.5 + (index * 0.04)); // Individual timing with stagger
+          const lines = wrapLines(linkText1);
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 10 });
+            tl.to(lines, { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.6,
+              stagger: 0.08,
+              ease: "power2.out" 
+            }, 0.5 + (index * 0.04));
+          }
         } else {
           // Element doesn't have hover structure - animate normally
           console.log(`📝 Animating normal link ${index + 1}`);
-          window.gsap.set(link, { opacity: 0, y: 10 });
-          tl.to(link, { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.6, 
-            ease: "power2.out" 
-          }, 0.5 + (index * 0.04)); // Individual timing with stagger
+          const lines = wrapLines(link);
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 10 });
+            tl.to(lines, { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.6,
+              stagger: 0.08,
+              ease: "power2.out" 
+            }, 0.5 + (index * 0.04));
+          }
         }
       });
     }
