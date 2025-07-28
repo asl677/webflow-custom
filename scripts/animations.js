@@ -1318,8 +1318,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function addHidden() {
-    // Use a single query for better performance
-    document.querySelectorAll('h1, h2, h3, p, a, img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => {
+    console.log('🙈 Setting initial hidden states for animations...');
+    
+    // Hide text elements that will be animated
+    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
+      if (!el.classList.contains('initial-hidden')) {
+        el.classList.add('initial-hidden');
+        // Set initial opacity to 0 for text elements that will be animated
+        el.style.opacity = '0';
+      }
+    });
+    
+    // Handle other elements
+    document.querySelectorAll('img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
         if (el.matches('.grid-down.project-down.mobile-down')) {
@@ -1328,6 +1339,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       }
     });
+    
+    console.log('✅ Initial hidden states applied');
   }
 
   function handleTransition(e, href) {
@@ -1423,12 +1436,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   initLenis();
 
   function init() {
-    if (isInit) return;
+    if (isInit) {
+      console.log('⚠️ Animations already initialized, skipping to prevent conflicts');
+      return;
+    }
+    
     console.log('Starting main animations...');
-    requestAnimationFrame(() => {
-      startAnims();
-      isInit = true;
-    });
+    
+    // Wait for GSAP to be available before starting animations
+    function waitForGSAP() {
+      if (typeof window.gsap !== 'undefined') {
+        console.log('✅ GSAP is available, starting text animations');
+        requestAnimationFrame(() => {
+          startAnims();
+          isInit = true;
+        });
+      } else {
+        console.log('⏳ Waiting for GSAP to load...');
+        setTimeout(waitForGSAP, 100);
+      }
+    }
+    
+    waitForGSAP();
   }
 
   document.addEventListener('click', (e) => {
