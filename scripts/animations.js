@@ -1148,21 +1148,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     console.log(`🎯 Found ${items.length} items for infinite scroll`);
 
-    // Setup wraps function with 0.5vw gap between repeats
+    // Setup wraps function with tight 1vw gap between repeats
     function setupWraps() {
-      const containerRect = container.getBoundingClientRect();
-      const gapSize = window.innerWidth * 0.005; // 0.5vw in pixels
+      const gapSize = window.innerWidth * 0.01; // 1vw in pixels
+      
+      // Calculate total height of all items
+      let totalHeight = 0;
+      items.forEach(item => {
+        totalHeight += item.offsetHeight;
+      });
+      
+      console.log(`📏 Total content height: ${totalHeight}px, Gap: ${gapSize}px`);
 
       for (let i = 0; i < items.length; i++) {
-        const itemRect = items[i].getBoundingClientRect();
-        const min = containerRect.top - itemRect.bottom - gapSize;
-        const max = containerRect.bottom - itemRect.bottom + gapSize;
+        const item = items[i];
+        const itemHeight = item.offsetHeight;
+        
+        // Create a tight wrap that loops content with minimal gap
+        const min = -itemHeight - gapSize;
+        const max = totalHeight + gapSize;
         const wrap = gsap.utils.wrap(min, max);
 
         wraps.push(wrap);
       }
       
-      console.log('✅ Wraps setup complete with 0.5vw gap');
+      console.log('✅ Tight wraps setup complete with 1vw gap');
     }
 
     setupWraps();
