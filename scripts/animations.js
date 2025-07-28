@@ -1217,11 +1217,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLenis() {
     if (lenis || typeof window.Lenis === 'undefined') return;
     
-    // Detect mobile devices
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    // Detect mobile devices including Safari mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || 
+                     window.innerWidth <= 768 ||
+                     /Safari/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent) ||
+                     'ontouchstart' in window ||
+                     navigator.maxTouchPoints > 0;
     
-    if (isMobile) {
-      console.log('📱 Mobile device detected - Lenis disabled for native scroll behavior');
+    // Additional Safari mobile check
+    const isSafariMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent);
+    
+    if (isMobile || isSafariMobile) {
+      console.log('📱 Mobile device or Safari mobile detected - Lenis disabled for native scroll behavior');
       return;
     }
     
