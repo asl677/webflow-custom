@@ -1051,13 +1051,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.7); // Start after 0.7s
     }
 
-    // Setup infinite scroll - DISABLED due to issues
-    // setupInfiniteScroll();
+    // Setup infinite scroll - re-enabled with CodePen approach
+    setupInfiniteScroll();
   }
 
-  // Simple infinite scroll - just repeat content at viewport edges
+  // Infinite scroll using CodePen method - adapted for Webflow flex-grid
   function setupInfiniteScroll() {
-    console.log('🔄 Setting up simple viewport-based infinite scroll...');
+    console.log('🔄 Setting up CodePen-style infinite scroll...');
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1065,60 +1065,85 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Get original content
-    const originalItems = Array.from(container.children);
-    if (originalItems.length === 0) {
-      console.log('⚠️ No items found');
-      return;
-    }
+    // Set up container styles for scrolling
+    container.style.cssText += `
+      overflow-y: auto;
+      max-height: 100vh;
+    `;
 
-    // Clone content for seamless loop
-    originalItems.forEach(item => {
-      const clone = item.cloneNode(true);
-      container.appendChild(clone);
-    });
+    let itemsScrolled = 0;
+    let itemsMax = 0;
+    let cloned = false;
+    
+    const listOpts = {
+      itemCount: null,
+      itemHeight: null,
+      items: [],
+    };
 
-    // Calculate original content height
-    let contentHeight = 0;
-    originalItems.forEach(item => {
-      contentHeight += item.offsetHeight;
-    });
-
-    console.log(`📏 Content height: ${contentHeight}px`);
-
-    // Simple scroll position tracking
-    let scrollPosition = 0;
-
-    // Observer for scroll events
-    Observer.create({
-      target: container,
-      type: "wheel",
-      onWheel: (self) => {
-        self.event.preventDefault();
+    function scrollWrap() {
+      const scrollTop = container.scrollTop;
+      
+      if (listOpts.itemHeight) {
+        itemsScrolled = Math.ceil((scrollTop + listOpts.itemHeight / 2) / listOpts.itemHeight);
         
-        // Update scroll position
-        scrollPosition += self.event.deltaY;
-        
-        // Reset when reaching edges - simple modulo
-        if (scrollPosition >= contentHeight) {
-          scrollPosition = 0;
-        } else if (scrollPosition < 0) {
-          scrollPosition = contentHeight - 1;
+        if (scrollTop < 1) {
+          itemsScrolled = 0;
         }
         
-        // Apply position to container
-        gsap.set(container, {
-          y: -scrollPosition
-        });
+        // When near the end (last 3 items), clone content
+        if (itemsScrolled > listOpts.items.length - 3) {
+          console.log('🔄 Near end, cloning content...');
+          
+          let node;
+          for (let x = 0; x <= itemsMax - 1; x++) {
+            node = listOpts.items[x];
+            
+            if (!cloned) {
+              node = listOpts.items[x].cloneNode(true);
+            }
+            
+            container.appendChild(node);
+          }
+          
+          initItems(cloned);
+          cloned = true;
+          itemsScrolled = 0;
+        }
       }
-    });
+    }
 
-    // Make images visible
+    function initItems(scrollSmooth) {
+      listOpts.items = Array.from(container.children);
+      
+      if (listOpts.items.length > 0) {
+        listOpts.itemHeight = listOpts.items[0].offsetHeight;
+        listOpts.itemCount = listOpts.items.length;
+        
+        if (!itemsMax) {
+          itemsMax = listOpts.itemCount;
+        }
+        
+        if (scrollSmooth && itemsMax > 3) {
+          // Seamlessly jump back to create infinite loop
+          const seamlessScrollPoint = (itemsMax - 3) * listOpts.itemHeight;
+          container.scrollTop = seamlessScrollPoint;
+          console.log(`🔄 Seamless jump to: ${seamlessScrollPoint}px`);
+        }
+      }
+    }
+
+    // Initialize and set up scroll listener
+    initItems();
+    container.onscroll = scrollWrap;
+    
+    // Make sure images are visible
     container.querySelectorAll('img, video').forEach(img => {
       gsap.set(img, { opacity: 1 });
+      img.dataset.gsapAnimated = 'infinite-scroll';
     });
 
-    console.log('✅ Simple infinite scroll ready');
+    console.log(`✅ CodePen infinite scroll initialized with ${listOpts.itemCount} items`);
   }
 
   function initLenis() {
