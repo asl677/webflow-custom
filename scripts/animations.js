@@ -350,8 +350,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', function() {
           console.log('✅ GSAP Observer loaded successfully');
           observerLoaded = true;
-          // DISABLED: initGSAPStagger(); // This was conflicting with startAnims text animations
-          console.log('🚫 GSAP Stagger disabled to prevent conflicts with text animations');
+          initGSAPStagger(); // Re-enabled for reliable text animations
+          console.log('✅ GSAP Stagger enabled for text animations on web and mobile');
         });
       });
     });
@@ -1441,6 +1441,67 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return counter;
   }
 
+  // Mobile-specific text animation fallback
+  function ensureTextAnimationsOnMobile() {
+    console.log('📱 Running mobile text animation fallback check...');
+    
+    // Check if text elements are still hidden after animations should have run
+    const hiddenTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)');
+    let needsFallback = false;
+    
+    hiddenTextElements.forEach(el => {
+      const computedStyle = window.getComputedStyle(el);
+      if (computedStyle.opacity === '0' || el.style.opacity === '0') {
+        needsFallback = true;
+      }
+    });
+    
+    if (needsFallback) {
+      console.log('📱 Text elements still hidden - applying mobile fallback animations');
+      
+      // Apply simple mobile-friendly text animations
+      hiddenTextElements.forEach((el, index) => {
+        if (typeof window.gsap !== 'undefined') {
+          // Use GSAP if available
+          if (!el.dataset.mobileAnimated) {
+            const lines = wrapLines(el);
+            if (lines.length > 0) {
+              window.gsap.set(lines, { opacity: 0, y: 20 });
+              window.gsap.to(lines, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: "power2.out",
+                delay: index * 0.05
+              });
+            } else {
+              // Fallback for elements that don't wrap
+              window.gsap.set(el, { opacity: 0, y: 20 });
+              window.gsap.to(el, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out",
+                delay: index * 0.05
+              });
+            }
+            el.dataset.mobileAnimated = 'true';
+          }
+        } else {
+          // CSS-only fallback if GSAP not available
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          el.classList.remove('initial-hidden');
+        }
+      });
+      
+      console.log('✅ Mobile text animation fallback complete');
+    } else {
+      console.log('✅ Text animations already working - no mobile fallback needed');
+    }
+  }
+
   // Initialize
   addHidden();
   initLenis();
@@ -1468,6 +1529,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     waitForGSAP();
+    
+    // Ensure text animations work on mobile - additional mobile-specific fallback
+    setTimeout(() => {
+      ensureTextAnimationsOnMobile();
+    }, 2000); // Run after 2 seconds as fallback
   }
 
   document.addEventListener('click', (e) => {
