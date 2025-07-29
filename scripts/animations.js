@@ -1382,6 +1382,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   addHidden();
   initLenis();
 
+  // CRITICAL SAFETY: Ensure text is visible after 1 second no matter what
+  setTimeout(() => {
+    console.log('🚨 SAFETY: Ensuring all text is visible after 1 second');
+    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
+      if (el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        el.classList.remove('initial-hidden');
+        console.log('🚨 SAFETY: Made text visible:', el.textContent?.substring(0, 30));
+      }
+    });
+  }, 1000);
+
+  // FALLBACK: Ensure init() runs even if preloader fails
+  setTimeout(() => {
+    if (!isInit) {
+      console.log('🚨 FALLBACK: Running init() because preloader may have failed');
+      init();
+    }
+  }, 2000);
+
   function init() {
     if (isInit) {
       console.log('⚠️ Animations already initialized, skipping to prevent conflicts');
