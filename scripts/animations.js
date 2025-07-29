@@ -1115,7 +1115,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     // Setup infinite scroll FIRST to mark images before stagger system processes them
-    setupInfiniteScroll();
+    // DISABLED: setupInfiniteScroll();
   }
 
   // CodePen-style infinite scroll implementation
