@@ -17,37 +17,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.error('🚨 Error in file:', e.filename, 'at line:', e.lineno);
   });
 
-  // Test function to verify script is running
-  function testBasicFunctionality() {
-    console.log('🧪 Testing basic functionality...');
-    
-    // Test element selection
-    const allElements = document.querySelectorAll('*');
-    console.log(`🔍 Total elements in DOM: ${allElements.length}`);
-    
-    const images = document.querySelectorAll('img');
-    console.log(`🖼️ Total images found: ${images.length}`);
-    
-    const headings = document.querySelectorAll('h1, h2, h3');
-    console.log(`📝 Total headings found: ${headings.length}`);
-    
-    const paragraphs = document.querySelectorAll('p');
-    console.log(`📄 Total paragraphs found: ${paragraphs.length}`);
-    
-    // Test if jQuery is available
-    console.log('💲 jQuery available:', typeof $ !== 'undefined');
-    
-    // Test if imagesLoaded is available
-    console.log('🖼️ imagesLoaded available:', typeof imagesLoaded !== 'undefined');
-    
-    // Test GSAP availability
-    console.log('🎬 GSAP available:', typeof gsap !== 'undefined');
-    console.log('🎬 ScrollTrigger available:', typeof ScrollTrigger !== 'undefined');
-  }
-
-  // Run basic test immediately
-  testBasicFunctionality();
-
   // GSAP Loader Function
   function loadGSAPScript(src, callback) {
     console.log('📦 Loading GSAP script:', src);
@@ -61,38 +30,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.error('❌ Failed to load GSAP script:', src);
     };
     document.head.appendChild(script);
-  }
-
-  // Simplified test animation
-  function runSimpleTest() {
-    console.log('🧪 Running simple animation test...');
-    
-    // Find any element to test with
-    const testElement = document.querySelector('h1, h2, h3, p');
-    if (testElement) {
-      console.log('🎯 Found test element:', testElement.tagName, testElement.textContent?.substring(0, 50));
-      
-      // Simple opacity animation
-      testElement.style.opacity = '0.3';
-      testElement.style.background = 'rgba(255, 0, 0, 0.1)';
-      
-      if (typeof gsap !== 'undefined') {
-        console.log('🎬 Running GSAP test animation...');
-        gsap.to(testElement, {
-          opacity: 1,
-          duration: 2,
-          ease: "power2.out",
-          onComplete: () => {
-            console.log('✅ GSAP animation completed!');
-            testElement.style.background = 'rgba(0, 255, 0, 0.1)';
-          }
-        });
-      } else {
-        console.log('❌ GSAP not available for test');
-      }
-    } else {
-      console.log('❌ No test element found');
-    }
   }
 
   // Initialize GSAP Stagger Animations
@@ -109,7 +46,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('✅ ScrollTrigger registered');
     
     // Run simple test first
-    runSimpleTest();
+    // runSimpleTest(); // Removed as per edit hint
     
     // Wait for preloader to complete before starting animations
     function startGSAPAnimations() {
@@ -338,7 +275,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Test GSAP immediately
       if (typeof gsap !== 'undefined') {
         console.log('🎬 GSAP is now available:', typeof gsap);
-        runSimpleTest();
+        // runSimpleTest(); // Removed as per edit hint
       }
       
       // Load ScrollTrigger plugin
@@ -350,8 +287,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', function() {
           console.log('✅ GSAP Observer loaded successfully');
           observerLoaded = true;
-          initGSAPStagger(); // Re-enabled for reliable text animations
-          console.log('✅ GSAP Stagger enabled for text animations on web and mobile');
+          // DISABLED: initGSAPStagger(); // This conflicts with startAnims text animations
+          console.log('🚫 GSAP Stagger disabled to prevent conflicts with startAnims text animations');
         });
       });
     });
@@ -1441,67 +1378,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return counter;
   }
 
-  // Mobile-specific text animation fallback
-  function ensureTextAnimationsOnMobile() {
-    console.log('📱 Running mobile text animation fallback check...');
-    
-    // Check if text elements are still hidden after animations should have run
-    const hiddenTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)');
-    let needsFallback = false;
-    
-    hiddenTextElements.forEach(el => {
-      const computedStyle = window.getComputedStyle(el);
-      if (computedStyle.opacity === '0' || el.style.opacity === '0') {
-        needsFallback = true;
-      }
-    });
-    
-    if (needsFallback) {
-      console.log('📱 Text elements still hidden - applying mobile fallback animations');
-      
-      // Apply simple mobile-friendly text animations
-      hiddenTextElements.forEach((el, index) => {
-        if (typeof window.gsap !== 'undefined') {
-          // Use GSAP if available
-          if (!el.dataset.mobileAnimated) {
-            const lines = wrapLines(el);
-            if (lines.length > 0) {
-              window.gsap.set(lines, { opacity: 0, y: 20 });
-              window.gsap.to(lines, {
-                opacity: 1,
-                y: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "power2.out",
-                delay: index * 0.05
-              });
-            } else {
-              // Fallback for elements that don't wrap
-              window.gsap.set(el, { opacity: 0, y: 20 });
-              window.gsap.to(el, {
-                opacity: 1,
-                y: 0,
-                duration: 0.6,
-                ease: "power2.out",
-                delay: index * 0.05
-              });
-            }
-            el.dataset.mobileAnimated = 'true';
-          }
-        } else {
-          // CSS-only fallback if GSAP not available
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-          el.classList.remove('initial-hidden');
-        }
-      });
-      
-      console.log('✅ Mobile text animation fallback complete');
-    } else {
-      console.log('✅ Text animations already working - no mobile fallback needed');
-    }
-  }
-
   // Initialize
   addHidden();
   initLenis();
@@ -1529,11 +1405,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     waitForGSAP();
-    
-    // Ensure text animations work on mobile - additional mobile-specific fallback
-    setTimeout(() => {
-      ensureTextAnimationsOnMobile();
-    }, 2000); // Run after 2 seconds as fallback
   }
 
   document.addEventListener('click', (e) => {
