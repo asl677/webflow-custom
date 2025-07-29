@@ -1057,7 +1057,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Simple infinite scroll - duplicate content and move container
   function setupInfiniteScroll() {
-    console.log('🔄 Setting up simple content duplication infinite scroll...');
+    console.log('🔄 Setting up smooth infinite scroll...');
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1072,7 +1072,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    console.log(`🎯 Found ${originalItems.length} items - creating seamless loop`);
+    console.log(`🎯 Found ${originalItems.length} items - creating smooth loop`);
 
     // Clone all items to create seamless loop
     originalItems.forEach(item => {
@@ -1095,10 +1095,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       touch-action: none;
     `;
 
-    // Track current position
-    let currentY = 0;
+    // Track current scroll position
+    let scrollY = 0;
 
-    // Simple Observer for seamless scroll loop
+    // Simple Observer for smooth scroll loop
     Observer.create({
       target: container,
       type: "wheel,touch",
@@ -1106,22 +1106,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         self.event.preventDefault();
         
         const deltaY = self.event.deltaY;
-        const scrollSpeed = deltaY * 0.5; // Smooth scroll speed
+        const scrollSpeed = deltaY * 0.8; // Smooth scroll speed
         
-        // Update position
-        currentY += scrollSpeed;
+        // Update scroll position
+        scrollY += scrollSpeed;
         
-        // Create seamless loop - reset position when reaching content end
-        if (currentY >= totalHeight) {
-          currentY = 0;
-        } else if (currentY < 0) {
-          currentY = totalHeight;
+        // Precise seamless loop - reset when in the duplicate section
+        // This prevents the masking/deletion issues
+        while (scrollY >= totalHeight) {
+          scrollY -= totalHeight;
+        }
+        while (scrollY < 0) {
+          scrollY += totalHeight;
         }
         
-        // Move all items together to create seamless scroll
+        // Apply smooth transform to all items
         gsap.set(container.children, {
-          y: -currentY
+          y: -scrollY
         });
+        
+        // Debug logging (remove in production)
+        if (Math.abs(scrollSpeed) > 0) {
+          console.log(`📊 Scroll: ${scrollY.toFixed(1)}px of ${totalHeight}px`);
+        }
       }
     });
 
@@ -1132,7 +1139,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
 
-    console.log('✅ Simple infinite scroll with content duplication complete');
+    console.log('✅ Smooth infinite scroll complete');
   }
 
   function initLenis() {
