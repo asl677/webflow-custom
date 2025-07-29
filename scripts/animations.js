@@ -1051,8 +1051,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.7); // Start after 0.7s
     }
 
-    // Setup infinite scroll - re-enabled with simple CodePen approach
-    setupInfiniteScroll();
+    // Setup infinite scroll - DISABLED due to issues
+    // setupInfiniteScroll();
   }
 
   // Simple infinite scroll - just repeat content at viewport edges
