@@ -1091,16 +1091,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Setup simple wrapping for each item
     const wraps = items.map(() => gsap.utils.wrap(-totalHeight, totalHeight));
 
-    // Simple Observer for scroll control
+    // Track if we're over the infinite scroll container
+    let isOverContainer = false;
+
+    // Mouse enter/leave tracking for the container
+    container.addEventListener('mouseenter', () => {
+      isOverContainer = true;
+      console.log('🎯 Mouse entered infinite scroll area');
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isOverContainer = false;
+      console.log('🎯 Mouse left infinite scroll area');
+    });
+
+    // Simple Observer for scroll control - only when over container
     Observer.create({
-      target: container,
-      onChange: ({ deltaY }) => {
-        const scrollSpeed = deltaY * 2; // Simple scroll multiplier
+      target: window, // Listen to window but only act when over container
+      type: "wheel",
+      onWheel: (self) => {
+        if (!isOverContainer) return; // Don't interfere with normal scrolling
+        
+        self.event.preventDefault(); // Only prevent when we're handling it
+        
+        const deltaY = self.event.deltaY;
+        const scrollSpeed = deltaY * 1.5; // Reduced multiplier for smoother control
         
         items.forEach((item, i) => {
           gsap.to(item, {
             y: `+=${scrollSpeed}`,
-            duration: 0.5,
+            duration: 0.3,
             ease: "none",
             modifiers: {
               y: gsap.utils.unitize(wraps[i])
@@ -1123,18 +1143,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLenis() {
     if (lenis || typeof window.Lenis === 'undefined') return;
     
-    // Detect mobile devices including Safari mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || 
-                     window.innerWidth <= 768 ||
-                     /Safari/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent) ||
-                     'ontouchstart' in window ||
-                     navigator.maxTouchPoints > 0;
+    // More precise mobile detection - don't disable Lenis on desktop with touchscreens
+    const userAgent = navigator.userAgent;
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isSmallScreen = window.innerWidth <= 768;
+    const isSafariMobile = /Safari/.test(userAgent) && /Mobile/.test(userAgent) && !/Chrome|CriOS|FxiOS/.test(userAgent);
     
-    // Additional Safari mobile check
-    const isSafariMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent);
+    // Only disable on actual mobile devices, not desktop with touch
+    const isMobile = isMobileDevice || isSafariMobile || (isSmallScreen && /Mobi|Android/i.test(userAgent));
     
-    if (isMobile || isSafariMobile) {
-      console.log('📱 Mobile device or Safari mobile detected - Lenis disabled for native scroll behavior');
+    if (isMobile) {
+      console.log('📱 Mobile device detected - Lenis disabled for native scroll behavior');
       return;
     }
     
