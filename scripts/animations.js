@@ -1055,9 +1055,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setupInfiniteScroll();
   }
 
-  // Simple infinite scroll based on CodePen example
+  // Simple infinite scroll - duplicate content and move container
   function setupInfiniteScroll() {
-    console.log('🔄 Setting up simple infinite scroll...');
+    console.log('🔄 Setting up simple content duplication infinite scroll...');
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1065,67 +1065,62 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Simple container setup
+    // Get all original items
+    const originalItems = Array.from(container.children);
+    if (originalItems.length === 0) {
+      console.log('⚠️ No items found in container');
+      return;
+    }
+
+    console.log(`🎯 Found ${originalItems.length} items - creating seamless loop`);
+
+    // Clone all items to create seamless loop
+    originalItems.forEach(item => {
+      const clone = item.cloneNode(true);
+      container.appendChild(clone);
+    });
+
+    // Calculate total height of original content
+    let totalHeight = 0;
+    originalItems.forEach(item => {
+      totalHeight += item.offsetHeight;
+    });
+
+    console.log(`📏 Original content height: ${totalHeight}px`);
+
+    // Set container styles for smooth scrolling
     container.style.cssText += `
       overflow: hidden;
       user-select: none;
       touch-action: none;
     `;
 
-    const items = gsap.utils.toArray(container.children);
-    if (items.length === 0) {
-      console.log('⚠️ No items found in container');
-      return;
-    }
+    // Track current position
+    let currentY = 0;
 
-    console.log(`🎯 Found ${items.length} items for simple infinite scroll`);
-
-    // Calculate total height for seamless loop
-    let totalHeight = 0;
-    items.forEach(item => {
-      totalHeight += item.offsetHeight;
-    });
-
-    console.log(`📏 Total height: ${totalHeight}px`);
-
-    // Setup simple wrapping for each item
-    const wraps = items.map(() => gsap.utils.wrap(-totalHeight, totalHeight));
-
-    // Track if we're over the infinite scroll container
-    let isOverContainer = false;
-
-    // Mouse enter/leave tracking for the container
-    container.addEventListener('mouseenter', () => {
-      isOverContainer = true;
-      console.log('🎯 Mouse entered infinite scroll area');
-    });
-
-    container.addEventListener('mouseleave', () => {
-      isOverContainer = false;
-      console.log('🎯 Mouse left infinite scroll area');
-    });
-
-    // Simple Observer for scroll control - only when over container
+    // Simple Observer for seamless scroll loop
     Observer.create({
-      target: window, // Listen to window but only act when over container
-      type: "wheel",
+      target: container,
+      type: "wheel,touch",
       onWheel: (self) => {
-        if (!isOverContainer) return; // Don't interfere with normal scrolling
-        
-        self.event.preventDefault(); // Only prevent when we're handling it
+        self.event.preventDefault();
         
         const deltaY = self.event.deltaY;
-        const scrollSpeed = deltaY * 1.5; // Reduced multiplier for smoother control
+        const scrollSpeed = deltaY * 0.5; // Smooth scroll speed
         
-        items.forEach((item, i) => {
-          gsap.to(item, {
-            y: `+=${scrollSpeed}`,
-            duration: 0.3,
-            ease: "none",
-            modifiers: {
-              y: gsap.utils.unitize(wraps[i])
-            }
-          });
+        // Update position
+        currentY += scrollSpeed;
+        
+        // Create seamless loop - reset position when reaching content end
+        if (currentY >= totalHeight) {
+          currentY = 0;
+        } else if (currentY < 0) {
+          currentY = totalHeight;
+        }
+        
+        // Move all items together to create seamless scroll
+        gsap.set(container.children, {
+          y: -currentY
         });
       }
     });
@@ -1137,7 +1132,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
 
-    console.log('✅ Simple infinite scroll setup complete');
+    console.log('✅ Simple infinite scroll with content duplication complete');
   }
 
   function initLenis() {
