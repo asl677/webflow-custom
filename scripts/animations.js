@@ -1,4 +1,4 @@
-// Version 1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
+// Version 1.8.5 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 console.log('🔥 animations.js v1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals loading...');
@@ -1051,114 +1051,73 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 0.7); // Start after 0.7s
     }
 
-    // Setup infinite scroll FIRST to mark images before stagger system processes them
-    // DISABLED: setupInfiniteScroll();
+    // Setup infinite scroll - re-enabled with simple CodePen approach
+    setupInfiniteScroll();
   }
 
-  // CodePen-style infinite scroll implementation
+  // Simple infinite scroll based on CodePen example
   function setupInfiniteScroll() {
-    if (!observerLoaded || typeof Observer === 'undefined') {
-      console.log('⚠️ Observer not available for infinite scroll');
-      return;
-    }
-
-    console.log('🔄 Setting up CodePen-style infinite scroll...');
+    console.log('🔄 Setting up simple infinite scroll...');
     
-    // Target ONLY the specific container - be very specific
     const container = document.querySelector('.flex-grid');
-    
     if (!container) {
       console.log('⚠️ No .flex-grid container found');
       return;
     }
 
-    console.log('✅ Found flex-grid container for infinite scroll');
-    
-    // Get items using GSAP utils like the CodePen
-    const items = gsap.utils.toArray(container.children);
-    const wraps = [];
+    // Simple container setup
+    container.style.cssText += `
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    `;
 
+    const items = gsap.utils.toArray(container.children);
     if (items.length === 0) {
       console.log('⚠️ No items found in container');
       return;
     }
 
-    console.log(`🎯 Found ${items.length} items for infinite scroll`);
+    console.log(`🎯 Found ${items.length} items for simple infinite scroll`);
 
-    // Setup wraps function with tight 1vw gap between repeats
-    function setupWraps() {
-      const gapSize = window.innerWidth * 0.01; // 1vw in pixels
-      
-      // Calculate total height of all items
-      let totalHeight = 0;
-      items.forEach(item => {
-        totalHeight += item.offsetHeight;
-      });
-      
-      console.log(`📏 Total content height: ${totalHeight}px, Gap: ${gapSize}px`);
+    // Calculate total height for seamless loop
+    let totalHeight = 0;
+    items.forEach(item => {
+      totalHeight += item.offsetHeight;
+    });
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const itemHeight = item.offsetHeight;
-        
-        // Create a tight wrap that loops content with minimal gap
-        const min = -itemHeight - gapSize;
-        const max = totalHeight + gapSize;
-        const wrap = gsap.utils.wrap(min, max);
+    console.log(`📏 Total height: ${totalHeight}px`);
 
-        wraps.push(wrap);
-      }
-      
-      console.log('✅ Tight wraps setup complete with 1vw gap');
-    }
+    // Setup simple wrapping for each item
+    const wraps = items.map(() => gsap.utils.wrap(-totalHeight, totalHeight));
 
-    setupWraps();
-
-    // Register Observer and ScrollTrigger
-    gsap.registerPlugin(Observer, ScrollTrigger);
-
-    // Create Observer exactly like CodePen
+    // Simple Observer for scroll control
     Observer.create({
-      preventDefault: true,
       target: container,
-             onPress: ({ target }) => {
-         // No cursor change
-       },
-       onRelease: ({ target }) => {
-         // No cursor change
-       },
-      onChange: ({ deltaY, isDragging, event }) => {
-        const d = event.type === "wheel" ? -deltaY : deltaY;
-        const y = isDragging ? d * 5 : d * 10;
-
-        for (let i = 0; i < items.length; i++) {
-          gsap.to(items[i], {
-            duration: 1,
-            ease: "power2.out",
-            y: `+=${y}`,
+      onChange: ({ deltaY }) => {
+        const scrollSpeed = deltaY * 2; // Simple scroll multiplier
+        
+        items.forEach((item, i) => {
+          gsap.to(item, {
+            y: `+=${scrollSpeed}`,
+            duration: 0.5,
+            ease: "none",
             modifiers: {
               y: gsap.utils.unitize(wraps[i])
             }
           });
-        }
+        });
       }
     });
 
-         // Add minimal container styles - ONLY affect this specific container
-     container.style.cssText += `
-       overflow: hidden;
-       user-select: none;
-       touch-action: none;
-     `;
-
-    // Ensure images in infinite scroll are visible and marked (no fade conflicts)
+    // Make sure images are visible
     const scrollImages = container.querySelectorAll('img, video');
     scrollImages.forEach(img => {
       gsap.set(img, { opacity: 1 });
-      img.dataset.gsapAnimated = 'infinite-scroll'; // Mark to prevent other systems from processing
+      img.dataset.gsapAnimated = 'infinite-scroll';
     });
 
-    console.log('✅ CodePen-style infinite scroll setup complete');
+    console.log('✅ Simple infinite scroll setup complete');
   }
 
   function initLenis() {
