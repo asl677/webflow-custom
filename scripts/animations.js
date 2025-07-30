@@ -1055,9 +1055,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setupInfiniteScroll();
   }
 
-  // Infinite scroll using CodePen method - adapted for Webflow flex-grid
+  // Infinite scroll using CodePen method - desktop only to prevent mobile scroll issues
   function setupInfiniteScroll() {
     console.log('🔄 Setting up CodePen-style infinite scroll...');
+    
+    // Only enable infinite scroll on desktop to avoid mobile scroll conflicts
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    const isSafariMobile = /safari/.test(userAgent) && /mobile/.test(userAgent) && !/chrome|crios|fxios/.test(userAgent);
+    const isMobile = isMobileDevice || isSafariMobile;
+    
+    if (isMobile) {
+      console.log('📱 Mobile detected - infinite scroll disabled for better mobile experience');
+      return;
+    }
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1065,7 +1076,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Set up container styles for scrolling with hidden scrollbars
+    // Set up container styles for scrolling with hidden scrollbars (desktop only)
     container.style.cssText += `
       overflow-y: auto;
       max-height: 100vh;
@@ -1074,29 +1085,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       -ms-overflow-style: none;
     `;
 
-    // Add CSS to hide scrollbars on all browsers including mobile Safari/Chrome
+    // Add CSS to hide scrollbars on desktop only - mobile needs normal scrolling
     const scrollbarStyles = document.createElement('style');
     scrollbarStyles.textContent = `
-      .flex-grid::-webkit-scrollbar {
-        display: none;
-        width: 0;
-        height: 0;
-        background: transparent;
+      /* Desktop infinite scroll styles */
+      @media (min-width: 769px) {
+        .flex-grid::-webkit-scrollbar {
+          display: none;
+          width: 0;
+          height: 0;
+          background: transparent;
+        }
+        
+        .flex-grid::-webkit-scrollbar-track {
+          display: none;
+        }
+        
+        .flex-grid::-webkit-scrollbar-thumb {
+          display: none;
+        }
+        
+        .flex-grid {
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
       }
       
-      .flex-grid::-webkit-scrollbar-track {
-        display: none;
-      }
-      
-      .flex-grid::-webkit-scrollbar-thumb {
-        display: none;
-      }
-      
-      /* Ensure smooth touch scrolling on mobile */
-      .flex-grid {
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+      /* Mobile normal scrolling - remove any scroll constraints */
+      @media (max-width: 768px) {
+        .flex-grid {
+          overflow: visible !important;
+          max-height: none !important;
+          height: auto !important;
+          -webkit-overflow-scrolling: touch;
+        }
       }
     `;
     
