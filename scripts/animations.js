@@ -1,4 +1,4 @@
-// Version 1.8.5 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
+// Version 1.8.6 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 console.log('🔥 animations.js v1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals loading...');
@@ -1059,11 +1059,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function setupInfiniteScroll() {
     console.log('🔄 Setting up CodePen-style infinite scroll...');
     
-    // Detect mobile to use different infinite scroll approach
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-    const isSafariMobile = /safari/.test(userAgent) && /mobile/.test(userAgent) && !/chrome|crios|fxios/.test(userAgent);
-    const isMobile = isMobileDevice || isSafariMobile;
+    // Simple viewport width check - use mobile approach under 470px
+    const viewportWidth = window.innerWidth;
+    const isMobile = viewportWidth < 470;
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1299,24 +1297,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
     
-    // Much more precise mobile detection - only disable on actual mobile devices
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-    const isSafariMobile = /safari/.test(userAgent) && /mobile/.test(userAgent) && !/chrome|crios|fxios/.test(userAgent);
+    // Simple viewport width check - disable Lenis under 470px
+    const viewportWidth = window.innerWidth;
     
-    // Only disable on genuine mobile devices, not resized desktop browsers
-    const isMobile = isMobileDevice || isSafariMobile;
+    console.log('🔍 Viewport width:', viewportWidth);
     
-    console.log('🔍 Mobile detection:', {
-      userAgent: userAgent.substring(0, 50),
-      isMobileDevice,
-      isSafariMobile,
-      isMobile,
-      screenWidth: window.innerWidth
-    });
-    
-    if (isMobile) {
-      console.log('📱 Mobile device detected - Lenis disabled for native scroll behavior');
+    if (viewportWidth < 470) {
+      console.log('📱 Viewport under 470px - Lenis disabled for native scroll behavior');
       return;
     }
     
@@ -1405,6 +1392,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       document.documentElement.style.scrollBehavior = 'smooth';
     }
   }
+
+  // Handle viewport resize to destroy/reinitialize Lenis at 470px breakpoint
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const viewportWidth = window.innerWidth;
+      
+      if (viewportWidth < 470 && lenis) {
+        console.log('📱 Viewport < 470px - destroying Lenis');
+        lenis.destroy();
+        lenis = null;
+        document.documentElement.classList.remove('lenis');
+        document.body.classList.remove('lenis-smooth');
+      } else if (viewportWidth >= 470 && !lenis) {
+        console.log('💻 Viewport >= 470px - reinitializing Lenis');
+        initLenis();
+      }
+    }, 250);
+  });
 
   function addHidden() {
     console.log('🙈 Setting initial hidden states for animations...');
