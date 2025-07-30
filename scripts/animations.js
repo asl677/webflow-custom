@@ -1074,11 +1074,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Set up container styles - different for mobile vs desktop
     if (isMobile) {
       console.log('📱 Setting up mobile-friendly infinite scroll...');
-      // Mobile: no height constraints, just enable smooth scrolling
-      container.style.cssText += `
-        -webkit-overflow-scrolling: touch;
-        overflow-y: visible;
-      `;
+      // Mobile: completely natural scrolling, no constraints at all
+      console.log('📱 Mobile: Removing any existing style constraints...');
+      // Don't add any styles that might interfere with mobile scrolling
     } else {
       console.log('💻 Setting up desktop infinite scroll with hidden scrollbars...');
       // Desktop: contained scrolling with hidden scrollbars
@@ -1118,13 +1116,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       }
       
-      /* Mobile normal scrolling - remove any scroll constraints */
+      /* Mobile normal scrolling - completely remove all scroll constraints */
       @media (max-width: 768px) {
         .flex-grid {
           overflow: visible !important;
           max-height: none !important;
           height: auto !important;
+          min-height: auto !important;
+          position: static !important;
+          transform: none !important;
           -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Ensure parent containers don't constrain either */
+        .flex-grid * {
+          max-height: none !important;
         }
       }
     `;
@@ -1200,43 +1206,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     initItems();
     
     if (isMobile) {
-      // Mobile: listen to window scroll since container isn't constrained
-      console.log('📱 Setting up mobile window scroll listener...');
-      window.addEventListener('scroll', scrollWrap);
+      // Mobile: simple approach - just clone content when near end
+      console.log('📱 Setting up simple mobile infinite scroll...');
       
-      // Override scrollWrap for mobile to use window scroll
-      function mobileScrollWrap() {
+      let mobileCloned = false;
+      
+      function simpleMobileScroll() {
+        // Simple check: are we near the bottom of the page?
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const containerRect = container.getBoundingClientRect();
-        const containerTop = containerRect.top + scrollTop;
-        const relativeScrollTop = scrollTop - containerTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const nearBottom = scrollTop + windowHeight > documentHeight - 1000; // 1000px before end
         
-        if (relativeScrollTop > 0 && listOpts.itemHeight) {
-          itemsScrolled = Math.ceil((relativeScrollTop + listOpts.itemHeight / 2) / listOpts.itemHeight);
+        if (nearBottom && !mobileCloned && listOpts.items.length > 0) {
+          console.log('📱 Mobile: Near bottom, cloning content for infinite scroll...');
           
-          // When near the end (last 3 items), clone content
-          if (itemsScrolled > listOpts.items.length - 3) {
-            console.log('🔄 Mobile: Near end, cloning content...');
-            
-            let node;
-            for (let x = 0; x <= itemsMax - 1; x++) {
-              node = listOpts.items[x];
-              
-              if (!cloned) {
-                node = listOpts.items[x].cloneNode(true);
-              }
-              
-              container.appendChild(node);
+          // Clone all original items
+          for (let x = 0; x < itemsMax; x++) {
+            if (listOpts.items[x]) {
+              const clone = listOpts.items[x].cloneNode(true);
+              container.appendChild(clone);
             }
-            
-            initItems(false); // Don't jump scroll on mobile
-            cloned = true;
-            itemsScrolled = 0;
           }
+          
+          mobileCloned = true;
+          
+          // Reset after a delay to allow for more cloning if needed
+          setTimeout(() => {
+            mobileCloned = false;
+            // Update items list
+            listOpts.items = Array.from(container.children);
+          }, 2000);
         }
       }
       
-      window.addEventListener('scroll', mobileScrollWrap);
+      window.addEventListener('scroll', simpleMobileScroll);
     } else {
       // Desktop: use container scroll
       console.log('💻 Setting up desktop container scroll listener...');
@@ -1265,27 +1269,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (typeof window.Lenis === 'undefined') {
       console.log('⚠️ Lenis not loaded - attempting to load from CDN...');
       
-      // Try to load Lenis from CDN with fallback
+      // Try to load Lenis from CDN with correct URLs
       const lenisScript = document.createElement('script');
-      lenisScript.src = 'https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.39/bundled/lenis.min.js';
+      lenisScript.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
       lenisScript.onload = () => {
         console.log('✅ Lenis successfully loaded from CDN!');
+        console.log('🔍 Lenis constructor available:', typeof window.Lenis);
         setTimeout(() => {
           console.log('🔄 Retrying Lenis initialization...');
           initLenis();
-        }, 100);
+        }, 200);
       };
       lenisScript.onerror = () => {
-        console.error('❌ Primary CDN failed, trying alternative...');
-        // Try alternative CDN
+        console.error('❌ Primary CDN failed, trying JSDelivr...');
+        // Try JSDelivr CDN
         const fallbackScript = document.createElement('script');
-        fallbackScript.src = 'https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js';
+        fallbackScript.src = 'https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js';
         fallbackScript.onload = () => {
-          console.log('✅ Lenis loaded from fallback CDN!');
-          setTimeout(initLenis, 100);
+          console.log('✅ Lenis loaded from JSDelivr CDN!');
+          setTimeout(initLenis, 200);
         };
         fallbackScript.onerror = () => {
           console.error('❌ All Lenis CDNs failed - smooth scrolling unavailable');
+          console.log('💡 You may need to manually include Lenis in your project');
         };
         document.head.appendChild(fallbackScript);
       };
@@ -1474,8 +1480,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       /* Mobile font sizing for time counter */
       @media (max-width: 768px) {
         #time-counter {
-          font-size: 14px !important;
-          bottom: 4vw !important;
+          font-size: 11px !important;
+          bottom: 1vw !important;
         }
       }
       
