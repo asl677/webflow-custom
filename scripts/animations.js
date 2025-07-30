@@ -1334,7 +1334,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     counter.id = 'time-counter';
     counter.textContent = '00:00';
     
-    // Add styles
+    // Add styles with responsive font sizing for mobile
     counter.style.cssText = `
       position: fixed;
       bottom: 1vw;
@@ -1342,13 +1342,53 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       transform: translateX(-50%);
       color: white;
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
-      font-size: 0.8vw;
+      font-size: clamp(12px, 0.8vw, 16px);
       z-index: 9999;
       pointer-events: none;
       user-select: none;
       letter-spacing: 0.1em;
       opacity: 0.8;
     `;
+
+    // Add mobile-specific styles for counter and main wrapper
+    const mobileStyles = document.createElement('style');
+    mobileStyles.textContent = `
+      /* Mobile font sizing for time counter */
+      @media (max-width: 768px) {
+        #time-counter {
+          font-size: 14px !important;
+          bottom: 4vw !important;
+        }
+      }
+      
+      /* Ensure main wrapper stretches full viewport height on mobile */
+      @media (max-width: 768px) {
+        body, html {
+          height: 100vh;
+          min-height: 100vh;
+          margin: 0;
+          padding: 0;
+        }
+        
+        .main-wrapper, 
+        [data-w-id], 
+        main,
+        .page-wrapper {
+          min-height: 100vh;
+          height: auto;
+        }
+        
+        /* Ensure Webflow's main container fills viewport */
+        body > div:first-child {
+          min-height: 100vh;
+        }
+      }
+    `;
+    
+    if (!document.head.querySelector('#mobile-responsive-styles')) {
+      mobileStyles.id = 'mobile-responsive-styles';
+      document.head.appendChild(mobileStyles);
+    }
     
     document.body.appendChild(counter);
     
