@@ -1181,16 +1181,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function initLenis() {
-    if (lenis || typeof window.Lenis === 'undefined') return;
+    console.log('🚀 Attempting to initialize Lenis...');
+    console.log('🔍 Lenis available:', typeof window.Lenis !== 'undefined');
+    console.log('🔍 Already initialized:', !!lenis);
     
-    // More precise mobile detection - don't disable Lenis on desktop with touchscreens
-    const userAgent = navigator.userAgent;
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-    const isSmallScreen = window.innerWidth <= 768;
-    const isSafariMobile = /Safari/.test(userAgent) && /Mobile/.test(userAgent) && !/Chrome|CriOS|FxiOS/.test(userAgent);
+    if (lenis) {
+      console.log('⚠️ Lenis already initialized');
+      return;
+    }
     
-    // Only disable on actual mobile devices, not desktop with touch
-    const isMobile = isMobileDevice || isSafariMobile || (isSmallScreen && /Mobi|Android/i.test(userAgent));
+    if (typeof window.Lenis === 'undefined') {
+      console.log('⚠️ Lenis not loaded - attempting to load from CDN...');
+      
+      // Try to load Lenis from CDN
+      const lenisScript = document.createElement('script');
+      lenisScript.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
+      lenisScript.onload = () => {
+        console.log('✅ Lenis loaded from CDN, retrying initialization...');
+        setTimeout(initLenis, 100);
+      };
+      lenisScript.onerror = () => {
+        console.error('❌ Failed to load Lenis from CDN');
+      };
+      document.head.appendChild(lenisScript);
+      return;
+    }
+    
+    // Much more precise mobile detection - only disable on actual mobile devices
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    const isSafariMobile = /safari/.test(userAgent) && /mobile/.test(userAgent) && !/chrome|crios|fxios/.test(userAgent);
+    
+    // Only disable on genuine mobile devices, not resized desktop browsers
+    const isMobile = isMobileDevice || isSafariMobile;
+    
+    console.log('🔍 Mobile detection:', {
+      userAgent: userAgent.substring(0, 50),
+      isMobileDevice,
+      isSafariMobile,
+      isMobile,
+      screenWidth: window.innerWidth
+    });
     
     if (isMobile) {
       console.log('📱 Mobile device detected - Lenis disabled for native scroll behavior');
@@ -1274,7 +1305,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         lenis.destroy();
       }
       
-      console.log(`💻 Lenis initialized on desktop (iOS: ${isIOS}) with infinite scroll exclusion`);
+      console.log(`✅ Lenis smooth scrolling SUCCESSFULLY initialized on desktop!`);
+      console.log(`🔧 Lenis config: iOS=${isIOS}, duration=1.2s, autoRaf=true`);
     } catch (e) { 
       console.error('Lenis error:', e);
       // Fallback to native scroll
