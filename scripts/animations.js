@@ -1059,16 +1059,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function setupInfiniteScroll() {
     console.log('🔄 Setting up CodePen-style infinite scroll...');
     
-    // Only enable infinite scroll on desktop to avoid mobile scroll conflicts
+    // Detect mobile to use different infinite scroll approach
     const userAgent = navigator.userAgent.toLowerCase();
     const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
     const isSafariMobile = /safari/.test(userAgent) && /mobile/.test(userAgent) && !/chrome|crios|fxios/.test(userAgent);
     const isMobile = isMobileDevice || isSafariMobile;
-    
-    if (isMobile) {
-      console.log('📱 Mobile detected - infinite scroll disabled for better mobile experience');
-      return;
-    }
     
     const container = document.querySelector('.flex-grid');
     if (!container) {
@@ -1076,14 +1071,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Set up container styles for scrolling with hidden scrollbars (desktop only)
-    container.style.cssText += `
-      overflow-y: auto;
-      max-height: 100vh;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    `;
+    // Set up container styles - different for mobile vs desktop
+    if (isMobile) {
+      console.log('📱 Setting up mobile-friendly infinite scroll...');
+      // Mobile: no height constraints, just enable smooth scrolling
+      container.style.cssText += `
+        -webkit-overflow-scrolling: touch;
+        overflow-y: visible;
+      `;
+    } else {
+      console.log('💻 Setting up desktop infinite scroll with hidden scrollbars...');
+      // Desktop: contained scrolling with hidden scrollbars
+      container.style.cssText += `
+        overflow-y: auto;
+        max-height: 100vh;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      `;
+    }
 
     // Add CSS to hide scrollbars on desktop only - mobile needs normal scrolling
     const scrollbarStyles = document.createElement('style');
@@ -1190,9 +1196,52 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }
 
-    // Initialize and set up scroll listener
+    // Initialize and set up scroll listener - different for mobile vs desktop
     initItems();
-    container.onscroll = scrollWrap;
+    
+    if (isMobile) {
+      // Mobile: listen to window scroll since container isn't constrained
+      console.log('📱 Setting up mobile window scroll listener...');
+      window.addEventListener('scroll', scrollWrap);
+      
+      // Override scrollWrap for mobile to use window scroll
+      function mobileScrollWrap() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const containerRect = container.getBoundingClientRect();
+        const containerTop = containerRect.top + scrollTop;
+        const relativeScrollTop = scrollTop - containerTop;
+        
+        if (relativeScrollTop > 0 && listOpts.itemHeight) {
+          itemsScrolled = Math.ceil((relativeScrollTop + listOpts.itemHeight / 2) / listOpts.itemHeight);
+          
+          // When near the end (last 3 items), clone content
+          if (itemsScrolled > listOpts.items.length - 3) {
+            console.log('🔄 Mobile: Near end, cloning content...');
+            
+            let node;
+            for (let x = 0; x <= itemsMax - 1; x++) {
+              node = listOpts.items[x];
+              
+              if (!cloned) {
+                node = listOpts.items[x].cloneNode(true);
+              }
+              
+              container.appendChild(node);
+            }
+            
+            initItems(false); // Don't jump scroll on mobile
+            cloned = true;
+            itemsScrolled = 0;
+          }
+        }
+      }
+      
+      window.addEventListener('scroll', mobileScrollWrap);
+    } else {
+      // Desktop: use container scroll
+      console.log('💻 Setting up desktop container scroll listener...');
+      container.onscroll = scrollWrap;
+    }
     
     // Make sure images are visible
     container.querySelectorAll('img, video').forEach(img => {
@@ -1216,15 +1265,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (typeof window.Lenis === 'undefined') {
       console.log('⚠️ Lenis not loaded - attempting to load from CDN...');
       
-      // Try to load Lenis from CDN
+      // Try to load Lenis from CDN with fallback
       const lenisScript = document.createElement('script');
-      lenisScript.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
+      lenisScript.src = 'https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.39/bundled/lenis.min.js';
       lenisScript.onload = () => {
-        console.log('✅ Lenis loaded from CDN, retrying initialization...');
-        setTimeout(initLenis, 100);
+        console.log('✅ Lenis successfully loaded from CDN!');
+        setTimeout(() => {
+          console.log('🔄 Retrying Lenis initialization...');
+          initLenis();
+        }, 100);
       };
       lenisScript.onerror = () => {
-        console.error('❌ Failed to load Lenis from CDN');
+        console.error('❌ Primary CDN failed, trying alternative...');
+        // Try alternative CDN
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = 'https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js';
+        fallbackScript.onload = () => {
+          console.log('✅ Lenis loaded from fallback CDN!');
+          setTimeout(initLenis, 100);
+        };
+        fallbackScript.onerror = () => {
+          console.error('❌ All Lenis CDNs failed - smooth scrolling unavailable');
+        };
+        document.head.appendChild(fallbackScript);
       };
       document.head.appendChild(lenisScript);
       return;
