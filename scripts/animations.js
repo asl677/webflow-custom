@@ -1065,11 +1065,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
 
-    // Set up container styles for scrolling
+    // Set up container styles for scrolling with hidden scrollbars
     container.style.cssText += `
       overflow-y: auto;
       max-height: 100vh;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     `;
+
+    // Add CSS to hide scrollbars on all browsers including mobile Safari/Chrome
+    const scrollbarStyles = document.createElement('style');
+    scrollbarStyles.textContent = `
+      .flex-grid::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+        background: transparent;
+      }
+      
+      .flex-grid::-webkit-scrollbar-track {
+        display: none;
+      }
+      
+      .flex-grid::-webkit-scrollbar-thumb {
+        display: none;
+      }
+      
+      /* Ensure smooth touch scrolling on mobile */
+      .flex-grid {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+    `;
+    
+    if (!document.head.querySelector('#infinite-scroll-styles')) {
+      scrollbarStyles.id = 'infinite-scroll-styles';
+      document.head.appendChild(scrollbarStyles);
+    }
 
     let itemsScrolled = 0;
     let itemsMax = 0;
