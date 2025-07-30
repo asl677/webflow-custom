@@ -1361,15 +1361,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       }
       
-      /* Ensure main wrapper stretches full viewport height on mobile */
+      /* Ensure main wrapper stretches full viewport height on mobile without breaking scroll */
       @media (max-width: 768px) {
-        body, html {
-          height: 100vh;
-          min-height: 100vh;
-          margin: 0;
-          padding: 0;
-        }
-        
         .main-wrapper, 
         [data-w-id], 
         main,
@@ -1378,7 +1371,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           height: auto;
         }
         
-        /* Ensure Webflow's main container fills viewport */
+        /* Ensure Webflow's main container fills viewport but allows scrolling */
         body > div:first-child {
           min-height: 100vh;
         }
