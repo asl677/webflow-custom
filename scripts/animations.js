@@ -1,294 +1,35 @@
-// Version 1.8.6 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals
+// Version 1.8.7 - Simplified: Removed Lenis, unified infinite scroll for all devices
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-console.log('🔥 animations.js v1.8.4 - IMG-PARALLAX SCALING: Added smooth scale animation (1.2 → 1.0) for .img-parallax elements during mask reveals loading...');
-console.log('🔍 Current URL:', window.location.href);
-console.log('🔍 Document ready state:', document.readyState);
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  let isInit = false, lenis = null, preloaderComplete = false;
+  let isInit = false, preloaderComplete = false;
   let gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false;
 
-  // Add global error handler
+  // Global error handler
   window.addEventListener('error', function(e) {
-    console.error('🚨 Global JavaScript error:', e.error);
-    console.error('🚨 Error in file:', e.filename, 'at line:', e.lineno);
+    console.error('Global JavaScript error:', e.error);
   });
 
   // GSAP Loader Function
   function loadGSAPScript(src, callback) {
-    console.log('📦 Loading GSAP script:', src);
     const script = document.createElement('script');
     script.src = src;
-    script.onload = function() {
-      console.log('✅ Successfully loaded:', src);
-      callback();
-    };
-    script.onerror = function() {
-      console.error('❌ Failed to load GSAP script:', src);
-    };
+    script.onload = callback;
+    script.onerror = () => console.error('Failed to load GSAP script:', src);
     document.head.appendChild(script);
-  }
-
-  // Initialize GSAP Stagger Animations
-  function initGSAPStagger() {
-    if (!gsapLoaded || !scrollTriggerLoaded || !observerLoaded) {
-      console.log('⏳ GSAP not ready yet, gsapLoaded:', gsapLoaded, 'scrollTriggerLoaded:', scrollTriggerLoaded, 'observerLoaded:', observerLoaded);
-      return;
-    }
-    
-    console.log('🎬 *** STARTING initGSAPStagger() - THIS MIGHT BE OVERRIDING EVERYTHING ***');
-    
-    // Register ScrollTrigger plugin
-    gsap.registerPlugin(ScrollTrigger);
-    console.log('✅ ScrollTrigger registered');
-    
-    // Run simple test first
-    // runSimpleTest(); // Removed as per edit hint
-    
-    // Wait for preloader to complete before starting animations
-    function startGSAPAnimations() {
-      // Prevent multiple initializations
-      if (window.gsapStaggerInitialized) {
-        console.log('⚠️ GSAP stagger already initialized, skipping to prevent conflicts');
-        return;
-      }
-      window.gsapStaggerInitialized = true;
-      
-      console.log('🎬 Starting viewport + scroll stagger system');
-      
-      const allImages = document.querySelectorAll("img:not(#preloader img)");
-      console.log(`📊 Found ${allImages.length} total images for stagger`);
-      
-      if (allImages.length === 0) {
-        console.log('⚠️ No images found for stagger animation');
-        return;
-      }
-      
-      // Log each image found
-      allImages.forEach((img, i) => {
-        console.log(`🖼️ Image ${i + 1}:`, img.src, 'visible:', img.offsetParent !== null);
-      });
-      
-        // Set all images to invisible initially (only if not already animated)
-        console.log('🙈 Setting all images to opacity 0 for smooth loading');
-        allImages.forEach(img => {
-          // Skip images inside reveal containers - they need to be visible for mask effect AND load early
-          if (img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
-            console.log('🎭 Reveal container image - setting visible and preloading');
-            gsap.set(img, { opacity: 1 });
-            img.dataset.gsapAnimated = 'reveal-container';
-            // Ensure reveal images are fully loaded early
-            if (img.loading !== 'eager') {
-              img.loading = 'eager';
-            }
-            return;
-          }
-          
-          // CRITICAL: Skip images inside infinite scroll containers
-          if (img.closest('.flex-grid, .container.video-wrap-hide')) {
-            console.log('🔄 Skipping image in infinite scroll container:', img.src?.substring(0, 50));
-            gsap.set(img, { opacity: 1 });
-            img.dataset.gsapAnimated = 'infinite-scroll';
-            // Ensure infinite scroll images load eagerly too
-            if (img.loading !== 'eager') {
-              img.loading = 'eager';
-            }
-            return;
-          }
-          
-          // Only set opacity if not already animated to prevent conflicts
-          if (!img.dataset.gsapAnimated) {
-            gsap.set(img, { opacity: 0, y: 20 }); // Add initial Y position for smooth movement
-            img.dataset.gsapAnimated = 'initializing';
-          }
-        });
-      
-      // Wait for images to load, then implement stagger system
-      if (typeof imagesLoaded === 'function') {
-        console.log('📦 Using imagesLoaded library');
-        imagesLoaded(document.body, function() {
-          console.log('✅ Images loaded, setting up stagger system');
-          
-          // Find images in viewport (above the fold) - excluding reveal container and infinite scroll images
-          const viewportImages = Array.from(allImages).filter(img => {
-            // Skip reveal container images
-            if (img.dataset.gsapAnimated === 'reveal-container') {
-              return false;
-            }
-            
-            // Skip infinite scroll images
-            if (img.dataset.gsapAnimated === 'infinite-scroll') {
-              return false;
-            }
-            
-            const rect = img.getBoundingClientRect();
-            const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
-            console.log(`🎯 Image viewport check: top=${rect.top}, bottom=${rect.bottom}, inViewport=${inViewport}`);
-            return inViewport;
-          });
-          
-          console.log(`🎯 Found ${viewportImages.length} viewport images for immediate stagger`);
-          
-                    // Immediate smooth stagger for viewport images
-          if (viewportImages.length > 0) {
-            console.log('🎬 Starting smooth viewport image stagger...');
-            // Set initial state with subtle Y position
-            gsap.set(viewportImages, { y: 20 });
-            gsap.to(viewportImages, {
-              opacity: 1,
-              y: 0,
-              duration: 1.2, // Longer duration for smoother effect
-              stagger: 0.3, // Reduced stagger for smoother flow
-              ease: "power2.out",
-              onStart: () => console.log('✨ Smooth viewport stagger started'),
-              onComplete: () => {
-                console.log('✅ Smooth viewport stagger complete');
-                // Mark as completed to prevent re-animation
-                viewportImages.forEach(img => img.dataset.gsapAnimated = 'completed');
-              }
-            });
-          } else {
-            console.log('⚠️ No viewport images found for stagger');
-          }
-          
-          // ScrollTrigger batch for images outside viewport - excluding reveal container and infinite scroll images
-          const remainingImages = Array.from(allImages).filter(img => {
-            // Skip reveal container images
-            if (img.dataset.gsapAnimated === 'reveal-container') {
-              return false;
-            }
-            
-            // Skip infinite scroll images
-            if (img.dataset.gsapAnimated === 'infinite-scroll') {
-              return false;
-            }
-            
-            const rect = img.getBoundingClientRect();
-            return !(rect.top < window.innerHeight && rect.bottom > 0);
-          });
-          
-                console.log(`📜 Setting up scroll triggers for ${remainingImages.length} remaining images`);
-      console.log('🔍 DEBUGGING: Remaining images for GSAP stagger:', remainingImages.map(img => ({
-        src: img.src?.substring(0, 50) + '...',
-        classes: img.className,
-        gsapAnimated: img.dataset.gsapAnimated
-      })));
-      
-      if (remainingImages.length > 0) {
-            // Create ScrollTrigger for each remaining image (with flicker protection)
-            remainingImages.forEach((img, index) => {
-              // Skip if already animated
-              if (img.dataset.gsapAnimated === 'completed') {
-                console.log(`⏭️ Skipping already animated image ${index + 1}`);
-                return;
-              }
-              
-              ScrollTrigger.create({
-                trigger: img,
-                start: "top bottom", // Trigger when top of image hits bottom of viewport
-                onEnter: () => {
-                  // Double-check to prevent duplicate animations
-                  if (img.dataset.gsapAnimated === 'completed') return;
-                  
-                  console.log(`✨ Image fade triggered when top hits bottom of viewport: ${index + 1}`);
-                  img.dataset.gsapAnimated = 'animating';
-                  
-                  // Set eager loading
-                  if (img.loading !== 'eager') {
-                    img.loading = 'eager';
-                  }
-                  
-                  gsap.set(img, { y: 30 }); // Add subtle Y movement
-                  gsap.to(img, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1.2, // Longer duration for smoother effect
-                    ease: "power2.out",
-                    onComplete: () => {
-                      img.dataset.gsapAnimated = 'completed';
-                    }
-                  });
-                },
-                once: true
-              });
-            });
-          }
-          
-          ScrollTrigger.refresh();
-          console.log('🔄 ScrollTrigger refreshed');
-        });
-      } else {
-        console.log('⚠️ imagesLoaded not available, showing all images immediately');
-        gsap.set(allImages, { opacity: 1 });
-      }
-    }
-    
-    // Wait for existing preloader to complete
-    function waitForPreloaderComplete() {
-      console.log('⏳ Waiting for preloader to complete, current state:', preloaderComplete);
-      if (preloaderComplete) {
-        console.log('✅ Preloader complete, starting GSAP animations in 500ms');
-        setTimeout(startGSAPAnimations, 500);
-      } else {
-        setTimeout(waitForPreloaderComplete, 100);
-      }
-    }
-    
-    waitForPreloaderComplete();
-    
-    // Enhanced refresh handling
-    window.addEventListener('load', () => {
-      console.log('🔄 Window load event triggered');
-      setTimeout(() => {
-        if (typeof ScrollTrigger !== 'undefined') {
-          ScrollTrigger.refresh();
-          console.log('✅ GSAP ScrollTrigger refreshed after load');
-        }
-      }, 1000);
-    });
-    
-    // Optimized resize handler
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (typeof ScrollTrigger !== 'undefined') {
-          ScrollTrigger.refresh();
-          console.log('🔄 ScrollTrigger refreshed after resize');
-        }
-      }, 250);
-    });
   }
 
   // Load GSAP Dependencies
   function loadGSAP() {
-    console.log('📦 Loading GSAP dependencies...');
-    
-    // Load GSAP core
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', function() {
-      console.log('✅ GSAP core loaded successfully');
       gsapLoaded = true;
-      
-      // Test GSAP immediately
-      if (typeof gsap !== 'undefined') {
-        console.log('🎬 GSAP is now available:', typeof gsap);
-        // runSimpleTest(); // Removed as per edit hint
-      }
-      
-      // Load ScrollTrigger plugin
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', function() {
-        console.log('✅ GSAP ScrollTrigger loaded successfully');
         scrollTriggerLoaded = true;
-        
-        // Load Observer plugin for infinite scroll
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', function() {
-          console.log('✅ GSAP Observer loaded successfully');
           observerLoaded = true;
-          // DISABLED: initGSAPStagger(); // This conflicts with startAnims text animations
-          console.log('🚫 GSAP Stagger disabled to prevent conflicts with startAnims text animations');
         });
       });
     });
@@ -296,7 +37,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Create preloader
   function createPreloader() {
-    console.log('🔄 Creating preloader...');
     const style = document.createElement('style');
     style.textContent = `
       #preloader {
@@ -314,13 +54,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         transition: opacity 0.5s ease-out;
       }
       
-      #preloader.visible {
-        opacity: 1;
-      }
+      #preloader.visible { opacity: 1; }
       
-      #preloader .progress-container {
-        text-align: center;
-      }
+      #preloader .progress-container { text-align: center; }
       
       #preloader .progress-line {
         width: 80px;
@@ -339,33 +75,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         transition: width 0.3s ease;
       }
       
-      #preloader .progress-text {
-        color: white;
-        font-size: 12px;
-        margin-top: 10px;
-        opacity: 0.7;
-        font-family: system-ui, -apple-system, sans-serif;
-      }
+      body.loading { overflow: hidden; }
       
-      body.loading {
-        overflow: hidden;
-      }
-      
-      /* Bottom nav hidden until loaded */
       .nav:not(.fake-nav) {
         transform: translateY(100%);
         opacity: 0;
       }
       
-      /* Fix margin spacing for video container in infinite scroll */
-      .container.video-wrap-hide.huge.narrow {
-        margin-top: 0 !important;
-      }
-      
-      /* Add 0.5vw gap at top of page for infinite scroll */
-      .flex-grid {
-        margin-top: 0.2vw !important;
-      }
+      .flex-grid { margin-top: 0.2vw !important; }
     `;
     document.head.appendChild(style);
 
@@ -381,41 +98,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
     
-    // Smooth fade in
-    requestAnimationFrame(() => {
-      preloader.classList.add('visible');
-      console.log('✅ Preloader visible');
-    });
-    
+    requestAnimationFrame(() => preloader.classList.add('visible'));
     return preloader;
   }
 
-  // Simple GSAP + imagesLoaded preloader
+  // Initialize preloader
   function initPreloader() {
-    console.log('🚀 Starting simple preloader...');
-    
-    // Load GSAP dependencies
     loadGSAP();
-    
     const preloader = createPreloader();
     const progressFill = preloader.querySelector('.progress-fill');
     
-    console.log('📦 Checking for imagesLoaded:', typeof imagesLoaded);
-    
-    // Check if imagesLoaded is available, if not use fallback
     if (typeof imagesLoaded === 'function') {
-      console.log('✅ Using imagesLoaded library');
-      
-      // Use imagesLoaded to track all images
       const imgLoad = imagesLoaded(document.body, { background: true });
       let loadedCount = 0;
       const totalImages = imgLoad.images.length;
       
-      console.log(`📊 Found ${totalImages} images to load`);
-      
-      // If no images, complete immediately
       if (totalImages === 0) {
-        console.log('⚠️ No images found, completing preloader immediately');
         if (typeof gsap !== 'undefined') {
           gsap.to(progressFill, { width: '100%', duration: 0.3, onComplete: completePreloader });
         } else {
@@ -424,48 +122,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         return;
       }
       
-      // Update progress as images load
-      imgLoad.on('progress', function(instance, image) {
+      imgLoad.on('progress', function() {
         loadedCount++;
         const progress = (loadedCount / totalImages) * 100;
-        console.log(`📈 Loading progress: ${Math.round(progress)}% (${loadedCount}/${totalImages})`);
         
         if (typeof gsap !== 'undefined') {
-          gsap.to(progressFill, { 
-            width: progress + '%', 
-            duration: 0.3,
-            ease: "power2.out"
-          });
+          gsap.to(progressFill, { width: progress + '%', duration: 0.3, ease: "power2.out" });
         } else {
           progressFill.style.width = progress + '%';
         }
 
-        // Complete preloader when we have enough images for smooth infinite scroll
-        const minImagesForSmooth = Math.min(40, Math.ceil(totalImages * 0.8)); // At least 40 images or 80% of total
+        const minImagesForSmooth = Math.min(40, Math.ceil(totalImages * 0.8));
         if (loadedCount >= minImagesForSmooth) {
-          console.log(`✅ Enough images loaded for smooth scroll: ${loadedCount}/${totalImages}`);
           setTimeout(completePreloader, 200);
         }
       });
       
-      // Fallback: Complete when all images are loaded (if we haven't hit the threshold)
       imgLoad.on('always', function() {
         if (!preloaderComplete) {
-          console.log('✅ All images loaded!');
           setTimeout(completePreloader, 200);
         }
       });
       
     } else {
-      console.log('⚠️ imagesLoaded not available, using fallback');
-      // Simple fallback - just animate progress and complete
       if (typeof gsap !== 'undefined') {
-        gsap.to(progressFill, { 
-          width: '100%', 
-          duration: 1.5,
-          ease: "power2.out",
-          onComplete: completePreloader
-        });
+        gsap.to(progressFill, { width: '100%', duration: 1.5, ease: "power2.out", onComplete: completePreloader });
       } else {
         setTimeout(() => {
           progressFill.style.width = '100%';
@@ -477,17 +158,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Complete preloader and start animations
   function completePreloader() {
-    if (preloaderComplete) {
-      console.log('⚠️ Preloader already completed, skipping');
-      return;
-    }
+    if (preloaderComplete) return;
     preloaderComplete = true;
-    
-    console.log('🎉 Completing preloader...');
     
     const preloader = document.getElementById('preloader');
     
-    // Simple smooth fade out
     if (typeof gsap !== 'undefined') {
       gsap.to(preloader, {
         opacity: 0,
@@ -496,10 +171,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         onComplete: function() {
           preloader.remove();
           document.body.classList.remove('loading');
-          console.log('✅ Preloader removed');
-          
-          // Start animations
-          console.log('🎬 Starting page animations');
           startPageAnimations();
         }
       });
@@ -509,7 +180,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         setTimeout(() => {
           preloader.remove();
           document.body.classList.remove('loading');
-          console.log('✅ Preloader removed (fallback)');
           startPageAnimations();
         }, 400);
       }, 100);
@@ -518,68 +188,39 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations
   function startPageAnimations() {
-    console.log('🎬 Starting page animations...');
-    
-    // Create time counter
     createTimeCounter();
     
-    // Animate bottom nav
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) {
-      console.log('🧭 Found bottom nav, animating...');
       if (typeof gsap !== 'undefined') {
-        gsap.to(bottomNav, {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power2.out"
-        });
+        gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" });
       } else {
         bottomNav.style.transform = 'translateY(0)';
         bottomNav.style.opacity = '1';
       }
-    } else {
-      console.log('⚠️ No bottom nav found');
     }
     
-    // Start main animations
     if (!isInit) {
-      console.log('🎬 Initializing main animations...');
       init();
-    } else {
-      console.log('⚠️ Animations already initialized');
     }
   }
 
   function initHover() {
-    console.log('Initializing hover effects...');
     const links = document.querySelectorAll('.link');
-    console.log('Found links:', links.length);
     
     links.forEach(link => {
-      if (link.dataset.hoverInit) {
-        console.log('Link already initialized:', link.textContent);
-        return;
-      }
+      if (link.dataset.hoverInit) return;
       
-      console.log('Setting up hover for:', link.textContent);
-      
-      // PRESERVE ORIGINAL HTML: Use innerHTML to keep line breaks and formatting
       const originalHTML = link.innerHTML.trim();
       const hasLineBreaks = originalHTML.includes('<br>') || originalHTML.includes('\n') || link.offsetHeight > 25;
-      
-      // Store original dimensions
       const rect = link.getBoundingClientRect();
       const height = rect.height;
       
       if (hasLineBreaks) {
-        console.log('🔗 Multi-line link detected, preserving natural flow:', originalHTML);
-        
-        // For multi-line elements, don't set fixed heights - let text flow naturally
         Object.assign(link.style, {
           position: 'relative',
           overflow: 'hidden',
-          display: 'block' // Use block for multi-line text
+          display: 'block'
         });
         
         link.innerHTML = `
@@ -587,7 +228,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           <span class="link-text-2" style="display: block; position: absolute; width: 100%; left: 0; top: 0; opacity: 0;">${originalHTML}</span>
         `;
       } else {
-        // For single-line elements, use the original approach
         const text = link.textContent.trim();
         
         Object.assign(link.style, {
@@ -604,34 +244,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         `;
       }
       
-      // Create timeline with subtle animation
       const tl = window.gsap.timeline({ 
         paused: true,
-        defaults: {
-          duration: 0.4,
-          ease: "power2.out"
-        }
+        defaults: { duration: 0.4, ease: "power2.out" }
       });
       
-      tl.to(link.querySelector('.link-text-1'), {
-        yPercent: -50,
-        opacity: 0
-      })
-      .to(link.querySelector('.link-text-2'), {
-        yPercent: -50,
-        opacity: 1
-      }, 0.1); // Small delay for smoother transition
+      tl.to(link.querySelector('.link-text-1'), { yPercent: -50, opacity: 0 })
+        .to(link.querySelector('.link-text-2'), { yPercent: -50, opacity: 1 }, 0.1);
       
-      // Add hover events
-      link.addEventListener('mouseenter', () => {
-        console.log('Mouse enter:', link.textContent);
-        tl.timeScale(1).play();
-      });
-      
-      link.addEventListener('mouseleave', () => {
-        console.log('Mouse leave:', link.textContent);
-        tl.timeScale(1).reverse();
-      });
+      link.addEventListener('mouseenter', () => tl.timeScale(1).play());
+      link.addEventListener('mouseleave', () => tl.timeScale(1).reverse());
       
       link.dataset.hoverInit = 'true';
     });
@@ -640,18 +262,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function wrapLines(el) {
     if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
 
-    // Preserve the original HTML content
     const originalHTML = el.innerHTML.trim();
     if (!originalHTML) return [];
 
-    console.log(`🔤 Preserving original HTML for: "${el.textContent?.trim()?.substring(0, 50)}"`);
-
-    // For elements that already have line breaks (<br> tags), split on those
     if (originalHTML.includes('<br>')) {
       const lines = originalHTML.split(/<br\s*\/?>/i);
       el.innerHTML = '';
       
-      lines.forEach((lineHTML, index) => {
+      lines.forEach((lineHTML) => {
         if (lineHTML.trim()) {
           const lineDiv = document.createElement('div');
           lineDiv.className = 'split-line';
@@ -668,7 +286,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
     } else {
-      // For single-line content, wrap the entire thing
       const lineDiv = document.createElement('div');
       lineDiv.className = 'split-line';
       lineDiv.style.overflow = 'hidden';
@@ -685,15 +302,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     el.dataset.splitDone = 'true';
-    const lineInners = el.querySelectorAll('.line-inner');
-    console.log(`🔤 Created ${lineInners.length} lines while preserving original HTML.`);
-    return lineInners;
+    return el.querySelectorAll('.line-inner');
   }
 
   function startAnims() {
-    console.log('🚀 STARTING startAnims() function');
-    
-    // Get all elements upfront - organized for proper stagger animations
     const largeHeadings = document.querySelectorAll('.heading.large');
     const smallHeadings = document.querySelectorAll('.heading.small');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
@@ -703,34 +315,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const mediaEls = document.querySelectorAll('img, video');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
-    console.log('🔍 ELEMENT COUNTS:');
-    console.log(`📝 Media elements (img, video): ${mediaEls.length}`);
-    console.log(`🖼️ All images in DOM: ${document.querySelectorAll('img').length}`);
-    console.log(`🎬 Videos in DOM: ${document.querySelectorAll('video').length}`);
-
-    // Initialize hover immediately to prevent delay
     initHover();
 
     // Create proper mask reveal for ALL images
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
-    console.log(`🎬 Found ${allImages.length} media elements for proper mask reveal`);
     
     if (allImages.length) {
       allImages.forEach((element, index) => {
-        // Skip if already processed
         if (element.dataset.maskSetup) return;
         
-        // Get original dimensions
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
         if (originalWidth === 0 || originalHeight === 0) return;
         
-        console.log(`🎭 Setting up mask for element ${index + 1}: ${originalWidth}x${originalHeight}px`);
-        
         const parent = element.parentNode;
-        
-        // Create mask container
         const maskContainer = document.createElement('div');
         maskContainer.className = 'proper-mask-reveal';
         maskContainer.style.cssText = `
@@ -744,11 +343,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           line-height: 0;
         `;
         
-        // Insert mask and move element
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
         
-        // Keep element at original size - NO SCALING
         element.style.cssText = `
           width: ${originalWidth}px !important;
           height: ${originalHeight}px !important;
@@ -759,86 +356,52 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         element.dataset.maskSetup = 'true';
         
-        // Check if element has img-parallax class for scaling effect
         const hasParallax = element.classList.contains('img-parallax');
         if (hasParallax) {
-          console.log(`🎚️ Setting up parallax scaling for element ${index + 1}`);
-          // Set initial scale to 1.2 for parallax effect
           window.gsap.set(element, { scale: 1.2 });
         }
         
-        // Animate mask reveal
         window.gsap.to(maskContainer, {
           width: originalWidth + 'px',
           duration: 1.2,
           ease: "power2.out",
-          delay: index * 0.1,
-          onStart: () => console.log(`🎭 Mask reveal ${index + 1} started`),
-          onComplete: () => console.log(`✅ Mask reveal ${index + 1} complete`)
+          delay: index * 0.1
         });
         
-        // Animate parallax scaling if element has img-parallax class
         if (hasParallax) {
           window.gsap.to(element, {
             scale: 1.0,
-            duration: 1.5, // 1.5s duration as requested
+            duration: 1.5,
             ease: "power2.out",
-            delay: index * 0.1, // Same delay as mask reveal for coordination
-            onStart: () => console.log(`🎚️ Parallax scale ${index + 1} started (1.2 → 1.0)`),
-            onComplete: () => console.log(`✅ Parallax scale ${index + 1} complete`)
+            delay: index * 0.1
           });
         }
       });
     }
 
-    // Create a single timeline for better performance
     const tl = window.gsap.timeline();
 
-    // Media elements - SMOOTH CODEPEN-STYLE FADE-IN (no abrupt loading)
+    // Media elements - simple fade-in
     if (mediaEls.length) {
-      console.log(`📊 Found ${mediaEls.length} media elements for smooth fade-in animation`);
-      console.log('🔍 DEBUGGING: Media elements found:', Array.from(mediaEls).map(el => ({
-        tag: el.tagName,
-        src: el.src?.substring(0, 50) + '...',
-        classes: el.className,
-        closest_reveal: !!el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'),
-        closest_infinite: !!el.closest('.flex-grid, .container.video-wrap-hide'),
-        gsapAnimated: el.dataset.gsapAnimated
-      })));
-      
       mediaEls.forEach((el, i) => {
-        // Skip if already handled by GSAP stagger system
-        if (el.dataset.gsapAnimated) {
-          console.log(`⏭️ Skipping media element ${i + 1} - already handled by stagger system:`, el.dataset.gsapAnimated, el.src?.substring(0, 50));
-          return;
-        }
+        if (el.dataset.gsapAnimated) return;
         
-        // CRITICAL: Skip images inside reveal containers - they should be visible for mask effect
         if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) {
-          console.log(`🎭 Skipping media element ${i + 1} - inside reveal container (mask effect)`);
-          // Ensure these images are visible for the mask reveal effect
           window.gsap.set(el, { opacity: 1 });
           el.dataset.gsapAnimated = 'reveal-container';
           return;
         }
         
-        // Skip images inside infinite scroll containers
         if (el.closest('.flex-grid, .container.video-wrap-hide')) {
-          console.log(`🔄 Skipping media element ${i + 1} - inside infinite scroll container`);
           window.gsap.set(el, { opacity: 1 });
           el.dataset.gsapAnimated = 'infinite-scroll';
           return;
         }
         
-        console.log(`🎯 Processing media element ${i + 1}:`, el.tagName, el.src?.substring(0, 50), 'classes:', el.className);
-        
-        // Check if image is in viewport (visible immediately)
         const rect = el.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport) {
-          // Immediate smooth animation for visible images
-          console.log(`🎭 Immediate smooth fade for visible media element ${i + 1}`);
           window.gsap.set(el, { opacity: 0, y: 30 });
           window.gsap.to(el, {
             opacity: 1,
@@ -846,291 +409,137 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             duration: 1.2,
             ease: "power2.out",
             delay: 0.2 + (i * 0.1),
-            onComplete: () => {
-              el.dataset.gsapAnimated = 'completed';
+            onComplete: () => el.dataset.gsapAnimated = 'completed'
+          });
+        } else {
+          window.gsap.set(el, { opacity: 0, y: 40 });
+          if (el.loading !== 'eager') el.loading = 'eager';
+          
+          window.gsap.to(el, {
+            opacity: 1,
+            y: 0,
+            duration: 1.5,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top bottom",
+              end: "top center",
+              toggleActions: "play none none reverse",
+              once: true,
+              onEnter: () => el.dataset.gsapAnimated = 'animating',
+              onComplete: () => el.dataset.gsapAnimated = 'completed'
             }
           });
-                  } else {
-            // SMOOTH CODEPEN-STYLE scroll trigger for off-screen images
-            console.log(`🎬 Setting up early scroll fade for media element ${i + 1}:`, el.src?.substring(0, 50), 'classes:', el.className);
-            window.gsap.set(el, { opacity: 0, y: 40 });
-            
-            // Set eager loading for early loading
-            if (el.loading !== 'eager') {
-              el.loading = 'eager';
-            }
-            
-            window.gsap.to(el, {
-              opacity: 1,
-              y: 0,
-              duration: 1.5, // Longer duration for smoother effect
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: el,
-                start: "top bottom", // Trigger when top of element hits bottom of viewport
-                end: "top center",
-                toggleActions: "play none none reverse",
-                once: true,
-                onEnter: () => {
-                  console.log(`✨ Media element fade triggered when top hits bottom of viewport: ${i + 1}:`, el.src?.substring(0, 50));
-                  el.dataset.gsapAnimated = 'animating';
-                },
-                onComplete: () => {
-                  el.dataset.gsapAnimated = 'completed';
-                }
-              }
-            });
-          }
+        }
       });
     }
 
-    // Large headings - line-by-line stagger
+    // Text animations
     if (largeHeadings.length) {
-      console.log(`📝 Processing ${largeHeadings.length} large headings for line-by-line stagger`);
       largeHeadings.forEach((h, index) => {
-        console.log(`📝 Large heading ${index + 1}: "${h.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(h);
         if (lines.length > 0) {
-          tl.to(lines, { 
-            y: 0, 
-            opacity: 1, 
-            duration: 1.1, 
-            stagger: 0.2, 
-            ease: "power2.out" 
-          }, 0.1 + (index * 0.1));
+          tl.to(lines, { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0.1 + (index * 0.1));
         }
       });
     }
 
-    // Regular headings (h1, h2, h3, h4, h5, h6) - line-by-line stagger
     if (regularHeadings.length) {
-      console.log(`📋 Found ${regularHeadings.length} regular headings for line-by-line stagger`);
       regularHeadings.forEach((heading, index) => {
-        // Skip elements that have hover effects (links)
-        if (heading.classList.contains('link') || heading.dataset.hoverInit) {
-          console.log(`📋 Skipping heading ${index + 1} - has hover effects`);
-          return;
-        }
+        if (heading.classList.contains('link') || heading.dataset.hoverInit) return;
         
-        console.log(`📋 Processing regular heading ${index + 1}: "${heading.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(heading);
         if (lines.length > 0) {
-          tl.to(lines, { 
-            y: 0, 
-            opacity: 1, 
-            duration: 1.0, 
-            stagger: 0.15,
-            ease: "power2.out" 
-          }, 0.2 + (index * 0.1));
+          tl.to(lines, { y: 0, opacity: 1, duration: 1.0, stagger: 0.15, ease: "power2.out" }, 0.2 + (index * 0.1));
         }
       });
     }
 
-    // Small headings - line-by-line stagger with hover coordination
     if (smallHeadings.length) {
-      console.log(`🔤 Found ${smallHeadings.length} small headings for line-by-line stagger`);
-      
       smallHeadings.forEach((heading, index) => {
-        // Check if this element has been processed by hover system
         const linkText1 = heading.querySelector('.link-text-1');
         const linkText2 = heading.querySelector('.link-text-2');
         
         if (linkText1 && linkText2) {
-          // Element has hover structure - animate the visible .link-text-1 span
-          console.log(`🔗 Animating hover-processed small heading ${index + 1}`);
           const lines = wrapLines(linkText1);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 20 });
-            tl.to(lines, { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.8,
-              stagger: 0.1,
-              ease: "power2.out" 
-            }, 0.3 + (index * 0.1));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.3 + (index * 0.1));
           }
         } else {
-          // Element doesn't have hover structure - animate normally
-          console.log(`📝 Animating normal small heading ${index + 1}`);
           const lines = wrapLines(heading);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 20 });
-            tl.to(lines, { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.8,
-              stagger: 0.1,
-              ease: "power2.out" 
-            }, 0.3 + (index * 0.1));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.3 + (index * 0.1));
           }
         }
       });
     }
 
-    // Paragraphs - line-by-line stagger
     if (paragraphs.length) {
-      console.log(`📝 Found ${paragraphs.length} paragraphs for line-by-line stagger`);
       paragraphs.forEach((paragraph, index) => {
-        // Skip elements that have hover effects (links)
-        if (paragraph.classList.contains('link') || paragraph.dataset.hoverInit) {
-          console.log(`📝 Skipping paragraph ${index + 1} - has hover effects`);
-          return;
-        }
+        if (paragraph.classList.contains('link') || paragraph.dataset.hoverInit) return;
         
-        console.log(`📝 Processing paragraph ${index + 1}: "${paragraph.textContent?.trim()?.substring(0, 30)}"`);
         const lines = wrapLines(paragraph);
         if (lines.length > 0) {
-          tl.to(lines, { 
-            y: 0, 
-            opacity: 1, 
-            duration: 0.9, 
-            stagger: 0.12,
-            ease: "power2.out" 
-          }, 0.4 + (index * 0.08));
+          tl.to(lines, { y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out" }, 0.4 + (index * 0.08));
         }
       });
     }
 
-    // Links - line-by-line stagger with hover coordination
     if (links.length) {
-      console.log(`🔗 Found ${links.length} links for line-by-line stagger`);
-      
       links.forEach((link, index) => {
-        // Check if this element has been processed by hover system
         const linkText1 = link.querySelector('.link-text-1');
         const linkText2 = link.querySelector('.link-text-2');
         
         if (linkText1 && linkText2) {
-          // Element has hover structure - animate the visible .link-text-1 span
-          console.log(`🔗 Animating hover-processed link ${index + 1}`);
           const lines = wrapLines(linkText1);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.6,
-              stagger: 0.08,
-              ease: "power2.out" 
-            }, 0.5 + (index * 0.04));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.5 + (index * 0.04));
           }
         } else {
-          // Element doesn't have hover structure - animate normally
-          console.log(`📝 Animating normal link ${index + 1}`);
           const lines = wrapLines(link);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { 
-              opacity: 1, 
-              y: 0, 
-              duration: 0.6,
-              stagger: 0.08,
-              ease: "power2.out" 
-            }, 0.5 + (index * 0.04));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.5 + (index * 0.04));
           }
         }
       });
     }
 
-    // Slide elements - subtle but noticeable stagger
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
       tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 0.6);
     }
 
-    // Other UI elements - simple stagger for nav, cards, etc.
     if (otherEls.length) {
-      console.log(`🎛️ Found ${otherEls.length} other UI elements for stagger animation`);
       window.gsap.set(otherEls, { opacity: 0, y: 10 });
-      tl.to(otherEls, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.6, 
-        stagger: 0.08, // 0.08s between each element
-        ease: "power2.out" 
-      }, 0.7); // Start after 0.7s
+      tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.7);
     }
 
-    // Setup infinite scroll - re-enabled with CodePen approach
     setupInfiniteScroll();
   }
 
-  // Infinite scroll using CodePen method - desktop only to prevent mobile scroll issues
+  // Simplified infinite scroll that works everywhere
   function setupInfiniteScroll() {
-    console.log('🔄 Setting up CodePen-style infinite scroll...');
-    
-    // Simple viewport width check - use mobile approach under 470px
-    const viewportWidth = window.innerWidth;
-    const isMobile = viewportWidth < 470;
-    
     const container = document.querySelector('.flex-grid');
-    if (!container) {
-      console.log('⚠️ No .flex-grid container found');
-      return;
-    }
+    if (!container) return;
 
-    // Set up container styles - different for mobile vs desktop
-    if (isMobile) {
-      console.log('📱 Setting up mobile-friendly infinite scroll...');
-      // Mobile: completely natural scrolling, no constraints at all
-      console.log('📱 Mobile: Removing any existing style constraints...');
-      // Don't add any styles that might interfere with mobile scrolling
-    } else {
-      console.log('💻 Setting up desktop infinite scroll with hidden scrollbars...');
-      // Desktop: contained scrolling with hidden scrollbars
-      container.style.cssText += `
-        overflow-y: auto;
-        max-height: 100vh;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      `;
-    }
+    // Simple unified infinite scroll for all devices
+    container.style.cssText += `
+      overflow-y: auto;
+      max-height: 100vh;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    `;
 
-    // Add CSS to hide scrollbars on desktop only - mobile needs normal scrolling
+    // Hide scrollbars
     const scrollbarStyles = document.createElement('style');
     scrollbarStyles.textContent = `
-      /* Desktop infinite scroll styles */
-      @media (min-width: 769px) {
-        .flex-grid::-webkit-scrollbar {
-          display: none;
-          width: 0;
-          height: 0;
-          background: transparent;
-        }
-        
-        .flex-grid::-webkit-scrollbar-track {
-          display: none;
-        }
-        
-        .flex-grid::-webkit-scrollbar-thumb {
-          display: none;
-        }
-        
-        .flex-grid {
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-      }
-      
-      /* Mobile normal scrolling - completely remove all scroll constraints */
-      @media (max-width: 768px) {
-        .flex-grid {
-          overflow: visible !important;
-          max-height: none !important;
-          height: auto !important;
-          min-height: auto !important;
-          position: static !important;
-          transform: none !important;
-          -webkit-overflow-scrolling: touch;
-        }
-        
-        /* Ensure parent containers don't constrain either */
-        .flex-grid * {
-          max-height: none !important;
-        }
-      }
+      .flex-grid::-webkit-scrollbar { display: none; }
+      .flex-grid { scrollbar-width: none; -ms-overflow-style: none; }
     `;
     
     if (!document.head.querySelector('#infinite-scroll-styles')) {
@@ -1154,22 +563,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (listOpts.itemHeight) {
         itemsScrolled = Math.ceil((scrollTop + listOpts.itemHeight / 2) / listOpts.itemHeight);
         
-        if (scrollTop < 1) {
-          itemsScrolled = 0;
-        }
+        if (scrollTop < 1) itemsScrolled = 0;
         
-        // When near the end (last 3 items), clone content
         if (itemsScrolled > listOpts.items.length - 3) {
-          console.log('🔄 Near end, cloning content...');
-          
           let node;
           for (let x = 0; x <= itemsMax - 1; x++) {
             node = listOpts.items[x];
-            
             if (!cloned) {
               node = listOpts.items[x].cloneNode(true);
             }
-            
             container.appendChild(node);
           }
           
@@ -1187,245 +589,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         listOpts.itemHeight = listOpts.items[0].offsetHeight;
         listOpts.itemCount = listOpts.items.length;
         
-        if (!itemsMax) {
-          itemsMax = listOpts.itemCount;
-        }
+        if (!itemsMax) itemsMax = listOpts.itemCount;
         
         if (scrollSmooth && itemsMax > 3) {
-          // Seamlessly jump back to create infinite loop
           const seamlessScrollPoint = (itemsMax - 3) * listOpts.itemHeight;
           container.scrollTop = seamlessScrollPoint;
-          console.log(`🔄 Seamless jump to: ${seamlessScrollPoint}px`);
         }
       }
     }
 
-    // Initialize and set up scroll listener - different for mobile vs desktop
     initItems();
+    container.onscroll = scrollWrap;
     
-    if (isMobile) {
-      // Mobile: simple approach - just clone content when near end
-      console.log('📱 Setting up simple mobile infinite scroll...');
-      
-      let mobileCloned = false;
-      
-      function simpleMobileScroll() {
-        // Simple check: are we near the bottom of the page?
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        const nearBottom = scrollTop + windowHeight > documentHeight - 1000; // 1000px before end
-        
-        if (nearBottom && !mobileCloned && listOpts.items.length > 0) {
-          console.log('📱 Mobile: Near bottom, cloning content for infinite scroll...');
-          
-          // Clone all original items
-          for (let x = 0; x < itemsMax; x++) {
-            if (listOpts.items[x]) {
-              const clone = listOpts.items[x].cloneNode(true);
-              container.appendChild(clone);
-            }
-          }
-          
-          mobileCloned = true;
-          
-          // Reset after a delay to allow for more cloning if needed
-          setTimeout(() => {
-            mobileCloned = false;
-            // Update items list
-            listOpts.items = Array.from(container.children);
-          }, 2000);
-        }
-      }
-      
-      window.addEventListener('scroll', simpleMobileScroll);
-    } else {
-      // Desktop: use container scroll
-      console.log('💻 Setting up desktop container scroll listener...');
-      container.onscroll = scrollWrap;
-    }
-    
-    // Make sure images are visible
     container.querySelectorAll('img, video').forEach(img => {
       gsap.set(img, { opacity: 1 });
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
-
-    console.log(`✅ CodePen infinite scroll initialized with ${listOpts.itemCount} items`);
   }
-
-  function initLenis() {
-    console.log('🚀 Attempting to initialize Lenis...');
-    console.log('🔍 Lenis available:', typeof window.Lenis !== 'undefined');
-    console.log('🔍 Already initialized:', !!lenis);
-    
-    if (lenis) {
-      console.log('⚠️ Lenis already initialized');
-      return;
-    }
-    
-    if (typeof window.Lenis === 'undefined') {
-      console.log('⚠️ Lenis not loaded - attempting to load from CDN...');
-      
-      // Try to load Lenis from CDN with correct URLs
-      const lenisScript = document.createElement('script');
-      lenisScript.src = 'https://unpkg.com/lenis@1.1.13/dist/lenis.min.js';
-      lenisScript.onload = () => {
-        console.log('✅ Lenis successfully loaded from CDN!');
-        console.log('🔍 Lenis constructor available:', typeof window.Lenis);
-        setTimeout(() => {
-          console.log('🔄 Retrying Lenis initialization...');
-          initLenis();
-        }, 200);
-      };
-      lenisScript.onerror = () => {
-        console.error('❌ Primary CDN failed, trying JSDelivr...');
-        // Try JSDelivr CDN
-        const fallbackScript = document.createElement('script');
-        fallbackScript.src = 'https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js';
-        fallbackScript.onload = () => {
-          console.log('✅ Lenis loaded from JSDelivr CDN!');
-          setTimeout(initLenis, 200);
-        };
-        fallbackScript.onerror = () => {
-          console.error('❌ All Lenis CDNs failed - smooth scrolling unavailable');
-          console.log('💡 You may need to manually include Lenis in your project');
-        };
-        document.head.appendChild(fallbackScript);
-      };
-      document.head.appendChild(lenisScript);
-      return;
-    }
-    
-    // Simple viewport width check - disable Lenis under 470px
-    const viewportWidth = window.innerWidth;
-    
-    console.log('🔍 Viewport width:', viewportWidth);
-    
-    if (viewportWidth < 470) {
-      console.log('📱 Viewport under 470px - Lenis disabled for native scroll behavior');
-      return;
-    }
-    
-    // Detect iOS for potential fallback
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
-    try {
-      lenis = new window.Lenis({
-        autoRaf: true, // Let Lenis handle requestAnimationFrame
-        duration: 1.2,
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        smoothTouch: false, // Better iOS compatibility
-        wheelMultiplier: 1,
-        touchMultiplier: isIOS ? 0.8 : 1, // Slightly reduced for iOS
-        infinite: false,
-        normalizeWheel: true,
-        syncTouch: false, // Avoid iOS < 16 issues
-        touchInertiaMultiplier: isIOS ? 25 : 35 // Gentler on iOS
-      });
-
-      // Add recommended CSS for better iOS support + infinite scroll exclusion
-      const lenisCSS = document.createElement('style');
-      lenisCSS.textContent = `
-        html.lenis, html.lenis body {
-          height: auto;
-        }
-        
-        .lenis.lenis-smooth {
-          scroll-behavior: auto !important;
-        }
-        
-        .lenis.lenis-smooth [data-lenis-prevent] {
-          overscroll-behavior: contain;
-        }
-        
-        /* Prevent Lenis from interfering with infinite scroll container */
-        .flex-grid {
-          overscroll-behavior: none;
-        }
-        
-        /* iOS-specific improvements */
-        @supports (-webkit-touch-callout: none) {
-          html.lenis {
-            -webkit-overflow-scrolling: auto;
-            overscroll-behavior: none;
-          }
-        }
-      `;
-      document.head.appendChild(lenisCSS);
-
-      document.documentElement.classList.add('lenis');
-      document.body.classList.add('lenis-smooth');
-      
-      // Add data-lenis-prevent to infinite scroll container to exclude it from Lenis
-      const infiniteScrollContainer = document.querySelector('.flex-grid');
-      if (infiniteScrollContainer) {
-        infiniteScrollContainer.setAttribute('data-lenis-prevent', 'true');
-        console.log('✅ Infinite scroll container excluded from Lenis');
-      }
-
-      // Only set up manual RAF if autoRaf fails
-      if (!lenis.options.autoRaf) {
-        function raf(time) { 
-          lenis.raf(time); 
-          requestAnimationFrame(raf); 
-        }
-        requestAnimationFrame(raf);
-      }
-
-      if (window.ScrollTrigger) {
-        lenis.on('scroll', () => window.ScrollTrigger?.update());
-      }
-      
-      // Disable on reduced motion preference
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        lenis.destroy();
-      }
-      
-      console.log(`✅ Lenis smooth scrolling SUCCESSFULLY initialized on desktop!`);
-      console.log(`🔧 Lenis config: iOS=${isIOS}, duration=1.2s, autoRaf=true`);
-    } catch (e) { 
-      console.error('Lenis error:', e);
-      // Fallback to native scroll
-      document.documentElement.style.scrollBehavior = 'smooth';
-    }
-  }
-
-  // Handle viewport resize to destroy/reinitialize Lenis at 470px breakpoint
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      const viewportWidth = window.innerWidth;
-      
-      if (viewportWidth < 470 && lenis) {
-        console.log('📱 Viewport < 470px - destroying Lenis');
-        lenis.destroy();
-        lenis = null;
-        document.documentElement.classList.remove('lenis');
-        document.body.classList.remove('lenis-smooth');
-      } else if (viewportWidth >= 470 && !lenis) {
-        console.log('💻 Viewport >= 470px - reinitializing Lenis');
-        initLenis();
-      }
-    }, 250);
-  });
 
   function addHidden() {
-    console.log('🙈 Setting initial hidden states for animations...');
-    
-    // Hide text elements that will be animated
     document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
-        // Set initial opacity to 0 for text elements that will be animated
         el.style.opacity = '0';
       }
     });
     
-    // Handle other elements
     document.querySelectorAll('img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => {
       if (!el.classList.contains('initial-hidden')) {
         el.classList.add('initial-hidden');
@@ -1435,18 +624,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       }
     });
-    
-    console.log('✅ Initial hidden states applied');
   }
 
   function handleTransition(e, href) {
     e.preventDefault();
     e.stopPropagation();
-
-    if (lenis) {
-      document.documentElement.classList.add('lenis-stopped');
-      lenis.destroy();
-    }
 
     const tl = window.gsap.timeline({ onComplete: () => window.location.href = href });
     const slideOut = document.querySelectorAll('.grid-down.project-down.mobile-down');
@@ -1457,15 +639,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
-  // Create time counter
   function createTimeCounter() {
-    console.log('⏱️ Creating time counter...');
-    
     const counter = document.createElement('div');
     counter.id = 'time-counter';
     counter.textContent = '00:00';
     
-    // Add styles with responsive font sizing for mobile
     counter.style.cssText = `
       position: fixed;
       bottom: 1vw;
@@ -1481,31 +659,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       opacity: 0.8;
     `;
 
-    // Add mobile-specific styles for counter and main wrapper
     const mobileStyles = document.createElement('style');
     mobileStyles.textContent = `
-      /* Mobile font sizing for time counter */
       @media (max-width: 768px) {
-        #time-counter {
-          font-size: 11px !important;
-          bottom: 1vw !important;
-        }
-      }
-      
-      /* Ensure main wrapper stretches full viewport height on mobile without breaking scroll */
-      @media (max-width: 768px) {
-        .main-wrapper, 
-        [data-w-id], 
-        main,
-        .page-wrapper {
-          min-height: 100vh;
-          height: auto;
-        }
-        
-        /* Ensure Webflow's main container fills viewport but allows scrolling */
-        body > div:first-child {
-          min-height: 100vh;
-        }
+        #time-counter { font-size: 11px !important; bottom: 1vw !important; }
+        .main-wrapper, [data-w-id], main, .page-wrapper { min-height: 100vh; height: auto; }
+        body > div:first-child { min-height: 100vh; }
       }
     `;
     
@@ -1516,7 +675,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     document.body.appendChild(counter);
     
-    // Apply GSAP line animation like other text
     const lines = wrapLines(counter);
     if (lines.length > 0) {
       window.gsap.set(lines, { opacity: 0, y: 20 });
@@ -1525,25 +683,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         y: 0,
         duration: 0.8,
         ease: "power2.out",
-        delay: 1.0 // Delay so it appears after other elements
+        delay: 1.0
       });
     }
     
-    // Start the timer
     let startTime = Date.now();
     
     function updateCounter() {
       const elapsed = Date.now() - startTime;
       const totalSeconds = Math.floor(elapsed / 1000);
-      
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
+      const timeString = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
       
-      const timeString = 
-        String(minutes).padStart(2, '0') + ':' +
-        String(seconds).padStart(2, '0');
-      
-      // Update the content inside the line wrapper
       const lineInner = counter.querySelector('.line-inner');
       if (lineInner) {
         lineInner.textContent = timeString;
@@ -1552,57 +704,43 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }
     
-    // Update every second
     setInterval(updateCounter, 1000);
-    updateCounter(); // Initial update
+    updateCounter();
     
-    console.log('✅ Time counter created with GSAP animation');
     return counter;
   }
 
   // Initialize
   addHidden();
-  initLenis();
 
-  // CRITICAL SAFETY: Ensure text is visible after 1 second no matter what
+  // Safety: Ensure text is visible after 1 second
   setTimeout(() => {
-    console.log('🚨 SAFETY: Ensuring all text is visible after 1 second');
     document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
       if (el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') {
         el.style.opacity = '1';
         el.style.transform = 'none';
         el.classList.remove('initial-hidden');
-        console.log('🚨 SAFETY: Made text visible:', el.textContent?.substring(0, 30));
       }
     });
   }, 1000);
 
-  // FALLBACK: Ensure init() runs even if preloader fails
+  // Fallback: Ensure init() runs even if preloader fails
   setTimeout(() => {
     if (!isInit) {
-      console.log('🚨 FALLBACK: Running init() because preloader may have failed');
       init();
     }
   }, 2000);
 
   function init() {
-    if (isInit) {
-      console.log('⚠️ Animations already initialized, skipping to prevent conflicts');
-      return;
-    }
+    if (isInit) return;
     
-    console.log('Starting main animations...');
-    
-    // Wait for GSAP to be available before starting animations
     function waitForGSAP() {
       if (typeof window.gsap !== 'undefined') {
-        console.log('✅ GSAP is available, starting text animations');
         requestAnimationFrame(() => {
           startAnims();
           isInit = true;
         });
       } else {
-        console.log('⏳ Waiting for GSAP to load...');
         setTimeout(waitForGSAP, 100);
       }
     }
@@ -1621,7 +759,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
   
-  // Start preloader when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPreloader);
   } else {
