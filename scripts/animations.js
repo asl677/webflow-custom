@@ -521,68 +521,42 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setupInfiniteScroll();
   }
 
-  // Universal infinite scroll that works on ALL pages
-  function setupInfiniteScroll(isRetry = false) {
-    let container = null;
-    
-    console.log('🔍 Looking for infinite scroll container on any page...');
-    
-    // Try different container selectors in order of preference
+  // Simple infinite scroll - works exactly the same on ALL pages
+  function setupInfiniteScroll() {
+    // Find ANY container with content - treat ALL the same as home page
     const selectors = [
-      '.flex-grid',           // Home page
-      '.w-layout-grid',       // Webflow grid
-      '[class*="grid"]',      // Any grid
-      '.main-wrapper',        // Main wrapper
-      '.page-wrapper',        // Page wrapper  
-      'main',                 // Main element
-      '.container',           // Generic container
-      'section'               // Section elements
+      '.flex-grid',
+      '.w-layout-grid', 
+      '[class*="grid"]',
+      '.container',
+      '.main-wrapper',
+      '.page-wrapper',
+      'main'
     ];
     
+    let container = null;
     for (const selector of selectors) {
       const found = document.querySelector(selector);
       if (found && found.children.length > 1) {
         container = found;
-        console.log(`🔄 Found container: ${selector} with ${found.children.length} items`);
+        console.log(`✅ Using container: ${selector}`);
         break;
       }
     }
     
     if (!container) {
-      console.log('📄 No suitable container found for infinite scroll');
-      
-      // Try again after delay only once
-      if (!isRetry) {
-        setTimeout(() => {
-          console.log('🔄 Retrying infinite scroll setup...');
-          setupInfiniteScroll(true);
-        }, 2000);
-      }
+      console.log('❌ No container found');
       return;
     }
     
-    // Apply infinite scroll styles
-    // Only use max-height on .flex-grid (home page), not other containers
-    const isFlexGrid = container.classList.contains('flex-grid');
-    
-    if (isFlexGrid) {
-      container.style.cssText += `
-        overflow-y: auto;
-        max-height: 100vh;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      `;
-      console.log('🏠 Home page: Applied max-height constraint');
-    } else {
-      container.style.cssText += `
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      `;
-      console.log('📄 Other page: Applied infinite scroll without max-height');
-    }
+    // Apply EXACT same styles as home page to ALL containers
+    container.style.cssText += `
+      overflow-y: auto;
+      max-height: 100vh;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    `;
 
     // Hide scrollbars
     const scrollbarStyles = document.createElement('style');
@@ -649,18 +623,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     initItems();
-    
-    // Add detailed logging
-    console.log(`📊 Container analysis:`);
-    console.log(`  - Container: ${container.tagName}.${container.className}`);
-    console.log(`  - Children count: ${container.children.length}`);
-    console.log(`  - Container height: ${container.offsetHeight}px`);
-    console.log(`  - First 3 children:`, Array.from(container.children).slice(0, 3).map(child => ({
-      tag: child.tagName,
-      class: child.className,
-      text: child.textContent.substring(0, 50)
-    })));
-    
     container.onscroll = scrollWrap;
     
     container.querySelectorAll('img, video').forEach(img => {
@@ -670,7 +632,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
     
-    console.log(`✅ Infinite scroll setup complete with ${listOpts.items ? listOpts.items.length : container.children.length} items`);
+    console.log(`🔄 Infinite scroll active with ${container.children.length} items`);
   }
 
   function addHidden() {
