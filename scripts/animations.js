@@ -521,9 +521,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setupInfiniteScroll();
   }
 
-  // Simple infinite scroll - works exactly the same on ALL pages
+  // True infinite scroll using natural page scrolling (like CodePen example)
   function setupInfiniteScroll() {
-    // Find ANY container with content - treat ALL the same as home page
+    // Find ANY container with content
     const selectors = [
       '.flex-grid',
       '.w-layout-grid', 
@@ -539,92 +539,82 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const found = document.querySelector(selector);
       if (found && found.children.length > 1) {
         container = found;
-        console.log(`✅ Using container: ${selector}`);
+        console.log(`✅ Found container: ${selector} with ${found.children.length} items`);
         break;
       }
     }
     
     if (!container) {
-      console.log('❌ No container found');
+      console.log('❌ No container found for infinite scroll');
       return;
     }
     
-    // Apply EXACT same styles as home page to ALL containers
+    // NO max-height! Just natural scrolling
     container.style.cssText += `
-      overflow-y: auto;
-      // max-height: 100vh;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      overflow: visible;
+      height: auto;
     `;
 
-    // Hide scrollbars
-    const scrollbarStyles = document.createElement('style');
-    const containerClass = container.className.split(' ')[0] || 'scroll-container';
-    scrollbarStyles.textContent = `
-      .${containerClass}::-webkit-scrollbar { display: none; }
-      .${containerClass} { scrollbar-width: none; -ms-overflow-style: none; }
-    `;
+    // Store original items for cloning
+    const originalItems = Array.from(container.children);
+    const itemHeight = originalItems[0] ? originalItems[0].offsetHeight : 100;
+    let isLoading = false;
     
-    if (!document.head.querySelector('#infinite-scroll-styles')) {
-      scrollbarStyles.id = 'infinite-scroll-styles';
-      document.head.appendChild(scrollbarStyles);
-    }
-
-    let itemsScrolled = 0;
-    let itemsMax = 0;
-    let cloned = false;
-    
-    const listOpts = {
-      itemCount: null,
-      itemHeight: null,
-      items: [],
-    };
-
-    function scrollWrap() {
-      const scrollTop = container.scrollTop;
+    // Function to add more items (clone originals)
+    function loadMoreItems() {
+      if (isLoading) return;
+      isLoading = true;
       
-      if (listOpts.itemHeight) {
-        itemsScrolled = Math.ceil((scrollTop + listOpts.itemHeight / 2) / listOpts.itemHeight);
+      console.log('🔄 Loading more items...');
+      
+      // Clone all original items and append them
+      originalItems.forEach(item => {
+        const clone = item.cloneNode(true);
         
-        if (scrollTop < 1) itemsScrolled = 0;
-        
-        if (itemsScrolled > listOpts.items.length - 3) {
-          let node;
-          for (let x = 0; x <= itemsMax - 1; x++) {
-            node = listOpts.items[x];
-            if (!cloned) {
-              node = listOpts.items[x].cloneNode(true);
-            }
-            container.appendChild(node);
-          }
-          
-          initItems(cloned);
-          cloned = true;
-          itemsScrolled = 0;
+        // Reset any GSAP animations on cloned items
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(clone.querySelectorAll('*'), { clearProps: "all" });
+          window.gsap.set(clone, { clearProps: "all" });
         }
+        
+        container.appendChild(clone);
+      });
+      
+      console.log(`✅ Added ${originalItems.length} more items`);
+      
+      // Re-enable loading after short delay
+      setTimeout(() => {
+        isLoading = false;
+      }, 500);
+    }
+    
+    // Listen to window scroll (natural scrolling)
+    function handleScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Trigger when user is near bottom (300px from bottom)
+      const nearBottom = scrollTop + windowHeight >= documentHeight - 300;
+      
+      if (nearBottom && !isLoading) {
+        loadMoreItems();
       }
     }
-
-    function initItems(scrollSmooth) {
-      listOpts.items = Array.from(container.children);
-      
-      if (listOpts.items.length > 0) {
-        listOpts.itemHeight = listOpts.items[0].offsetHeight;
-        listOpts.itemCount = listOpts.items.length;
-        
-        if (!itemsMax) itemsMax = listOpts.itemCount;
-        
-        if (scrollSmooth && itemsMax > 3) {
-          const seamlessScrollPoint = (itemsMax - 3) * listOpts.itemHeight;
-          container.scrollTop = seamlessScrollPoint;
-        }
-      }
-    }
-
-    initItems();
-    container.onscroll = scrollWrap;
     
+    // Add scroll listener with throttling
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+    
+    // Ensure images are visible
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined') {
         window.gsap.set(img, { opacity: 1 });
@@ -632,7 +622,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
     
-    console.log(`🔄 Infinite scroll active with ${container.children.length} items`);
+    console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
   }
 
   function addHidden() {
