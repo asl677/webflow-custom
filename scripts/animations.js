@@ -521,111 +521,51 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setupInfiniteScroll();
   }
 
-  // Simplified infinite scroll that works everywhere
+  // Universal infinite scroll that works on ALL pages
   function setupInfiniteScroll(isRetry = false) {
-    // Check if we're on a case study page
-    const isCaseStudyPage = window.location.pathname.includes('/cases/');
-    
     let container = null;
     
-    if (isCaseStudyPage) {
-      // For case study pages, try different container selectors
-      const selectors = [
-        '.flex-grid',
-        '.w-layout-grid',
-        '[class*="grid"]',
-        '.main-wrapper .container',
-        '.page-wrapper .container',
-        '.main-wrapper',
-        '.page-wrapper',
-        'main',
-        '.container'
-      ];
-      
-      console.log('🔍 Debugging case study page containers:');
-      
-      for (const selector of selectors) {
-        const found = document.querySelector(selector);
-        if (found) {
-          const childCount = found.children.length;
-          console.log(`  - ${selector}: ${childCount} children`);
-          
-          // Check if container has real content (not just placeholders)
-          const hasRealContent = Array.from(found.children).some(child => {
-            const text = child.textContent.trim();
-            return text.length > 0 && text !== 'xx' && !text.match(/^x+$/);
-          });
-          
-          console.log(`    - Has real content: ${hasRealContent}`);
-          
-          // Lower requirement to 1+ children with real content for case study pages
-          if (childCount > 0 && hasRealContent) {
-            container = found;
-            console.log(`🔄 Case study page: Using container ${selector} with ${childCount} items (real content found)`);
-            break;
-          }
-        } else {
-          console.log(`  - ${selector}: not found`);
-        }
+    console.log('🔍 Looking for infinite scroll container on any page...');
+    
+    // Try different container selectors in order of preference
+    const selectors = [
+      '.flex-grid',           // Home page
+      '.w-layout-grid',       // Webflow grid
+      '[class*="grid"]',      // Any grid
+      '.main-wrapper',        // Main wrapper
+      '.page-wrapper',        // Page wrapper  
+      'main',                 // Main element
+      '.container',           // Generic container
+      'section'               // Section elements
+    ];
+    
+    for (const selector of selectors) {
+      const found = document.querySelector(selector);
+      if (found && found.children.length > 1) {
+        container = found;
+        console.log(`🔄 Found container: ${selector} with ${found.children.length} items`);
+        break;
       }
-      
-      // If still no container, try to find ANY container with real content
-      if (!container) {
-        const allContainers = document.querySelectorAll('div[class*="wrap"], div[class*="container"], div[class*="grid"], section, main');
-        console.log(`🔎 Fallback: Found ${allContainers.length} potential containers`);
-        
-        for (const potentialContainer of allContainers) {
-          const hasRealContent = Array.from(potentialContainer.children).some(child => {
-            const text = child.textContent.trim();
-            return text.length > 0 && text !== 'xx' && !text.match(/^x+$/);
-          });
-          
-          if (potentialContainer.children.length > 0 && hasRealContent) {
-            container = potentialContainer;
-            console.log(`🔄 Fallback: Using ${potentialContainer.tagName}.${potentialContainer.className} with ${potentialContainer.children.length} items (real content)`);
-            break;
-          }
-        }
-      }
-      
-      // If still no container with real content found, don't setup infinite scroll
-      if (!container) {
-        console.log('❌ No container with real content found - infinite scroll disabled for case study page');
-        console.log('💡 This might be because content is still loading or page has only placeholder content');
-        
-        // Try again after a delay in case content is still loading (only once)
-        if (!isRetry) {
-          setTimeout(() => {
-            console.log('🔄 Retrying infinite scroll setup after delay...');
-            setupInfiniteScroll(true); // Pass true to indicate retry
-          }, 2000);
-        } else {
-          console.log('⚠️ Retry failed - case study page may have no scrollable content');
-        }
-        
-        return;
-      }
-    } else {
-      // For home page, use .flex-grid as before
-      container = document.querySelector('.flex-grid');
     }
     
     if (!container) {
-      console.log('📄 No infinite scroll container found');
+      console.log('📄 No suitable container found for infinite scroll');
+      
+      // Try again after delay only once
+      if (!isRetry) {
+        setTimeout(() => {
+          console.log('🔄 Retrying infinite scroll setup...');
+          setupInfiniteScroll(true);
+        }, 2000);
+      }
       return;
     }
     
-    // Simple unified infinite scroll for all devices
-    // Don't apply max-height on case study pages to prevent layout issues
-    if (isCaseStudyPage) {
-      container.style.cssText += `
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      `;
-      console.log('🔍 Case study page: Applied infinite scroll without max-height constraint');
-    } else {
+    // Apply infinite scroll styles
+    // Only use max-height on .flex-grid (home page), not other containers
+    const isFlexGrid = container.classList.contains('flex-grid');
+    
+    if (isFlexGrid) {
       container.style.cssText += `
         overflow-y: auto;
         max-height: 100vh;
@@ -633,11 +573,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         scrollbar-width: none;
         -ms-overflow-style: none;
       `;
+      console.log('🏠 Home page: Applied max-height constraint');
+    } else {
+      container.style.cssText += `
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      `;
+      console.log('📄 Other page: Applied infinite scroll without max-height');
     }
 
     // Hide scrollbars
     const scrollbarStyles = document.createElement('style');
-    const containerClass = container.className.split(' ')[0] || 'flex-grid';
+    const containerClass = container.className.split(' ')[0] || 'scroll-container';
     scrollbarStyles.textContent = `
       .${containerClass}::-webkit-scrollbar { display: none; }
       .${containerClass} { scrollbar-width: none; -ms-overflow-style: none; }
@@ -701,18 +650,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     initItems();
     
-    // Add detailed logging for case study pages
-    if (isCaseStudyPage) {
-      console.log(`📊 Container analysis:`);
-      console.log(`  - Container: ${container.tagName}.${container.className}`);
-      console.log(`  - Children count: ${container.children.length}`);
-      console.log(`  - Container height: ${container.offsetHeight}px`);
-      console.log(`  - First 3 children:`, Array.from(container.children).slice(0, 3).map(child => ({
-        tag: child.tagName,
-        class: child.className,
-        text: child.textContent.substring(0, 50)
-      })));
-    }
+    // Add detailed logging
+    console.log(`📊 Container analysis:`);
+    console.log(`  - Container: ${container.tagName}.${container.className}`);
+    console.log(`  - Children count: ${container.children.length}`);
+    console.log(`  - Container height: ${container.offsetHeight}px`);
+    console.log(`  - First 3 children:`, Array.from(container.children).slice(0, 3).map(child => ({
+      tag: child.tagName,
+      class: child.className,
+      text: child.textContent.substring(0, 50)
+    })));
     
     container.onscroll = scrollWrap;
     
@@ -723,7 +670,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
     
-    console.log(`✅ Infinite scroll setup complete for ${isCaseStudyPage ? 'case study' : 'home'} page`);
+    console.log(`✅ Infinite scroll setup complete with ${listOpts.items ? listOpts.items.length : container.children.length} items`);
   }
 
   function addHidden() {
