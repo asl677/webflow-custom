@@ -535,15 +535,43 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         '.w-layout-grid',
         '[class*="grid"]',
         '.main-wrapper .container',
-        '.page-wrapper .container'
+        '.page-wrapper .container',
+        '.main-wrapper',
+        '.page-wrapper',
+        'main',
+        '.container'
       ];
+      
+      console.log('🔍 Debugging case study page containers:');
       
       for (const selector of selectors) {
         const found = document.querySelector(selector);
-        if (found && found.children.length > 2) {
-          container = found;
-          console.log(`🔄 Case study page: Found container ${selector} with ${found.children.length} items`);
-          break;
+        if (found) {
+          const childCount = found.children.length;
+          console.log(`  - ${selector}: ${childCount} children`);
+          
+          // Lower requirement to 1+ children for case study pages
+          if (childCount > 0) {
+            container = found;
+            console.log(`🔄 Case study page: Using container ${selector} with ${childCount} items`);
+            break;
+          }
+        } else {
+          console.log(`  - ${selector}: not found`);
+        }
+      }
+      
+      // If still no container, try to find ANY container with content
+      if (!container) {
+        const allContainers = document.querySelectorAll('div[class*="wrap"], div[class*="container"], div[class*="grid"], section, main');
+        console.log(`🔎 Fallback: Found ${allContainers.length} potential containers`);
+        
+        for (const potentialContainer of allContainers) {
+          if (potentialContainer.children.length > 0) {
+            container = potentialContainer;
+            console.log(`🔄 Fallback: Using ${potentialContainer.tagName}.${potentialContainer.className} with ${potentialContainer.children.length} items`);
+            break;
+          }
         }
       }
     } else {
@@ -641,12 +669,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     initItems();
+    
+    // Add detailed logging for case study pages
+    if (isCaseStudyPage) {
+      console.log(`📊 Container analysis:`);
+      console.log(`  - Container: ${container.tagName}.${container.className}`);
+      console.log(`  - Children count: ${container.children.length}`);
+      console.log(`  - Container height: ${container.offsetHeight}px`);
+      console.log(`  - First 3 children:`, Array.from(container.children).slice(0, 3).map(child => ({
+        tag: child.tagName,
+        class: child.className,
+        text: child.textContent.substring(0, 50)
+      })));
+    }
+    
     container.onscroll = scrollWrap;
     
     container.querySelectorAll('img, video').forEach(img => {
-      gsap.set(img, { opacity: 1 });
+      if (typeof window.gsap !== 'undefined') {
+        window.gsap.set(img, { opacity: 1 });
+      }
       img.dataset.gsapAnimated = 'infinite-scroll';
     });
+    
+    console.log(`✅ Infinite scroll setup complete for ${isCaseStudyPage ? 'case study' : 'home'} page`);
   }
 
   function addHidden() {
