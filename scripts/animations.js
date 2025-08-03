@@ -522,7 +522,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   // Simplified infinite scroll that works everywhere
-  function setupInfiniteScroll() {
+  function setupInfiniteScroll(isRetry = false) {
     // Check if we're on a case study page
     const isCaseStudyPage = window.location.pathname.includes('/cases/');
     
@@ -550,10 +550,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const childCount = found.children.length;
           console.log(`  - ${selector}: ${childCount} children`);
           
-          // Lower requirement to 1+ children for case study pages
-          if (childCount > 0) {
+          // Check if container has real content (not just placeholders)
+          const hasRealContent = Array.from(found.children).some(child => {
+            const text = child.textContent.trim();
+            return text.length > 0 && text !== 'xx' && !text.match(/^x+$/);
+          });
+          
+          console.log(`    - Has real content: ${hasRealContent}`);
+          
+          // Lower requirement to 1+ children with real content for case study pages
+          if (childCount > 0 && hasRealContent) {
             container = found;
-            console.log(`🔄 Case study page: Using container ${selector} with ${childCount} items`);
+            console.log(`🔄 Case study page: Using container ${selector} with ${childCount} items (real content found)`);
             break;
           }
         } else {
@@ -561,18 +569,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       }
       
-      // If still no container, try to find ANY container with content
+      // If still no container, try to find ANY container with real content
       if (!container) {
         const allContainers = document.querySelectorAll('div[class*="wrap"], div[class*="container"], div[class*="grid"], section, main');
         console.log(`🔎 Fallback: Found ${allContainers.length} potential containers`);
         
         for (const potentialContainer of allContainers) {
-          if (potentialContainer.children.length > 0) {
+          const hasRealContent = Array.from(potentialContainer.children).some(child => {
+            const text = child.textContent.trim();
+            return text.length > 0 && text !== 'xx' && !text.match(/^x+$/);
+          });
+          
+          if (potentialContainer.children.length > 0 && hasRealContent) {
             container = potentialContainer;
-            console.log(`🔄 Fallback: Using ${potentialContainer.tagName}.${potentialContainer.className} with ${potentialContainer.children.length} items`);
+            console.log(`🔄 Fallback: Using ${potentialContainer.tagName}.${potentialContainer.className} with ${potentialContainer.children.length} items (real content)`);
             break;
           }
         }
+      }
+      
+      // If still no container with real content found, don't setup infinite scroll
+      if (!container) {
+        console.log('❌ No container with real content found - infinite scroll disabled for case study page');
+        console.log('💡 This might be because content is still loading or page has only placeholder content');
+        
+        // Try again after a delay in case content is still loading (only once)
+        if (!isRetry) {
+          setTimeout(() => {
+            console.log('🔄 Retrying infinite scroll setup after delay...');
+            setupInfiniteScroll(true); // Pass true to indicate retry
+          }, 2000);
+        } else {
+          console.log('⚠️ Retry failed - case study page may have no scrollable content');
+        }
+        
+        return;
       }
     } else {
       // For home page, use .flex-grid as before
