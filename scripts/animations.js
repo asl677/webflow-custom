@@ -1,4 +1,4 @@
-// Version 1.8.7 - Simplified: Removed Lenis, unified infinite scroll for all devices
+// Version 1.8.8 - Fixed max-height issue on case study pages, no Lenis/smooth scrolling
 // REQUIRED: Add this script tag to your Webflow site BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 
@@ -526,14 +526,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const container = document.querySelector('.flex-grid');
     if (!container) return;
 
+    // Check if we're on a case study page
+    const isCaseStudyPage = window.location.pathname.includes('/cases/');
+    
     // Simple unified infinite scroll for all devices
-    container.style.cssText += `
-      overflow-y: auto;
-      max-height: 100vh;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    `;
+    // Don't apply max-height on case study pages to prevent layout issues
+    if (isCaseStudyPage) {
+      container.style.cssText += `
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      `;
+      console.log('🔍 Case study page: Applied infinite scroll without max-height constraint');
+    } else {
+      container.style.cssText += `
+        overflow-y: auto;
+        max-height: 100vh;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      `;
+    }
 
     // Hide scrollbars
     const scrollbarStyles = document.createElement('style');
