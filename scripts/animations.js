@@ -523,11 +523,38 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Simplified infinite scroll that works everywhere
   function setupInfiniteScroll() {
-    const container = document.querySelector('.flex-grid');
-    if (!container) return;
-
     // Check if we're on a case study page
     const isCaseStudyPage = window.location.pathname.includes('/cases/');
+    
+    let container = null;
+    
+    if (isCaseStudyPage) {
+      // For case study pages, try different container selectors
+      const selectors = [
+        '.flex-grid',
+        '.w-layout-grid',
+        '[class*="grid"]',
+        '.main-wrapper .container',
+        '.page-wrapper .container'
+      ];
+      
+      for (const selector of selectors) {
+        const found = document.querySelector(selector);
+        if (found && found.children.length > 2) {
+          container = found;
+          console.log(`🔄 Case study page: Found container ${selector} with ${found.children.length} items`);
+          break;
+        }
+      }
+    } else {
+      // For home page, use .flex-grid as before
+      container = document.querySelector('.flex-grid');
+    }
+    
+    if (!container) {
+      console.log('📄 No infinite scroll container found');
+      return;
+    }
     
     // Simple unified infinite scroll for all devices
     // Don't apply max-height on case study pages to prevent layout issues
@@ -551,9 +578,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     // Hide scrollbars
     const scrollbarStyles = document.createElement('style');
+    const containerClass = container.className.split(' ')[0] || 'flex-grid';
     scrollbarStyles.textContent = `
-      .flex-grid::-webkit-scrollbar { display: none; }
-      .flex-grid { scrollbar-width: none; -ms-overflow-style: none; }
+      .${containerClass}::-webkit-scrollbar { display: none; }
+      .${containerClass} { scrollbar-width: none; -ms-overflow-style: none; }
     `;
     
     if (!document.head.querySelector('#infinite-scroll-styles')) {
@@ -656,16 +684,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function createTimeCounter() {
     const counter = document.createElement('div');
     counter.id = 'time-counter';
-    counter.textContent = '00:00';
+    counter.textContent = '0000';
     
     counter.style.cssText = `
       position: fixed;
-      bottom: 1vw;
+      bottom: 0.8vw;
       left: 50%;
       transform: translateX(-50%);
       color: white;
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
-      font-size: clamp(12px, 0.8vw, 16px);
+      font-size: 0.6vw;
       z-index: 9999;
       pointer-events: none;
       user-select: none;
@@ -676,7 +704,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const mobileStyles = document.createElement('style');
     mobileStyles.textContent = `
       @media (max-width: 768px) {
-        #time-counter { font-size: 11px !important; bottom: 1vw !important; }
+        #time-counter { font-size: 11px !important; bottom: 0.8vw !important; }
         .main-wrapper, [data-w-id], main, .page-wrapper { min-height: 100vh; height: auto; }
         body > div:first-child { min-height: 100vh; }
       }
@@ -708,7 +736,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const totalSeconds = Math.floor(elapsed / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-      const timeString = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+      const timeString = String(minutes).padStart(2, '0') + String(seconds).padStart(2, '0');
       
       const lineInner = counter.querySelector('.line-inner');
       if (lineInner) {
