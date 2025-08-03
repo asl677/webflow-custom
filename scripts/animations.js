@@ -306,6 +306,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   function startAnims() {
+    // Register ScrollTrigger plugin to ensure below-the-fold content loads
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    }
+    
     const largeHeadings = document.querySelectorAll('.heading.large');
     const smallHeadings = document.querySelectorAll('.heading.small');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
@@ -575,12 +580,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (typeof window.gsap !== 'undefined') {
           window.gsap.set(clone.querySelectorAll('*'), { clearProps: "all" });
           window.gsap.set(clone, { clearProps: "all" });
+          
+          // Apply ScrollTrigger animations to cloned content
+          const clonedImages = clone.querySelectorAll('img, video');
+          clonedImages.forEach(img => {
+            window.gsap.set(img, { opacity: 0, y: 40 });
+            window.gsap.to(img, {
+              opacity: 1,
+              y: 0,
+              duration: 1.5,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: img,
+                start: "top bottom",
+                end: "top center",
+                toggleActions: "play none none reverse",
+                once: true
+              }
+            });
+          });
         }
         
         container.appendChild(clone);
       });
       
       console.log(`✅ Added ${originalItems.length} more items`);
+      
+      // Refresh ScrollTrigger to recalculate positions after adding content
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+        window.gsap.ScrollTrigger.refresh();
+      }
       
       // Re-enable loading after short delay
       setTimeout(() => {
@@ -614,15 +643,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }, { passive: true });
     
-    // Ensure images are visible
+    // Ensure images are visible and have proper ScrollTrigger setup
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined') {
-        window.gsap.set(img, { opacity: 1 });
+        // Only set visibility for images that don't have ScrollTrigger animations
+        // (i.e., images in special containers like infinite scroll containers)
+        if (!img.dataset.gsapAnimated && 
+            (img.closest('.flex-grid, .container.video-wrap-hide') || 
+             img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
+          window.gsap.set(img, { opacity: 1 });
+          img.dataset.gsapAnimated = 'infinite-scroll';
+        }
+        // Leave other images alone - they should use ScrollTrigger for below-the-fold loading
       }
-      img.dataset.gsapAnimated = 'infinite-scroll';
     });
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
+    
+    // Refresh ScrollTrigger to ensure all content below the fold is properly detected
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      setTimeout(() => {
+        window.gsap.ScrollTrigger.refresh();
+      }, 100);
+    }
   }
 
   function addHidden() {
