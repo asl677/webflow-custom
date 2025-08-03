@@ -552,7 +552,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Apply EXACT same styles as home page to ALL containers
     container.style.cssText += `
       overflow-y: auto;
-      max-height: 100vh;
+      // max-height: 100vh;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       -ms-overflow-style: none;
