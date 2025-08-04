@@ -315,7 +315,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const smallHeadings = document.querySelectorAll('.heading.small');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
     const paragraphs = document.querySelectorAll('p');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a)');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a), .menu-link');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
@@ -444,7 +444,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       largeHeadings.forEach((h, index) => {
         const lines = wrapLines(h);
         if (lines.length > 0) {
-          tl.to(lines, { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 0.1 + (index * 0.1));
+          tl.to(lines, { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 1.1 + (index * 0.1));
         }
       });
     }
@@ -455,7 +455,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         const lines = wrapLines(heading);
         if (lines.length > 0) {
-          tl.to(lines, { y: 0, opacity: 1, duration: 1.0, stagger: 0.15, ease: "power2.out" }, 0.2 + (index * 0.1));
+          tl.to(lines, { y: 0, opacity: 1, duration: 1.0, stagger: 0.15, ease: "power2.out" }, 1.2 + (index * 0.1));
         }
       });
     }
@@ -469,13 +469,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const lines = wrapLines(linkText1);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 20 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.3 + (index * 0.1));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 1.3 + (index * 0.1));
           }
         } else {
           const lines = wrapLines(heading);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 20 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 0.3 + (index * 0.1));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 1.3 + (index * 0.1));
           }
         }
       });
@@ -487,7 +487,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         const lines = wrapLines(paragraph);
         if (lines.length > 0) {
-          tl.to(lines, { y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out" }, 0.4 + (index * 0.08));
+          tl.to(lines, { y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out" }, 1.4 + (index * 0.08));
         }
       });
     }
@@ -501,13 +501,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const lines = wrapLines(linkText1);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.5 + (index * 0.04));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
           }
         } else {
           const lines = wrapLines(link);
           if (lines.length > 0) {
             window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.5 + (index * 0.04));
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
           }
         }
       });
@@ -515,12 +515,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     if (slideEls.length) {
       window.gsap.set(slideEls, { x: 40, opacity: 0 });
-      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 0.6);
+      tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6);
     }
 
     if (otherEls.length) {
       window.gsap.set(otherEls, { opacity: 0, y: 10 });
-      tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 0.7);
+      tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7);
     }
 
     setupInfiniteScroll();
