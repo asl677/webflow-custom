@@ -724,7 +724,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     mobileStyles.textContent = `
       @media (max-width: 768px) {
         #time-counter { font-size: 11px !important; bottom: 0.8vw !important; }
-        .main-wrapper, [data-w-id], main, .page-wrapper { min-height: 100vh; height: auto; }
+        .main-wrapper, main, .page-wrapper { min-height: 100vh; height: auto; }
         body > div:first-child { min-height: 100vh; }
       }
     `;
