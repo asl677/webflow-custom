@@ -212,7 +212,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport) {
           window.gsap.set(el, { opacity: 0, y: 30 });
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out", delay: 0.2 + (i * 0.3), onComplete: () => el.dataset.gsapAnimated = 'completed' });
+          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out", delay: 0.2 + (i * 0.2), onComplete: () => el.dataset.gsapAnimated = 'completed' });
         } else {
           window.gsap.set(el, { opacity: 0, y: 40 });
           if (el.loading !== 'eager') el.loading = 'eager';
