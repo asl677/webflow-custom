@@ -211,12 +211,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport) {
-          window.gsap.set(el, { opacity: 0, y: 30 });
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out", delay: 0.2 + (i * 0.2), onComplete: () => el.dataset.gsapAnimated = 'completed' });
+          window.gsap.set(el, { opacity: 0, y: 0 });
+          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", delay: 0.18 + (i * 0.15), onComplete: () => el.dataset.gsapAnimated = 'completed' });
         } else {
-          window.gsap.set(el, { opacity: 0, y: 40 });
+          window.gsap.set(el, { opacity: 0, y: 0 });
           if (el.loading !== 'eager') el.loading = 'eager';
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
+          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
         }
       });
     }
