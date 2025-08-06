@@ -1,10 +1,12 @@
-// Version 1.9 - Minified with increased image stagger delay (0.5s)
-// REQUIRED: Add this script tag BEFORE this script: <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
+// Version 2.0 - Added Lenis smooth scrolling + increased image stagger delay (0.5s)
+// REQUIRED: Add these script tags BEFORE this script:
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
+// <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false;
+  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, lenis = null;
 
   // Global error handler
   window.addEventListener('error', e => console.error('Global JavaScript error:', e.error));
@@ -42,6 +44,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         });
     });
+  }
+
+  // Initialize Lenis smooth scrolling
+  function initLenis() {
+    if (typeof Lenis === 'undefined') {
+      console.log('⚠️ Lenis not loaded, skipping smooth scroll');
+      return;
+    }
+
+    // Create Lenis instance with optimized settings
+    lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    });
+
+    // Request animation frame function
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // Integrate with GSAP ScrollTrigger
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      lenis.on('scroll', window.gsap.ScrollTrigger.update);
+      window.gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+      window.gsap.ticker.lagSmoothing(0);
+    }
+
+    console.log('✅ Lenis smooth scrolling initialized');
   }
 
   // Create animated preloader
@@ -102,6 +143,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     createTimeCounter();
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
+    
+    // Initialize Lenis smooth scrolling after animations start
+    setTimeout(() => {
+      initLenis();
+    }, 500);
+    
     !isInit && init();
   }
 
@@ -450,6 +497,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.initialize = init;
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
+  exports.getLenis = () => lenis;
   
   // Start preloader
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initPreloader) : initPreloader();
