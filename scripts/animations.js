@@ -83,6 +83,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     console.log('✅ Lenis smooth scrolling initialized');
+    
+    // Setup infinite scroll after Lenis is ready
+    setTimeout(() => {
+      setupInfiniteScroll();
+    }, 100);
   }
 
   // Create animated preloader
@@ -376,7 +381,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
 
-    setupInfiniteScroll();
+    // Infinite scroll is now setup after Lenis initialization
   }
 
   // Natural infinite scroll setup
@@ -421,17 +426,38 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => isLoading = false, 500);
     }
     
-    // Scroll handler with throttling
-    function handleScroll() {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    // Scroll handler with throttling (compatible with Lenis)
+    function handleScroll(scrollData) {
+      const scrollTop = scrollData ? scrollData.scroll : (window.pageYOffset || document.documentElement.scrollTop);
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const nearBottom = scrollTop + windowHeight >= documentHeight - 300;
-      nearBottom && !isLoading && loadMoreItems();
+      
+      if (nearBottom && !isLoading) {
+        console.log('🔄 Near bottom, loading more items...');
+        loadMoreItems();
+      }
     }
     
-    let ticking = false;
-    window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(() => { handleScroll(); ticking = false; }); ticking = true; }}, { passive: true });
+    // Setup scroll listeners for both Lenis and native scroll
+    if (lenis) {
+      // Use Lenis scroll event if available
+      lenis.on('scroll', handleScroll);
+      console.log('✅ Infinite scroll integrated with Lenis');
+    } else {
+      // Fallback to native scroll
+      let ticking = false;
+      window.addEventListener('scroll', () => { 
+        if (!ticking) { 
+          requestAnimationFrame(() => { 
+            handleScroll(); 
+            ticking = false; 
+          }); 
+          ticking = true; 
+        }
+      }, { passive: true });
+      console.log('✅ Infinite scroll using native scroll events');
+    }
     
     // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
