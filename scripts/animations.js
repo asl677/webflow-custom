@@ -20,9 +20,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function loadGSAP() {
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
+      console.log('✅ GSAP loaded');
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
         scrollTriggerLoaded = true;
-        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => observerLoaded = true);
+        console.log('✅ ScrollTrigger script loaded');
+        // Register ScrollTrigger plugin
+        if (window.gsap && window.gsap.registerPlugin && window.ScrollTrigger) {
+          window.gsap.registerPlugin(window.ScrollTrigger);
+          console.log('✅ ScrollTrigger registered');
+        }
+        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
+          observerLoaded = true;
+          console.log('✅ Observer loaded');
+        });
       });
     });
   }
@@ -495,12 +505,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           isInit = true; 
           // Set up distortion after a delay to ensure ScrollTrigger is loaded
           setTimeout(() => {
-            if (window.gsap.ScrollTrigger) {
+            if (window.gsap && window.gsap.ScrollTrigger && scrollTriggerLoaded) {
+              console.log('🌀 ScrollTrigger ready, setting up distortion...');
               setupScrollDistortion();
             } else {
-              console.log('🌀 ScrollTrigger not ready, skipping distortion effect');
+              console.log('🌀 ScrollTrigger not ready, retrying in 2 seconds...');
+              setTimeout(() => {
+                if (window.gsap && window.gsap.ScrollTrigger && scrollTriggerLoaded) {
+                  console.log('🌀 ScrollTrigger ready on retry, setting up distortion...');
+                  setupScrollDistortion();
+                } else {
+                  console.log('🌀 ScrollTrigger still not ready, skipping distortion effect');
+                }
+              }, 2000);
             }
-          }, 1000);
+          }, 1500);
         }); 
       } else {
         setTimeout(waitForGSAP, 100); 
