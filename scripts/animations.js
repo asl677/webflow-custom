@@ -1,4 +1,4 @@
-// Version 1.8.9 - Minified with increased image stagger delay (0.5s)
+// Version 1.9 - Minified with increased image stagger delay (0.5s)
 // REQUIRED: Add this script tag BEFORE this script: <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 
 window.portfolioAnimations = window.portfolioAnimations || {};
@@ -332,85 +332,54 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const svgFilter = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgFilter.setAttribute('width', '0');
     svgFilter.setAttribute('height', '0');
-    svgFilter.style.position = 'absolute';
+    svgFilter.style.cssText = 'position:absolute;top:0;left:0;z-index:-1;pointer-events:none;';
     svgFilter.innerHTML = `
       <defs>
-        <filter id="distortionFilter" x="-50%" y="-50%" width="200%" height="200%">
-          <feTurbulence id="turbulence" baseFrequency="0.02 0.03" numOctaves="3" result="noise"/>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" result="distortion"/>
+        <filter id="scrollDistortion" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence id="scrollTurbulence" baseFrequency="0.01" numOctaves="2" result="noise"/>
+          <feDisplacementMap id="scrollDisplacement" in="SourceGraphic" in2="noise" scale="0"/>
         </filter>
       </defs>
     `;
     document.body.appendChild(svgFilter);
 
-    // Find images to apply distortion to
-    const distortionTargets = document.querySelectorAll('img, video, .card-project, .proper-mask-reveal');
+    // Better target selection for your portfolio site
+    const distortionTargets = document.querySelectorAll('img:not([src*="svg"]), .proper-mask-reveal img, .image, [class*="image"]');
     
-    if (distortionTargets.length === 0) return;
+    if (distortionTargets.length === 0) {
+      console.log('🌀 No distortion targets found');
+      return;
+    }
 
     distortionTargets.forEach((target, index) => {
-      // Skip if already has distortion setup
-      if (target.dataset.distortionSetup) return;
+      // Skip if already has distortion setup or is very small
+      if (target.dataset.distortionSetup || target.offsetWidth < 50) return;
       
-      // Apply filter to element
-      target.style.filter = 'url(#distortionFilter)';
+      // Apply filter with fallback
+      const originalFilter = target.style.filter || '';
+      target.style.filter = originalFilter ? `${originalFilter} url(#scrollDistortion)` : 'url(#scrollDistortion)';
       target.dataset.distortionSetup = 'true';
 
-      // Create scroll-triggered distortion animation
-      window.gsap.to('#turbulence', {
-        attr: { baseFrequency: '0.1 0.15' },
-        scrollTrigger: {
-          trigger: target,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
-          onUpdate: (self) => {
-            const progress = self.progress;
-            const scale = progress * 15; // Max distortion scale
-            const turbulence = document.getElementById('turbulence');
-            const displacement = target.parentElement.querySelector('feDisplacementMap') || document.querySelector('feDisplacementMap');
-            
-            if (displacement) {
-              displacement.setAttribute('scale', scale);
-            }
-          }
-        }
-      });
-
-      // Smooth distortion ease-in/out on scroll
+      // Create individual ScrollTrigger for each element
       window.gsap.timeline({
         scrollTrigger: {
           trigger: target,
-          start: 'top 80%',
-          end: 'bottom 20%',
-          scrub: 2,
-          onEnter: () => {
-            window.gsap.to('#turbulence', {
-              attr: { baseFrequency: '0.05 0.08' },
-              duration: 0.3,
-              ease: 'power2.out'
-            });
-          },
-          onLeave: () => {
-            window.gsap.to('#turbulence', {
-              attr: { baseFrequency: '0.02 0.03' },
-              duration: 0.3,
-              ease: 'power2.out'
-            });
-          },
-          onEnterBack: () => {
-            window.gsap.to('#turbulence', {
-              attr: { baseFrequency: '0.05 0.08' },
-              duration: 0.3,
-              ease: 'power2.out'
-            });
-          },
-          onLeaveBack: () => {
-            window.gsap.to('#turbulence', {
-              attr: { baseFrequency: '0.02 0.03' },
-              duration: 0.3,
-              ease: 'power2.out'
-            });
+          start: 'top bottom-=100px',
+          end: 'bottom top+=100px',
+          scrub: 1,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const turbulence = document.getElementById('scrollTurbulence');
+            const displacement = document.getElementById('scrollDisplacement');
+            
+            if (turbulence && displacement) {
+              // Create wave-like distortion that peaks in middle of scroll
+              const intensity = Math.sin(progress * Math.PI) * 8;
+              const frequency = 0.01 + (Math.sin(progress * Math.PI) * 0.04);
+              
+              turbulence.setAttribute('baseFrequency', `${frequency} ${frequency * 1.2}`);
+              displacement.setAttribute('scale', intensity);
+            }
           }
         }
       });
