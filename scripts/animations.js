@@ -331,20 +331,45 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit) textElements.push(link); });
     
-    // Apply scramble effect to all text elements
+    // Apply scramble effect to all text elements with fallback safety
     textElements.forEach((element, index) => {
-      // Hide initially
-      element.style.opacity = '0';
-      
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
         scrambleText(linkText1, 1500, 1200 + (index * 100));
+        // Safety fallback for hover elements
+        setTimeout(() => {
+          if (linkText1.style.opacity === '0') {
+            linkText1.style.opacity = '1';
+            console.log('🔧 Fallback: Made hover text visible');
+          }
+        }, 4000);
       } else {
+        element.style.opacity = '0';
         scrambleText(element, 1500, 1200 + (index * 100));
+        // Safety fallback for regular elements
+        setTimeout(() => {
+          if (element.style.opacity === '0') {
+            element.style.opacity = '1';
+            console.log('🔧 Fallback: Made element visible', element);
+          }
+        }, 4000);
       }
     });
+    
+    // Emergency fallback - ensure all text is visible after 3 seconds
+    setTimeout(() => {
+      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"], .initial-hidden');
+      if (hiddenElements.length > 0) {
+        console.log('⚠️ Emergency fallback: Making all hidden text visible');
+        hiddenElements.forEach(el => {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          el.classList.remove('initial-hidden');
+        });
+      }
+    }, 3000);
     
     console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
 
@@ -470,15 +495,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return counter;
   }
 
-  // Initialize everything
-  addHidden();
+  // Initialize everything (removed addHidden since scramble effect handles visibility)
+  console.log('🚀 Portfolio animations initializing...');
 
-  // Fallback text visibility
+  // Enhanced fallback text visibility
   setTimeout(() => {
+    console.log('🔧 Fallback check: ensuring all text is visible');
     document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
-      if (el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') { el.style.opacity = '1'; el.style.transform = 'none'; el.classList.remove('initial-hidden'); }
+      if (el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') { 
+        el.style.opacity = '1'; 
+        el.style.transform = 'none'; 
+        el.classList.remove('initial-hidden');
+        console.log('🔧 Made visible:', el);
+      }
     });
-  }, 1000);
+  }, 2000);
 
   // Fallback init
   setTimeout(() => !isInit && init(), 2000);
