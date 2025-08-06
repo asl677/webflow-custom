@@ -92,6 +92,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
+      // Skip elements that should get stagger animation instead of hover
+      if (link.classList.contains('menu-link') && link.classList.contains('shimmer') && link.classList.contains('accordion') && link.classList.contains('chip-link')) return;
       const originalHTML = link.innerHTML.trim();
       const hasLineBreaks = originalHTML.includes('<br>') || originalHTML.includes('\n') || link.offsetHeight > 25;
       const rect = link.getBoundingClientRect();
@@ -238,8 +240,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     if (links.length) {
       links.forEach((link, index) => {
-        // Skip if already processed by hover init or has link hover structure
-        if (link.dataset.hoverInit || link.classList.contains('link')) return;
+        // Skip if already processed by hover init, but allow menu-link.shimmer.accordion.chip-link elements
+        if (link.dataset.hoverInit) return;
+        if (link.classList.contains('link') && !(link.classList.contains('menu-link') && link.classList.contains('shimmer') && link.classList.contains('accordion') && link.classList.contains('chip-link'))) return;
         
         const linkText1 = link.querySelector('.link-text-1');
         const linkText2 = link.querySelector('.link-text-2');
