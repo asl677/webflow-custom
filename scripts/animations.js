@@ -21,19 +21,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
       console.log('✅ GSAP loaded');
-      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
-        scrollTriggerLoaded = true;
-        console.log('✅ ScrollTrigger script loaded');
-        // Register ScrollTrigger plugin
-        if (window.gsap && window.gsap.registerPlugin && window.ScrollTrigger) {
-          window.gsap.registerPlugin(window.ScrollTrigger);
-          console.log('✅ ScrollTrigger registered');
-        }
-        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
-          observerLoaded = true;
-          console.log('✅ Observer loaded');
+              loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
+          scrollTriggerLoaded = true;
+          console.log('✅ ScrollTrigger script loaded');
+          // Wait a moment for ScrollTrigger to initialize, then register
+          setTimeout(() => {
+            if (window.gsap && window.gsap.registerPlugin) {
+              try {
+                window.gsap.registerPlugin(window.gsap.ScrollTrigger || ScrollTrigger);
+                console.log('✅ ScrollTrigger registered successfully');
+                console.log('📊 Available ScrollTrigger:', !!window.gsap.ScrollTrigger);
+              } catch (e) {
+                console.error('❌ ScrollTrigger registration failed:', e);
+              }
+            }
+          }, 100);
+          loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
+            observerLoaded = true;
+            console.log('✅ Observer loaded');
+          });
         });
-      });
     });
   }
 
@@ -503,23 +510,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         requestAnimationFrame(() => { 
           startAnims(); 
           isInit = true; 
-          // Set up distortion after a delay to ensure ScrollTrigger is loaded
-          setTimeout(() => {
+          // Set up distortion after ensuring ScrollTrigger is available
+          function trySetupDistortion(attempt = 1) {
+            console.log(`🌀 Checking ScrollTrigger availability (attempt ${attempt})...`);
+            console.log('📊 window.gsap:', !!window.gsap);
+            console.log('📊 window.gsap.ScrollTrigger:', !!window.gsap?.ScrollTrigger);
+            console.log('📊 scrollTriggerLoaded:', scrollTriggerLoaded);
+            
             if (window.gsap && window.gsap.ScrollTrigger && scrollTriggerLoaded) {
               console.log('🌀 ScrollTrigger ready, setting up distortion...');
               setupScrollDistortion();
+            } else if (attempt < 4) {
+              console.log(`🌀 ScrollTrigger not ready, retrying in ${attempt + 1} seconds...`);
+              setTimeout(() => trySetupDistortion(attempt + 1), (attempt + 1) * 1000);
             } else {
-              console.log('🌀 ScrollTrigger not ready, retrying in 2 seconds...');
-              setTimeout(() => {
-                if (window.gsap && window.gsap.ScrollTrigger && scrollTriggerLoaded) {
-                  console.log('🌀 ScrollTrigger ready on retry, setting up distortion...');
-                  setupScrollDistortion();
-                } else {
-                  console.log('🌀 ScrollTrigger still not ready, skipping distortion effect');
-                }
-              }, 2000);
+              console.log('🌀 ScrollTrigger still not ready after multiple attempts, skipping distortion effect');
             }
-          }, 1500);
+          }
+          
+          setTimeout(trySetupDistortion, 2000);
         }); 
       } else {
         setTimeout(waitForGSAP, 100); 
