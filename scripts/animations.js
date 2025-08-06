@@ -326,7 +326,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Scroll distortion effect using SVG filters
   function setupScrollDistortion() {
-    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) return;
+    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
+      console.log('🌀 GSAP or ScrollTrigger not available');
+      return;
+    }
 
     // Create SVG filter for distortion effect
     const svgFilter = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -335,52 +338,89 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     svgFilter.style.cssText = 'position:absolute;top:0;left:0;z-index:-1;pointer-events:none;';
     svgFilter.innerHTML = `
       <defs>
-        <filter id="scrollDistortion" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence id="scrollTurbulence" baseFrequency="0.01" numOctaves="2" result="noise"/>
+        <filter id="scrollDistortion" x="-50%" y="-50%" width="200%" height="200%">
+          <feTurbulence id="scrollTurbulence" baseFrequency="0.02" numOctaves="3" result="noise"/>
           <feDisplacementMap id="scrollDisplacement" in="SourceGraphic" in2="noise" scale="0"/>
         </filter>
       </defs>
     `;
     document.body.appendChild(svgFilter);
+    console.log('🌀 SVG filter created and added to DOM');
 
-    // Better target selection for your portfolio site
-    const distortionTargets = document.querySelectorAll('img:not([src*="svg"]), .proper-mask-reveal img, .image, [class*="image"]');
+    // Cast a wider net for targets - try multiple selectors
+    const selectors = [
+      'img', 
+      '.image', 
+      '[class*="image"]', 
+      '.w-embed img',
+      '.proper-mask-reveal img',
+      '.proper-mask-reveal',
+      'div[style*="background-image"]'
+    ];
+    
+    let distortionTargets = [];
+    selectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      console.log(`🔍 Found ${elements.length} elements with selector: ${selector}`);
+      distortionTargets = [...distortionTargets, ...Array.from(elements)];
+    });
+    
+    // Remove duplicates
+    distortionTargets = [...new Set(distortionTargets)];
     
     if (distortionTargets.length === 0) {
-      console.log('🌀 No distortion targets found');
-      return;
+      console.log('🌀 No distortion targets found with any selector');
+      // Force apply to first few images as fallback
+      const fallbackTargets = document.querySelectorAll('*');
+      for (let el of fallbackTargets) {
+        if (el.tagName === 'IMG' && el.offsetWidth > 20) {
+          distortionTargets.push(el);
+          if (distortionTargets.length >= 3) break;
+        }
+      }
+      console.log(`🌀 Fallback: found ${distortionTargets.length} image elements`);
     }
 
+    if (distortionTargets.length === 0) return;
+
     distortionTargets.forEach((target, index) => {
-      // Skip if already has distortion setup or is very small
-      if (target.dataset.distortionSetup || target.offsetWidth < 50) return;
+      // Skip if already has distortion setup
+      if (target.dataset.distortionSetup) return;
       
-      // Apply filter with fallback
-      const originalFilter = target.style.filter || '';
-      target.style.filter = originalFilter ? `${originalFilter} url(#scrollDistortion)` : 'url(#scrollDistortion)';
+      console.log(`🌀 Applying distortion to element ${index}:`, target);
+      
+      // Apply filter more aggressively
+      target.style.filter = 'url(#scrollDistortion)';
       target.dataset.distortionSetup = 'true';
 
-      // Create individual ScrollTrigger for each element
+      // Create more visible ScrollTrigger animation
       window.gsap.timeline({
         scrollTrigger: {
           trigger: target,
-          start: 'top bottom-=100px',
-          end: 'bottom top+=100px',
-          scrub: 1,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.5,
           onUpdate: (self) => {
             const progress = self.progress;
             const turbulence = document.getElementById('scrollTurbulence');
             const displacement = document.getElementById('scrollDisplacement');
             
             if (turbulence && displacement) {
-              // Create wave-like distortion that peaks in middle of scroll
-              const intensity = Math.sin(progress * Math.PI) * 8;
-              const frequency = 0.01 + (Math.sin(progress * Math.PI) * 0.04);
+              // More aggressive distortion for visibility
+              const intensity = Math.sin(progress * Math.PI) * 25; // Increased from 8 to 25
+              const frequency = 0.02 + (Math.sin(progress * Math.PI) * 0.08); // Increased range
               
-              turbulence.setAttribute('baseFrequency', `${frequency} ${frequency * 1.2}`);
+              turbulence.setAttribute('baseFrequency', `${frequency} ${frequency * 1.5}`);
               displacement.setAttribute('scale', intensity);
+              
+              // Debug log every 10th update
+              if (Math.floor(progress * 100) % 10 === 0) {
+                console.log(`🌀 Distortion update: progress=${progress.toFixed(2)}, intensity=${intensity.toFixed(1)}, freq=${frequency.toFixed(3)}`);
+              }
             }
-          }
+          },
+          onEnter: () => console.log(`🌀 Element ${index} entered viewport`),
+          onLeave: () => console.log(`🌀 Element ${index} left viewport`)
         }
       });
     });
