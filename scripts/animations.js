@@ -257,14 +257,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     if (links.length) {
       links.forEach((link, index) => {
-        // Skip if already processed by hover init, but allow menu-link.shimmer.accordion.chip-link elements
+        // Skip if already processed by hover init
         if (link.dataset.hoverInit) return;
-        if (link.classList.contains('link') && !(link.classList.contains('menu-link') && link.classList.contains('shimmer') && link.classList.contains('accordion') && link.classList.contains('chip-link'))) return;
+        
+        // Always animate links that don't have hover effects, regardless of classes
+        console.log(`🔗 Processing link ${index}:`, link, 'Classes:', link.className);
         
         const linkText1 = link.querySelector('.link-text-1');
         const linkText2 = link.querySelector('.link-text-2');
-        if (linkText1 && linkText2) { const lines = wrapLines(linkText1); lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 10 }), tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04))); } 
-        else { const lines = wrapLines(link); lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 10 }), tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04))); }
+        
+        // If it has hover structure, animate the first text span
+        if (linkText1 && linkText2) { 
+          const lines = wrapLines(linkText1); 
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 10 });
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
+            console.log(`🔗 Animated hover link with ${lines.length} lines`);
+          }
+        } 
+        // Otherwise animate the link directly
+        else { 
+          const lines = wrapLines(link); 
+          if (lines.length > 0) {
+            window.gsap.set(lines, { opacity: 0, y: 10 });
+            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
+            console.log(`🔗 Animated regular link with ${lines.length} lines`);
+          }
+        }
       });
     }
 
@@ -340,106 +359,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
   }
 
-  // Scroll distortion effect using SVG filters
-  function setupScrollDistortion() {
-    console.log('🌀 Setting up scroll distortion effect...');
 
-    // Create SVG filter for distortion effect
-    const svgFilter = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgFilter.setAttribute('width', '0');
-    svgFilter.setAttribute('height', '0');
-    svgFilter.style.cssText = 'position:absolute;top:0;left:0;z-index:-1;pointer-events:none;';
-    svgFilter.innerHTML = `
-      <defs>
-        <filter id="scrollDistortion" x="-50%" y="-50%" width="200%" height="200%">
-          <feTurbulence id="scrollTurbulence" baseFrequency="0.02" numOctaves="3" result="noise"/>
-          <feDisplacementMap id="scrollDisplacement" in="SourceGraphic" in2="noise" scale="0"/>
-        </filter>
-      </defs>
-    `;
-    document.body.appendChild(svgFilter);
-    console.log('🌀 SVG filter created and added to DOM');
-
-    // Cast a wider net for targets - try multiple selectors
-    const selectors = [
-      'img', 
-      '.image', 
-      '[class*="image"]', 
-      '.w-embed img',
-      '.proper-mask-reveal img',
-      '.proper-mask-reveal',
-      'div[style*="background-image"]'
-    ];
-    
-    let distortionTargets = [];
-    selectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      console.log(`🔍 Found ${elements.length} elements with selector: ${selector}`);
-      distortionTargets = [...distortionTargets, ...Array.from(elements)];
-    });
-    
-    // Remove duplicates
-    distortionTargets = [...new Set(distortionTargets)];
-    
-    if (distortionTargets.length === 0) {
-      console.log('🌀 No distortion targets found with any selector');
-      // Force apply to first few images as fallback
-      const fallbackTargets = document.querySelectorAll('*');
-      for (let el of fallbackTargets) {
-        if (el.tagName === 'IMG' && el.offsetWidth > 20) {
-          distortionTargets.push(el);
-          if (distortionTargets.length >= 3) break;
-        }
-      }
-      console.log(`🌀 Fallback: found ${distortionTargets.length} image elements`);
-    }
-
-    if (distortionTargets.length === 0) return;
-
-    distortionTargets.forEach((target, index) => {
-      // Skip if already has distortion setup
-      if (target.dataset.distortionSetup) return;
-      
-      console.log(`🌀 Applying distortion to element ${index}:`, target);
-      
-      // Apply filter more aggressively
-      target.style.filter = 'url(#scrollDistortion)';
-      target.dataset.distortionSetup = 'true';
-
-      // Create more visible ScrollTrigger animation
-      window.gsap.timeline({
-        scrollTrigger: {
-          trigger: target,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 0.5,
-          onUpdate: (self) => {
-            const progress = self.progress;
-            const turbulence = document.getElementById('scrollTurbulence');
-            const displacement = document.getElementById('scrollDisplacement');
-            
-            if (turbulence && displacement) {
-              // More aggressive distortion for visibility
-              const intensity = Math.sin(progress * Math.PI) * 25; // Increased from 8 to 25
-              const frequency = 0.02 + (Math.sin(progress * Math.PI) * 0.08); // Increased range
-              
-              turbulence.setAttribute('baseFrequency', `${frequency} ${frequency * 1.5}`);
-              displacement.setAttribute('scale', intensity);
-              
-              // Debug log every 10th update
-              if (Math.floor(progress * 100) % 10 === 0) {
-                console.log(`🌀 Distortion update: progress=${progress.toFixed(2)}, intensity=${intensity.toFixed(1)}, freq=${frequency.toFixed(3)}`);
-              }
-            }
-          },
-          onEnter: () => console.log(`🌀 Element ${index} entered viewport`),
-          onLeave: () => console.log(`🌀 Element ${index} left viewport`)
-        }
-      });
-    });
-
-    console.log(`🌀 Scroll distortion effect applied to ${distortionTargets.length} elements`);
-  }
 
   // Hide elements initially
   function addHidden() {
@@ -510,25 +430,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         requestAnimationFrame(() => { 
           startAnims(); 
           isInit = true; 
-          // Set up distortion after ensuring ScrollTrigger is available
-          function trySetupDistortion(attempt = 1) {
-            console.log(`🌀 Checking ScrollTrigger availability (attempt ${attempt})...`);
-            console.log('📊 window.gsap:', !!window.gsap);
-            console.log('📊 window.gsap.ScrollTrigger:', !!window.gsap?.ScrollTrigger);
-            console.log('📊 scrollTriggerLoaded:', scrollTriggerLoaded);
-            
-            if (window.gsap && window.gsap.ScrollTrigger && scrollTriggerLoaded) {
-              console.log('🌀 ScrollTrigger ready, setting up distortion...');
-              setupScrollDistortion();
-            } else if (attempt < 4) {
-              console.log(`🌀 ScrollTrigger not ready, retrying in ${attempt + 1} seconds...`);
-              setTimeout(() => trySetupDistortion(attempt + 1), (attempt + 1) * 1000);
-            } else {
-              console.log('🌀 ScrollTrigger still not ready after multiple attempts, skipping distortion effect');
-            }
-          }
-          
-          setTimeout(trySetupDistortion, 2000);
+
         }); 
       } else {
         setTimeout(waitForGSAP, 100); 
