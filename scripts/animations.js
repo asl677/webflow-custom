@@ -1,4 +1,4 @@
-// Version 2.0 - Added Lenis smooth scrolling + increased image stagger delay (0.5s)
+// Version 2.1 - Added scramble text effect + Lenis smooth scrolling
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
@@ -179,7 +179,46 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Wrap text lines for animation
+  // Scramble text effect function
+  function scrambleText(element, duration = 2000, delay = 0) {
+    if (element.dataset.scrambled) return;
+    element.dataset.scrambled = 'true';
+    
+    const originalText = element.textContent.trim();
+    if (!originalText) return;
+    
+    const chars = '!<>-_\\/[]{}—=+*^?#________';
+    let currentText = originalText;
+    let iteration = 0;
+    const totalIterations = Math.floor(duration / 50);
+    
+    setTimeout(() => {
+      element.style.opacity = '1';
+      
+      const interval = setInterval(() => {
+        currentText = originalText
+          .split('')
+          .map((char, index) => {
+            if (index < iteration) {
+              return originalText[index];
+            }
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join('');
+        
+        element.textContent = currentText;
+        
+        if (iteration >= originalText.length) {
+          clearInterval(interval);
+          element.textContent = originalText;
+        }
+        
+        iteration += 1 / 3;
+      }, 50);
+    }, delay);
+  }
+
+  // Wrap text lines for animation (simplified for hover effects only)
   function wrapLines(el) {
     if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
     const originalHTML = el.innerHTML.trim();
@@ -195,8 +234,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           lineDiv.style.overflow = 'hidden';
           const lineInner = document.createElement('div');
           lineInner.className = 'line-inner';
-          lineInner.style.transform = 'translateY(100%)';
-          lineInner.style.opacity = '0';
           lineInner.innerHTML = lineHTML.trim();
           lineDiv.appendChild(lineInner);
           el.appendChild(lineDiv);
@@ -208,8 +245,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       lineDiv.style.overflow = 'hidden';
       const lineInner = document.createElement('div');
       lineInner.className = 'line-inner';
-      lineInner.style.transform = 'translateY(100%)';
-      lineInner.style.opacity = '0';
       lineInner.innerHTML = originalHTML;
       lineDiv.appendChild(lineInner);
       el.innerHTML = '';
@@ -286,52 +321,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Text animations with staggered timing
-    largeHeadings.length && largeHeadings.forEach((h, index) => { const lines = wrapLines(h); lines.length > 0 && tl.to(lines, { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, ease: "power2.out" }, 1.1 + (index * 0.1)); });
-    regularHeadings.length && regularHeadings.forEach((heading, index) => { if (heading.classList.contains('link') || heading.dataset.hoverInit) return; const lines = wrapLines(heading); lines.length > 0 && tl.to(lines, { y: 0, opacity: 1, duration: 1.0, stagger: 0.15, ease: "power2.out" }, 1.2 + (index * 0.1)); });
+    // Scramble text animations (runs once on page load)
+    let textElements = [];
     
-    if (smallHeadings.length) {
-      smallHeadings.forEach((heading, index) => {
-        const linkText1 = heading.querySelector('.link-text-1');
-        const linkText2 = heading.querySelector('.link-text-2');
-        if (linkText1 && linkText2) { const lines = wrapLines(linkText1); lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 20 }), tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 1.3 + (index * 0.1))); } 
-        else { const lines = wrapLines(heading); lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 20 }), tl.to(lines, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, 1.3 + (index * 0.1))); }
-      });
-    }
-
-    paragraphs.length && paragraphs.forEach((paragraph, index) => { if (paragraph.classList.contains('link') || paragraph.dataset.hoverInit) return; const lines = wrapLines(paragraph); lines.length > 0 && tl.to(lines, { y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out" }, 1.4 + (index * 0.08)); });
+    // Collect all text elements
+    largeHeadings.forEach(h => textElements.push(h));
+    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit) textElements.push(h); });
+    smallHeadings.forEach(h => textElements.push(h));
+    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit) textElements.push(p); });
+    links.forEach(link => { if (!link.dataset.hoverInit) textElements.push(link); });
     
-    if (links.length) {
-      links.forEach((link, index) => {
-        // Skip if already processed by hover init
-        if (link.dataset.hoverInit) return;
-        
-        // Always animate links that don't have hover effects, regardless of classes
-        console.log(`🔗 Processing link ${index}:`, link, 'Classes:', link.className);
-        
-        const linkText1 = link.querySelector('.link-text-1');
-        const linkText2 = link.querySelector('.link-text-2');
-        
-        // If it has hover structure, animate the first text span
-        if (linkText1 && linkText2) { 
-          const lines = wrapLines(linkText1); 
-          if (lines.length > 0) {
-            window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
-            console.log(`🔗 Animated hover link with ${lines.length} lines`);
-          }
-        } 
-        // Otherwise animate the link directly
-        else { 
-          const lines = wrapLines(link); 
-          if (lines.length > 0) {
-            window.gsap.set(lines, { opacity: 0, y: 10 });
-            tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04));
-            console.log(`🔗 Animated regular link with ${lines.length} lines`);
-          }
-        }
-      });
-    }
+    // Apply scramble effect to all text elements
+    textElements.forEach((element, index) => {
+      // Hide initially
+      element.style.opacity = '0';
+      
+      // For hover elements, scramble the visible text span
+      const linkText1 = element.querySelector('.link-text-1');
+      if (linkText1) {
+        linkText1.style.opacity = '0';
+        scrambleText(linkText1, 1500, 1200 + (index * 100));
+      } else {
+        scrambleText(element, 1500, 1200 + (index * 100));
+      }
+    });
+    
+    console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
 
     slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
