@@ -1,12 +1,11 @@
-// Version 2.1 - Added scramble text effect + Lenis smooth scrolling
-// REQUIRED: Add these script tags BEFORE this script:
+// Version 2.2 - Scramble text effect (removed Lenis for stability)
+// REQUIRED: Add this script tag BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-// <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, lenis = null;
+  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false;
 
   // Global error handler
   window.addEventListener('error', e => console.error('Global JavaScript error:', e.error));
@@ -46,49 +45,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Initialize Lenis smooth scrolling
-  function initLenis() {
-    if (typeof Lenis === 'undefined') {
-      console.log('⚠️ Lenis not loaded, skipping smooth scroll');
-      return;
-    }
 
-    // Create Lenis instance with optimized settings
-    lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false,
-      touchMultiplier: 2,
-      infinite: false,
-    });
-
-    // Request animation frame function
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    // Integrate with GSAP ScrollTrigger
-    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-      lenis.on('scroll', window.gsap.ScrollTrigger.update);
-      window.gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
-      });
-      window.gsap.ticker.lagSmoothing(0);
-    }
-
-    console.log('✅ Lenis smooth scrolling initialized');
-    
-    // Setup infinite scroll after Lenis is ready
-    setTimeout(() => {
-      setupInfiniteScroll();
-    }, 100);
-  }
 
   // Create animated preloader
   function createPreloader() {
@@ -148,11 +105,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     createTimeCounter();
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
-    
-    // Initialize Lenis smooth scrolling after animations start
-    setTimeout(() => {
-      initLenis();
-    }, 500);
     
     !isInit && init();
   }
@@ -381,7 +333,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
 
-    // Infinite scroll is now setup after Lenis initialization
+    setupInfiniteScroll();
   }
 
   // Natural infinite scroll setup
@@ -426,38 +378,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => isLoading = false, 500);
     }
     
-    // Scroll handler with throttling (compatible with Lenis)
-    function handleScroll(scrollData) {
-      const scrollTop = scrollData ? scrollData.scroll : (window.pageYOffset || document.documentElement.scrollTop);
+    // Scroll handler with throttling
+    function handleScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const nearBottom = scrollTop + windowHeight >= documentHeight - 300;
-      
-      if (nearBottom && !isLoading) {
-        console.log('🔄 Near bottom, loading more items...');
-        loadMoreItems();
-      }
+      nearBottom && !isLoading && loadMoreItems();
     }
     
-    // Setup scroll listeners for both Lenis and native scroll
-    if (lenis) {
-      // Use Lenis scroll event if available
-      lenis.on('scroll', handleScroll);
-      console.log('✅ Infinite scroll integrated with Lenis');
-    } else {
-      // Fallback to native scroll
-      let ticking = false;
-      window.addEventListener('scroll', () => { 
-        if (!ticking) { 
-          requestAnimationFrame(() => { 
-            handleScroll(); 
-            ticking = false; 
-          }); 
-          ticking = true; 
-        }
-      }, { passive: true });
-      console.log('✅ Infinite scroll using native scroll events');
-    }
+    let ticking = false;
+    window.addEventListener('scroll', () => { 
+      if (!ticking) { 
+        requestAnimationFrame(() => { 
+          handleScroll(); 
+          ticking = false; 
+        }); 
+        ticking = true; 
+      }
+    }, { passive: true });
     
     // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
@@ -569,7 +508,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.initialize = init;
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
-  exports.getLenis = () => lenis;
   
   // Start preloader
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initPreloader) : initPreloader();
