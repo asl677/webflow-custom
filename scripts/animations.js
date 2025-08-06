@@ -163,7 +163,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const smallHeadings = document.querySelectorAll('.heading.small');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
     const paragraphs = document.querySelectorAll('p');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a), .menu-link');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a), .menu-link, .menu-link.shimmer.accordion.chip-link');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
@@ -238,6 +238,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     if (links.length) {
       links.forEach((link, index) => {
+        // Skip if already processed by hover init or has link hover structure
+        if (link.dataset.hoverInit || link.classList.contains('link')) return;
+        
         const linkText1 = link.querySelector('.link-text-1');
         const linkText2 = link.querySelector('.link-text-2');
         if (linkText1 && linkText2) { const lines = wrapLines(linkText1); lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 10 }), tl.to(lines, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.5 + (index * 0.04))); } 
