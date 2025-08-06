@@ -109,8 +109,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
-      // Skip elements that should get stagger animation instead of hover
-      if (link.classList.contains('menu-link') && link.classList.contains('shimmer') && link.classList.contains('accordion') && link.classList.contains('chip-link')) return;
+      
       const originalHTML = link.innerHTML.trim();
       const hasLineBreaks = originalHTML.includes('<br>') || originalHTML.includes('\n') || link.offsetHeight > 25;
       const rect = link.getBoundingClientRect();
@@ -121,8 +120,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         link.innerHTML = `<span class="link-text-1" style="display:block;position:relative;opacity:1">${originalHTML}</span><span class="link-text-2" style="display:block;position:absolute;width:100%;left:0;top:0;opacity:0">${originalHTML}</span>`;
       } else {
         const text = link.textContent.trim();
-        Object.assign(link.style, { position: 'relative', overflow: 'hidden' });
-        link.innerHTML = `<span class="link-text-1" style="position:relative;opacity:1">${text}</span><span class="link-text-2" style="position:absolute;width:100%;left:0;top:0;opacity:0">${text}</span>`;
+        Object.assign(link.style, { position: 'relative', overflow: 'hidden', display: 'inline-block', height: height + 'px', lineHeight: height + 'px' });
+        link.innerHTML = `<span class="link-text-1" style="display:block;position:relative;height:${height}px;line-height:${height}px;opacity:1">${text}</span><span class="link-text-2" style="display:block;position:absolute;height:${height}px;line-height:${height}px;width:100%;left:0;top:50%;opacity:0">${text}</span>`;
       }
       
       const tl = window.gsap.timeline({ paused: true, defaults: { duration: 0.4, ease: "power2.out" }});
