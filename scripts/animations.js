@@ -255,7 +255,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
 
     setupInfiniteScroll();
-    setupScrollDistortion();
   }
 
   // Natural infinite scroll setup
@@ -326,10 +325,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Scroll distortion effect using SVG filters
   function setupScrollDistortion() {
-    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
-      console.log('🌀 GSAP or ScrollTrigger not available');
-      return;
-    }
+    console.log('🌀 Setting up scroll distortion effect...');
 
     // Create SVG filter for distortion effect
     const svgFilter = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -492,7 +488,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Main initialization function
   function init() {
     if (isInit) return;
-    function waitForGSAP() { typeof window.gsap !== 'undefined' ? requestAnimationFrame(() => { startAnims(); isInit = true; }) : setTimeout(waitForGSAP, 100); }
+    function waitForGSAP() { 
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+        requestAnimationFrame(() => { 
+          startAnims(); 
+          setupScrollDistortion(); // Call after startAnims when ScrollTrigger is ready
+          isInit = true; 
+        }); 
+      } else {
+        setTimeout(waitForGSAP, 100); 
+      }
+    }
     waitForGSAP();
   }
 
