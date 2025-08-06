@@ -255,6 +255,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
 
     setupInfiniteScroll();
+    setupScrollDistortion();
   }
 
   // Natural infinite scroll setup
@@ -321,6 +322,101 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
+  }
+
+  // Scroll distortion effect using SVG filters
+  function setupScrollDistortion() {
+    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) return;
+
+    // Create SVG filter for distortion effect
+    const svgFilter = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgFilter.setAttribute('width', '0');
+    svgFilter.setAttribute('height', '0');
+    svgFilter.style.position = 'absolute';
+    svgFilter.innerHTML = `
+      <defs>
+        <filter id="distortionFilter" x="-50%" y="-50%" width="200%" height="200%">
+          <feTurbulence id="turbulence" baseFrequency="0.02 0.03" numOctaves="3" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" result="distortion"/>
+        </filter>
+      </defs>
+    `;
+    document.body.appendChild(svgFilter);
+
+    // Find images to apply distortion to
+    const distortionTargets = document.querySelectorAll('img, video, .card-project, .proper-mask-reveal');
+    
+    if (distortionTargets.length === 0) return;
+
+    distortionTargets.forEach((target, index) => {
+      // Skip if already has distortion setup
+      if (target.dataset.distortionSetup) return;
+      
+      // Apply filter to element
+      target.style.filter = 'url(#distortionFilter)';
+      target.dataset.distortionSetup = 'true';
+
+      // Create scroll-triggered distortion animation
+      window.gsap.to('#turbulence', {
+        attr: { baseFrequency: '0.1 0.15' },
+        scrollTrigger: {
+          trigger: target,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const scale = progress * 15; // Max distortion scale
+            const turbulence = document.getElementById('turbulence');
+            const displacement = target.parentElement.querySelector('feDisplacementMap') || document.querySelector('feDisplacementMap');
+            
+            if (displacement) {
+              displacement.setAttribute('scale', scale);
+            }
+          }
+        }
+      });
+
+      // Smooth distortion ease-in/out on scroll
+      window.gsap.timeline({
+        scrollTrigger: {
+          trigger: target,
+          start: 'top 80%',
+          end: 'bottom 20%',
+          scrub: 2,
+          onEnter: () => {
+            window.gsap.to('#turbulence', {
+              attr: { baseFrequency: '0.05 0.08' },
+              duration: 0.3,
+              ease: 'power2.out'
+            });
+          },
+          onLeave: () => {
+            window.gsap.to('#turbulence', {
+              attr: { baseFrequency: '0.02 0.03' },
+              duration: 0.3,
+              ease: 'power2.out'
+            });
+          },
+          onEnterBack: () => {
+            window.gsap.to('#turbulence', {
+              attr: { baseFrequency: '0.05 0.08' },
+              duration: 0.3,
+              ease: 'power2.out'
+            });
+          },
+          onLeaveBack: () => {
+            window.gsap.to('#turbulence', {
+              attr: { baseFrequency: '0.02 0.03' },
+              duration: 0.3,
+              ease: 'power2.out'
+            });
+          }
+        }
+      });
+    });
+
+    console.log(`🌀 Scroll distortion effect applied to ${distortionTargets.length} elements`);
   }
 
   // Hide elements initially
