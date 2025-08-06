@@ -489,11 +489,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function init() {
     if (isInit) return;
     function waitForGSAP() { 
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           startAnims(); 
-          setupScrollDistortion(); // Call after startAnims when ScrollTrigger is ready
           isInit = true; 
+          // Set up distortion after a delay to ensure ScrollTrigger is loaded
+          setTimeout(() => {
+            if (window.gsap.ScrollTrigger) {
+              setupScrollDistortion();
+            } else {
+              console.log('🌀 ScrollTrigger not ready, skipping distortion effect');
+            }
+          }, 1000);
         }); 
       } else {
         setTimeout(waitForGSAP, 100); 
