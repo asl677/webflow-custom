@@ -378,17 +378,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => isLoading = false, 500);
     }
     
-    // Scroll handler with throttling
+    // Enhanced scroll handler with better detection
     function handleScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      const nearBottom = scrollTop + windowHeight >= documentHeight - 300;
-      nearBottom && !isLoading && loadMoreItems();
+      const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
+      
+      // Debug logging (remove in production)
+      if (scrollPercent > 0.8) {
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading}`);
+      }
+      
+      if (nearBottom && !isLoading) {
+        console.log('🎯 Infinite scroll triggered!');
+        loadMoreItems();
+      }
     }
     
+    // More reliable scroll listener
     let ticking = false;
-    window.addEventListener('scroll', () => { 
+    const scrollListener = () => { 
       if (!ticking) { 
         requestAnimationFrame(() => { 
           handleScroll(); 
@@ -396,7 +407,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }); 
         ticking = true; 
       }
-    }, { passive: true });
+    };
+    
+    window.addEventListener('scroll', scrollListener, { passive: true });
+    window.addEventListener('resize', scrollListener, { passive: true }); // Handle window resize
     
     // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
@@ -405,6 +419,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
     });
+    
+    // Initial check to see if we need to load content immediately
+    setTimeout(() => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      console.log(`📏 Initial state - ScrollTop: ${scrollTop}, WindowHeight: ${windowHeight}, DocHeight: ${documentHeight}`);
+      
+      // If page is too short, load more content
+      if (documentHeight <= windowHeight * 1.5) {
+        console.log('📄 Page too short, loading more content');
+        loadMoreItems();
+      }
+      
+      // Check if user is already near bottom on load
+      handleScroll();
+    }, 1000);
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
