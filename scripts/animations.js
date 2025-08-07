@@ -458,22 +458,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Enhanced scroll handler with better detection
     function handleScroll() {
-      // Use Three.js scroll position if available, otherwise use native scroll
-      let effectiveScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-      if (window.threeScrollEffect) {
-        // Use the target scroll position from Three.js for more accurate detection
-        effectiveScrollTop = window.threeScrollEffect.target;
-      }
-      
+      // Use native scroll position (no Three.js transform interference)
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      const scrollPercent = (effectiveScrollTop + windowHeight) / documentHeight;
+      const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
       // Debug logging (remove in production)
       if (scrollPercent > 0.7 || nearBottom) {
-        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | EffectiveScrollTop: ${effectiveScrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading} | ThreeJS: ${!!window.threeScrollEffect} | NearBottom: ${nearBottom}`);
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
       }
       
       if (nearBottom && !isLoading) {
@@ -513,10 +507,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`📏 Initial state - ScrollTop: ${scrollTop}, WindowHeight: ${windowHeight}, DocHeight: ${documentHeight}`);
       
-      // If page is too short, load more content (more aggressive with Three.js)
-      const heightMultiplier = window.threeScrollEffect ? 2.0 : 1.5;
-      if (documentHeight <= windowHeight * heightMultiplier) {
-        console.log(`📄 Page too short (${heightMultiplier}x multiplier), loading more content`);
+      // If page is too short, load more content
+      if (documentHeight <= windowHeight * 1.5) {
+        console.log('📄 Page too short, loading more content');
         loadMoreItems();
       }
       
@@ -568,10 +561,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
       
-      // Only apply transform if the difference is meaningful (reduces jerkiness)
-      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
-        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
-      }
+      // DISABLED: Don't apply transform to preserve infinite scroll functionality
+      // The image shader effects will still work based on scroll velocity
+      // if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
+      //   this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
+      // }
     }
 
     update() {
@@ -738,15 +732,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.mesh.position.set(this.offset.x, this.offset.y, 0);
       this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
       
-      const scrollEffect = window.threeScrollEffect;
-      if (scrollEffect) {
-        // Increased intensity for more visible elastic effect
-        const scrollVelocity = scrollEffect.target - scrollEffect.current;
-        this.uniforms.uOffset.value.set(
-          scrollVelocity * 0.0002, // Horizontal distortion based on scroll velocity
-          -scrollVelocity * 0.001   // Vertical distortion (increased from 0.0003 to 0.001)
-        );
-      }
+      // Calculate scroll velocity for shader effects (without smooth scrolling interference)
+      if (!this.lastScrollY) this.lastScrollY = window.scrollY;
+      const currentScrollY = window.scrollY;
+      const scrollVelocity = currentScrollY - this.lastScrollY;
+      this.lastScrollY = currentScrollY;
+      
+      // Enhanced shader effects based on scroll velocity
+      this.uniforms.uOffset.value.set(
+        scrollVelocity * 0.001,  // Horizontal distortion 
+        -scrollVelocity * 0.002  // Vertical distortion (increased for more visibility)
+      );
     }
   }
 
