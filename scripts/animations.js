@@ -458,10 +458,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Enhanced scroll handler with better detection
     function handleScroll() {
-      // Use native scroll position (no Three.js transform interference)
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Calculate effective document height accounting for Three.js transform
+      let documentHeight = document.documentElement.scrollHeight;
+      
+      // When Three.js smooth scrolling is active, we need to account for the visual offset
+      if (window.threeScrollEffect && window.threeScrollEffect.scrollable) {
+        const container = window.threeScrollEffect.scrollable;
+        const containerHeight = container.getBoundingClientRect().height;
+        // Use the container's actual content height rather than document height
+        documentHeight = Math.max(documentHeight, containerHeight + container.offsetTop);
+      }
+      
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
@@ -561,11 +571,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
       
-      // DISABLED: Don't apply transform to preserve infinite scroll functionality
-      // The image shader effects will still work based on scroll velocity
-      // if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
-      //   this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
-      // }
+      // Re-enabled smooth scrolling transform
+      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
+        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
+      }
     }
 
     update() {
@@ -732,17 +741,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.mesh.position.set(this.offset.x, this.offset.y, 0);
       this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
       
-      // Calculate scroll velocity for shader effects (without smooth scrolling interference)
-      if (!this.lastScrollY) this.lastScrollY = window.scrollY;
-      const currentScrollY = window.scrollY;
-      const scrollVelocity = currentScrollY - this.lastScrollY;
-      this.lastScrollY = currentScrollY;
-      
-      // Enhanced shader effects based on scroll velocity
-      this.uniforms.uOffset.value.set(
-        scrollVelocity * 0.001,  // Horizontal distortion 
-        -scrollVelocity * 0.002  // Vertical distortion (increased for more visibility)
-      );
+      // Use Three.js smooth scroll values for enhanced shader effects
+      const scrollEffect = window.threeScrollEffect;
+      if (scrollEffect) {
+        const scrollVelocity = scrollEffect.target - scrollEffect.current;
+        this.uniforms.uOffset.value.set(
+          scrollVelocity * 0.0002, // Horizontal distortion based on smooth scroll velocity
+          -scrollVelocity * 0.001   // Vertical distortion 
+        );
+      } else {
+        // Fallback to direct scroll velocity if Three.js not available
+        if (!this.lastScrollY) this.lastScrollY = window.scrollY;
+        const currentScrollY = window.scrollY;
+        const scrollVelocity = currentScrollY - this.lastScrollY;
+        this.lastScrollY = currentScrollY;
+        
+        this.uniforms.uOffset.value.set(
+          scrollVelocity * 0.001,  // Horizontal distortion 
+          -scrollVelocity * 0.002  // Vertical distortion
+        );
+      }
     }
   }
 
