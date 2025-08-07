@@ -553,14 +553,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // This gives us smooth scrolling without interfering with infinite scroll detection
       this.scrollable = document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
       
-      // Find fixed elements that should not be affected by smooth scrolling
+      // Find elements that should not be affected by smooth scrolling
       this.fixedElements = [
-        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav'),
+        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav, .inner-wrap'),
         ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
         ...document.querySelectorAll('*')
       ].filter(el => {
         const style = window.getComputedStyle(el);
-        return style.position === 'fixed';
+        return style.position === 'fixed' || el.classList.contains('inner-wrap');
       });
       
       if (this.scrollable && this.scrollable !== document.body) {
@@ -596,16 +596,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     refreshFixedElements() {
-      // Refresh the list of fixed elements (useful when new content is added)
+      // Refresh the list of elements that should not be affected by smooth scrolling
       this.fixedElements = [
-        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav'),
+        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav, .inner-wrap'),
         ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
         ...document.querySelectorAll('*')
       ].filter(el => {
         const style = window.getComputedStyle(el);
-        return style.position === 'fixed';
+        return style.position === 'fixed' || el.classList.contains('inner-wrap');
       });
-      console.log('🔄 Refreshed fixed elements:', this.fixedElements.length);
+      console.log('🔄 Refreshed protected elements (fixed + .inner-wrap):', this.fixedElements.length);
     }
 
     update() {
