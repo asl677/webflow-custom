@@ -1,11 +1,12 @@
-// Version 2.2 - Scramble text effect (removed Lenis for stability)
-// REQUIRED: Add this script tag BEFORE this script:
+// Version 2.3 - Added Three.js scroll effect + scramble text effect
+// REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
-  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false;
+  let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
 
   // Global error handler
   window.addEventListener('error', e => console.error('Global JavaScript error:', e.error));
@@ -45,7 +46,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-
+  // Load Three.js if not already loaded
+  function loadThreeJS() {
+    if (typeof THREE !== 'undefined') {
+      threejsLoaded = true;
+      console.log('✅ Three.js already loaded');
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    script.onload = () => {
+      threejsLoaded = true;
+      console.log('✅ Three.js loaded dynamically');
+    };
+    script.onerror = () => console.error('Failed to load Three.js');
+    document.head.appendChild(script);
+  }
 
   // Create animated preloader
   function createPreloader() {
@@ -336,6 +353,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
 
     setupInfiniteScroll();
+    
+    // Initialize Three.js scroll effect
+    setTimeout(() => {
+      loadThreeJS();
+      setTimeout(() => {
+        if (threejsLoaded && typeof THREE !== 'undefined') {
+          try {
+            window.threeScrollEffect = new ThreeJSScrollEffect();
+            console.log('🎨 Three.js scroll effect started');
+          } catch (error) {
+            console.warn('Three.js scroll effect failed to initialize:', error);
+          }
+        }
+      }, 500);
+    }, 1000);
   }
 
   // Natural infinite scroll setup
@@ -397,6 +429,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
+      
+      // Refresh Three.js meshes for new images
+      if (window.threeScrollEffect && window.threeScrollEffect.effectCanvas) {
+        setTimeout(() => {
+          const newImages = [...document.querySelectorAll('img[data-infinite-clone="true"]')];
+          if (newImages.length > 0) {
+            newImages.forEach(image => {
+              const meshItem = new MeshItem(image, window.threeScrollEffect.effectCanvas.scene);
+              window.threeScrollEffect.effectCanvas.meshItems.push(meshItem);
+            });
+            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll`);
+          }
+        }, 100);
+      }
+      
       setTimeout(() => isLoading = false, 500);
     }
     
@@ -464,7 +511,195 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
   }
 
+  // Three.js Scroll Effect Classes
+  class ThreeJSScrollEffect {
+    constructor() {
+      this.scrollable = null;
+      this.current = 0;
+      this.target = 0;
+      this.ease = 0.075;
+      this.effectCanvas = null;
+      this.init();
+    }
 
+    lerp(start, end, t) {
+      return start * (1 - t) + end * t;
+    }
+
+    init() {
+      this.scrollable = document.querySelector('.scrollable') || document.querySelector('main') || document.body;
+      if (this.scrollable) {
+        document.body.style.height = `${this.scrollable.getBoundingClientRect().height}px`;
+        this.effectCanvas = new EffectCanvas();
+        console.log('🎨 Three.js scroll effect initialized');
+      }
+    }
+
+    smoothScroll() {
+      this.target = window.scrollY;
+      this.current = this.lerp(this.current, this.target, this.ease);
+      if (this.scrollable) {
+        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
+      }
+    }
+
+    update() {
+      this.smoothScroll();
+    }
+  }
+
+  class EffectCanvas {
+    constructor() {
+      this.container = document.querySelector('main') || document.body;
+      this.images = [...document.querySelectorAll('img')];
+      this.meshItems = [];
+      this.setupCamera();
+      this.createMeshItems();
+      this.render();
+    }
+
+    get viewport() {
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      let aspectRatio = width / height;
+      return { width, height, aspectRatio };
+    }
+
+    setupCamera() {
+      window.addEventListener('resize', this.onWindowResize.bind(this), false);
+      
+      this.scene = new THREE.Scene();
+      
+      let perspective = 1000;
+      const fov = (180 * (2 * Math.atan(window.innerHeight / 2 / perspective))) / Math.PI;
+      this.camera = new THREE.PerspectiveCamera(fov, this.viewport.aspectRatio, 1, 1000);
+      this.camera.position.set(0, 0, perspective);
+      
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(this.viewport.width, this.viewport.height);
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.container.appendChild(this.renderer.domElement);
+    }
+
+    onWindowResize() {
+      if (window.threeScrollEffect) {
+        window.threeScrollEffect.init();
+      }
+      this.camera.aspect = this.viewport.aspectRatio;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(this.viewport.width, this.viewport.height);
+    }
+
+    createMeshItems() {
+      this.images.forEach(image => {
+        let meshItem = new MeshItem(image, this.scene);
+        this.meshItems.push(meshItem);
+      });
+    }
+
+    render() {
+      if (window.threeScrollEffect) {
+        window.threeScrollEffect.update();
+      }
+      for (let i = 0; i < this.meshItems.length; i++) {
+        this.meshItems[i].render();
+      }
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(this.render.bind(this));
+    }
+  }
+
+  class MeshItem {
+    constructor(element, scene) {
+      this.element = element;
+      this.scene = scene;
+      this.offset = new THREE.Vector2(0, 0);
+      this.sizes = new THREE.Vector2(0, 0);
+      this.createMesh();
+    }
+
+    getDimensions() {
+      const { width, height, top, left } = this.element.getBoundingClientRect();
+      this.sizes.set(width, height);
+      this.offset.set(left - window.innerWidth / 2 + width / 2, -top + window.innerHeight / 2 - height / 2);
+    }
+
+    createMesh() {
+      const fragmentShader = `
+        uniform sampler2D uTexture;
+        uniform float uAlpha;
+        uniform vec2 uOffset;
+        varying vec2 vUv;
+
+        vec3 rgbShift(sampler2D textureImage, vec2 uv, vec2 offset) {
+          float r = texture2D(textureImage,uv + offset).r;
+          vec2 gb = texture2D(textureImage,uv).gb;
+          return vec3(r,gb);
+        }
+
+        void main() {
+          vec3 color = rgbShift(uTexture,vUv,uOffset);
+          gl_FragColor = vec4(color,uAlpha);
+        }
+      `;
+
+      const vertexShader = `
+        uniform sampler2D uTexture;
+        uniform vec2 uOffset;
+        varying vec2 vUv;
+
+        #define M_PI 3.1415926535897932384626433832795
+
+        vec3 deformationCurve(vec3 position, vec2 uv, vec2 offset) {
+          position.x = position.x + (sin(uv.y * M_PI) * offset.x);
+          position.y = position.y + (sin(uv.x * M_PI) * offset.y);
+          return position;
+        }
+
+        void main() {
+          vUv = uv;
+          vec3 newPosition = deformationCurve(position, uv, uOffset);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+        }
+      `;
+
+      this.geometry = new THREE.PlaneBufferGeometry(1, 1, 100, 100);
+      this.imageTexture = new THREE.TextureLoader().load(this.element.src);
+      this.uniforms = {
+        uTexture: { value: this.imageTexture },
+        uOffset: { value: new THREE.Vector2(0.0, 0.0) },
+        uAlpha: { value: 1.0 }
+      };
+      
+      this.material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+      
+      this.mesh = new THREE.Mesh(this.geometry, this.material);
+      this.getDimensions();
+      this.mesh.position.set(this.offset.x, this.offset.y, 0);
+      this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
+      this.scene.add(this.mesh);
+    }
+
+    render() {
+      this.getDimensions();
+      this.mesh.position.set(this.offset.x, this.offset.y, 0);
+      this.mesh.scale.set(this.sizes.x, this.sizes.y, 1);
+      
+      const scrollEffect = window.threeScrollEffect;
+      if (scrollEffect) {
+        this.uniforms.uOffset.value.set(
+          this.offset.x * 0.0, 
+          -(scrollEffect.target - scrollEffect.current) * 0.0003
+        );
+      }
+    }
+  }
 
   // Hide elements initially
   function addHidden() {
