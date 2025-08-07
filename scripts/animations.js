@@ -549,28 +549,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     init() {
-      // Target the PARENT wrapper, not the infinite scroll container itself
-      // This gives us smooth scrolling without interfering with infinite scroll detection
-      this.scrollable = document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
+      // Target ONLY the specific container that should have smooth scrolling
+      // Look for the content container, not the entire page wrapper
+      this.scrollable = document.querySelector('.container.video-wrap-hide') || 
+                       document.querySelector('.flex-grid') || 
+                       document.querySelector('.w-layout-grid') ||
+                       document.querySelector('[class*="grid"]');
       
-      // Find elements that should not be affected by smooth scrolling
-      this.fixedElements = [
-        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav, .inner-wrap'),
-        ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
-        ...document.querySelectorAll('*')
-      ].filter(el => {
-        const style = window.getComputedStyle(el);
-        return style.position === 'fixed' || el.classList.contains('inner-wrap');
-      });
-      
-      if (this.scrollable && this.scrollable !== document.body) {
+      if (this.scrollable) {
         // Set body height for smooth scrolling to work
         document.body.style.height = `${this.scrollable.scrollHeight}px`;
         this.effectCanvas = new EffectCanvas();
-        console.log('🎨 Three.js scroll effect initialized on parent wrapper:', this.scrollable.className);
-        console.log('🔒 Found', this.fixedElements.length, 'fixed elements to protect');
+        console.log('🎨 Three.js scroll effect initialized on container only:', this.scrollable.className);
       } else {
-        console.log('🎨 Three.js using body as fallback - smooth scrolling on full page');
+        console.log('🎨 No specific container found, Three.js effects only (no smooth scrolling)');
         this.effectCanvas = new EffectCanvas();
       }
     }
@@ -579,34 +571,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
       
-      // Apply smooth scrolling to parent wrapper (not the infinite scroll container)
-      // Increased threshold for less sensitivity and smoother motion
+      // Apply smooth scrolling ONLY to the specific container
+      // Everything else on the page remains untouched
       if (this.scrollable && Math.abs(this.target - this.current) > 0.5) {
         const transformValue = -this.current;
         this.scrollable.style.transform = `translate3d(0,${transformValue}px, 0)`;
-        
-        // Apply counter-transform to fixed elements to keep them in place
-        if (this.fixedElements) {
-          this.fixedElements.forEach(el => {
-            if (el && el.style) {
-              el.style.transform = `translate3d(0,${-transformValue}px, 0)`;
-            }
-          });
-        }
       }
-    }
-
-    refreshFixedElements() {
-      // Refresh the list of elements that should not be affected by smooth scrolling
-      this.fixedElements = [
-        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav, .inner-wrap'),
-        ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
-        ...document.querySelectorAll('*')
-      ].filter(el => {
-        const style = window.getComputedStyle(el);
-        return style.position === 'fixed' || el.classList.contains('inner-wrap');
-      });
-      console.log('🔄 Refreshed protected elements (fixed + .inner-wrap):', this.fixedElements.length);
     }
 
     update() {
