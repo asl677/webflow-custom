@@ -354,24 +354,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     setupInfiniteScroll();
     
-    // Initialize Three.js scroll effect (only if .container.video-wrap-hide exists)
+    // Initialize Three.js scroll effect (image shaders only, no container interference)
     setTimeout(() => {
-      const targetContainer = document.querySelector('.container.video-wrap-hide');
-      if (targetContainer) {
-        loadThreeJS();
-        setTimeout(() => {
-          if (threejsLoaded && typeof THREE !== 'undefined') {
-            try {
-              window.threeScrollEffect = new ThreeJSScrollEffect();
-              console.log('🎨 Three.js scroll effect started for .container.video-wrap-hide');
-            } catch (error) {
-              console.warn('Three.js scroll effect failed to initialize:', error);
-            }
+      loadThreeJS();
+      setTimeout(() => {
+        if (threejsLoaded && typeof THREE !== 'undefined') {
+          try {
+            window.threeScrollEffect = new ThreeJSScrollEffect();
+            console.log('🎨 Three.js scroll effect started (image effects only)');
+          } catch (error) {
+            console.warn('Three.js scroll effect failed to initialize:', error);
           }
-        }, 500);
-      } else {
-        console.log('ℹ️ .container.video-wrap-hide not found, skipping Three.js scroll effect');
-      }
+        }
+      }, 500);
     }, 1000);
   }
 
@@ -435,17 +430,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
       
-      // Refresh Three.js meshes for new images within .container.video-wrap-hide only
+      // Refresh Three.js meshes for new images (any new images from infinite scroll)
       if (window.threeScrollEffect && window.threeScrollEffect.effectCanvas) {
         setTimeout(() => {
-          const newImages = [...document.querySelectorAll('.container.video-wrap-hide img[data-infinite-clone="true"]:not([data-three-mesh])')];
+          const newImages = [...document.querySelectorAll('img[data-infinite-clone="true"]:not([data-three-mesh])')];
           if (newImages.length > 0) {
             newImages.forEach(image => {
               image.dataset.threeMesh = 'true'; // Mark to prevent duplicate meshes
               const meshItem = new MeshItem(image, window.threeScrollEffect.effectCanvas.scene);
               window.threeScrollEffect.effectCanvas.meshItems.push(meshItem);
             });
-            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll (.container.video-wrap-hide only)`);
+            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll (all new images)`);
             
             // Force a camera/viewport update for new content
             window.threeScrollEffect.effectCanvas.onWindowResize();
@@ -460,18 +455,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function handleScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      
-      // Calculate effective document height accounting for Three.js transform
-      let documentHeight = document.documentElement.scrollHeight;
-      
-      // When Three.js smooth scrolling is active, we need to account for the visual offset
-      if (window.threeScrollEffect && window.threeScrollEffect.scrollable) {
-        const container = window.threeScrollEffect.scrollable;
-        const containerHeight = container.getBoundingClientRect().height;
-        // Use the container's actual content height rather than document height
-        documentHeight = Math.max(documentHeight, containerHeight + container.offsetTop);
-      }
-      
+      const documentHeight = document.documentElement.scrollHeight;
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
@@ -555,26 +539,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     init() {
-      // Target .container.video-wrap-hide specifically for smooth scrolling
-      this.scrollable = document.querySelector('.container.video-wrap-hide');
-      
-      if (this.scrollable) {
-        // Don't modify body height - let infinite scroll handle that
-        this.effectCanvas = new EffectCanvas();
-        console.log('🎨 Three.js scroll effect initialized for .container.video-wrap-hide (no body height modification)');
-      } else {
-        console.warn('⚠️ .container.video-wrap-hide not found, Three.js scroll effect disabled');
-      }
+      // Don't target any container for transform - let infinite scroll work normally
+      // We'll only apply effects to individual images via shaders
+      this.scrollable = null;
+      this.effectCanvas = new EffectCanvas();
+      console.log('🎨 Three.js scroll effect initialized (image effects only, no container transform)');
     }
 
     smoothScroll() {
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
       
-      // Re-enabled smooth scrolling transform
-      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
-        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
-      }
+      // No container transform - just track scroll for shader effects
+      // This preserves infinite scroll functionality completely
     }
 
     update() {
@@ -585,14 +562,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   class EffectCanvas {
     constructor() {
       this.container = document.querySelector('main') || document.body;
-      // Only target images within .container.video-wrap-hide for infinite scroll compatibility
-      const targetContainer = document.querySelector('.container.video-wrap-hide');
-      this.images = targetContainer ? [...targetContainer.querySelectorAll('img')] : [...document.querySelectorAll('.container.video-wrap-hide img')];
+      // Target all images on the page - infinite scroll will add new ones dynamically
+      this.images = [...document.querySelectorAll('img')];
       this.meshItems = [];
       this.setupCamera();
       this.createMeshItems();
       this.render();
-      console.log(`🎨 Three.js canvas created with ${this.images.length} images from .container.video-wrap-hide`);
+      console.log(`🎨 Three.js canvas created with ${this.images.length} images (all page images)`);
     }
 
     get viewport() {
