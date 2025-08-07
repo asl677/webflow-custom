@@ -438,13 +438,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Refresh Three.js meshes for new images within .container.video-wrap-hide only
       if (window.threeScrollEffect && window.threeScrollEffect.effectCanvas) {
         setTimeout(() => {
-          const newImages = [...document.querySelectorAll('.container.video-wrap-hide img[data-infinite-clone="true"]')];
+          const newImages = [...document.querySelectorAll('.container.video-wrap-hide img[data-infinite-clone="true"]:not([data-three-mesh])')];
           if (newImages.length > 0) {
             newImages.forEach(image => {
+              image.dataset.threeMesh = 'true'; // Mark to prevent duplicate meshes
               const meshItem = new MeshItem(image, window.threeScrollEffect.effectCanvas.scene);
               window.threeScrollEffect.effectCanvas.meshItems.push(meshItem);
             });
             console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll (.container.video-wrap-hide only)`);
+            
+            // Force a camera/viewport update for new content
+            window.threeScrollEffect.effectCanvas.onWindowResize();
           }
         }, 100);
       }
@@ -522,7 +526,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.scrollable = null;
       this.current = 0;
       this.target = 0;
-      this.ease = 0.075;
+      this.ease = 0.12; // Increased for smoother scrolling
       this.effectCanvas = null;
       this.init();
     }
@@ -536,10 +540,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.scrollable = document.querySelector('.container.video-wrap-hide');
       
       if (this.scrollable) {
-        // Set body height based on scrollable content
-        document.body.style.height = `${this.scrollable.getBoundingClientRect().height}px`;
+        // Don't modify body height - let infinite scroll handle that
         this.effectCanvas = new EffectCanvas();
-        console.log('🎨 Three.js scroll effect initialized for .container.video-wrap-hide');
+        console.log('🎨 Three.js scroll effect initialized for .container.video-wrap-hide (no body height modification)');
       } else {
         console.warn('⚠️ .container.video-wrap-hide not found, Three.js scroll effect disabled');
       }
@@ -548,7 +551,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     smoothScroll() {
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
-      if (this.scrollable) {
+      
+      // Only apply transform if the difference is meaningful (reduces jerkiness)
+      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
         this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
       }
     }
@@ -605,6 +610,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     createMeshItems() {
       this.images.forEach(image => {
+        image.dataset.threeMesh = 'true'; // Mark to prevent duplicate meshes
         let meshItem = new MeshItem(image, this.scene);
         this.meshItems.push(meshItem);
       });
@@ -614,9 +620,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (window.threeScrollEffect) {
         window.threeScrollEffect.update();
       }
+      
+      // Only update meshes that are potentially visible (performance optimization)
+      const scrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      
       for (let i = 0; i < this.meshItems.length; i++) {
-        this.meshItems[i].render();
+        const meshItem = this.meshItems[i];
+        const meshY = meshItem.element.getBoundingClientRect().top + scrollY;
+        
+        // Only render meshes within extended viewport
+        if (meshY > scrollY - viewportHeight && meshY < scrollY + viewportHeight * 2) {
+          meshItem.render();
+        }
       }
+      
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render.bind(this));
     }
