@@ -46,23 +46,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Load Three.js if not already loaded
-  function loadThreeJS() {
-    if (typeof THREE !== 'undefined') {
-      threejsLoaded = true;
-      console.log('✅ Three.js already loaded');
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    script.onload = () => {
-      threejsLoaded = true;
-      console.log('✅ Three.js loaded dynamically');
-    };
-    script.onerror = () => console.error('Failed to load Three.js');
-    document.head.appendChild(script);
-  }
+  // Three.js loading disabled
 
   // Create animated preloader
   function createPreloader() {
@@ -354,20 +338,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     setupInfiniteScroll();
     
-    // Initialize Three.js scroll effect (image shaders only, no container interference)
-    setTimeout(() => {
-      loadThreeJS();
-      setTimeout(() => {
-        if (threejsLoaded && typeof THREE !== 'undefined') {
-          try {
-            window.threeScrollEffect = new ThreeJSScrollEffect();
-            console.log('🎨 Three.js scroll effect started (image effects only)');
-          } catch (error) {
-            console.warn('Three.js scroll effect failed to initialize:', error);
-          }
-        }
-      }, 500);
-    }, 1000);
+    // Three.js disabled due to infinite scroll conflicts
+    console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
 
   // Natural infinite scroll setup
@@ -429,43 +401,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
-      
-      // Refresh Three.js meshes for new images (any new images from infinite scroll)
-      if (window.threeScrollEffect && window.threeScrollEffect.effectCanvas) {
-        setTimeout(() => {
-          const newImages = [...document.querySelectorAll('img[data-infinite-clone="true"]:not([data-three-mesh])')];
-          if (newImages.length > 0) {
-            newImages.forEach(image => {
-              image.dataset.threeMesh = 'true'; // Mark to prevent duplicate meshes
-              const meshItem = new MeshItem(image, window.threeScrollEffect.effectCanvas.scene);
-              window.threeScrollEffect.effectCanvas.meshItems.push(meshItem);
-            });
-            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll (all new images)`);
-            
-            // Force a camera/viewport update for new content
-            window.threeScrollEffect.effectCanvas.onWindowResize();
-          }
-        }, 100);
-      }
-      
       setTimeout(() => isLoading = false, 500);
     }
     
     // Enhanced scroll handler with better detection
     function handleScroll() {
-      // Use the actual scroll position, not affected by Three.js parent transform
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      let documentHeight = document.documentElement.scrollHeight;
-      
-      // If we're applying transform to parent, adjust height calculation
-      if (window.threeScrollEffect && window.threeScrollEffect.scrollable && window.threeScrollEffect.scrollable !== document.body) {
-        // Get the actual content height from the transformed element
-        const contentElement = window.threeScrollEffect.scrollable;
-        const contentHeight = contentElement.scrollHeight;
-        documentHeight = Math.max(documentHeight, contentHeight);
-      }
-      
+      const documentHeight = document.documentElement.scrollHeight;
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
