@@ -539,7 +539,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.scrollable = null;
       this.current = 0;
       this.target = 0;
-      this.ease = 0.12; // Increased for smoother scrolling
+      this.ease = 0.08; // Reduced for less sensitivity and smoother motion
       this.effectCanvas = null;
       this.init();
     }
@@ -580,7 +580,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       this.current = this.lerp(this.current, this.target, this.ease);
       
       // Apply smooth scrolling to parent wrapper (not the infinite scroll container)
-      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
+      // Increased threshold for less sensitivity and smoother motion
+      if (this.scrollable && Math.abs(this.target - this.current) > 0.5) {
         const transformValue = -this.current;
         this.scrollable.style.transform = `translate3d(0,${transformValue}px, 0)`;
         
