@@ -553,11 +553,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // This gives us smooth scrolling without interfering with infinite scroll detection
       this.scrollable = document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
       
+      // Find fixed elements that should not be affected by smooth scrolling
+      this.fixedElements = [
+        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav'),
+        ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
+        ...document.querySelectorAll('*')
+      ].filter(el => {
+        const style = window.getComputedStyle(el);
+        return style.position === 'fixed';
+      });
+      
       if (this.scrollable && this.scrollable !== document.body) {
         // Set body height for smooth scrolling to work
         document.body.style.height = `${this.scrollable.scrollHeight}px`;
         this.effectCanvas = new EffectCanvas();
         console.log('🎨 Three.js scroll effect initialized on parent wrapper:', this.scrollable.className);
+        console.log('🔒 Found', this.fixedElements.length, 'fixed elements to protect');
       } else {
         console.log('🎨 Three.js using body as fallback - smooth scrolling on full page');
         this.effectCanvas = new EffectCanvas();
@@ -570,8 +581,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Apply smooth scrolling to parent wrapper (not the infinite scroll container)
       if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
-        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
+        const transformValue = -this.current;
+        this.scrollable.style.transform = `translate3d(0,${transformValue}px, 0)`;
+        
+        // Apply counter-transform to fixed elements to keep them in place
+        if (this.fixedElements) {
+          this.fixedElements.forEach(el => {
+            if (el && el.style) {
+              el.style.transform = `translate3d(0,${-transformValue}px, 0)`;
+            }
+          });
+        }
       }
+    }
+
+    refreshFixedElements() {
+      // Refresh the list of fixed elements (useful when new content is added)
+      this.fixedElements = [
+        ...document.querySelectorAll('.nav, .fake-nav, .top-right-nav'),
+        ...document.querySelectorAll('[style*="position: fixed"], [style*="position:fixed"]'),
+        ...document.querySelectorAll('*')
+      ].filter(el => {
+        const style = window.getComputedStyle(el);
+        return style.position === 'fixed';
+      });
+      console.log('🔄 Refreshed fixed elements:', this.fixedElements.length);
     }
 
     update() {
