@@ -453,9 +453,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Enhanced scroll handler with better detection
     function handleScroll() {
+      // Use the actual scroll position, not affected by Three.js parent transform
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      let documentHeight = document.documentElement.scrollHeight;
+      
+      // If we're applying transform to parent, adjust height calculation
+      if (window.threeScrollEffect && window.threeScrollEffect.scrollable && window.threeScrollEffect.scrollable !== document.body) {
+        // Get the actual content height from the transformed element
+        const contentElement = window.threeScrollEffect.scrollable;
+        const contentHeight = contentElement.scrollHeight;
+        documentHeight = Math.max(documentHeight, contentHeight);
+      }
+      
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
@@ -539,19 +549,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     init() {
-      // Don't target any container for transform - let infinite scroll work normally
-      // We'll only apply effects to individual images via shaders
-      this.scrollable = null;
-      this.effectCanvas = new EffectCanvas();
-      console.log('🎨 Three.js scroll effect initialized (image effects only, no container transform)');
+      // Target the PARENT wrapper, not the infinite scroll container itself
+      // This gives us smooth scrolling without interfering with infinite scroll detection
+      this.scrollable = document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
+      
+      if (this.scrollable && this.scrollable !== document.body) {
+        // Set body height for smooth scrolling to work
+        document.body.style.height = `${this.scrollable.scrollHeight}px`;
+        this.effectCanvas = new EffectCanvas();
+        console.log('🎨 Three.js scroll effect initialized on parent wrapper:', this.scrollable.className);
+      } else {
+        console.log('🎨 Three.js using body as fallback - smooth scrolling on full page');
+        this.effectCanvas = new EffectCanvas();
+      }
     }
 
     smoothScroll() {
       this.target = window.scrollY;
       this.current = this.lerp(this.current, this.target, this.ease);
       
-      // No container transform - just track scroll for shader effects
-      // This preserves infinite scroll functionality completely
+      // Apply smooth scrolling to parent wrapper (not the infinite scroll container)
+      if (this.scrollable && Math.abs(this.target - this.current) > 0.1) {
+        this.scrollable.style.transform = `translate3d(0,${-this.current}px, 0)`;
+      }
     }
 
     update() {
