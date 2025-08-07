@@ -315,15 +315,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Emergency fallback - ensure all text is visible after 3 seconds
+    // Emergency fallback - ensure all text is visible after 3 seconds (excluding clones)
     setTimeout(() => {
-      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"], .initial-hidden');
+      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"]:not([data-infinite-clone]), .initial-hidden:not([data-infinite-clone])');
       if (hiddenElements.length > 0) {
         console.log('⚠️ Emergency fallback: Making all hidden text visible');
         hiddenElements.forEach(el => {
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-          el.classList.remove('initial-hidden');
+          if (!el.dataset.infiniteClone) {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+            el.classList.remove('initial-hidden');
+          }
         });
       }
     }, 3000);
@@ -390,9 +392,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
         
         container.appendChild(clone);
+        console.log('✅ Clone appended with visible text');
       });
       
-      console.log(`✅ Added ${originalItems.length} more items`);
+      console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
       setTimeout(() => isLoading = false, 500);
     }
@@ -514,11 +517,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Initialize everything (removed addHidden since scramble effect handles visibility)
   console.log('🚀 Portfolio animations initializing...');
 
-  // Enhanced fallback text visibility
+  // Enhanced fallback text visibility (excluding clones)
   setTimeout(() => {
     console.log('🔧 Fallback check: ensuring all text is visible');
-    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav a):not(.fake-nav a)').forEach(el => {
-      if (el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') { 
+    document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not([data-infinite-clone])').forEach(el => {
+      if ((el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') && !el.dataset.infiniteClone) { 
         el.style.opacity = '1'; 
         el.style.transform = 'none'; 
         el.classList.remove('initial-hidden');
