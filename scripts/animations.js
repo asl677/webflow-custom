@@ -138,7 +138,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Scramble text effect function
   function scrambleText(element, duration = 2000, delay = 0) {
-    if (element.dataset.scrambled) return;
+    if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
     
     const originalText = element.textContent.trim();
@@ -281,12 +281,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Scramble text animations (runs once on page load)
     let textElements = [];
     
-    // Collect all text elements
-    largeHeadings.forEach(h => textElements.push(h));
-    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit) textElements.push(h); });
-    smallHeadings.forEach(h => textElements.push(h));
-    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit) textElements.push(p); });
-    links.forEach(link => { if (!link.dataset.hoverInit) textElements.push(link); });
+    // Collect all text elements (excluding infinite scroll clones)
+    largeHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
+    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit && !h.dataset.infiniteClone) textElements.push(h); });
+    smallHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
+    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
+    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
     // Apply scramble effect to all text elements with fallback safety
     textElements.forEach((element, index) => {
@@ -361,15 +361,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       originalItems.forEach(item => {
         const clone = item.cloneNode(true);
+        
+        // Mark cloned elements to prevent text animations from affecting them
+        clone.dataset.infiniteClone = 'true';
+        clone.querySelectorAll('*').forEach(el => {
+          el.dataset.infiniteClone = 'true';
+          el.dataset.scrambled = 'true'; // Prevent scramble effect
+        });
+        
         if (typeof window.gsap !== 'undefined') {
+          // Clear GSAP properties but ensure text stays visible
           window.gsap.set(clone.querySelectorAll('*'), { clearProps: "all" });
           window.gsap.set(clone, { clearProps: "all" });
+          
+          // Ensure all text elements in clones are visible
+          clone.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a, span').forEach(textEl => {
+            textEl.style.opacity = '1';
+            textEl.style.transform = 'none';
+            textEl.classList.remove('initial-hidden');
+          });
+          
+          // Handle images with simple fade-in
           const clonedImages = clone.querySelectorAll('img, video');
           clonedImages.forEach(img => {
-            window.gsap.set(img, { opacity: 0, y: 40 });
-            window.gsap.to(img, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out", scrollTrigger: { trigger: img, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true }});
+            window.gsap.set(img, { opacity: 0, y: 20 });
+            window.gsap.to(img, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out", scrollTrigger: { trigger: img, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true }});
           });
         }
+        
         container.appendChild(clone);
       });
       
