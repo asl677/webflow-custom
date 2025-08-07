@@ -458,15 +458,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Enhanced scroll handler with better detection
     function handleScroll() {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      // Use Three.js scroll position if available, otherwise use native scroll
+      let effectiveScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+      if (window.threeScrollEffect) {
+        // Use the target scroll position from Three.js for more accurate detection
+        effectiveScrollTop = window.threeScrollEffect.target;
+      }
+      
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+      const scrollPercent = (effectiveScrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
       // Debug logging (remove in production)
-      if (scrollPercent > 0.8) {
-        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading}`);
+      if (scrollPercent > 0.7 || nearBottom) {
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | EffectiveScrollTop: ${effectiveScrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading} | ThreeJS: ${!!window.threeScrollEffect} | NearBottom: ${nearBottom}`);
       }
       
       if (nearBottom && !isLoading) {
@@ -506,15 +513,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`📏 Initial state - ScrollTop: ${scrollTop}, WindowHeight: ${windowHeight}, DocHeight: ${documentHeight}`);
       
-      // If page is too short, load more content
-      if (documentHeight <= windowHeight * 1.5) {
-        console.log('📄 Page too short, loading more content');
+      // If page is too short, load more content (more aggressive with Three.js)
+      const heightMultiplier = window.threeScrollEffect ? 2.0 : 1.5;
+      if (documentHeight <= windowHeight * heightMultiplier) {
+        console.log(`📄 Page too short (${heightMultiplier}x multiplier), loading more content`);
         loadMoreItems();
       }
       
       // Check if user is already near bottom on load
       handleScroll();
     }, 1000);
+    
+    // Additional check after Three.js initializes
+    setTimeout(() => {
+      if (window.threeScrollEffect) {
+        console.log('🔄 Three.js active - additional infinite scroll check');
+        handleScroll();
+      }
+    }, 2000);
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
