@@ -354,19 +354,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     setupInfiniteScroll();
     
-    // Initialize Three.js scroll effect
+    // Initialize Three.js scroll effect (only if .container.video-wrap-hide exists)
     setTimeout(() => {
-      loadThreeJS();
-      setTimeout(() => {
-        if (threejsLoaded && typeof THREE !== 'undefined') {
-          try {
-            window.threeScrollEffect = new ThreeJSScrollEffect();
-            console.log('🎨 Three.js scroll effect started');
-          } catch (error) {
-            console.warn('Three.js scroll effect failed to initialize:', error);
+      const targetContainer = document.querySelector('.container.video-wrap-hide');
+      if (targetContainer) {
+        loadThreeJS();
+        setTimeout(() => {
+          if (threejsLoaded && typeof THREE !== 'undefined') {
+            try {
+              window.threeScrollEffect = new ThreeJSScrollEffect();
+              console.log('🎨 Three.js scroll effect started for .container.video-wrap-hide');
+            } catch (error) {
+              console.warn('Three.js scroll effect failed to initialize:', error);
+            }
           }
-        }
-      }, 500);
+        }, 500);
+      } else {
+        console.log('ℹ️ .container.video-wrap-hide not found, skipping Three.js scroll effect');
+      }
     }, 1000);
   }
 
@@ -430,16 +435,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
       
-      // Refresh Three.js meshes for new images
+      // Refresh Three.js meshes for new images within .container.video-wrap-hide only
       if (window.threeScrollEffect && window.threeScrollEffect.effectCanvas) {
         setTimeout(() => {
-          const newImages = [...document.querySelectorAll('img[data-infinite-clone="true"]')];
+          const newImages = [...document.querySelectorAll('.container.video-wrap-hide img[data-infinite-clone="true"]')];
           if (newImages.length > 0) {
             newImages.forEach(image => {
               const meshItem = new MeshItem(image, window.threeScrollEffect.effectCanvas.scene);
               window.threeScrollEffect.effectCanvas.meshItems.push(meshItem);
             });
-            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll`);
+            console.log(`🎨 Added ${newImages.length} new Three.js meshes for infinite scroll (.container.video-wrap-hide only)`);
           }
         }, 100);
       }
@@ -527,11 +532,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
 
     init() {
-      this.scrollable = document.querySelector('.scrollable') || document.querySelector('main') || document.body;
+      // Target .container.video-wrap-hide specifically for smooth scrolling
+      this.scrollable = document.querySelector('.container.video-wrap-hide');
+      
       if (this.scrollable) {
+        // Set body height based on scrollable content
         document.body.style.height = `${this.scrollable.getBoundingClientRect().height}px`;
         this.effectCanvas = new EffectCanvas();
-        console.log('🎨 Three.js scroll effect initialized');
+        console.log('🎨 Three.js scroll effect initialized for .container.video-wrap-hide');
+      } else {
+        console.warn('⚠️ .container.video-wrap-hide not found, Three.js scroll effect disabled');
       }
     }
 
@@ -551,11 +561,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   class EffectCanvas {
     constructor() {
       this.container = document.querySelector('main') || document.body;
-      this.images = [...document.querySelectorAll('img')];
+      // Only target images within .container.video-wrap-hide for infinite scroll compatibility
+      const targetContainer = document.querySelector('.container.video-wrap-hide');
+      this.images = targetContainer ? [...targetContainer.querySelectorAll('img')] : [...document.querySelectorAll('.container.video-wrap-hide img')];
       this.meshItems = [];
       this.setupCamera();
       this.createMeshItems();
       this.render();
+      console.log(`🎨 Three.js canvas created with ${this.images.length} images from .container.video-wrap-hide`);
     }
 
     get viewport() {
@@ -693,9 +706,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       const scrollEffect = window.threeScrollEffect;
       if (scrollEffect) {
+        // Increased intensity for more visible elastic effect
+        const scrollVelocity = scrollEffect.target - scrollEffect.current;
         this.uniforms.uOffset.value.set(
-          this.offset.x * 0.0, 
-          -(scrollEffect.target - scrollEffect.current) * 0.0003
+          scrollVelocity * 0.0002, // Horizontal distortion based on scroll velocity
+          -scrollVelocity * 0.001   // Vertical distortion (increased from 0.0003 to 0.001)
         );
       }
     }
