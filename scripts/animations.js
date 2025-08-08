@@ -248,9 +248,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Use existing Webflow counter element - will scramble first, then count
     const counter = document.querySelector('.counter');
     if (counter) {
-      console.log('🔢 Found Webflow counter element');
+      console.log('🔢 Found Webflow counter element:', counter);
+      console.log('🔢 Counter classes:', counter.className);
+      console.log('🔢 Counter matches .heading.small?', counter.matches('.heading.small'));
       // Set initial text for scrambling, counting will start after scramble
       counter.textContent = '0000';
+    } else {
+      console.log('❌ No .counter element found');
     }
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
@@ -268,8 +272,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-          const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
+    
+    console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
