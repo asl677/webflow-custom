@@ -240,6 +240,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Main animation function
   function startAnims() {
+    // Create counter first to ensure it exists for scramble
+    if (!document.querySelector('#time-counter')) {
+      createTimeCounter();
+      console.log('🔢 Counter created in startAnims');
+    }
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
     // Immediately make any existing cloned content visible (for mid-page loads)
@@ -412,16 +417,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Manual counter scramble test
-    const counter = document.querySelector('#time-counter');
-    if (counter) {
-      console.log('🔢 Manual counter scramble test');
-      counter.style.opacity = '0';
-      setTimeout(() => {
-        console.log('🔢 Starting counter scramble...');
-        scrambleText(counter, 1500, 0);
-      }, 1500); // Start after other text
-    }
+    // Manual counter scramble test with delay to ensure counter exists
+    setTimeout(() => {
+      const counter = document.querySelector('#time-counter');
+      if (counter) {
+        console.log('🔢 Manual counter scramble test');
+        counter.style.opacity = '0';
+        setTimeout(() => {
+          console.log('🔢 Starting counter scramble...');
+          scrambleText(counter, 1500, 0);
+        }, 500); // Start after other text
+      } else {
+        console.log('❌ Counter still not found for manual test');
+      }
+    }, 100); // Small delay to ensure counter is created
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
