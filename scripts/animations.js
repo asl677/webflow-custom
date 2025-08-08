@@ -1,4 +1,4 @@
-// Version 2.3.19: Fix counter scramble effect + improve infinite scroll reliability
+// Version 2.3.20: Isolate counter completely + aggressive infinite scroll debugging
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -358,10 +358,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Include counter element
+    // Handle counter separately to maintain isolation
     const counter = document.querySelector('#time-counter');
     if (counter && !counter.dataset.infiniteClone) {
-      textElements.push(counter);
+      // Counter gets its own isolated scramble effect
+      setTimeout(() => {
+        scrambleText(counter, 1200, 0); // Immediate start, shorter duration
+        console.log('🔢 Counter scramble effect applied');
+      }, 1000); // Start after 1 second
     }
     
     // Apply scramble effect to all text elements with fallback safety
@@ -419,17 +423,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
+    console.log('🔄 Starting infinite scroll setup...');
     const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
+    // Debug: Check all selectors
+    selectors.forEach(selector => {
+      const found = document.querySelector(selector);
+      const childCount = found ? found.children.length : 0;
+      console.log(`🔍 ${selector}: ${found ? 'found' : 'not found'} (${childCount} children)`);
+    });
+    
     for (const selector of selectors) {
       const found = document.querySelector(selector);
-      if (found && found.children.length > 1) { container = found; console.log(`✅ Found container: ${selector} with ${found.children.length} items`); break; }
+      if (found && found.children.length > 1) { 
+        container = found; 
+        console.log(`✅ Selected container: ${selector} with ${found.children.length} items`); 
+        break; 
+      }
     }
     
     if (!container) { 
-      console.log('❌ No container found for infinite scroll'); 
-      console.log('Available selectors checked:', selectors.map(s => `${s}: ${document.querySelector(s) ? 'found' : 'not found'}`));
+      console.log('❌ No suitable container found for infinite scroll'); 
       return; 
     }
     
@@ -490,10 +505,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
       const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
-      // Debug logging (remove in production)
-      if (scrollPercent > 0.7 || nearBottom) {
-        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
-      }
+      // Debug logging - always show scroll info for debugging
+      console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
       
       if (nearBottom && !isLoading) {
         console.log('🎯 Infinite scroll triggered!');
@@ -515,6 +528,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     window.addEventListener('scroll', scrollListener, { passive: true });
     window.addEventListener('resize', scrollListener, { passive: true }); // Handle window resize
+    console.log('🎯 Infinite scroll listeners attached');
     
     // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
@@ -532,15 +546,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`📏 Initial state - ScrollTop: ${scrollTop}, WindowHeight: ${windowHeight}, DocHeight: ${documentHeight}`);
       
-      // If page is too short, load more content
-      if (documentHeight <= windowHeight * 1.5) {
-        console.log('📄 Page too short, loading more content');
+      // More aggressive initial loading - if page is shorter than 2x window height
+      if (documentHeight <= windowHeight * 2) {
+        console.log('📄 Page too short, loading more content immediately');
         loadMoreItems();
       }
       
-      // Check if user is already near bottom on load
+      // Test scroll detection immediately
+      console.log('🧪 Testing scroll detection...');
       handleScroll();
-    }, 1000);
+    }, 500); // Reduced delay
     
     // Additional check after Three.js initializes
     setTimeout(() => {
