@@ -407,14 +407,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Handle counter separately to maintain isolation
+    // Include counter in unified text scramble
     const counter = document.querySelector('#time-counter');
     if (counter && !counter.dataset.infiniteClone) {
-      // Counter gets its own isolated scramble effect
-      setTimeout(() => {
-        scrambleText(counter, 1200, 0); // Immediate start, shorter duration
-        console.log('🔢 Counter scramble effect applied');
-      }, 1000); // Start after 1 second
+      textElements.push(counter);
     }
     
     // Apply scramble effect to all text elements with fallback safety
