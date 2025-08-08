@@ -125,7 +125,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader
   function startPageAnimations() {
-    createTimeCounter();
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
     
@@ -161,8 +160,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Scramble text effect function
   function scrambleText(element, duration = 2000, delay = 0) {
-    if (element.id === 'time-counter') {
-      console.log('🔢 scrambleText called for counter:', element, 'duration:', duration, 'delay:', delay);
+    if (element.classList.contains('counter')) {
+      console.log('🔢 scrambleText called for Webflow counter:', element, 'duration:', duration, 'delay:', delay);
     }
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
@@ -240,10 +239,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Main animation function
   function startAnims() {
-    // Create counter first to ensure it exists for scramble
-    if (!document.querySelector('#time-counter')) {
-      createTimeCounter();
-      console.log('🔢 Counter created in startAnims');
+    // Use existing Webflow counter element instead of creating one
+    const counter = document.querySelector('.counter');
+    if (counter) {
+      console.log('🔢 Found Webflow counter element');
+      // Start the time counter functionality
+      startTimeCounter(counter);
     }
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
@@ -417,26 +418,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Manual counter scramble test with delay to ensure counter exists
-    setTimeout(() => {
-      const counter = document.querySelector('#time-counter');
-      if (counter) {
-        console.log('🔢 Manual counter scramble test');
-        counter.style.opacity = '0';
-        setTimeout(() => {
-          console.log('🔢 Starting counter scramble...');
-          scrambleText(counter, 1500, 0);
-        }, 500); // Start after other text
-      } else {
-        console.log('❌ Counter still not found for manual test');
-      }
-    }, 100); // Small delay to ensure counter is created
+    // Counter will be picked up automatically by smallHeadings selector (.heading.small)
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
     textElements.forEach((element, index) => {
-      if (element.id === 'time-counter') {
-        console.log('🔢 Processing counter for scramble at index:', index);
+      if (element.classList.contains('counter')) {
+        console.log('🔢 Processing Webflow counter for scramble at index:', index);
       }
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
@@ -899,19 +887,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
-  // Create simple time counter display  
-  function createTimeCounter() {
-    const counter = document.createElement('p');
-    counter.id = 'time-counter';
-    counter.className = 'heading small link muted'; // Add classes that work with scramble
-    counter.textContent = '0000';
-    counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0;margin:0;padding:0`;
-
-    const mobileStyles = document.createElement('style');
-    mobileStyles.textContent = '@media (max-width: 768px) {#time-counter{font-size:11px!important;bottom:0.8vw!important}}';
-    
-    if (!document.head.querySelector('#mobile-responsive-styles')) { mobileStyles.id = 'mobile-responsive-styles'; document.head.appendChild(mobileStyles); }
-    document.body.appendChild(counter);
+  // Start time counter functionality on existing Webflow element
+  function startTimeCounter(counterElement) {
+    // Set initial text
+    counterElement.textContent = '0000';
     
     let startTime = Date.now();
     function updateCounter() {
@@ -920,12 +899,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       const timeString = String(minutes).padStart(2, '0') + String(seconds).padStart(2, '0');
-      counter.textContent = timeString;
+      counterElement.textContent = timeString;
     }
     
     setInterval(updateCounter, 1000);
-    updateCounter();
-    return counter;
+    updateCounter(); // Initial call
   }
 
   // Initialize everything (removed addHidden since scramble effect handles visibility)
