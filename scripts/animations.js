@@ -1,4 +1,4 @@
-// Version 2.3.23: CRITICAL FIX - Prevent text duplication by validating project containers
+// Version 2.3.24: Revert to simple working infinite scroll logic + reduce excessive logging
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -439,14 +439,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     setupInfiniteScroll();
     
-    // Backup infinite scroll setup in case first attempt failed due to timing
-    setTimeout(() => {
-      if (!window.infiniteScrollActive) {
-        console.log('🔄 Retrying infinite scroll setup...');
-        setupInfiniteScroll();
-      }
-    }, 2000);
-    
     // Three.js disabled due to infinite scroll conflicts
     console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
@@ -454,49 +446,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
     console.log('🔄 Starting infinite scroll setup...');
-    // Highly specific selectors for portfolio project containers only
-    const selectors = [
-      '.container.video-wrap-hide', // Main project container
-      '.w-layout-grid.project-grid', // Specific project grid
-      '.flex-grid.project-grid', // Project flex grid
-      '.grid-4.project', // 4-column project grid
-      '.project-grid', // Generic project grid
-      '.portfolio-grid', // Portfolio grid
-      '.case-grid', // Case study grid
-      'div[class*="project"][class*="grid"]', // Any div with both "project" and "grid" in class
-      'div[class*="case"][class*="grid"]' // Any div with both "case" and "grid" in class
-    ];
+    // Back to simpler working selectors
+    const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
-    
-    // Debug: Check all selectors
-    selectors.forEach(selector => {
-      const found = document.querySelector(selector);
-      const childCount = found ? found.children.length : 0;
-      console.log(`🔍 ${selector}: ${found ? 'found' : 'not found'} (${childCount} children)`);
-    });
     
     for (const selector of selectors) {
       const found = document.querySelector(selector);
-      if (found && found.children.length >= 1) {
-        // Validate that this container has project-like content, not just text
-        const firstChild = found.children[0];
-        const hasImages = firstChild.querySelector('img, video');
-        const hasLinks = firstChild.querySelector('a');
-        const isProjectLike = hasImages || hasLinks || firstChild.classList.toString().match(/(project|case|card|item)/i);
-        
-        if (isProjectLike) {
-          container = found; 
-          console.log(`✅ Selected container: ${selector} with ${found.children.length} project-like items`); 
-          break; 
-        } else {
-          console.log(`⚠️ Skipping ${selector}: children don't appear to be project items`);
-        }
+      if (found && found.children.length > 1) { 
+        container = found; 
+        console.log(`✅ Found container: ${selector} with ${found.children.length} items`); 
+        break; 
       }
     }
     
     if (!container) { 
-      console.log('❌ No suitable project container found for infinite scroll - disabling to prevent text duplication'); 
-      window.infiniteScrollActive = false;
+      console.log('❌ No container found for infinite scroll'); 
       return; 
     }
     
@@ -513,18 +477,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (isLoading) return;
       isLoading = true;
       console.log('🔄 Loading more items...');
-      
-      // Safety check: make sure we're not cloning text-heavy content
-      const sampleItem = originalItems[0];
-      const textContent = sampleItem.textContent.trim();
-      const hasImages = sampleItem.querySelector('img, video');
-      const hasLinks = sampleItem.querySelector('a');
-      
-      if (!hasImages && !hasLinks && textContent.length > 50) {
-        console.log('🚨 Emergency stop: About to clone text content instead of projects!');
-        isLoading = false;
-        return;
-      }
       
       originalItems.forEach(item => {
         const clone = item.cloneNode(true);
@@ -570,10 +522,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.75; // Trigger at 75% scroll (more aggressive)
+      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
       
-      // Debug logging - always show scroll info for debugging
-      console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
+      // Debug logging (only when approaching bottom)
+      if (scrollPercent > 0.7 || nearBottom) {
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
+      }
       
       if (nearBottom && !isLoading) {
         console.log('🎯 Infinite scroll triggered!');
@@ -611,23 +565,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       
-      console.log(`📏 Initial state - ScrollTop: ${scrollTop}, WindowHeight: ${windowHeight}, DocHeight: ${documentHeight}`);
-      
-      // More aggressive initial loading - if page is shorter than 2x window height
-      if (documentHeight <= windowHeight * 2) {
-        console.log('📄 Page too short, loading more content immediately');
+      // If page is too short, load more content
+      if (documentHeight <= windowHeight * 1.5) {
+        console.log('📄 Page too short, loading more content');
         loadMoreItems();
       }
       
-          // Test scroll detection immediately
-    console.log('🧪 Testing scroll detection...');
-    handleScroll();
-    
-    // Add manual test trigger (for debugging)
-    window.testInfiniteScroll = () => {
-      console.log('🧪 Manual infinite scroll test triggered');
-      loadMoreItems();
-    };
+      // Check if user is already near bottom on load
+      handleScroll();
     }, 500); // Reduced delay
     
     // Additional check after Three.js initializes
