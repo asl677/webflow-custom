@@ -357,20 +357,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      // Safety fallback: force completion of any stuck reveals after 10 seconds
+      // Safety fallback: force completion of any stuck reveals after 5 seconds
       setTimeout(() => {
         allImages.forEach(element => {
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
             if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
+              // Force reveal completion
               window.gsap.set(maskContainer, { width: element.offsetWidth + 'px' });
+              window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
               console.log('🔧 Forced reveal completion for stuck element');
             }
           }
         });
-      }, 10000);
+      }, 5000);
     }
 
     const tl = window.gsap.timeline();
@@ -566,11 +568,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
+      
+      // Prevent immediate triggering on page load
+      if (documentHeight <= windowHeight * 1.1) {
+        // Page is too short, wait for content to fully load
+        return;
+      }
+      
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
+      const nearBottom = scrollPercent >= 0.90; // Trigger at 90% scroll to prevent immediate firing
       
       // Debug logging (only when approaching bottom)
-      if (scrollPercent > 0.7 || nearBottom) {
+      if (scrollPercent > 0.8 || nearBottom) {
         console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
       }
       
@@ -604,29 +613,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Initial check to see if we need to load content immediately
+    // Initial check to see if we need to load content immediately  
     setTimeout(() => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       
-      // If page is too short, load more content
-      if (documentHeight <= windowHeight * 1.5) {
-        console.log('📄 Page too short, loading more content');
+      // Only load if page is genuinely too short AND user hasn't scrolled
+      if (documentHeight <= windowHeight * 1.3 && scrollTop < 100) {
+        console.log('📄 Page too short on load, adding more content');
         loadMoreItems();
       }
-      
-      // Check if user is already near bottom on load
-      handleScroll();
-    }, 500); // Reduced delay
+    }, 2000); // Longer delay to ensure page is fully loaded
     
-    // Additional check after Three.js initializes
-    setTimeout(() => {
-      if (window.threeScrollEffect) {
-        console.log('🔄 Three.js active - additional infinite scroll check');
-        handleScroll();
-      }
-    }, 2000);
+    // Clean infinite scroll setup completed
+    console.log('✅ Infinite scroll fully initialized');
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
