@@ -1,4 +1,4 @@
-// Version 2.3.21: Fix Webflow compatibility + prevent script conflicts
+// Version 2.3.22: Fix infinite scroll with better container detection + retry logic
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -439,6 +439,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     setupInfiniteScroll();
     
+    // Backup infinite scroll setup in case first attempt failed due to timing
+    setTimeout(() => {
+      if (!window.infiniteScrollActive) {
+        console.log('🔄 Retrying infinite scroll setup...');
+        setupInfiniteScroll();
+      }
+    }, 2000);
+    
     // Three.js disabled due to infinite scroll conflicts
     console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
@@ -446,7 +454,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
     console.log('🔄 Starting infinite scroll setup...');
-    const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
+    // More specific selectors for portfolio projects
+    const selectors = [
+      '.w-layout-grid', 
+      '.flex-grid', 
+      '.grid-4',
+      '.grid-down', 
+      '[class*="grid"]', 
+      '.container.video-wrap-hide',
+      '.container', 
+      '.main-wrapper', 
+      '.page-wrapper', 
+      'main'
+    ];
     let container = null;
     
     // Debug: Check all selectors
@@ -458,7 +478,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     for (const selector of selectors) {
       const found = document.querySelector(selector);
-      if (found && found.children.length > 1) { 
+      if (found && found.children.length >= 1) { // Reduced from > 1 to >= 1
         container = found; 
         console.log(`✅ Selected container: ${selector} with ${found.children.length} items`); 
         break; 
@@ -469,6 +489,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('❌ No suitable container found for infinite scroll'); 
       return; 
     }
+    
+    // Mark infinite scroll as active
+    window.infiniteScrollActive = true;
     
     container.style.cssText += 'overflow:visible;height:auto';
     const originalItems = Array.from(container.children);
@@ -525,7 +548,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll
+      const nearBottom = scrollPercent >= 0.75; // Trigger at 75% scroll (more aggressive)
       
       // Debug logging - always show scroll info for debugging
       console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
@@ -574,9 +597,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         loadMoreItems();
       }
       
-      // Test scroll detection immediately
-      console.log('🧪 Testing scroll detection...');
-      handleScroll();
+          // Test scroll detection immediately
+    console.log('🧪 Testing scroll detection...');
+    handleScroll();
+    
+    // Add manual test trigger (for debugging)
+    window.testInfiniteScroll = () => {
+      console.log('🧪 Manual infinite scroll test triggered');
+      loadMoreItems();
+    };
     }, 500); // Reduced delay
     
     // Additional check after Three.js initializes
@@ -940,7 +969,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => {
         console.log('🌐 Webflow ready, starting animations...');
         initPreloader();
-      }, 1000);
+      }, 500); // Reduced from 1000ms to 500ms
     } else {
       console.log('🌐 No Webflow detected, starting animations normally...');
       initPreloader();
