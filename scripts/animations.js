@@ -193,6 +193,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (iteration >= originalText.length) {
           clearInterval(interval);
           element.textContent = originalText;
+          
+          // Start counter functionality after scramble completes
+          if (element.classList.contains('counter')) {
+            console.log('🔢 Scramble complete, starting counter');
+            startTimeCounter(element);
+          }
         }
         
         iteration += 1 / 3;
@@ -239,12 +245,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Main animation function
   function startAnims() {
-    // Use existing Webflow counter element instead of creating one
+    // Use existing Webflow counter element - will scramble first, then count
     const counter = document.querySelector('.counter');
     if (counter) {
       console.log('🔢 Found Webflow counter element');
-      // Start the time counter functionality
-      startTimeCounter(counter);
+      // Set initial text for scrambling, counting will start after scramble
+      counter.textContent = '0000';
     }
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
