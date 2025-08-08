@@ -63,16 +63,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
             observerLoaded = true;
             console.log('✅ Observer loaded');
-            loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrambleTextPlugin.min.js', () => {
+            loadGSAPScript('https://assets.codepen.io/16327/ScrambleTextPlugin3.min.js', () => {
               console.log('✅ ScrambleTextPlugin loaded');
-              if (window.gsap && window.gsap.registerPlugin) {
-                try {
-                  window.gsap.registerPlugin(window.gsap.plugins.ScrambleTextPlugin);
-                  console.log('✅ ScrambleTextPlugin registered');
-                } catch (e) {
-                  console.error('❌ ScrambleTextPlugin registration failed:', e);
+              setTimeout(() => {
+                if (window.gsap && window.gsap.registerPlugin) {
+                  try {
+                    window.gsap.registerPlugin(ScrambleTextPlugin);
+                    console.log('✅ ScrambleTextPlugin registered');
+                    console.log('Available ScrambleTextPlugin:', !!window.ScrambleTextPlugin);
+                  } catch (e) {
+                    console.error('❌ ScrambleTextPlugin registration failed:', e);
+                  }
                 }
-              }
+              }, 100);
             });
           });
         });
@@ -181,7 +184,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Set initial opacity and apply GSAP scramble
     element.style.opacity = '1';
     
-    if (typeof window.gsap !== 'undefined' && window.gsap.plugins && window.gsap.plugins.ScrambleTextPlugin) {
+    if (typeof window.gsap !== 'undefined' && window.ScrambleTextPlugin) {
+      console.log('Using GSAP scramble for:', originalText.substring(0, 10) + '...');
       window.gsap.to(element, {
         duration: duration,
         scrambleText: {
@@ -194,7 +198,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     } else {
       // Fallback if plugin not loaded
-      console.warn('ScrambleTextPlugin not available, showing text immediately');
+      console.warn('ScrambleTextPlugin not available for:', originalText.substring(0, 10) + '...');
       element.textContent = originalText;
     }
   }
