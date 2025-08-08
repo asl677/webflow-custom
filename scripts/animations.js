@@ -242,7 +242,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Immediately make any existing cloned content visible (for mid-page loads)
     document.querySelectorAll('[data-infinite-clone="true"]').forEach(el => {
       // Skip the counter element to preserve its positioning
-      if (el.id === 'time-counter' || el.closest('#time-counter')) return;
+      //if (el.id === 'time-counter' || el.closest('#time-counter')) return;
       
       el.style.opacity = '1';
       el.style.transform = 'none';
@@ -253,7 +253,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
+    const paragraphs = document.querySelectorAll('#time-counter,p:not([data-infinite-clone])');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
