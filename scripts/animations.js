@@ -219,6 +219,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Immediately make any existing cloned content visible (for mid-page loads)
     document.querySelectorAll('[data-infinite-clone="true"]').forEach(el => {
+      // Skip the counter element to preserve its positioning
+      if (el.id === 'time-counter' || el.closest('#time-counter')) return;
+      
       el.style.opacity = '1';
       el.style.transform = 'none';
       el.style.visibility = 'visible';
@@ -441,8 +444,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.dataset.scrambled = 'true'; // Prevent scramble effect
         });
         
-        // Force all cloned content to be immediately visible (no GSAP processing)
+                // Force all cloned content to be immediately visible (no GSAP processing)
         clone.querySelectorAll('*').forEach(el => {
+          // Skip the counter element to preserve its positioning
+          if (el.id === 'time-counter' || el.closest('#time-counter')) return;
+          
           el.dataset.infiniteClone = 'true';
           el.dataset.gsapAnimated = 'infinite-clone';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
