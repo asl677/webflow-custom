@@ -238,6 +238,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
+        if (element.dataset.infiniteClone) return; // Skip cloned content
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         if (originalWidth === 0 || originalHeight === 0) return;
@@ -318,6 +319,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (mediaEls.length) {
       mediaEls.forEach((el, i) => {
         if (el.dataset.gsapAnimated) return;
+        if (el.dataset.infiniteClone) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-clone'; return; } // Skip cloned content
         if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
         if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
         
@@ -382,9 +384,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.style.opacity = '1';
             el.style.transform = 'none';
             el.classList.remove('initial-hidden');
-          }
-        });
-      }
+        }
+      });
+    }
     }, 3000);
     
     console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
@@ -443,11 +445,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             textEl.classList.remove('initial-hidden');
           });
           
-          // Handle images with simple fade-in
+          // Ensure cloned images are immediately visible (no animation to prevent flashing)
           const clonedImages = clone.querySelectorAll('img, video');
           clonedImages.forEach(img => {
-            window.gsap.set(img, { opacity: 0, y: 20 });
-            window.gsap.to(img, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out", scrollTrigger: { trigger: img, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true }});
+            img.dataset.infiniteClone = 'true';
+            img.dataset.gsapAnimated = 'infinite-clone';
+            window.gsap.set(img, { opacity: 1, y: 0, clearProps: "transform" });
           });
         }
         
