@@ -410,7 +410,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Include counter in unified text scramble
     const counter = document.querySelector('#time-counter');
     if (counter && !counter.dataset.infiniteClone) {
+      console.log('🔢 Adding counter to scramble list');
       textElements.push(counter);
+    } else {
+      console.log('❌ Counter not found for scramble');
     }
     
     // Apply scramble effect to all text elements with fallback safety
