@@ -246,13 +246,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Main animation function
   function startAnims() {
     // Use existing Webflow counter element - will scramble first, then count
-    const counter = document.querySelector('.counter');
-    if (counter) {
-      console.log('🔢 Found Webflow counter element:', counter);
-      console.log('🔢 Counter classes:', counter.className);
-      console.log('🔢 Counter matches .heading.small?', counter.matches('.heading.small'));
+    const counterElement = document.querySelector('.counter');
+    if (counterElement) {
+      console.log('🔢 Found Webflow counter element:', counterElement);
+      console.log('🔢 Counter classes:', counterElement.className);
+      console.log('🔢 Counter matches .heading.small?', counterElement.matches('.heading.small'));
       // Set initial text for scrambling, counting will start after scramble
-      counter.textContent = '0000';
+      counterElement.textContent = '0000';
     } else {
       console.log('❌ No .counter element found');
     }
