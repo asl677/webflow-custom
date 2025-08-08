@@ -1,4 +1,4 @@
-// Version 2.3.25: Fix infinite scroll media elements opacity animation
+// Version 2.3.26: Fix image overlap in infinite scroll by removing transform animations
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -502,19 +502,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.classList.remove('initial-hidden');
           
           // Remove any existing GSAP properties for non-media elements
-          if (typeof window.gsap !== 'undefined') {
-            window.gsap.set(el, { clearProps: "all" });
+        if (typeof window.gsap !== 'undefined') {
+            window.gsap.set(el, { clearProps: "transform,opacity" });
           }
         });
         
-        // Special handling for images and videos in clones to ensure they fade in nicely
+        // Special handling for images and videos in clones - opacity only to avoid layout issues
         clone.querySelectorAll('img, video').forEach(el => {
           el.dataset.infiniteClone = 'true';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
           
           if (typeof window.gsap !== 'undefined') {
-            window.gsap.set(el, { opacity: 0, y: 20 });
-            window.gsap.to(el, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out", delay: 0.1, onComplete: () => {
+            // Clear any transforms and set to opacity 0, ensuring no positioning issues
+            window.gsap.set(el, { clearProps: "transform", opacity: 0, x: 0, y: 0 });
+            window.gsap.to(el, { opacity: 1, duration: 1.0, ease: "power2.out", delay: 0.1 + (Math.random() * 0.3), onComplete: () => {
               el.dataset.gsapAnimated = 'infinite-clone';
             }});
           }
