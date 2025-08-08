@@ -217,11 +217,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startAnims() {
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
-    const largeHeadings = document.querySelectorAll('.heading.large');
-    const smallHeadings = document.querySelectorAll('.heading.small');
-    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small), h2:not(.heading.large):not(.heading.small), h3:not(.heading.large):not(.heading.small), h4, h5, h6');
-    const paragraphs = document.querySelectorAll('p');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a), .menu-link, .menu-link.shimmer.accordion.chip-link');
+    // Immediately make any existing cloned content visible (for mid-page loads)
+    document.querySelectorAll('[data-infinite-clone="true"]').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.visibility = 'visible';
+      el.classList.remove('initial-hidden');
+    });
+    
+    const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
+    const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
+    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img, video');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
@@ -433,26 +441,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.dataset.scrambled = 'true'; // Prevent scramble effect
         });
         
+        // Force all cloned content to be immediately visible (no GSAP processing)
+        clone.querySelectorAll('*').forEach(el => {
+          el.dataset.infiniteClone = 'true';
+          el.dataset.gsapAnimated = 'infinite-clone';
+          el.dataset.maskSetup = 'true'; // Prevent mask animations
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          el.style.visibility = 'visible';
+          el.classList.remove('initial-hidden');
+          
+          // Remove any existing GSAP properties
         if (typeof window.gsap !== 'undefined') {
-          // Clear GSAP properties but ensure text stays visible
-          window.gsap.set(clone.querySelectorAll('*'), { clearProps: "all" });
-          window.gsap.set(clone, { clearProps: "all" });
-          
-          // Ensure all text elements in clones are visible
-          clone.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a, span').forEach(textEl => {
-            textEl.style.opacity = '1';
-            textEl.style.transform = 'none';
-            textEl.classList.remove('initial-hidden');
-          });
-          
-          // Ensure cloned images are immediately visible (no animation to prevent flashing)
-          const clonedImages = clone.querySelectorAll('img, video');
-          clonedImages.forEach(img => {
-            img.dataset.infiniteClone = 'true';
-            img.dataset.gsapAnimated = 'infinite-clone';
-            window.gsap.set(img, { opacity: 1, y: 0, clearProps: "transform" });
-          });
-        }
+            window.gsap.set(el, { clearProps: "all" });
+          }
+        });
+        
+        // Additional safety for the clone container itself
+        clone.style.opacity = '1';
+        clone.style.transform = 'none';
+        clone.style.visibility = 'visible';
         
         container.appendChild(clone);
         console.log('✅ Clone appended with visible text');
