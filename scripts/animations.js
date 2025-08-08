@@ -1,7 +1,7 @@
-// Version 2.4.0: Replace custom scramble with GSAP ScrambleTextPlugin
+// Version 2.4.1: Revert to working custom scramble, ensure counter is included
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
-// GSAP, ScrollTrigger, Observer, and ScrambleTextPlugin are loaded dynamically
+// GSAP, ScrollTrigger, and Observer are loaded dynamically
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
@@ -63,20 +63,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
             observerLoaded = true;
             console.log('✅ Observer loaded');
-            loadGSAPScript('https://assets.codepen.io/16327/ScrambleTextPlugin3.min.js', () => {
-              console.log('✅ ScrambleTextPlugin loaded');
-              setTimeout(() => {
-                if (window.gsap && window.gsap.registerPlugin) {
-                  try {
-                    window.gsap.registerPlugin(ScrambleTextPlugin);
-                    console.log('✅ ScrambleTextPlugin registered');
-                    console.log('Available ScrambleTextPlugin:', !!window.ScrambleTextPlugin);
-                  } catch (e) {
-                    console.error('❌ ScrambleTextPlugin registration failed:', e);
-                  }
-                }
-              }, 100);
-            });
           });
         });
     });
@@ -173,34 +159,43 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // GSAP ScrambleText effect function
-  function scrambleText(element, duration = 1.5, delay = 0) {
+  // Scramble text effect function
+  function scrambleText(element, duration = 2000, delay = 0) {
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
     
     const originalText = element.textContent.trim();
     if (!originalText) return;
     
-    // Set initial opacity and apply GSAP scramble
-    element.style.opacity = '1';
+    const chars = '!<>-_\\/[]{}—=+*^?#________';
+    let currentText = originalText;
+    let iteration = 0;
+    const totalIterations = Math.floor(duration / 50);
     
-    if (typeof window.gsap !== 'undefined' && window.ScrambleTextPlugin) {
-      console.log('Using GSAP scramble for:', originalText.substring(0, 10) + '...');
-      window.gsap.to(element, {
-        duration: duration,
-        scrambleText: {
-          text: originalText,
-          chars: "!<>-_\\/[]{}—=+*^?#________",
-          revealDelay: 0.3,
-          speed: 0.8
-        },
-        delay: delay / 1000 // Convert to seconds
-      });
-    } else {
-      // Fallback if plugin not loaded
-      console.warn('ScrambleTextPlugin not available for:', originalText.substring(0, 10) + '...');
-      element.textContent = originalText;
-    }
+    setTimeout(() => {
+      element.style.opacity = '1';
+      
+      const interval = setInterval(() => {
+        currentText = originalText
+          .split('')
+          .map((char, index) => {
+            if (index < iteration) {
+              return originalText[index];
+            }
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join('');
+        
+        element.textContent = currentText;
+        
+        if (iteration >= originalText.length) {
+          clearInterval(interval);
+          element.textContent = originalText;
+        }
+        
+        iteration += 1 / 3;
+      }, 50);
+    }, delay);
   }
 
   // Wrap text lines for animation (simplified for hover effects only)
@@ -421,16 +416,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('❌ Counter not found for scramble');
     }
     
-    // Apply GSAP scramble effect to all text elements
+    // Apply scramble effect to all text elements with fallback safety
     textElements.forEach((element, index) => {
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 1.5, 1200 + (index * 100));
+        scrambleText(linkText1, 1500, 1200 + (index * 100));
+        // Safety fallback for hover elements
+        setTimeout(() => {
+          if (linkText1.style.opacity === '0') {
+            linkText1.style.opacity = '1';
+            console.log('🔧 Fallback: Made hover text visible');
+          }
+        }, 4000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 1.5, 1200 + (index * 100));
+        scrambleText(element, 1500, 1200 + (index * 100));
+        // Safety fallback for regular elements
+        setTimeout(() => {
+          if (element.style.opacity === '0') {
+            element.style.opacity = '1';
+            console.log('🔧 Fallback: Made element visible', element);
+          }
+        }, 4000);
       }
     });
     
