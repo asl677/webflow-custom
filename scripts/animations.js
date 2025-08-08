@@ -1,4 +1,4 @@
-// Version 2.3.20: Isolate counter completely + aggressive infinite scroll debugging
+// Version 2.3.21: Fix Webflow compatibility + prevent script conflicts
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -8,13 +8,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 (function(exports) {
   let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
 
-  // Global error handler
-  window.addEventListener('error', e => console.error('Global JavaScript error:', e.error));
+  // Global error handler with Webflow safety
+  window.addEventListener('error', e => {
+    // Don't interfere with Webflow's error handling
+    if (e.filename && e.filename.includes('webflow')) {
+      console.warn('Webflow script error detected, not interfering:', e.message);
+      return;
+    }
+    console.error('Global JavaScript error:', e.error);
+  });
 
-  // Load GSAP scripts sequentially
+  // Load GSAP scripts sequentially with error handling
   function loadGSAPScript(src, callback) {
+    // Check if script is already loaded
+    if (document.querySelector(`script[src="${src}"]`)) {
+      console.log('Script already loaded:', src);
+      callback && callback();
+      return;
+    }
+    
     const script = document.createElement('script');
-    script.src = src; script.onload = callback; script.onerror = () => console.error('Failed to load GSAP script:', src);
+    script.src = src; 
+    script.onload = () => {
+      console.log('Successfully loaded:', src);
+      callback && callback();
+    };
+    script.onerror = (e) => {
+      console.error('Failed to load GSAP script:', src, e);
+      // Don't let GSAP loading errors break Webflow
+    };
     document.head.appendChild(script);
   }
 
@@ -868,15 +890,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Fallback init
   setTimeout(() => !isInit && init(), 2000);
 
-  // Main initialization function
+  // Main initialization function with error protection
   function init() {
     if (isInit) return;
+    
     function waitForGSAP() { 
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
+          try {
           startAnims(); 
           isInit = true; 
-
+            console.log('✅ Portfolio animations initialized successfully');
+          } catch (error) {
+            console.error('❌ Animation initialization error:', error);
+            // Don't let our errors break Webflow
+          }
         }); 
       } else {
         setTimeout(waitForGSAP, 100); 
@@ -885,12 +913,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     waitForGSAP();
   }
 
-  // Global click handler for page transitions
+  // Global click handler for page transitions with error protection
   document.addEventListener('click', e => {
+    try {
     const link = e.target.closest('a[href]');
     if (!link) return;
     const href = link.getAttribute('href');
     (href.startsWith('/') || href.startsWith(window.location.origin)) && handleTransition(e, href);
+    } catch (error) {
+      console.error('❌ Click handler error:', error);
+      // Don't let our errors break Webflow navigation
+    }
   }, true);
 
   // Export functions
@@ -898,6 +931,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   exports.startAnimations = startAnims;
   exports.handlePageTransition = handleTransition;
   
-  // Start preloader
-  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initPreloader) : initPreloader();
+  // Wait for Webflow to be ready before starting our animations
+  function waitForWebflow() {
+    // Check if Webflow is available and ready
+    if (typeof window.Webflow !== 'undefined' || document.querySelector('[data-wf-page]') || document.body.classList.contains('w-loading')) {
+      console.log('🌐 Webflow detected, waiting for it to be ready...');
+      // Give Webflow extra time to initialize
+      setTimeout(() => {
+        console.log('🌐 Webflow ready, starting animations...');
+        initPreloader();
+      }, 1000);
+    } else {
+      console.log('🌐 No Webflow detected, starting animations normally...');
+      initPreloader();
+    }
+  }
+  
+  // Start preloader with Webflow safety
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
 })(window.portfolioAnimations);
