@@ -228,11 +228,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     initHover();
 
-    // Simple mask reveal for images (mobile-friendly)
+    // Mobile-optimized mask reveal for images
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     if (allImages.length) {
+      // On mobile, only animate first 6 images immediately to reduce load
+      const maxInitialImages = isMobile ? 6 : allImages.length;
+      
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         const originalWidth = element.offsetWidth;
@@ -252,24 +255,59 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const hasParallax = element.classList.contains('img-parallax');
         if (hasParallax) window.gsap.set(element, { scale: 1.2 });
         
-        // Mobile-optimized timing but simpler execution
-        const staggerDelay = isMobile ? index * 0.1 : index * 0.2;
-        const duration = isMobile ? 0.8 : 1.2;
-        
-        window.gsap.to(maskContainer, { 
-          width: originalWidth + 'px', 
-          duration: duration, 
-          ease: "power2.out", 
-          delay: staggerDelay
-        });
-        
-        if (hasParallax) {
-          window.gsap.to(element, { 
-            scale: 1.0, 
-            duration: duration + 0.3, 
+        // Limit initial animations on mobile for better performance
+        if (index < maxInitialImages) {
+          // Increased stagger for mobile to prevent too many simultaneous animations
+          const staggerDelay = isMobile ? index * 0.4 : index * 0.2;
+          const duration = isMobile ? 0.6 : 1.2;
+          
+          window.gsap.to(maskContainer, { 
+            width: originalWidth + 'px', 
+            duration: duration, 
             ease: "power2.out", 
             delay: staggerDelay
           });
+          
+          if (hasParallax) {
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: duration + 0.3, 
+              ease: "power2.out", 
+              delay: staggerDelay
+            });
+          }
+        } else if (isMobile) {
+          // On mobile, show remaining images with ScrollTrigger to reduce initial load
+          window.gsap.set(maskContainer, { width: '0px' });
+          window.gsap.to(maskContainer, { 
+            width: originalWidth + 'px', 
+            duration: 0.8, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top bottom", 
+              end: "top center", 
+              once: true 
+            }
+          });
+        } else {
+          // Desktop: animate all normally
+          const staggerDelay = index * 0.2;
+          window.gsap.to(maskContainer, { 
+            width: originalWidth + 'px', 
+            duration: 1.2, 
+            ease: "power2.out", 
+            delay: staggerDelay
+          });
+          
+          if (hasParallax) {
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: 1.5, 
+              ease: "power2.out", 
+              delay: staggerDelay
+            });
+          }
         }
       });
     }
