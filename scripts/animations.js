@@ -410,6 +410,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
     // Counter will be automatically included via paragraph selector
+    console.log('🔍 Counter element exists?', document.querySelector('#time-counter'));
+    console.log('🔍 Paragraphs found:', paragraphs.length, [...paragraphs].map(p => p.id || p.textContent.substring(0, 20)));
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
