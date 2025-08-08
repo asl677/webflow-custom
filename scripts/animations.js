@@ -228,31 +228,59 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     initHover();
 
-    // Create mask reveal for images with increased stagger delay (0.5s)
+    // Optimized mask reveal for images (mobile Safari optimized)
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
     if (allImages.length) {
+      // Batch DOM operations for better performance
+      const fragment = document.createDocumentFragment();
+      const animations = [];
+      
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
-        const originalWidth = element.offsetWidth;
-        const originalHeight = element.offsetHeight;
-        if (originalWidth === 0 || originalHeight === 0) return;
         
-        const parent = element.parentNode;
-        const maskContainer = document.createElement('div');
-        maskContainer.className = 'proper-mask-reveal';
-        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-        
-        parent.insertBefore(maskContainer, element);
-        maskContainer.appendChild(element);
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important`;
-        element.dataset.maskSetup = 'true';
-        
-        const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) window.gsap.set(element, { scale: 1.2 });
-        
-        // Increased stagger delay from 0.1s to 0.5s
-        window.gsap.to(maskContainer, { width: originalWidth + 'px', duration: 1.2, ease: "power2.out", delay: index * 0.5 });
-        if (hasParallax) window.gsap.to(element, { scale: 1.0, duration: 1.5, ease: "power2.out", delay: index * 0.5 });
+        // Use requestAnimationFrame for layout calculations
+        requestAnimationFrame(() => {
+          const originalWidth = element.offsetWidth;
+          const originalHeight = element.offsetHeight;
+          if (originalWidth === 0 || originalHeight === 0) return;
+          
+          const parent = element.parentNode;
+          const maskContainer = document.createElement('div');
+          maskContainer.className = 'proper-mask-reveal';
+          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+          
+          parent.insertBefore(maskContainer, element);
+          maskContainer.appendChild(element);
+          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important`;
+          element.dataset.maskSetup = 'true';
+          
+          const hasParallax = element.classList.contains('img-parallax');
+          if (hasParallax) window.gsap.set(element, { scale: 1.2 });
+          
+          // Reduced stagger for mobile, faster duration
+          const staggerDelay = isMobile ? index * 0.15 : index * 0.3;
+          const duration = isMobile ? 0.8 : 1.2;
+          
+          window.gsap.to(maskContainer, { 
+            width: originalWidth + 'px', 
+            duration: duration, 
+            ease: "power2.out", 
+            delay: staggerDelay,
+            force3D: true // Hardware acceleration
+          });
+          
+          if (hasParallax) {
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: duration + 0.3, 
+              ease: "power2.out", 
+              delay: staggerDelay,
+              force3D: true
+            });
+          }
+        });
       });
     }
 
@@ -270,11 +298,37 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport) {
           window.gsap.set(el, { opacity: 0, y: 0 });
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", delay: 0.18 + (i * 0.15), onComplete: () => el.dataset.gsapAnimated = 'completed' });
+          const duration = isMobile ? 1.0 : 1.6;
+          const delay = isMobile ? 0.1 + (i * 0.08) : 0.18 + (i * 0.15);
+          window.gsap.to(el, { 
+            opacity: 1, 
+            y: 0, 
+            duration: duration, 
+            ease: "power2.out", 
+            delay: delay,
+            force3D: true,
+            onComplete: () => el.dataset.gsapAnimated = 'completed' 
+          });
         } else {
           window.gsap.set(el, { opacity: 0, y: 0 });
           if (el.loading !== 'eager') el.loading = 'eager';
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
+          const duration = isMobile ? 1.0 : 1.6;
+          window.gsap.to(el, { 
+            opacity: 1, 
+            y: 0, 
+            duration: duration, 
+            ease: "power2.out",
+            force3D: true,
+            scrollTrigger: { 
+              trigger: el, 
+              start: "top bottom", 
+              end: "top center", 
+              toggleActions: "play none none reverse", 
+              once: true, 
+              onEnter: () => el.dataset.gsapAnimated = 'animating', 
+              onComplete: () => el.dataset.gsapAnimated = 'completed' 
+            }
+          });
         }
       });
     }
