@@ -163,7 +163,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function scrambleText(element, duration = 2000, delay = 0) {
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
-    element.dataset.scrambleRunning = 'true';
     
     const originalText = element.textContent.trim();
     if (!originalText) return;
@@ -192,8 +191,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (iteration >= originalText.length) {
           clearInterval(interval);
           element.textContent = originalText;
-          element.dataset.scrambleRunning = 'false';
-          element.dataset.scrambleDone = 'true';
         }
         
         iteration += 1 / 3;
@@ -880,38 +877,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
-  // Create time counter display
+  // Create simple time counter display
   function createTimeCounter() {
     const counter = document.createElement('div');
     counter.id = 'time-counter';
     counter.textContent = '0000';
-    counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0.8`;
+    counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0`;
 
     const mobileStyles = document.createElement('style');
-    mobileStyles.textContent = '@media (max-width: 768px) {#time-counter{font-size:11px!important;bottom:0.8vw!important}.main-wrapper, main, .page-wrapper{min-height:100vh;height:auto}body > div:first-child{min-height:100vh}}';
+    mobileStyles.textContent = '@media (max-width: 768px) {#time-counter{font-size:11px!important;bottom:0.8vw!important}}';
     
     if (!document.head.querySelector('#mobile-responsive-styles')) { mobileStyles.id = 'mobile-responsive-styles'; document.head.appendChild(mobileStyles); }
     document.body.appendChild(counter);
     
-    const lines = wrapLines(counter);
-    lines.length > 0 && (window.gsap.set(lines, { opacity: 0, y: 20 }), window.gsap.to(lines, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", delay: 1.0 }));
-    
     let startTime = Date.now();
     function updateCounter() {
-      // Pause updates while scramble is running to prevent jump during load
-      if (counter.dataset.scrambleRunning === 'true') return;
       const elapsed = Date.now() - startTime;
       const totalSeconds = Math.floor(elapsed / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       const timeString = String(minutes).padStart(2, '0') + String(seconds).padStart(2, '0');
-      const lineInner = counter.querySelector('.line-inner');
-      lineInner ? lineInner.textContent = timeString : counter.textContent = timeString;
+      counter.textContent = timeString;
     }
     
     setInterval(updateCounter, 1000);
-    // Defer first visible update slightly so scramble can begin and layout stabilizes
-    setTimeout(updateCounter, 1200);
+    updateCounter();
     return counter;
   }
 
