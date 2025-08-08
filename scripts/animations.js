@@ -1,4 +1,4 @@
-// Version 2.3.26: Fix image overlap in infinite scroll by removing transform animations
+// Version 2.3.27: Fix stuck reveal animations and infinite scroll conflicts
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -256,13 +256,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    const mediaEls = document.querySelectorAll('img, video');
+    const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     initHover();
 
-    // Mobile-optimized mask reveal for images
-    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    // Mobile-optimized mask reveal for images (exclude clones and preloader)
+    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     if (allImages.length) {
@@ -299,7 +299,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             width: originalWidth + 'px', 
             duration: duration, 
             ease: "power2.out", 
-            delay: staggerDelay
+            delay: staggerDelay,
+            onComplete: () => {
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
+            }
           });
           
           if (hasParallax) {
@@ -322,6 +326,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               start: "top bottom", 
               end: "top center", 
               once: true 
+            },
+            onComplete: () => {
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
             }
           });
         } else {
@@ -331,7 +339,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             width: originalWidth + 'px', 
             duration: 1.2, 
             ease: "power2.out", 
-            delay: staggerDelay
+            delay: staggerDelay,
+            onComplete: () => {
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
+            }
           });
           
           if (hasParallax) {
@@ -344,6 +356,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }
       });
+      
+      // Safety fallback: force completion of any stuck reveals after 10 seconds
+      setTimeout(() => {
+        allImages.forEach(element => {
+          if (element.dataset.maskSetup && !element.dataset.maskComplete) {
+            const maskContainer = element.parentNode;
+            if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
+              window.gsap.set(maskContainer, { width: element.offsetWidth + 'px' });
+              element.dataset.gsapAnimated = 'mask-revealed-fallback';
+              element.dataset.maskComplete = 'true';
+              console.log('🔧 Forced reveal completion for stuck element');
+            }
+          }
+        });
+      }, 10000);
     }
 
     const tl = window.gsap.timeline();
