@@ -161,6 +161,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Scramble text effect function
   function scrambleText(element, duration = 2000, delay = 0) {
+    if (element.id === 'time-counter') {
+      console.log('🔢 scrambleText called for counter:', element, 'duration:', duration, 'delay:', delay);
+    }
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
     
@@ -409,8 +412,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Counter should now be picked up automatically by smallHeadings selector
-    console.log('🔢 Counter should be included via .heading.small selector');
+    // Manual counter scramble test
+    const counter = document.querySelector('#time-counter');
+    if (counter) {
+      console.log('🔢 Manual counter scramble test');
+      counter.style.opacity = '0';
+      setTimeout(() => {
+        console.log('🔢 Starting counter scramble...');
+        scrambleText(counter, 1500, 0);
+      }, 1500); // Start after other text
+    }
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
