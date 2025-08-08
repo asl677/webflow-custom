@@ -1,4 +1,4 @@
-// Version 2.3 - Added Three.js scroll effect + scramble text effect
+// Version 2.3.19: Fix counter scramble effect + improve infinite scroll reliability
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -358,6 +358,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
+    // Include counter element
+    const counter = document.querySelector('#time-counter');
+    if (counter && !counter.dataset.infiniteClone) {
+      textElements.push(counter);
+    }
+    
     // Apply scramble effect to all text elements with fallback safety
     textElements.forEach((element, index) => {
       // For hover elements, scramble the visible text span
@@ -421,7 +427,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (found && found.children.length > 1) { container = found; console.log(`✅ Found container: ${selector} with ${found.children.length} items`); break; }
     }
     
-    if (!container) { console.log('❌ No container found for infinite scroll'); return; }
+    if (!container) { 
+      console.log('❌ No container found for infinite scroll'); 
+      console.log('Available selectors checked:', selectors.map(s => `${s}: ${document.querySelector(s) ? 'found' : 'not found'}`));
+      return; 
+    }
     
     container.style.cssText += 'overflow:visible;height:auto';
     const originalItems = Array.from(container.children);
@@ -437,19 +447,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       originalItems.forEach(item => {
         const clone = item.cloneNode(true);
         
-        // Mark cloned elements to prevent text animations from affecting them
+        // Mark cloned elements and make them immediately visible
         clone.dataset.infiniteClone = 'true';
-        clone.querySelectorAll('*').forEach(el => {
-          el.dataset.infiniteClone = 'true';
-          el.dataset.scrambled = 'true'; // Prevent scramble effect
-        });
-        
-                // Force all cloned content to be immediately visible (no GSAP processing)
         clone.querySelectorAll('*').forEach(el => {
           // Skip the counter element to preserve its positioning
           if (el.id === 'time-counter' || el.closest('#time-counter')) return;
           
           el.dataset.infiniteClone = 'true';
+          el.dataset.scrambled = 'true'; // Prevent scramble effect
           el.dataset.gsapAnimated = 'infinite-clone';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
           el.style.opacity = '1';
@@ -487,7 +492,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Debug logging (remove in production)
       if (scrollPercent > 0.7 || nearBottom) {
-        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
       }
       
       if (nearBottom && !isLoading) {
