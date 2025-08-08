@@ -253,7 +253,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-    const paragraphs = document.querySelectorAll('#time-counter,p:not([data-infinite-clone])');
+          const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
@@ -409,14 +409,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Include counter in unified text scramble
-    const counter = document.querySelector('#time-counter');
-    if (counter) {
-      console.log('🔢 Counter found, adding to scramble list');
-      textElements.push(counter);
-    } else {
-      console.log('❌ Counter not found for scramble');
-    }
+    // Counter will be automatically included via paragraph selector
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
@@ -885,12 +878,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     tl.to('body', { opacity: 0, duration: 0.9, ease: "power2.inOut" }, 0.1);
   }
 
-  // Create simple time counter display
+  // Create simple time counter display  
   function createTimeCounter() {
-    const counter = document.createElement('div');
+    const counter = document.createElement('p');
     counter.id = 'time-counter';
     counter.textContent = '0000';
-    counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0`;
+    counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0;margin:0;padding:0`;
 
     const mobileStyles = document.createElement('style');
     mobileStyles.textContent = '@media (max-width: 768px) {#time-counter{font-size:11px!important;bottom:0.8vw!important}}';
