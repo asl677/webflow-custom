@@ -1,4 +1,4 @@
-// Version 2.3.22: Fix infinite scroll with better container detection + retry logic
+// Version 2.3.23: CRITICAL FIX - Prevent text duplication by validating project containers
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -454,18 +454,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
     console.log('🔄 Starting infinite scroll setup...');
-    // More specific selectors for portfolio projects
+    // Highly specific selectors for portfolio project containers only
     const selectors = [
-      '.w-layout-grid', 
-      '.flex-grid', 
-      '.grid-4',
-      '.grid-down', 
-      '[class*="grid"]', 
-      '.container.video-wrap-hide',
-      '.container', 
-      '.main-wrapper', 
-      '.page-wrapper', 
-      'main'
+      '.container.video-wrap-hide', // Main project container
+      '.w-layout-grid.project-grid', // Specific project grid
+      '.flex-grid.project-grid', // Project flex grid
+      '.grid-4.project', // 4-column project grid
+      '.project-grid', // Generic project grid
+      '.portfolio-grid', // Portfolio grid
+      '.case-grid', // Case study grid
+      'div[class*="project"][class*="grid"]', // Any div with both "project" and "grid" in class
+      'div[class*="case"][class*="grid"]' // Any div with both "case" and "grid" in class
     ];
     let container = null;
     
@@ -478,15 +477,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     for (const selector of selectors) {
       const found = document.querySelector(selector);
-      if (found && found.children.length >= 1) { // Reduced from > 1 to >= 1
-        container = found; 
-        console.log(`✅ Selected container: ${selector} with ${found.children.length} items`); 
-        break; 
+      if (found && found.children.length >= 1) {
+        // Validate that this container has project-like content, not just text
+        const firstChild = found.children[0];
+        const hasImages = firstChild.querySelector('img, video');
+        const hasLinks = firstChild.querySelector('a');
+        const isProjectLike = hasImages || hasLinks || firstChild.classList.toString().match(/(project|case|card|item)/i);
+        
+        if (isProjectLike) {
+          container = found; 
+          console.log(`✅ Selected container: ${selector} with ${found.children.length} project-like items`); 
+          break; 
+        } else {
+          console.log(`⚠️ Skipping ${selector}: children don't appear to be project items`);
+        }
       }
     }
     
     if (!container) { 
-      console.log('❌ No suitable container found for infinite scroll'); 
+      console.log('❌ No suitable project container found for infinite scroll - disabling to prevent text duplication'); 
+      window.infiniteScrollActive = false;
       return; 
     }
     
@@ -503,6 +513,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (isLoading) return;
       isLoading = true;
       console.log('🔄 Loading more items...');
+      
+      // Safety check: make sure we're not cloning text-heavy content
+      const sampleItem = originalItems[0];
+      const textContent = sampleItem.textContent.trim();
+      const hasImages = sampleItem.querySelector('img, video');
+      const hasLinks = sampleItem.querySelector('a');
+      
+      if (!hasImages && !hasLinks && textContent.length > 50) {
+        console.log('🚨 Emergency stop: About to clone text content instead of projects!');
+        isLoading = false;
+        return;
+      }
       
       originalItems.forEach(item => {
         const clone = item.cloneNode(true);
