@@ -411,26 +411,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Include counter in unified text scramble
     const counter = document.querySelector('#time-counter');
-    console.log('🔍 Counter element search:', counter);
-    console.log('🔍 All elements with "counter" in ID or class:', [...document.querySelectorAll('*')].filter(el => 
-      el.id.includes('counter') || el.className.includes('counter')
-    ));
-    
-    if (counter && !counter.dataset.infiniteClone) {
-      console.log('🔢 Adding counter to scramble list');
+    if (counter) {
+      console.log('🔢 Counter found, adding to scramble list');
       textElements.push(counter);
     } else {
       console.log('❌ Counter not found for scramble');
-      // Try alternative selectors
-      const altCounter = document.querySelector('[id*="counter"], .counter, [class*="counter"]');
-      if (altCounter && !altCounter.dataset.infiniteClone) {
-        console.log('🔢 Found alternative counter element:', altCounter);
-        textElements.push(altCounter);
-      }
     }
     
     // Apply scramble effect to all text elements with fallback safety
+    console.log('🎯 Total text elements for scramble:', textElements.length);
     textElements.forEach((element, index) => {
+      if (element.id === 'time-counter') {
+        console.log('🔢 Processing counter for scramble at index:', index);
+      }
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
