@@ -409,14 +409,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
     links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
     
-    // Force add counter to scramble list
-    const counter = document.querySelector('#time-counter');
-    if (counter) {
-      console.log('🔢 Force adding counter to textElements');
-      textElements.push(counter);
-    } else {
-      console.log('❌ Counter still not found');
-    }
+    // Counter should now be picked up automatically by smallHeadings selector
+    console.log('🔢 Counter should be included via .heading.small selector');
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
@@ -889,6 +883,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function createTimeCounter() {
     const counter = document.createElement('p');
     counter.id = 'time-counter';
+    counter.className = 'heading small link muted'; // Add classes that work with scramble
     counter.textContent = '0000';
     counter.style.cssText = `position:fixed;bottom:0.8vw;left:50%;transform:translateX(-50%);color:white;font-family:'SF Mono','Monaco','Inconsolata','Roboto Mono','Source Code Pro',monospace;font-size:0.6vw;z-index:9999;pointer-events:none;user-select:none;letter-spacing:0.1em;opacity:0;margin:0;padding:0`;
 
