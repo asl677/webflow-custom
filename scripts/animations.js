@@ -1,4 +1,4 @@
-// Version 2.3.24: Revert to simple working infinite scroll logic + reduce excessive logging
+// Version 2.3.25: Fix infinite scroll media elements opacity animation
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -481,14 +481,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       originalItems.forEach(item => {
         const clone = item.cloneNode(true);
         
-        // Mark cloned elements and make them immediately visible
+        // Mark cloned elements to prevent text animations from affecting them
         clone.dataset.infiniteClone = 'true';
         clone.querySelectorAll('*').forEach(el => {
+          el.dataset.infiniteClone = 'true';
+          el.dataset.scrambled = 'true'; // Prevent scramble effect
+        });
+        
+        // Force all cloned text content to be immediately visible (no GSAP processing)
+        clone.querySelectorAll('*:not(img):not(video)').forEach(el => {
           // Skip the counter element to preserve its positioning
           if (el.id === 'time-counter' || el.closest('#time-counter')) return;
           
           el.dataset.infiniteClone = 'true';
-          el.dataset.scrambled = 'true'; // Prevent scramble effect
           el.dataset.gsapAnimated = 'infinite-clone';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
           el.style.opacity = '1';
@@ -496,9 +501,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.style.visibility = 'visible';
           el.classList.remove('initial-hidden');
           
-          // Remove any existing GSAP properties
-        if (typeof window.gsap !== 'undefined') {
+          // Remove any existing GSAP properties for non-media elements
+          if (typeof window.gsap !== 'undefined') {
             window.gsap.set(el, { clearProps: "all" });
+          }
+        });
+        
+        // Special handling for images and videos in clones to ensure they fade in nicely
+        clone.querySelectorAll('img, video').forEach(el => {
+          el.dataset.infiniteClone = 'true';
+          el.dataset.maskSetup = 'true'; // Prevent mask animations
+          
+          if (typeof window.gsap !== 'undefined') {
+            window.gsap.set(el, { opacity: 0, y: 20 });
+            window.gsap.to(el, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out", delay: 0.1, onComplete: () => {
+              el.dataset.gsapAnimated = 'infinite-clone';
+            }});
           }
         });
         
