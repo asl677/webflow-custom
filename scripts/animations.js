@@ -163,6 +163,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function scrambleText(element, duration = 2000, delay = 0) {
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
     element.dataset.scrambled = 'true';
+    element.dataset.scrambleRunning = 'true';
     
     const originalText = element.textContent.trim();
     if (!originalText) return;
@@ -191,6 +192,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (iteration >= originalText.length) {
           clearInterval(interval);
           element.textContent = originalText;
+          element.dataset.scrambleRunning = 'false';
+          element.dataset.scrambleDone = 'true';
         }
         
         iteration += 1 / 3;
@@ -895,6 +898,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     let startTime = Date.now();
     function updateCounter() {
+      // Pause updates while scramble is running to prevent jump during load
+      if (counter.dataset.scrambleRunning === 'true') return;
       const elapsed = Date.now() - startTime;
       const totalSeconds = Math.floor(elapsed / 1000);
       const minutes = Math.floor(totalSeconds / 60);
@@ -905,7 +910,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     setInterval(updateCounter, 1000);
-    updateCounter();
+    // Defer first visible update slightly so scramble can begin and layout stabilizes
+    setTimeout(updateCounter, 1200);
     return counter;
   }
 
