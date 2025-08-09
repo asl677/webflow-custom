@@ -297,11 +297,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         if (element.dataset.infiniteClone) return; // Skip cloned content
-        // Force reflow to ensure accurate dimensions
-        element.style.display = 'block';
-        const rect = element.getBoundingClientRect();
-        const originalWidth = Math.max(element.offsetWidth, rect.width, element.naturalWidth || 0);
-        const originalHeight = Math.max(element.offsetHeight, rect.height, element.naturalHeight || 0);
+        const originalWidth = element.offsetWidth;
+        const originalHeight = element.offsetHeight;
         
         if (originalWidth === 0 || originalHeight === 0) return;
         
@@ -333,8 +330,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
-              // Ensure mask is fully open
-              maskContainer.style.width = '100%';
+
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -362,8 +358,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               once: true 
             },
             onComplete: () => {
-              // Ensure mask is fully open
-              maskContainer.style.width = '100%';
+
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -377,8 +372,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
-              // Ensure mask is fully open
-              maskContainer.style.width = '100%';
+
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -401,10 +395,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
             if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
-              // Force reveal completion with 100% width
+              // Force reveal completion
               const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
               window.gsap.set(maskContainer, { width: targetWidth + 'px' });
-              maskContainer.style.width = '100%'; // Ensure full width
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
