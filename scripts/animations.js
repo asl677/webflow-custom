@@ -599,13 +599,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         clone.querySelectorAll('img, video').forEach(el => {
           el.dataset.infiniteClone = 'true';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
+          el.dataset.gsapAnimated = 'infinite-clone';
+          
+          // If this element is inside a mask container, remove it and reset
+          const maskContainer = el.closest('.proper-mask-reveal');
+          if (maskContainer) {
+            // Move the image out of the mask container and remove the mask
+            const parent = maskContainer.parentNode;
+            parent.insertBefore(el, maskContainer);
+            maskContainer.remove();
+          }
+          
+          // Reset styles and animate opacity
+          el.style.cssText = 'opacity: 0 !important; display: block !important;';
           
           if (typeof window.gsap !== 'undefined') {
-            // Clear any transforms and set to opacity 0, ensuring no positioning issues
-            window.gsap.set(el, { clearProps: "transform", opacity: 0, x: 0, y: 0 });
-            window.gsap.to(el, { opacity: 1, duration: 1.0, ease: "power2.out", delay: 0.1 + (Math.random() * 0.3), onComplete: () => {
-              el.dataset.gsapAnimated = 'infinite-clone';
-            }});
+            window.gsap.to(el, { opacity: 1, duration: 1.0, ease: "power2.out", delay: 0.1 + (Math.random() * 0.3) });
+          } else {
+            setTimeout(() => el.style.opacity = '1', 100 + (Math.random() * 300));
           }
         });
         
