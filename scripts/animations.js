@@ -131,7 +131,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Add delay before starting main animations to let preloader fully complete
     setTimeout(() => {
       !isInit && init();
-    }, 200); // 0.2s delay as requested
+    }, 1500); // Increased to 1.5s to ensure gap between preloader and content
   }
 
   // Initialize hover effects for links
@@ -418,6 +418,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
         if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
         
+        // Skip images that have mask setup to prevent double animation
+        if (el.dataset.maskSetup) {
+          window.gsap.set(el, { opacity: 1 });
+          el.dataset.gsapAnimated = 'mask-handled';
+          return;
+        }
+        
         const rect = el.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
@@ -629,7 +636,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
       
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.90; // Trigger at 90% scroll to prevent immediate firing
+      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll for more reliable infinite scroll
       
       // Debug logging (only when approaching bottom)
       if (scrollPercent > 0.8 || nearBottom) {
