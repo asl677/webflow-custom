@@ -131,7 +131,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Add delay before starting main animations to let preloader fully complete
     setTimeout(() => {
       !isInit && init();
-    }, 1500); // Increased to 1.5s to ensure gap between preloader and content
+    }, 2300); // Increased to 1.5s to ensure gap between preloader and content
   }
 
   // Initialize hover effects for links
