@@ -128,7 +128,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
     
-    !isInit && init();
+    // Add delay before starting main animations to let preloader fully complete
+    setTimeout(() => {
+      !isInit && init();
+    }, 200); // 0.2s delay as requested
   }
 
   // Initialize hover effects for links
@@ -197,6 +200,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Start counter functionality after scramble completes
           if (element.classList.contains('counter')) {
             console.log('🔢 Scramble complete, starting counter');
+            element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
         }
@@ -293,8 +297,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         if (element.dataset.infiniteClone) return; // Skip cloned content
-        const originalWidth = element.offsetWidth;
-        const originalHeight = element.offsetHeight;
+        // Force reflow to ensure accurate dimensions
+        element.style.display = 'block';
+        const rect = element.getBoundingClientRect();
+        const originalWidth = Math.max(element.offsetWidth, rect.width, element.naturalWidth || 0);
+        const originalHeight = Math.max(element.offsetHeight, rect.height, element.naturalHeight || 0);
+        
         if (originalWidth === 0 || originalHeight === 0) return;
         
         const parent = element.parentNode;
@@ -307,21 +315,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important`;
         element.dataset.maskSetup = 'true';
         
+        // Store the target width for animation
+        maskContainer.dataset.targetWidth = originalWidth;
+        
         const hasParallax = element.classList.contains('img-parallax');
         if (hasParallax) window.gsap.set(element, { scale: 1.2 });
         
         // Limit initial animations on mobile for better performance
         if (index < maxInitialImages) {
-          // Increased stagger for mobile to prevent too many simultaneous animations
-          const staggerDelay = isMobile ? index * 0.4 : index * 0.2;
-          const duration = isMobile ? 0.6 : 1.2;
+          // Reduced stagger and duration for smoother loading
+          const staggerDelay = isMobile ? index * 0.15 : index * 0.1;
+          const duration = isMobile ? 0.4 : 0.8;
           
           window.gsap.to(maskContainer, { 
-            width: originalWidth + 'px', 
+            width: maskContainer.dataset.targetWidth + 'px', 
             duration: duration, 
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
+              // Ensure mask is fully open
+              maskContainer.style.width = '100%';
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -330,7 +343,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 0.3, 
+              duration: duration + 0.2, 
               ease: "power2.out", 
               delay: staggerDelay
             });
@@ -339,8 +352,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // On mobile, show remaining images with ScrollTrigger to reduce initial load
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
-            width: originalWidth + 'px', 
-            duration: 0.8, 
+            width: maskContainer.dataset.targetWidth + 'px', 
+            duration: 0.5, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -349,19 +362,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               once: true 
             },
             onComplete: () => {
+              // Ensure mask is fully open
+              maskContainer.style.width = '100%';
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
           });
         } else {
-          // Desktop: animate all normally
-          const staggerDelay = index * 0.2;
+          // Desktop: animate all normally with faster timing
+          const staggerDelay = index * 0.1;
           window.gsap.to(maskContainer, { 
-            width: originalWidth + 'px', 
-            duration: 1.2, 
+            width: maskContainer.dataset.targetWidth + 'px', 
+            duration: 0.8, 
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
+              // Ensure mask is fully open
+              maskContainer.style.width = '100%';
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -370,7 +387,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.5, 
+              duration: 1.0, 
               ease: "power2.out", 
               delay: staggerDelay
             });
@@ -384,8 +401,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
             if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
-              // Force reveal completion
-              window.gsap.set(maskContainer, { width: element.offsetWidth + 'px' });
+              // Force reveal completion with 100% width
+              const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
+              window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+              maskContainer.style.width = '100%'; // Ensure full width
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
@@ -432,16 +451,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Force add counter if it wasn't picked up by selectors
     const counter = document.querySelector('.counter');
-    if (counter && !textElements.includes(counter)) {
-      console.log('🔢 Force adding counter to textElements');
-      textElements.push(counter);
+    if (counter) {
+      if (!textElements.includes(counter)) {
+        console.log('🔢 Force adding counter to textElements');
+        textElements.push(counter);
+      } else {
+        console.log('🔢 Counter already in textElements');
+      }
+      console.log('🔢 Counter element found:', counter);
+      console.log('🔢 Counter classes:', counter.className);
+    } else {
+      console.log('❌ No .counter element found in DOM');
     }
     
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
     textElements.forEach((element, index) => {
       if (element.classList.contains('counter')) {
-        console.log('🔢 Processing Webflow counter for scramble at index:', index);
+        console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
       }
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
@@ -484,6 +511,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 3000);
     
     console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
+    
+    // Fallback: ensure counter starts even if scramble doesn't trigger it
+    setTimeout(() => {
+      const fallbackCounter = document.querySelector('.counter');
+      if (fallbackCounter && !fallbackCounter.dataset.counterStarted) {
+        console.log('🔢 Fallback: Starting counter manually');
+        fallbackCounter.dataset.counterStarted = 'true';
+        startTimeCounter(fallbackCounter);
+      }
+    }, 3000);
 
     slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
     otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
