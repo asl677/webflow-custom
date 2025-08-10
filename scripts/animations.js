@@ -16,6 +16,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       opacity: 0 !important;
       visibility: hidden !important;
     }
+    .proper-mask-reveal {
+      width: 0 !important;
+    }
   `;
   document.head.appendChild(immediateHideStyle);
 
@@ -92,6 +95,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.loading{overflow:hidden}
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      .proper-mask-reveal{width:0!important}
       .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
     `;
