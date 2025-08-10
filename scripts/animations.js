@@ -8,6 +8,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 (function(exports) {
   let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
 
+  // Immediately hide all content to prevent flash
+  const immediateHideStyle = document.createElement('style');
+  immediateHideStyle.id = 'immediate-hide-style';
+  immediateHideStyle.textContent = `
+    body *:not(script):not(style):not(link):not(meta):not(title):not(head) {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+  `;
+  document.head.appendChild(immediateHideStyle);
+
   // Global error handler with Webflow safety
   window.addEventListener('error', e => {
     // Don't interfere with Webflow's error handling
@@ -73,7 +84,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Create animated preloader
   function createPreloader() {
     const style = document.createElement('style');
-    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}#preloader .digit{display:inline-block;opacity:0}body.loading{overflow:hidden}body.loading h1,body.loading h2,body.loading h3,body.loading h4,body.loading h5,body.loading h6,body.loading p,body.loading a:not(.nav a):not(.fake-nav a){opacity:0!important}body.loading img:not(#preloader img),body.loading video{opacity:0!important}body.loading .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}body.animations-ready h1,body.animations-ready h2,body.animations-ready h3,body.animations-ready h4,body.animations-ready h5,body.animations-ready h6,body.animations-ready p,body.animations-ready a:not(.nav a):not(.fake-nav a){opacity:0!important}body.animations-ready img:not(#preloader img),body.animations-ready video{opacity:0!important}body.animations-ready .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
+    style.textContent = `
+      #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}
+      #preloader.visible{opacity:1}
+      #preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
+      #preloader .digit{display:inline-block;opacity:0}
+      body.loading{overflow:hidden}
+      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
+      .flex-grid{margin-top:0.2vw!important}
+    `;
     document.head.appendChild(style);
 
     const preloader = document.createElement('div');
@@ -334,8 +355,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     isInit = true;
     console.log('🎬 Initializing text animations...');
     
-    // Remove the class that keeps content hidden
+    // Remove the class that keeps content hidden and reset all element visibility
     document.body.classList.remove('animations-ready');
+    
+    // Remove the immediate hide style now that animations are starting
+    const immediateHideStyle = document.getElementById('immediate-hide-style');
+    if (immediateHideStyle) {
+      immediateHideStyle.remove();
+    }
+    
+    // Force reset visibility for all elements that were hidden
+    if (typeof gsap !== 'undefined') {
+      gsap.set('*:not(#preloader):not(#preloader *)', { clearProps: 'visibility,opacity' });
+    }
     // Use existing Webflow counter element - will scramble first, then count
     const counterElement = document.querySelector('.counter');
     if (counterElement) {
