@@ -237,7 +237,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setTimeout(() => {
       console.log('🎭 Starting masked image animations 1s after preloader completion');
       startMaskedImageAnimations();
-    }, 1000); // Exactly 1 second after preloader fades out
+    }, 700); // Exactly 1 second after preloader fades out
   }
 
   // Initialize hover effects for links
