@@ -335,8 +335,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
         element.dataset.maskSetup = 'true';
+        
+        // Force immediate opacity and clear any existing GSAP animations
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
+        }
+        element.style.setProperty('opacity', '1', 'important');
+        console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
         maskContainer.dataset.targetWidth = originalWidth;
