@@ -73,12 +73,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Create animated preloader
   function createPreloader() {
     const style = document.createElement('style');
-    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .progress-container{text-align:center}#preloader .progress-line{width:80px;height:2px;background:rgba(255,255,255,0.2);position:relative;border-radius:1px;margin:0 auto}#preloader .progress-fill{width:0%;height:100%;background:white;border-radius:1px;transition:width 0.3s ease}body.loading{overflow:hidden}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
+    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em}body.loading{overflow:hidden}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
     document.head.appendChild(style);
 
     const preloader = document.createElement('div');
     preloader.id = 'preloader';
-    preloader.innerHTML = '<div class="progress-container"><div class="progress-line"><div class="progress-fill"></div></div></div>';
+    preloader.innerHTML = '<div class="counter">001</div>';
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
     requestAnimationFrame(() => preloader.classList.add('visible'));
@@ -89,7 +89,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initPreloader() {
     loadGSAP();
     const preloader = createPreloader();
-    const progressFill = preloader.querySelector('.progress-fill');
+    const counter = preloader.querySelector('.counter');
+    
+    function updateCounter(progress) {
+      const counterValue = Math.floor(progress);
+      counter.textContent = counterValue.toString().padStart(3, '0');
+    }
     
     if (typeof imagesLoaded === 'function') {
       const imgLoad = imagesLoaded(document.body, { background: true });
@@ -97,20 +102,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const totalImages = imgLoad.images.length;
       
       if (totalImages === 0) {
-        typeof gsap !== 'undefined' ? gsap.to(progressFill, { width: '100%', duration: 0.3, onComplete: completePreloader }) : setTimeout(completePreloader, 300);
+        updateCounter(100);
+        setTimeout(completePreloader, 300);
         return;
       }
       
       imgLoad.on('progress', () => {
         loadedCount++;
         const progress = (loadedCount / totalImages) * 100;
-        typeof gsap !== 'undefined' ? gsap.to(progressFill, { width: progress + '%', duration: 0.3, ease: "power2.out" }) : progressFill.style.width = progress + '%';
+        updateCounter(progress);
         if (loadedCount >= Math.min(40, Math.ceil(totalImages * 0.8))) setTimeout(completePreloader, 200);
       });
       
-      imgLoad.on('always', () => !preloaderComplete && setTimeout(completePreloader, 200));
+      imgLoad.on('always', () => {
+        if (!preloaderComplete) {
+          updateCounter(100);
+          setTimeout(completePreloader, 200);
+        }
+      });
     } else {
-      typeof gsap !== 'undefined' ? gsap.to(progressFill, { width: '100%', duration: 1.5, ease: "power2.out", onComplete: completePreloader }) : setTimeout(() => { progressFill.style.width = '100%'; setTimeout(completePreloader, 300); }, 1500);
+      // Animate counter from 001 to 100 over 1.5 seconds
+      let currentValue = 1;
+      const interval = setInterval(() => {
+        currentValue += 2;
+        if (currentValue >= 100) {
+          currentValue = 100;
+          clearInterval(interval);
+          setTimeout(completePreloader, 300);
+        }
+        updateCounter(currentValue);
+      }, 30);
     }
   }
 
