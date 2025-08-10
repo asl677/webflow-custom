@@ -3,11 +3,12 @@
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
-// Simple initial hide - just opacity
+// Hide images but allow preloader
 (function() {
   const emergencyHide = document.createElement('style');
+  emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img, video { opacity: 0; }
+    img:not(#preloader img), video { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -360,13 +361,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Remove the class that keeps content hidden and reset all element visibility
     document.body.classList.remove('animations-ready');
     
-    // Remove the initial hide style now that animations are starting
-    const hideStyles = document.querySelectorAll('style');
-    hideStyles.forEach(style => {
-      if (style.textContent.includes('img, video { opacity: 0; }')) {
-        style.remove();
-      }
-    });
+    // Don't remove image hiding here - wait for mask animations to start
     
     // Force reset visibility for all elements that were hidden
     if (typeof gsap !== 'undefined') {
@@ -537,6 +532,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Masked image animations - called 1s after preloader completion
   function startMaskedImageAnimations() {
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    
+    // NOW remove the emergency image hiding since mask animations are about to start
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mask animations');
+    }
     
     // Mobile-optimized mask reveal for images (exclude clones and preloader)
     const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
