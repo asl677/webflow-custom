@@ -94,7 +94,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.loading{overflow:hidden}
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
-      .proper-mask-reveal{width:0!important}
+
       .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
     `;
@@ -585,13 +585,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const staggerDelay = isMobile ? index * 0.15 : index * 0.1;
           const duration = isMobile ? 0.4 : 0.8;
           
+          console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: duration, 
             ease: "power2.out", 
             delay: staggerDelay,
+            onStart: () => {
+              console.log(`🎭 Mask animation started for image ${index}`);
+            },
             onComplete: () => {
-
+              console.log(`🎭 Mask animation completed for image ${index}`);
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
