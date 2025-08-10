@@ -120,7 +120,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     preloaderComplete = true;
     const preloader = document.getElementById('preloader');
     
-    typeof gsap !== 'undefined' ? gsap.to(preloader, { opacity: 0, duration: 0.4, ease: "power2.out", onComplete: () => { preloader.remove(); document.body.classList.remove('loading'); startPageAnimations(); }}) : setTimeout(() => { preloader.style.opacity = '0'; setTimeout(() => { preloader.remove(); document.body.classList.remove('loading'); startPageAnimations(); }, 400); }, 100);
+    // Ensure preloader COMPLETELY fades out before starting animations
+    if (typeof gsap !== 'undefined') {
+      gsap.to(preloader, { 
+        opacity: 0, 
+        duration: 0.8, 
+        ease: "power2.out", 
+        onComplete: () => { 
+          preloader.remove(); 
+          document.body.classList.remove('loading'); 
+          // Wait additional time after preloader is removed
+          setTimeout(() => {
+            startPageAnimations();
+          }, 500);
+        }
+      });
+    } else {
+      setTimeout(() => { 
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
+          document.body.classList.remove('loading'); 
+          setTimeout(() => {
+            startPageAnimations();
+          }, 500);
+        }, 800); 
+      }, 100);
+    }
   }
 
   // Start all page animations after preloader
@@ -410,20 +436,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     const tl = window.gsap.timeline();
 
-    // Media elements fade-in
+    // Media elements - ONLY animate videos, skip ALL images (they use mask animations)
     if (mediaEls.length) {
       mediaEls.forEach((el, i) => {
         if (el.dataset.gsapAnimated) return;
         if (el.dataset.infiniteClone) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-clone'; return; } // Skip cloned content
-        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
-        if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
         
-        // Skip images that have mask setup to prevent double animation
-        if (el.dataset.maskSetup) {
+        // SKIP ALL IMAGES - they use mask animations only
+        if (el.tagName.toLowerCase() === 'img') {
           window.gsap.set(el, { opacity: 1 });
-          el.dataset.gsapAnimated = 'mask-handled';
+          el.dataset.gsapAnimated = 'image-skipped';
           return;
         }
+        
+        // Only animate videos and other media
+        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
+        if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
         
         const rect = el.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
