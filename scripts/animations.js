@@ -132,7 +132,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Wait additional time after preloader is removed
           setTimeout(() => {
             startPageAnimations();
-          }, 500);
+          }, 1500);
         }
       });
     } else {
@@ -143,9 +143,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           document.body.classList.remove('loading'); 
           setTimeout(() => {
             startPageAnimations();
-          }, 500);
-        }, 800); 
-      }, 100);
+          }, 1500);
+        }, 1200); 
+      }, 200);
     }
   }
 
