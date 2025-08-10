@@ -1,4 +1,4 @@
-// Version 2.4.1: Revert to working custom scramble, ensure counter is included
+// Version 2.6: Revert to working custom scramble, ensure counter is included
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -154,10 +154,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const bottomNav = document.querySelector('.nav:not(.fake-nav)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
     
-    // Add delay before starting main animations to let preloader fully complete
+    // Start text animations and other content immediately
     setTimeout(() => {
-      !isInit && init();
-    }, 2300); // Increased to 1.5s to ensure gap between preloader and content
+      !isInit && initTextAndOtherAnimations();
+    }, 100);
+    
+    // Start masked image animations exactly 1s after preloader completion
+    setTimeout(() => {
+      console.log('🎭 Starting masked image animations 1s after preloader completion');
+      startMaskedImageAnimations();
+    }, 1000); // Exactly 1 second after preloader fades out
   }
 
   // Initialize hover effects for links
@@ -273,8 +279,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return el.querySelectorAll('.line-inner');
   }
 
-  // Main animation function
-  function startAnims() {
+  // Text and other animations (non-masked content)
+  function initTextAndOtherAnimations() {
+    if (isInit) return;
+    isInit = true;
     // Use existing Webflow counter element - will scramble first, then count
     const counterElement = document.querySelector('.counter');
     if (counterElement) {
@@ -286,7 +294,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     } else {
       console.log('❌ No .counter element found');
     }
-    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
     // Immediately make any existing cloned content visible (for mid-page loads)
     document.querySelectorAll('[data-infinite-clone="true"]').forEach(el => {
@@ -311,7 +318,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     initHover();
-
+    
+    // Continue with non-masked animations...
+    setupTextAnimationsAndOtherContent();
+  }
+  
+  // Masked image animations - called 1s after preloader completion
+  function startMaskedImageAnimations() {
+    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    
     // Mobile-optimized mask reveal for images (exclude clones and preloader)
     const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -440,7 +455,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
       }, 5000);
     }
-
+  }
+  
+  // Text animations and other non-masked content
+  function setupTextAnimationsAndOtherContent() {
+    const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
+    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    
     const tl = window.gsap.timeline();
 
     // Media elements - ONLY animate videos, skip ALL images (they use mask animations)
