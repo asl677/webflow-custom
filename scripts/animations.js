@@ -595,26 +595,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Special handling for images and videos in clones - opacity only to avoid layout issues
+        // Special handling for images and videos in clones - completely remove mask system
         clone.querySelectorAll('img, video').forEach(el => {
           el.dataset.infiniteClone = 'true';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
           el.dataset.gsapAnimated = 'infinite-clone';
           
-          // If this element is inside a mask container, remove it and reset
+          // Remove mask containers from cloned content
           const maskContainer = el.closest('.proper-mask-reveal');
           if (maskContainer) {
-            // Move the image out of the mask container and remove the mask
+            // Get the parent of the mask container
             const parent = maskContainer.parentNode;
+            // Move the image out of the mask container
             parent.insertBefore(el, maskContainer);
+            // Remove the mask container entirely
             maskContainer.remove();
+            console.log('🔧 Removed mask container from cloned image');
           }
           
-          // Reset styles and animate opacity
-          el.style.cssText = 'opacity: 0 !important; display: block !important;';
+          // Completely reset image styles - no masks, just natural size
+          const naturalWidth = el.naturalWidth || el.offsetWidth || 'auto';
+          const naturalHeight = el.naturalHeight || el.offsetHeight || 'auto';
+          
+          el.style.cssText = `
+            opacity: 0 !important; 
+            display: block !important; 
+            width: ${typeof naturalWidth === 'number' ? naturalWidth + 'px' : naturalWidth} !important;
+            height: ${typeof naturalHeight === 'number' ? naturalHeight + 'px' : naturalHeight} !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transform: none !important;
+          `;
           
           if (typeof window.gsap !== 'undefined') {
-            window.gsap.to(el, { opacity: 1, duration: 1.0, ease: "power2.out", delay: 0.1 + (Math.random() * 0.3) });
+            // Clear any GSAP properties and animate only opacity
+            window.gsap.set(el, { clearProps: "all" });
+            window.gsap.to(el, { 
+              opacity: 1, 
+              duration: 1.0, 
+              ease: "power2.out", 
+              delay: 0.1 + (Math.random() * 0.3) 
+            });
           } else {
             setTimeout(() => el.style.opacity = '1', 100 + (Math.random() * 300));
           }
@@ -627,6 +648,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         container.appendChild(clone);
         console.log('✅ Clone appended with visible text');
+        
+        // Clean up any orphaned mask containers in the clone
+        clone.querySelectorAll('.proper-mask-reveal').forEach(maskContainer => {
+          if (!maskContainer.querySelector('img, video')) {
+            console.log('🧹 Removing orphaned mask container');
+            maskContainer.remove();
+          }
+        });
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
