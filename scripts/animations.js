@@ -12,7 +12,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   const immediateHideStyle = document.createElement('style');
   immediateHideStyle.id = 'immediate-hide-style';
   immediateHideStyle.textContent = `
-    body { opacity: 0 !important; }
+    img:not(#preloader img), video, .proper-mask-reveal {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
   `;
   document.head.appendChild(immediateHideStyle);
 
@@ -100,9 +103,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
-    
-    // Make body visible now that preloader is ready
-    document.body.style.opacity = '1';
     
     // GSAP stagger animation for counter appearance
     requestAnimationFrame(() => {
@@ -558,14 +558,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
         element.dataset.maskSetup = 'true';
         
-        // Force immediate opacity and clear any existing GSAP animations
+        // Force immediate opacity and visibility and clear any existing GSAP animations
         if (typeof window.gsap !== 'undefined') {
-          window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
+          window.gsap.set(element, { opacity: 1, visibility: 'visible', clearProps: "opacity,visibility" });
         }
         element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
