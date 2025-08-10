@@ -73,15 +73,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Create animated preloader
   function createPreloader() {
     const style = document.createElement('style');
-    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em}body.loading{overflow:hidden}body.loading h1,body.loading h2,body.loading h3,body.loading h4,body.loading h5,body.loading h6,body.loading p,body.loading a:not(.nav a):not(.fake-nav a){opacity:0!important}body.loading img:not(#preloader img),body.loading video{opacity:0!important}body.loading .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}body.animations-ready h1,body.animations-ready h2,body.animations-ready h3,body.animations-ready h4,body.animations-ready h5,body.animations-ready h6,body.animations-ready p,body.animations-ready a:not(.nav a):not(.fake-nav a){opacity:0!important}body.animations-ready img:not(#preloader img),body.animations-ready video{opacity:0!important}body.animations-ready .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
+    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}#preloader .digit{display:inline-block;opacity:0}body.loading{overflow:hidden}body.loading h1,body.loading h2,body.loading h3,body.loading h4,body.loading h5,body.loading h6,body.loading p,body.loading a:not(.nav a):not(.fake-nav a){opacity:0!important}body.loading img:not(#preloader img),body.loading video{opacity:0!important}body.loading .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}body.animations-ready h1,body.animations-ready h2,body.animations-ready h3,body.animations-ready h4,body.animations-ready h5,body.animations-ready h6,body.animations-ready p,body.animations-ready a:not(.nav a):not(.fake-nav a){opacity:0!important}body.animations-ready img:not(#preloader img),body.animations-ready video{opacity:0!important}body.animations-ready .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
     document.head.appendChild(style);
 
     const preloader = document.createElement('div');
     preloader.id = 'preloader';
-    preloader.innerHTML = '<div class="counter">001</div>';
+    preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
-    requestAnimationFrame(() => preloader.classList.add('visible'));
+    
+    // GSAP stagger animation for counter appearance
+    requestAnimationFrame(() => {
+      preloader.classList.add('visible');
+      
+      // Animate counter digits with stagger
+      if (typeof gsap !== 'undefined') {
+        const digits = preloader.querySelectorAll('.digit');
+        gsap.set(digits, { opacity: 0, y: 20 });
+        gsap.to(digits, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "power2.out",
+          delay: 0.3
+        });
+      }
+    });
     return preloader;
   }
 
@@ -93,7 +111,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     function updateCounter(progress) {
       const counterValue = Math.floor(progress);
-      counter.textContent = counterValue.toString().padStart(3, '0');
+      const counterString = counterValue.toString().padStart(3, '0');
+      const digits = counter.querySelectorAll('.digit');
+      
+      // Update each digit individually
+      for (let i = 0; i < 3; i++) {
+        if (digits[i]) {
+          digits[i].textContent = counterString[i];
+        }
+      }
     }
     
     if (typeof imagesLoaded === 'function') {
@@ -145,7 +171,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (typeof gsap !== 'undefined') {
       gsap.to(preloader, { 
         opacity: 0, 
-        duration: 0.8, 
+        duration: 0.4, 
         ease: "power2.out", 
         onComplete: () => { 
           preloader.remove(); 
@@ -167,7 +193,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             startPageAnimations();
           }, 1500);
-        }, 1200); 
+        }, 600); 
       }, 200);
     }
   }
