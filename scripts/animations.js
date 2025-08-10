@@ -177,7 +177,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Start text animations and other content immediately
     setTimeout(() => {
-      !isInit && initTextAndOtherAnimations();
+      console.log('🎬 Starting text animations from preloader completion');
+      initTextAndOtherAnimations();
     }, 100);
     
     // Start masked image animations exactly 1s after preloader completion
@@ -302,8 +303,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Text and other animations (non-masked content)
   function initTextAndOtherAnimations() {
-    if (isInit) return;
     isInit = true;
+    console.log('🎬 Initializing text animations...');
     // Use existing Webflow counter element - will scramble first, then count
     const counterElement = document.querySelector('.counter');
     if (counterElement) {
@@ -1096,8 +1097,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           try {
-          initTextAndOtherAnimations(); 
-            console.log('✅ Portfolio animations initialized successfully');
+            console.log('✅ GSAP loaded, ready for animations');
           } catch (error) {
             console.error('❌ Animation initialization error:', error);
             // Don't let our errors break Webflow
