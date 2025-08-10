@@ -340,8 +340,130 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     initHover();
     
-    // Continue with non-masked animations...
-    setupTextAnimationsAndOtherContent();
+    // Continue with all text animations, scrambles, and other content
+    const tl = window.gsap.timeline();
+
+    // Media elements - ONLY animate videos, skip ALL images (they use mask animations)
+    if (mediaEls.length) {
+      mediaEls.forEach((el, i) => {
+        if (el.dataset.gsapAnimated) return;
+        if (el.dataset.infiniteClone) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-clone'; return; } // Skip cloned content
+        
+        // SKIP ALL IMAGES - they use mask animations only
+        if (el.tagName.toLowerCase() === 'img') {
+          window.gsap.set(el, { opacity: 1 });
+          el.dataset.gsapAnimated = 'image-skipped';
+          return;
+        }
+        
+        // Only animate videos and other media
+        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
+        if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
+        
+        const rect = el.getBoundingClientRect();
+        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (inViewport) {
+          window.gsap.set(el, { opacity: 0, y: 0 });
+          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", delay: 0.18 + (i * 0.15), onComplete: () => el.dataset.gsapAnimated = 'completed' });
+        } else {
+          window.gsap.set(el, { opacity: 0, y: 0 });
+          if (el.loading !== 'eager') el.loading = 'eager';
+          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
+        }
+      });
+    }
+
+    // Scramble text animations (runs once on page load)
+    let textElements = [];
+    
+    // Collect all text elements (excluding infinite scroll clones)
+    largeHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
+    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit && !h.dataset.infiniteClone) textElements.push(h); });
+    smallHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
+    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
+    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
+    
+    // Force add counter if it wasn't picked up by selectors
+    const counter = document.querySelector('.counter');
+    if (counter) {
+      if (!textElements.includes(counter)) {
+        console.log('🔢 Force adding counter to textElements');
+        textElements.push(counter);
+      } else {
+        console.log('🔢 Counter already in textElements');
+      }
+      console.log('🔢 Counter element found:', counter);
+      console.log('🔢 Counter classes:', counter.className);
+    } else {
+      console.log('❌ No .counter element found in DOM');
+    }
+    
+    // Apply scramble effect to all text elements with fallback safety
+    console.log('🎯 Total text elements for scramble:', textElements.length);
+    textElements.forEach((element, index) => {
+      if (element.classList.contains('counter')) {
+        console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
+      }
+      // For hover elements, scramble the visible text span
+      const linkText1 = element.querySelector('.link-text-1');
+      if (linkText1) {
+        linkText1.style.opacity = '0';
+        scrambleText(linkText1, 1500, 1200 + (index * 100));
+        // Safety fallback for hover elements
+        setTimeout(() => {
+          if (linkText1.style.opacity === '0') {
+            linkText1.style.opacity = '1';
+            console.log('🔧 Fallback: Made hover text visible');
+          }
+        }, 4000);
+      } else {
+        element.style.opacity = '0';
+        scrambleText(element, 1500, 1200 + (index * 100));
+        // Safety fallback for regular elements
+        setTimeout(() => {
+          if (element.style.opacity === '0') {
+            element.style.opacity = '1';
+            console.log('🔧 Fallback: Made element visible', element);
+          }
+        }, 4000);
+      }
+    });
+    
+    // Emergency fallback - ensure all text is visible after 3 seconds (excluding clones)
+    setTimeout(() => {
+      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"]:not([data-infinite-clone]), .initial-hidden:not([data-infinite-clone])');
+      if (hiddenElements.length > 0) {
+        console.log('⚠️ Emergency fallback: Making all hidden text visible');
+        hiddenElements.forEach(el => {
+          if (!el.dataset.infiniteClone) {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+            el.classList.remove('initial-hidden');
+        }
+      });
+    }
+    }, 3000);
+    
+    console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
+    
+    // Fallback: ensure counter starts even if scramble doesn't trigger it
+    setTimeout(() => {
+      const fallbackCounter = document.querySelector('.counter');
+      if (fallbackCounter && !fallbackCounter.dataset.counterStarted) {
+        console.log('🔢 Fallback: Starting counter manually');
+        fallbackCounter.dataset.counterStarted = 'true';
+        startTimeCounter(fallbackCounter);
+      }
+    }, 3000);
+
+    slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
+    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
+
+    setupInfiniteScroll();
+    
+    // Three.js disabled due to infinite scroll conflicts
+    console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
   
   // Masked image animations - called 1s after preloader completion
@@ -476,137 +598,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
       }, 5000);
     }
-  }
-  
-  // Text animations and other non-masked content
-  function setupTextAnimationsAndOtherContent() {
-    const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
-    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
-    
-    const tl = window.gsap.timeline();
-
-    // Media elements - ONLY animate videos, skip ALL images (they use mask animations)
-    if (mediaEls.length) {
-      mediaEls.forEach((el, i) => {
-        if (el.dataset.gsapAnimated) return;
-        if (el.dataset.infiniteClone) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-clone'; return; } // Skip cloned content
-        
-        // SKIP ALL IMAGES - they use mask animations only
-        if (el.tagName.toLowerCase() === 'img') {
-          window.gsap.set(el, { opacity: 1 });
-          el.dataset.gsapAnimated = 'image-skipped';
-          return;
-        }
-        
-        // Only animate videos and other media
-        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
-        if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
-        
-        const rect = el.getBoundingClientRect();
-        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if (inViewport) {
-          window.gsap.set(el, { opacity: 0, y: 0 });
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", delay: 0.18 + (i * 0.15), onComplete: () => el.dataset.gsapAnimated = 'completed' });
-        } else {
-          window.gsap.set(el, { opacity: 0, y: 0 });
-          if (el.loading !== 'eager') el.loading = 'eager';
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
-        }
-      });
-    }
-
-    // Scramble text animations (runs once on page load)
-    let textElements = [];
-    
-    // Collect all text elements (excluding infinite scroll clones)
-    largeHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
-    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit && !h.dataset.infiniteClone) textElements.push(h); });
-    smallHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
-    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
-    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
-    
-    // Force add counter if it wasn't picked up by selectors
-    const counter = document.querySelector('.counter');
-    if (counter) {
-      if (!textElements.includes(counter)) {
-        console.log('🔢 Force adding counter to textElements');
-        textElements.push(counter);
-      } else {
-        console.log('🔢 Counter already in textElements');
-      }
-      console.log('🔢 Counter element found:', counter);
-      console.log('🔢 Counter classes:', counter.className);
-    } else {
-      console.log('❌ No .counter element found in DOM');
-    }
-    
-    // Apply scramble effect to all text elements with fallback safety
-    console.log('🎯 Total text elements for scramble:', textElements.length);
-    textElements.forEach((element, index) => {
-      if (element.classList.contains('counter')) {
-        console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
-      }
-      // For hover elements, scramble the visible text span
-      const linkText1 = element.querySelector('.link-text-1');
-      if (linkText1) {
-        linkText1.style.opacity = '0';
-        scrambleText(linkText1, 1500, 1200 + (index * 100));
-        // Safety fallback for hover elements
-        setTimeout(() => {
-          if (linkText1.style.opacity === '0') {
-            linkText1.style.opacity = '1';
-            console.log('🔧 Fallback: Made hover text visible');
-          }
-        }, 4000);
-      } else {
-        element.style.opacity = '0';
-        scrambleText(element, 1500, 1200 + (index * 100));
-        // Safety fallback for regular elements
-        setTimeout(() => {
-          if (element.style.opacity === '0') {
-            element.style.opacity = '1';
-            console.log('🔧 Fallback: Made element visible', element);
-          }
-        }, 4000);
-      }
-    });
-    
-    // Emergency fallback - ensure all text is visible after 3 seconds (excluding clones)
-    setTimeout(() => {
-      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"]:not([data-infinite-clone]), .initial-hidden:not([data-infinite-clone])');
-      if (hiddenElements.length > 0) {
-        console.log('⚠️ Emergency fallback: Making all hidden text visible');
-        hiddenElements.forEach(el => {
-          if (!el.dataset.infiniteClone) {
-            el.style.opacity = '1';
-            el.style.transform = 'none';
-            el.classList.remove('initial-hidden');
-        }
-      });
-    }
-    }, 3000);
-    
-    console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
-    
-    // Fallback: ensure counter starts even if scramble doesn't trigger it
-    setTimeout(() => {
-      const fallbackCounter = document.querySelector('.counter');
-      if (fallbackCounter && !fallbackCounter.dataset.counterStarted) {
-        console.log('🔢 Fallback: Starting counter manually');
-        fallbackCounter.dataset.counterStarted = 'true';
-        startTimeCounter(fallbackCounter);
-      }
-    }, 3000);
-
-    slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
-    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
-
-    setupInfiniteScroll();
-    
-    // Three.js disabled due to infinite scroll conflicts
-    console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
 
   // Natural infinite scroll setup
