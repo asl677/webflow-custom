@@ -3,6 +3,18 @@
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
+// IMMEDIATELY hide all images before ANYTHING else happens
+(function() {
+  const emergencyHide = document.createElement('style');
+  emergencyHide.textContent = `
+    img:not(#preloader img), video { 
+      opacity: 0 !important; 
+      visibility: hidden !important; 
+    }
+  `;
+  (document.head || document.documentElement).appendChild(emergencyHide);
+})();
+
 window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
@@ -12,7 +24,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   const immediateHideStyle = document.createElement('style');
   immediateHideStyle.id = 'immediate-hide-style';
   immediateHideStyle.textContent = `
-    img:not(#preloader img), video, .proper-mask-reveal {
+    img:not(#preloader img), video, .proper-mask-reveal, 
+    div:has(img), .container:has(img), .grid:has(img), .flex:has(img),
+    [class*="img"], [class*="image"], [class*="photo"], [class*="pic"] {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+    body.loading img:not(#preloader img), body.loading video {
       opacity: 0 !important;
       visibility: hidden !important;
     }
