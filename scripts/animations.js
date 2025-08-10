@@ -73,7 +73,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Create animated preloader
   function createPreloader() {
     const style = document.createElement('style');
-    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em}body.loading{overflow:hidden}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
+    style.textContent = `#preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}#preloader.visible{opacity:1}#preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em}body.loading{overflow:hidden}body.loading h1,body.loading h2,body.loading h3,body.loading h4,body.loading h5,body.loading h6,body.loading p,body.loading a:not(.nav a):not(.fake-nav a){opacity:0!important}body.loading img:not(#preloader img),body.loading video{opacity:0!important}body.loading .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}body.animations-ready h1,body.animations-ready h2,body.animations-ready h3,body.animations-ready h4,body.animations-ready h5,body.animations-ready h6,body.animations-ready p,body.animations-ready a:not(.nav a):not(.fake-nav a){opacity:0!important}body.animations-ready img:not(#preloader img),body.animations-ready video{opacity:0!important}body.animations-ready .grid-down.project-down.mobile-down{opacity:0!important;transform:translateX(40px)!important}.nav:not(.fake-nav){transform:translateY(100%);opacity:0}.flex-grid{margin-top:0.2vw!important}`;
     document.head.appendChild(style);
 
     const preloader = document.createElement('div');
@@ -149,7 +149,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         ease: "power2.out", 
         onComplete: () => { 
           preloader.remove(); 
-          document.body.classList.remove('loading'); 
+          document.body.classList.remove('loading');
+          document.body.classList.add('animations-ready');
           // Wait additional time after preloader is removed
           setTimeout(() => {
             startPageAnimations();
@@ -161,7 +162,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         preloader.style.opacity = '0'; 
         setTimeout(() => { 
           preloader.remove(); 
-          document.body.classList.remove('loading'); 
+          document.body.classList.remove('loading');
+          document.body.classList.add('animations-ready');
           setTimeout(() => {
             startPageAnimations();
           }, 1500);
@@ -305,6 +307,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initTextAndOtherAnimations() {
     isInit = true;
     console.log('🎬 Initializing text animations...');
+    
+    // Remove the class that keeps content hidden
+    document.body.classList.remove('animations-ready');
     // Use existing Webflow counter element - will scramble first, then count
     const counterElement = document.querySelector('.counter');
     if (counterElement) {
