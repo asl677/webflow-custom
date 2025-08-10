@@ -12,13 +12,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   const immediateHideStyle = document.createElement('style');
   immediateHideStyle.id = 'immediate-hide-style';
   immediateHideStyle.textContent = `
-    body *:not(script):not(style):not(link):not(meta):not(title):not(head) {
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-    .proper-mask-reveal {
-      width: 0 !important;
-    }
+    body { opacity: 0 !important; }
   `;
   document.head.appendChild(immediateHideStyle);
 
@@ -106,6 +100,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
+    
+    // Make body visible now that preloader is ready
+    document.body.style.opacity = '1';
     
     // GSAP stagger animation for counter appearance
     requestAnimationFrame(() => {
