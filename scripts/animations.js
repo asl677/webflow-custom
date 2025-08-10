@@ -3,14 +3,11 @@
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
-// IMMEDIATELY hide all images before ANYTHING else happens
+// Simple initial hide - just opacity
 (function() {
   const emergencyHide = document.createElement('style');
   emergencyHide.textContent = `
-    img:not(#preloader img), video { 
-      opacity: 0 !important; 
-      visibility: hidden !important; 
-    }
+    img, video { opacity: 0; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -20,22 +17,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 (function(exports) {
   let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
 
-  // Immediately hide all content to prevent flash
-  const immediateHideStyle = document.createElement('style');
-  immediateHideStyle.id = 'immediate-hide-style';
-  immediateHideStyle.textContent = `
-    img:not(#preloader img), video, .proper-mask-reveal, 
-    div:has(img), .container:has(img), .grid:has(img), .flex:has(img),
-    [class*="img"], [class*="image"], [class*="photo"], [class*="pic"] {
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-    body.loading img:not(#preloader img), body.loading video {
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-  `;
-  document.head.appendChild(immediateHideStyle);
+  // Remove the initial hide style when animations start
+  const initialHideStyle = document.querySelector('style');
 
   // Global error handler with Webflow safety
   window.addEventListener('error', e => {
@@ -377,11 +360,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Remove the class that keeps content hidden and reset all element visibility
     document.body.classList.remove('animations-ready');
     
-    // Remove the immediate hide style now that animations are starting
-    const immediateHideStyle = document.getElementById('immediate-hide-style');
-    if (immediateHideStyle) {
-      immediateHideStyle.remove();
-    }
+    // Remove the initial hide style now that animations are starting
+    const hideStyles = document.querySelectorAll('style');
+    hideStyles.forEach(style => {
+      if (style.textContent.includes('img, video { opacity: 0; }')) {
+        style.remove();
+      }
+    });
     
     // Force reset visibility for all elements that were hidden
     if (typeof gsap !== 'undefined') {
@@ -576,15 +561,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
         element.dataset.maskSetup = 'true';
         
-        // Force immediate opacity and visibility and clear any existing GSAP animations
+        // Force immediate opacity and clear any existing GSAP animations
         if (typeof window.gsap !== 'undefined') {
-          window.gsap.set(element, { opacity: 1, visibility: 'visible', clearProps: "opacity,visibility" });
+          window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
         }
         element.style.setProperty('opacity', '1', 'important');
-        element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
