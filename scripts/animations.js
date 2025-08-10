@@ -89,7 +89,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     style.textContent = `
       #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}
       #preloader.visible{opacity:1}
-      #preloader .counter{font-family:monospace;font-size:1rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
+      #preloader .counter{font-family:monospace;font-size:0.6rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
       #preloader .digit{display:inline-block;opacity:0}
       body.loading{overflow:hidden}
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
@@ -204,7 +204,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Wait additional time after preloader is removed
           setTimeout(() => {
             startPageAnimations();
-          }, 1500);
+          }, 1300);
         }
       });
     } else {
@@ -217,7 +217,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             startPageAnimations();
           }, 1500);
-        }, 600); 
+        }, 400); 
       }, 200);
     }
   }
