@@ -1105,8 +1105,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           try {
-          startAnims(); 
-          isInit = true; 
+          initTextAndOtherAnimations(); 
             console.log('✅ Portfolio animations initialized successfully');
           } catch (error) {
             console.error('❌ Animation initialization error:', error);
@@ -1135,7 +1134,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Export functions
   exports.initialize = init;
-  exports.startAnimations = startAnims;
+  exports.startTextAnimations = initTextAndOtherAnimations;
+  exports.startMaskedImages = startMaskedImageAnimations;
   exports.handlePageTransition = handleTransition;
   
   // Wait for Webflow to be ready before starting our animations
