@@ -204,7 +204,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Wait additional time after preloader is removed
           setTimeout(() => {
             startPageAnimations();
-          }, 800);
+          }, 500);
         }
       });
     } else {
@@ -216,7 +216,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           document.body.classList.add('animations-ready');
           setTimeout(() => {
             startPageAnimations();
-          }, 1500);
+          }, 1100);
         }, 300); 
       }, 200);
     }
@@ -237,7 +237,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setTimeout(() => {
       console.log('🎭 Starting masked image animations 1s after preloader completion');
       startMaskedImageAnimations();
-    }, 400); // Reduced delay for faster content display
+    }, 100); // Reduced delay for faster content display
   }
 
   // Initialize hover effects for links
@@ -604,7 +604,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 0.2, 
+              duration: duration + 0.4, 
               ease: "power2.out", 
               delay: staggerDelay
             });
