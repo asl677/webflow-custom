@@ -581,9 +581,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Limit initial animations on mobile for better performance
         if (index < maxInitialImages) {
-          // Increased stagger for better visual spacing
-          const staggerDelay = isMobile ? index * 0.45 : index * 0.4;
-          const duration = isMobile ? 0.4 : 0.8;
+          // Balanced stagger and slower mask animation
+          const staggerDelay = isMobile ? index * 0.25 : index * 0.2;
+          const duration = isMobile ? 0.8 : 1.2;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -629,11 +629,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
         } else {
-          // Desktop: animate all normally with increased stagger
-          const staggerDelay = index * 0.4;
+          // Desktop: animate all normally with balanced stagger
+          const staggerDelay = index * 0.2;
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 0.8, 
+            duration: 1.2, 
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
@@ -646,7 +646,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.0, 
+              duration: 1.4, 
               ease: "power2.out", 
               delay: staggerDelay
             });
