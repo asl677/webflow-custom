@@ -204,7 +204,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Wait additional time after preloader is removed
           setTimeout(() => {
             startPageAnimations();
-          }, 1300);
+          }, 800);
         }
       });
     } else {
@@ -217,7 +217,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             startPageAnimations();
           }, 1500);
-        }, 400); 
+        }, 300); 
       }, 200);
     }
   }
@@ -237,7 +237,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setTimeout(() => {
       console.log('🎭 Starting masked image animations 1s after preloader completion');
       startMaskedImageAnimations();
-    }, 700); // Exactly 1 second after preloader fades out
+    }, 400); // Reduced delay for faster content display
   }
 
   // Initialize hover effects for links
@@ -581,8 +581,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Limit initial animations on mobile for better performance
         if (index < maxInitialImages) {
-          // Reduced stagger and duration for smoother loading
-          const staggerDelay = isMobile ? index * 0.15 : index * 0.1;
+          // Increased stagger for better visual spacing
+          const staggerDelay = isMobile ? index * 0.45 : index * 0.4;
           const duration = isMobile ? 0.4 : 0.8;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
@@ -629,8 +629,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
         } else {
-          // Desktop: animate all normally with faster timing
-          const staggerDelay = index * 0.1;
+          // Desktop: animate all normally with increased stagger
+          const staggerDelay = index * 0.4;
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: 0.8, 
