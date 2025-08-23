@@ -281,7 +281,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const chars = '!<>-_\\/[]{}—=+*^?#________';
     let currentText = originalText;
     let iteration = 0;
-    const totalIterations = Math.floor(duration / 50);
+    const totalIterations = Math.floor(duration / 80);
     
     setTimeout(() => {
       // Start scramble immediately with element visible
@@ -312,8 +312,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }
         
-        iteration += 1 / 8;
-      }, 50);
+        iteration += 1 / 4;
+      }, 80);
     }, delay);
   }
 
@@ -473,7 +473,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 300, 600 + (index * 100));
+        scrambleText(linkText1, 200, 600 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
@@ -483,7 +483,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, 2000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 300, 600 + (index * 100));
+        scrambleText(element, 200, 600 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
