@@ -281,6 +281,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const chars = '!<>-_\\/[]{}—=+*^?#________';
     let currentText = originalText;
     let iteration = 0;
+    
+    // Adjust reveal rate based on text length - shorter text reveals faster
+    const textLength = originalText.length;
+    const revealRate = Math.max(1 / 3, textLength / 50); // Faster for longer text
     const totalIterations = Math.floor(duration / 80);
     
     setTimeout(() => {
@@ -312,7 +316,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }
         
-        iteration += 1 / 4;
+        iteration += revealRate;
       }, 80);
     }, delay);
   }
@@ -580,9 +584,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const hasParallax = element.classList.contains('img-parallax');
         if (hasParallax) window.gsap.set(element, { scale: 1.2 });
         
-        // Limit initial animations on mobile for better performance
-        if (index < maxInitialImages) {
-          // Balanced stagger and slower mask animation
+        // Check if image is in viewport for immediate animation
+        const rect = element.getBoundingClientRect();
+        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (inViewport && index < maxInitialImages) {
+          // Animate images in viewport immediately
           const staggerDelay = isMobile ? index * 0.3 : index * 0.2;
           const duration = isMobile ? 0.8 : 1.5;
           
@@ -630,15 +637,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
         } else {
-          // Desktop: animate all normally with balanced stagger
-          const staggerDelay = index * 0.3;
+          // Images below fold: use ScrollTrigger for both mobile and desktop
+          window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.5, 
-            ease: "power2.out", 
-            delay: staggerDelay,
+            duration: isMobile ? 0.8 : 1.2, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top bottom", 
+              end: "top center", 
+              once: true 
+            },
             onComplete: () => {
-
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
@@ -647,9 +658,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.4, 
-              ease: "power2.out", 
-              delay: staggerDelay
+              duration: isMobile ? 1.0 : 1.4, 
+              ease: "power2.out",
+              scrollTrigger: { 
+                trigger: element, 
+                start: "top bottom", 
+                end: "top center", 
+                once: true 
+              }
             });
           }
         }
