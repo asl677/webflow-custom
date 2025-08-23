@@ -472,7 +472,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 1500, 1200 + (index * 100));
+        scrambleText(linkText1, 1500, 800 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
@@ -482,7 +482,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, 4000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 1500, 1200 + (index * 100));
+        scrambleText(element, 1500, 800 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
@@ -582,8 +582,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Limit initial animations on mobile for better performance
         if (index < maxInitialImages) {
           // Balanced stagger and slower mask animation
-          const staggerDelay = isMobile ? index * 0.25 : index * 0.2;
-          const duration = isMobile ? 0.8 : 1.2;
+          const staggerDelay = isMobile ? index * 0.3 : index * 0.2;
+          const duration = isMobile ? 0.8 : 1.5;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -604,7 +604,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 0.4, 
+              duration: duration + 0.6, 
               ease: "power2.out", 
               delay: staggerDelay
             });
@@ -614,7 +614,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 0.5, 
+            duration: 0.8, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -630,10 +630,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         } else {
           // Desktop: animate all normally with balanced stagger
-          const staggerDelay = index * 0.2;
+          const staggerDelay = index * 0.3;
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2, 
+            duration: 1.5, 
             ease: "power2.out", 
             delay: staggerDelay,
             onComplete: () => {
@@ -670,7 +670,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           }
         });
-      }, 5000);
+      }, 4000);
     }
   }
 
