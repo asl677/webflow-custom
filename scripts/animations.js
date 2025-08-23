@@ -284,7 +284,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const totalIterations = Math.floor(duration / 50);
     
     setTimeout(() => {
-      element.style.opacity = '1';
+      // Smooth fade-in with GSAP
+      if (typeof window.gsap !== 'undefined') {
+        window.gsap.to(element, { opacity: 1, duration: 0.3, ease: "power2.out" });
+      } else {
+        element.style.opacity = '1';
+      }
       
       const interval = setInterval(() => {
         currentText = originalText
