@@ -477,28 +477,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 750, 400 + (index * 100));
+        scrambleText(linkText1, 550, 400 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
             linkText1.style.opacity = '1';
             console.log('🔧 Fallback: Made hover text visible');
           }
-        }, 2000);
+        }, 1000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 750, 400 + (index * 100));
+        scrambleText(element, 550, 400 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
             element.style.opacity = '1';
             console.log('🔧 Fallback: Made element visible', element);
           }
-        }, 2000);
+        }, 1000);
       }
     });
     
-    // Emergency fallback - ensure all text is visible after 3 seconds (excluding clones)
+    // Emergency fallback - ensure all text is visible after x seconds (excluding clones)
     setTimeout(() => {
       const hiddenElements = document.querySelectorAll('[style*="opacity: 0"]:not([data-infinite-clone]), .initial-hidden:not([data-infinite-clone])');
       if (hiddenElements.length > 0) {
@@ -511,7 +511,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
     }
-    }, 3000);
+    }, 2000);
     
     console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
     
