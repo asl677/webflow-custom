@@ -473,7 +473,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 200, 600 + (index * 100));
+        scrambleText(linkText1, 100, 600 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
@@ -483,7 +483,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, 2000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 200, 600 + (index * 100));
+        scrambleText(element, 100, 600 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
