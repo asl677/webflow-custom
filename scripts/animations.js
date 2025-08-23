@@ -284,12 +284,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const totalIterations = Math.floor(duration / 50);
     
     setTimeout(() => {
-      // Quick fade-in with GSAP to see scramble effect
-      if (typeof window.gsap !== 'undefined') {
-        window.gsap.to(element, { opacity: 1, duration: 0.1, ease: "power2.out" });
-      } else {
-        element.style.opacity = '1';
-      }
+      // Start scramble immediately with element visible
+      element.style.opacity = '1';
       
       const interval = setInterval(() => {
         currentText = originalText
@@ -316,7 +312,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }
         
-        iteration += 1 / 3;
+        iteration += 1 / 8;
       }, 50);
     }, delay);
   }
