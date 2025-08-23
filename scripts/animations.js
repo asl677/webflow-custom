@@ -284,9 +284,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const totalIterations = Math.floor(duration / 50);
     
     setTimeout(() => {
-      // Smooth fade-in with GSAP
+      // Quick fade-in with GSAP to see scramble effect
       if (typeof window.gsap !== 'undefined') {
-        window.gsap.to(element, { opacity: 1, duration: 0.3, ease: "power2.out" });
+        window.gsap.to(element, { opacity: 1, duration: 0.1, ease: "power2.out" });
       } else {
         element.style.opacity = '1';
       }
