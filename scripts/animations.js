@@ -484,7 +484,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             linkText1.style.opacity = '1';
             console.log('🔧 Fallback: Made hover text visible');
           }
-        }, 4000);
+        }, 2000);
       } else {
         element.style.opacity = '0';
         scrambleText(element, 750, 400 + (index * 100));
@@ -494,7 +494,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             element.style.opacity = '1';
             console.log('🔧 Fallback: Made element visible', element);
           }
-        }, 4000);
+        }, 2000);
       }
     });
     
