@@ -477,24 +477,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 2500, 500 + (index * 100));
+        scrambleText(linkText1, 4000, 500 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
             linkText1.style.opacity = '1';
             console.log('🔧 Fallback: Made hover text visible');
           }
-        }, 1000);
+        }, 2000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 2500, 500 + (index * 100));
+        scrambleText(element, 4000, 500 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
             element.style.opacity = '1';
             console.log('🔧 Fallback: Made element visible', element);
           }
-        }, 1000);
+        }, 2000);
       }
     });
     
