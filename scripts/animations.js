@@ -240,6 +240,95 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 100); // Reduced delay for faster content display
   }
 
+  // Image toggle functionality
+  function initImageToggle() {
+    const toggleElement = document.querySelector('.toggle');
+    if (!toggleElement) {
+      console.log('⚠️ No .toggle element found');
+      return;
+    }
+    
+    let isToggled = false;
+    const imageStates = new Map(); // Store original dimensions
+    
+    // Store original dimensions of all images
+    function storeOriginalDimensions() {
+      const allImages = document.querySelectorAll('img:not(#preloader img)');
+      allImages.forEach(img => {
+        if (!imageStates.has(img)) {
+          const rect = img.getBoundingClientRect();
+          const computedStyle = window.getComputedStyle(img);
+          imageStates.set(img, {
+            width: rect.width,
+            height: rect.height,
+            originalWidth: img.offsetWidth,
+            originalHeight: img.offsetHeight,
+            aspectRatio: rect.width / rect.height
+          });
+        }
+      });
+    }
+    
+    // Toggle images to full width or back to original
+    function toggleImages() {
+      const allImages = document.querySelectorAll('img:not(#preloader img)');
+      const viewportWidth = window.innerWidth;
+      
+      allImages.forEach(img => {
+        const state = imageStates.get(img);
+        if (!state) return;
+        
+        if (!isToggled) {
+          // Switch to full width
+          const newHeight = viewportWidth / state.aspectRatio;
+          img.style.width = `${viewportWidth}px`;
+          img.style.height = `${newHeight}px`;
+          img.style.objectFit = 'cover';
+          
+          // Also adjust mask container if it exists
+          const maskContainer = img.closest('.proper-mask-reveal');
+          if (maskContainer) {
+            maskContainer.style.width = `${viewportWidth}px`;
+            maskContainer.style.height = `${newHeight}px`;
+          }
+        } else {
+          // Switch back to original dimensions
+          img.style.width = `${state.originalWidth}px`;
+          img.style.height = `${state.originalHeight}px`;
+          img.style.objectFit = '';
+          
+          // Also adjust mask container if it exists
+          const maskContainer = img.closest('.proper-mask-reveal');
+          if (maskContainer) {
+            maskContainer.style.width = `${state.originalWidth}px`;
+            maskContainer.style.height = `${state.originalHeight}px`;
+          }
+        }
+      });
+      
+      isToggled = !isToggled;
+      console.log(`🔄 Images toggled to: ${isToggled ? 'full width' : 'original size'}`);
+    }
+    
+    // Initialize
+    storeOriginalDimensions();
+    
+    // Add click event listener
+    toggleElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleImages();
+    });
+    
+    // Re-store dimensions on window resize
+    window.addEventListener('resize', () => {
+      if (!isToggled) {
+        storeOriginalDimensions();
+      }
+    });
+    
+    console.log('✅ Image toggle functionality initialized');
+  }
+
   // Initialize hover effects for links
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
@@ -407,6 +496,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     initHover();
+    
+    // Initialize image toggle functionality
+    initImageToggle();
     
     // Continue with all text animations, scrambles, and other content
     const tl = window.gsap.timeline();
