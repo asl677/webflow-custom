@@ -399,7 +399,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone])');
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone])');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     
     console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
