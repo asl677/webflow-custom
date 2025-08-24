@@ -802,6 +802,50 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
+        // Preserve Webflow hover interactions for .reveal elements
+        clone.querySelectorAll('.reveal').forEach(revealEl => {
+          // Ensure Webflow's hover interactions are preserved
+          revealEl.style.pointerEvents = 'auto';
+          
+          // Try multiple methods to reinitialize Webflow interactions
+          setTimeout(() => {
+            // Method 1: Try Webflow IX
+            if (typeof window.Webflow !== 'undefined' && window.Webflow.require) {
+              try {
+                const ix = window.Webflow.require('ix');
+                if (ix && ix.init) {
+                  ix.init();
+                }
+              } catch (e) {
+                console.log('⚠️ Method 1 failed for Webflow interactions');
+              }
+            }
+            
+            // Method 2: Try Webflow IX2
+            if (typeof window.Webflow !== 'undefined' && window.Webflow.require) {
+              try {
+                const ix2 = window.Webflow.require('ix2');
+                if (ix2 && ix2.init) {
+                  ix2.init();
+                }
+              } catch (e) {
+                console.log('⚠️ Method 2 failed for Webflow interactions');
+              }
+            }
+            
+            // Method 3: Trigger Webflow ready event
+            if (typeof window.Webflow !== 'undefined' && window.Webflow.ready) {
+              try {
+                window.Webflow.ready();
+              } catch (e) {
+                console.log('⚠️ Method 3 failed for Webflow interactions');
+              }
+            }
+            
+            console.log('✅ Attempted to reinitialize Webflow interactions for .reveal elements');
+          }, 100);
+        });
+        
         // Additional safety for the clone container itself
         clone.style.opacity = '1';
         clone.style.transform = 'none';
