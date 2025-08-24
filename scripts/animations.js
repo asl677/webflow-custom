@@ -278,30 +278,67 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const state = imageStates.get(img);
         if (!state) return;
         
+        // Kill any GSAP animations on this image to prevent interference
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.killTweensOf(img);
+          const maskContainer = img.closest('.proper-mask-reveal');
+          if (maskContainer) {
+            window.gsap.killTweensOf(maskContainer);
+          }
+        }
+        
         if (!isToggled) {
           // Switch to full width
           const newHeight = viewportWidth / state.aspectRatio;
-          img.style.width = `${viewportWidth}px`;
-          img.style.height = `${newHeight}px`;
-          img.style.objectFit = 'cover';
+          
+          // Set image styles with !important to override any CSS
+          img.style.cssText = `
+            width: ${viewportWidth}px !important;
+            height: ${newHeight}px !important;
+            object-fit: cover !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          `;
           
           // Also adjust mask container if it exists
           const maskContainer = img.closest('.proper-mask-reveal');
           if (maskContainer) {
-            maskContainer.style.width = `${viewportWidth}px`;
-            maskContainer.style.height = `${newHeight}px`;
+            maskContainer.style.cssText = `
+              width: ${viewportWidth}px !important;
+              height: ${newHeight}px !important;
+              overflow: hidden !important;
+              display: block !important;
+              position: relative !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              line-height: 0 !important;
+            `;
           }
         } else {
           // Switch back to original dimensions
-          img.style.width = `${state.originalWidth}px`;
-          img.style.height = `${state.originalHeight}px`;
-          img.style.objectFit = '';
+          img.style.cssText = `
+            width: ${state.originalWidth}px !important;
+            height: ${state.originalHeight}px !important;
+            object-fit: initial !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          `;
           
           // Also adjust mask container if it exists
           const maskContainer = img.closest('.proper-mask-reveal');
           if (maskContainer) {
-            maskContainer.style.width = `${state.originalWidth}px`;
-            maskContainer.style.height = `${state.originalHeight}px`;
+            maskContainer.style.cssText = `
+              width: ${state.originalWidth}px !important;
+              height: ${state.originalHeight}px !important;
+              overflow: hidden !important;
+              display: block !important;
+              position: relative !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              line-height: 0 !important;
+            `;
           }
         }
       });
