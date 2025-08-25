@@ -399,7 +399,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone])');
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text)');
     const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     
     console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
@@ -1172,7 +1172,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Hide elements initially
   function addHidden() {
-    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .hover-text, a:not(.nav a):not(.fake-nav a)').forEach(el => { if (!el.classList.contains('initial-hidden')) { el.classList.add('initial-hidden'); el.style.opacity = '0'; }});
+    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .hover-text, a:not(.nav a):not(.fake-nav a)').forEach(el => { 
+      // Skip elements inside .label-wrap to preserve Webflow hover interactions
+      if (!el.closest('.label-wrap') && !el.classList.contains('initial-hidden')) { 
+        el.classList.add('initial-hidden'); 
+        el.style.opacity = '0'; 
+      }
+    });
     document.querySelectorAll('img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => { if (!el.classList.contains('initial-hidden')) { el.classList.add('initial-hidden'); if (el.matches('.grid-down.project-down.mobile-down')) { el.style.transform = 'translateX(40px)'; el.style.opacity = '0'; }}});
   }
 
@@ -1212,6 +1218,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   setTimeout(() => {
     console.log('🔧 Fallback check: ensuring all text is visible');
     document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not([data-infinite-clone])').forEach(el => {
+      // Skip elements inside .label-wrap to preserve Webflow hover interactions
+      if (el.closest('.label-wrap')) return;
       if ((el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') && !el.dataset.infiniteClone) { 
         el.style.opacity = '1'; 
         el.style.transform = 'none'; 
