@@ -591,8 +591,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately
-          const staggerDelay = isMobile ? index * 0.25 : index * 0.2;
-          const duration = isMobile ? 1.5 : 1.8;
+          const staggerDelay = isMobile ? index * 0.3 : index * 0.3;
+          const duration = isMobile ? 2 : 2;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -613,7 +613,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 0.6, 
+              duration: duration + 0.8, 
               ease: "power2.out", 
               delay: staggerDelay
             });
@@ -655,7 +655,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: isMobile ? 0.8 : 1.2, 
+            duration: isMobile ? 1 : 1.2, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
