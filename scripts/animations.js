@@ -632,11 +632,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               once: true 
             },
             onComplete: () => {
-
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
           });
+          
+          if (hasParallax) {
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: 1.0, 
+              ease: "power2.out",
+              scrollTrigger: { 
+                trigger: element, 
+                start: "top bottom", 
+                end: "top center", 
+                once: true 
+              }
+            });
+          }
         } else {
           // Images below fold: use ScrollTrigger for both mobile and desktop
           window.gsap.set(maskContainer, { width: '0px' });
