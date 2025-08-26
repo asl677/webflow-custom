@@ -592,7 +592,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately
           const staggerDelay = isMobile ? index * 0.3 : index * 0.3;
-          const duration = isMobile ? 2 : 2;
+          const duration = isMobile ? 1.5 : 1.5;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -613,7 +613,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 0.8, 
+              duration: duration + 1, 
               ease: "power2.out", 
               delay: staggerDelay
             });
@@ -623,7 +623,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 0.8, 
+            duration: 1, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -655,7 +655,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: isMobile ? 1 : 1.2, 
+            duration: isMobile ? 1.5 : 1.5, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -672,7 +672,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: isMobile ? 1.0 : 1.4, 
+              duration: isMobile ? 1.5 : 1.5, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
