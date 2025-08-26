@@ -591,8 +591,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately
-          const staggerDelay = isMobile ? index * 0.3 : index * 0.2;
-          const duration = isMobile ? 1.2 : 1.8;
+          const staggerDelay = isMobile ? index * 0.25 : index * 0.2;
+          const duration = isMobile ? 1.5 : 1.8;
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
