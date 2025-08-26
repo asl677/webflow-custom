@@ -758,13 +758,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.dataset.infiniteClone = 'true';
           el.dataset.gsapAnimated = 'infinite-clone';
           el.dataset.maskSetup = 'true'; // Prevent mask animations
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-          el.style.visibility = 'visible';
-          el.classList.remove('initial-hidden');
           
-          // Remove any existing GSAP properties for non-media elements
-        if (typeof window.gsap !== 'undefined') {
+          // For .label-wrap elements and their children, preserve Webflow interactions
+          if (el.classList.contains('label-wrap') || el.closest('.label-wrap')) {
+            // Don't force opacity/transform changes on interactive elements
+            el.style.visibility = 'visible';
+            el.classList.remove('initial-hidden');
+          } else {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+            el.style.visibility = 'visible';
+            el.classList.remove('initial-hidden');
+          }
+          
+          // Remove any existing GSAP properties for non-media elements (except .label-wrap)
+          if (typeof window.gsap !== 'undefined' && !el.classList.contains('label-wrap') && !el.closest('.label-wrap')) {
             window.gsap.set(el, { clearProps: "transform,opacity" });
           }
         });
@@ -815,11 +823,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Preserve Webflow hover interactions for .reveal elements
-        clone.querySelectorAll('.reveal').forEach(revealEl => {
+        // Preserve Webflow hover interactions for .reveal and .label-wrap elements
+        const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
+        interactiveElements.forEach(el => {
           // Ensure Webflow's hover interactions are preserved
-          revealEl.style.pointerEvents = 'auto';
+          el.style.pointerEvents = 'auto';
           
+          // For .label-wrap elements, also ensure child elements maintain interactions
+          if (el.classList.contains('label-wrap')) {
+            el.querySelectorAll('*').forEach(child => {
+              child.style.pointerEvents = 'auto';
+            });
+          }
+        });
+        
+        if (interactiveElements.length > 0) {
           // Try multiple methods to reinitialize Webflow interactions
           setTimeout(() => {
             // Method 1: Try Webflow IX
@@ -855,9 +873,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             }
             
-            console.log('✅ Attempted to reinitialize Webflow interactions for .reveal elements');
+            console.log(`✅ Attempted to reinitialize Webflow interactions for ${interactiveElements.length} elements (.reveal and .label-wrap)`);
           }, 100);
-        });
+        }
         
         // Additional safety for the clone container itself
         clone.style.opacity = '1';
