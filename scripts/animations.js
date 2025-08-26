@@ -777,50 +777,75 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Special handling for images and videos in clones - completely remove mask system
-        clone.querySelectorAll('img, video').forEach(el => {
+        // Special handling for images and videos in clones - preserve mask animations
+        clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
           el.dataset.infiniteClone = 'true';
-          el.dataset.maskSetup = 'true'; // Prevent mask animations
           el.dataset.gsapAnimated = 'infinite-clone';
           
-          // Remove mask containers from cloned content
-          const maskContainer = el.closest('.proper-mask-reveal');
-          if (maskContainer) {
-            // Get the parent of the mask container
-            const parent = maskContainer.parentNode;
-            // Move the image out of the mask container
-            parent.insertBefore(el, maskContainer);
-            // Remove the mask container entirely
-            maskContainer.remove();
-            console.log('🔧 Removed mask container from cloned image');
-          }
-          
-          // Completely reset image styles - no masks, just natural size
-          const naturalWidth = el.naturalWidth || el.offsetWidth || 'auto';
-          const naturalHeight = el.naturalHeight || el.offsetHeight || 'auto';
-          
-          el.style.cssText = `
-            opacity: 0 !important; 
-            display: block !important; 
-            width: ${typeof naturalWidth === 'number' ? naturalWidth + 'px' : naturalWidth} !important;
-            height: ${typeof naturalHeight === 'number' ? naturalHeight + 'px' : naturalHeight} !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            transform: none !important;
-          `;
-          
-          if (typeof window.gsap !== 'undefined') {
-            // Clear any GSAP properties and animate only opacity
-            window.gsap.set(el, { clearProps: "all" });
-            window.gsap.to(el, { 
-              opacity: 1, 
-              duration: 1.0, 
-              ease: "power2.out", 
-              delay: 0.1 + (Math.random() * 0.3) 
-            });
+          // Check if image already has a mask container, if not create one
+          let maskContainer = el.closest('.proper-mask-reveal');
+          if (!maskContainer) {
+            const originalWidth = el.offsetWidth || el.naturalWidth || 200;
+            const originalHeight = el.offsetHeight || el.naturalHeight || 200;
+            
+            const parent = el.parentNode;
+            maskContainer = document.createElement('div');
+            maskContainer.className = 'proper-mask-reveal';
+            maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+            maskContainer.dataset.targetWidth = originalWidth;
+            
+            // Wrap the image in the mask container
+            parent.insertBefore(maskContainer, el);
+            maskContainer.appendChild(el);
+            
+            // Set image styles for masking
+            el.style.cssText = `opacity:1!important;visibility:visible!important;display:block;width:${originalWidth}px;height:${originalHeight}px;margin:0;padding:0;object-fit:cover`;
           } else {
-            setTimeout(() => el.style.opacity = '1', 100 + (Math.random() * 300));
+            // Reset existing mask container
+            maskContainer.style.width = '0px';
           }
+          
+          // Set up parallax scaling if needed
+          const hasParallax = el.classList.contains('img-parallax');
+          if (hasParallax) {
+            window.gsap.set(el, { scale: 1.2 });
+          }
+          
+          // Animate mask reveal with ScrollTrigger
+          setTimeout(() => {
+            if (typeof window.gsap !== 'undefined') {
+              window.gsap.to(maskContainer, { 
+                width: maskContainer.dataset.targetWidth + 'px', 
+                duration: 1.5, 
+                ease: "power2.out",
+                scrollTrigger: { 
+                  trigger: el, 
+                  start: "top bottom", 
+                  end: "top center", 
+                  once: true 
+                },
+                onComplete: () => {
+                  el.dataset.gsapAnimated = 'mask-revealed';
+                  el.dataset.maskComplete = 'true';
+                }
+              });
+              
+              // Add parallax scaling animation if needed
+              if (hasParallax) {
+                window.gsap.to(el, { 
+                  scale: 1.0, 
+                  duration: 1.5, 
+                  ease: "power2.out",
+                  scrollTrigger: { 
+                    trigger: el, 
+                    start: "top bottom", 
+                    end: "top center", 
+                    once: true 
+                  }
+                });
+              }
+            }
+          }, imgIndex * 50); // Small stagger for multiple images
         });
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
