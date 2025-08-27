@@ -551,8 +551,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     if (allImages.length) {
-      // On mobile, only animate first 6 images immediately to reduce load
-      const maxInitialImages = isMobile ? 6 : allImages.length;
+      // On mobile, only animate first 4 images immediately to reduce load
+      const maxInitialImages = isMobile ? 4 : allImages.length;
       
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
@@ -590,9 +590,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport && index < maxInitialImages) {
-          // Animate images in viewport immediately
-          const staggerDelay = isMobile ? index * 0.3 : index * 0.3;
-          const duration = isMobile ? 1.5 : 1.5;
+          // Animate images in viewport immediately with mobile optimization
+          const staggerDelay = isMobile ? index * 0.6 : index * 0.3;
+          const duration = isMobile ? 1.2 : 1.5;
           
           // Use consistent power2.out easing for all devices
           const easing = "power2.out";
@@ -616,7 +616,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: duration + 1, 
+              duration: isMobile ? duration + 0.5 : duration + 1, 
               ease: easing, 
               delay: staggerDelay
             });
@@ -626,7 +626,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1, 
+            duration: 1.2, 
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -643,7 +643,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           if (hasParallax) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.0, 
+              duration: 1.2, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
