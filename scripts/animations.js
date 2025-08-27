@@ -478,7 +478,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 100, 600 + (index * 100));
+        scrambleText(linkText1, 100, 300 + (index * 100));
         // Safety fallback for hover elements
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
@@ -488,7 +488,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, 2000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 100, 600 + (index * 100));
+        scrambleText(element, 100, 300 + (index * 100));
         // Safety fallback for regular elements
         setTimeout(() => {
           if (element.style.opacity === '0') {
@@ -594,8 +594,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const staggerDelay = isMobile ? index * 0.3 : index * 0.3;
           const duration = isMobile ? 1.5 : 1.5;
           
-          // Use smoother easing for mobile, especially for first image
-          const easing = isMobile ? (index === 0 ? "power1.out" : "expo.out") : "power2.out";
+          // Use consistent power2.out easing for all devices
+          const easing = "power2.out";
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -627,7 +627,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: 1, 
-            ease: "expo.out",
+            ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
               start: "top bottom", 
@@ -644,7 +644,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.0, 
-              ease: "expo.out",
+              ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
                 start: "top bottom", 
@@ -659,7 +659,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: isMobile ? 1.5 : 1.5, 
-            ease: isMobile ? "expo.out" : "power2.out",
+            ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
               start: "top bottom", 
@@ -676,7 +676,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: isMobile ? 1.5 : 1.5, 
-              ease: isMobile ? "expo.out" : "power2.out",
+              ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
                 start: "top bottom", 
@@ -820,7 +820,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               window.gsap.to(maskContainer, { 
                 width: maskContainer.dataset.targetWidth + 'px', 
                 duration: 1.5, 
-                ease: "expo.out",
+                ease: "power2.out",
                 scrollTrigger: { 
                   trigger: el, 
                   start: "top bottom", 
@@ -838,7 +838,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 window.gsap.to(el, { 
                   scale: 1.0, 
                   duration: 1.5, 
-                  ease: "expo.out",
+                  ease: "power2.out",
                   scrollTrigger: { 
                     trigger: el, 
                     start: "top bottom", 
