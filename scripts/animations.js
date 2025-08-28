@@ -1372,6 +1372,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
   
+  // Rotating text functionality
+  function initRotatingText() {
+    const rotatingText = document.getElementById('rotating-text');
+    if (!rotatingText) return;
+    
+    const texts = ['DC', 'SF', 'LA'];
+    let currentIndex = 0;
+    
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % texts.length;
+      rotatingText.textContent = texts[currentIndex];
+    }, 2000);
+    
+    console.log('🔄 Rotating text initialized');
+  }
+
+  // Initialize rotating text
+  function initializeRotatingText() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initRotatingText);
+    } else {
+      initRotatingText();
+    }
+  }
+
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
+  
+  // Initialize rotating text
+  initializeRotatingText();
 })(window.portfolioAnimations);
