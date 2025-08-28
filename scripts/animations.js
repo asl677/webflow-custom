@@ -92,10 +92,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       #preloader .counter{font-family:monospace;font-size:0.8rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
       #preloader .digit{display:inline-block;opacity:0}
       body.loading{overflow:hidden}
-      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
-      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
 
-      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
+      .nav:not(.fake-nav):not(.w-layout-grid){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
     `;
     document.head.appendChild(style);
@@ -249,7 +249,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader
   function startPageAnimations() {
-    const bottomNav = document.querySelector('.nav:not(.fake-nav)');
+    const bottomNav = document.querySelector('.nav:not(.fake-nav):not(.w-layout-grid)');
     if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
     
     // Start text animations and other content immediately
@@ -425,12 +425,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
     const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
     const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text)');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
     
     console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
     const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
-    const otherEls = document.querySelectorAll('.nav, .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    const otherEls = document.querySelectorAll('.nav:not(.w-layout-grid), .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
 
     initHover();
     
@@ -1261,14 +1261,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Hide elements initially
   function addHidden() {
-    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .hover-text, a:not(.nav a):not(.fake-nav a)').forEach(el => { 
+    document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, .hover-text, a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a)').forEach(el => { 
       // Skip elements inside .label-wrap to preserve Webflow hover interactions
       if (!el.closest('.label-wrap') && !el.classList.contains('initial-hidden')) { 
         el.classList.add('initial-hidden'); 
         el.style.opacity = '0'; 
       }
     });
-    document.querySelectorAll('img, video, .nav, .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => { if (!el.classList.contains('initial-hidden')) { el.classList.add('initial-hidden'); if (el.matches('.grid-down.project-down.mobile-down')) { el.style.transform = 'translateX(40px)'; el.style.opacity = '0'; }}});
+    document.querySelectorAll('img, video, .nav:not(.w-layout-grid), .preloader-counter, .card-project, .fake-nav, .inner-top, .mobile-down').forEach(el => { if (!el.classList.contains('initial-hidden')) { el.classList.add('initial-hidden'); if (el.matches('.grid-down.project-down.mobile-down')) { el.style.transform = 'translateX(40px)'; el.style.opacity = '0'; }}});
   }
 
   // Page transition handler
@@ -1306,7 +1306,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Enhanced fallback text visibility (excluding clones)
   setTimeout(() => {
     console.log('🔧 Fallback check: ensuring all text is visible');
-    document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not([data-infinite-clone])').forEach(el => {
+    document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone])').forEach(el => {
       // Skip elements inside .label-wrap to preserve Webflow hover interactions
       if (el.closest('.label-wrap')) return;
       if ((el.style.opacity === '0' || window.getComputedStyle(el).opacity === '0') && !el.dataset.infiniteClone) { 
