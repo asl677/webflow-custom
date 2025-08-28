@@ -146,43 +146,68 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }
     
-    if (typeof imagesLoaded === 'function') {
-      const imgLoad = imagesLoaded(document.body, { background: true });
-      let loadedCount = 0;
-      const totalImages = imgLoad.images.length;
-      
-      if (totalImages === 0) {
-        updateCounter(100);
-        setTimeout(completePreloader, 300);
-        return;
-      }
-      
-      imgLoad.on('progress', () => {
-        loadedCount++;
-        const progress = (loadedCount / totalImages) * 100;
-        updateCounter(progress);
-        if (loadedCount >= Math.min(40, Math.ceil(totalImages * 0.8))) setTimeout(completePreloader, 200);
-      });
-      
-      imgLoad.on('always', () => {
-        if (!preloaderComplete) {
-          updateCounter(100);
-          setTimeout(completePreloader, 200);
-        }
-      });
-    } else {
-      // Animate counter from 001 to 100 over 1.5 seconds
-      let currentValue = 1;
-      const interval = setInterval(() => {
-        currentValue += 2;
-        if (currentValue >= 100) {
-          currentValue = 100;
-          clearInterval(interval);
-          setTimeout(completePreloader, 300);
-        }
-        updateCounter(currentValue);
-      }, 30);
+    // Custom image preloading implementation
+    const images = document.querySelectorAll('img');
+    const totalImages = images.length;
+    let loadedCount = 0;
+    
+    console.log(`🖼️ Preloader starting: Found ${totalImages} images to preload`);
+    
+    if (totalImages === 0) {
+      console.log(`🖼️ No images found, completing preloader immediately`);
+      updateCounter(100);
+      setTimeout(completePreloader, 300);
+      return;
     }
+    
+    function checkImageLoaded() {
+      loadedCount++;
+      const progress = (loadedCount / totalImages) * 100;
+      updateCounter(progress);
+      
+      console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
+      
+      // Wait for at least 10 images AND 80% of total before completing
+      const minImagesLoaded = loadedCount >= 10;
+      const majorityLoaded = loadedCount >= Math.ceil(totalImages * 0.8);
+      const minThreshold = Math.ceil(totalImages * 0.8);
+      
+      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 10 (${minImagesLoaded}) and ${minThreshold} for 80% (${majorityLoaded})`);
+      
+      if (minImagesLoaded && majorityLoaded) {
+        console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded (min 10 ✓, 80% ✓)`);
+        setTimeout(completePreloader, 200);
+      }
+    }
+    
+    // Set up loading listeners for each image
+    images.forEach((img, index) => {
+      if (img.complete && img.naturalHeight !== 0) {
+        // Image already loaded
+        checkImageLoaded();
+      } else {
+        // Image not loaded yet
+        img.addEventListener('load', checkImageLoaded);
+        img.addEventListener('error', () => {
+          console.warn(`⚠️ Image ${index + 1} failed to load:`, img.src);
+          checkImageLoaded(); // Count failed images as "loaded" to prevent hanging
+        });
+        
+        // Force load by setting src if it's not set
+        if (!img.src && img.dataset.src) {
+          img.src = img.dataset.src;
+        }
+      }
+    });
+    
+    // Fallback: complete after 10 seconds regardless
+    setTimeout(() => {
+      if (!preloaderComplete) {
+        console.log(`⏰ Preloader timeout: Completing after 10 seconds`);
+        updateCounter(100);
+        setTimeout(completePreloader, 200);
+      }
+    }, 10000);
   }
 
   // Complete preloader and start animations
