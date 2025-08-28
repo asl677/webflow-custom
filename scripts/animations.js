@@ -991,7 +991,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     };
     
     window.addEventListener('scroll', scrollListener, { passive: true });
-    window.addEventListener('resize', scrollListener, { passive: true }); // Handle window resize
+    // Separate resize handler to avoid fake-nav fading issues
+    window.addEventListener('resize', () => {
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+        setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
+      }
+    }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
     
     // Set visibility for infinite scroll images
