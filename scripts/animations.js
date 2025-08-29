@@ -878,10 +878,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           // Check if image already has a mask container, if not create one
           let maskContainer = el.closest('.proper-mask-reveal');
+          
+          // Get correct dimensions - for clones, use computed styles or natural dimensions
+          const computedStyle = window.getComputedStyle(el);
+          const originalWidth = el.naturalWidth || 
+                              parseInt(computedStyle.width) || 
+                              el.offsetWidth || 
+                              el.getBoundingClientRect().width || 
+                              200;
+          const originalHeight = el.naturalHeight || 
+                               parseInt(computedStyle.height) || 
+                               el.offsetHeight || 
+                               el.getBoundingClientRect().height || 
+                               200;
+          
+          console.log(`🔧 Clone image ${imgIndex}: width=${originalWidth}px (natural: ${el.naturalWidth}, computed: ${parseInt(computedStyle.width)}, offset: ${el.offsetWidth})`);
+          
           if (!maskContainer) {
-            const originalWidth = el.offsetWidth || el.naturalWidth || 200;
-            const originalHeight = el.offsetHeight || el.naturalHeight || 200;
-            
             const parent = el.parentNode;
             maskContainer = document.createElement('div');
             maskContainer.className = 'proper-mask-reveal';
@@ -895,8 +908,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             // Set image styles for masking
             el.style.cssText = `opacity:1!important;visibility:visible!important;display:block;width:${originalWidth}px;height:${originalHeight}px;margin:0;padding:0;object-fit:cover`;
           } else {
-            // Reset existing mask container
+            // Reset existing mask container AND update targetWidth for clones
             maskContainer.style.width = '0px';
+            maskContainer.dataset.targetWidth = originalWidth; // Fix: Update target width for reused containers
           }
           
           // Set up parallax scaling if needed
@@ -910,6 +924,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (typeof window.gsap !== 'undefined') {
               const isMobileClone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
               
+              console.log(`🎭 Starting clone mask animation: 0px → ${maskContainer.dataset.targetWidth}px`);
               window.gsap.to(maskContainer, { 
                 width: maskContainer.dataset.targetWidth + 'px', 
                 duration: 1.2, // Same duration across all devices
@@ -921,7 +936,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   once: true,
                   toggleActions: "play none none none"
                 },
+                onStart: () => {
+                  console.log(`🎭 Clone mask animation started: targeting ${maskContainer.dataset.targetWidth}px`);
+                },
                 onComplete: () => {
+                  console.log(`🎭 Clone mask animation completed: final width ${maskContainer.style.width}`);
                   el.dataset.gsapAnimated = 'mask-revealed';
                   el.dataset.maskComplete = 'true';
                 }
