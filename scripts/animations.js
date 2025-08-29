@@ -249,13 +249,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     } else {
       // CSS transition fallback when GSAP isn't loaded
       preloader.style.transition = 'opacity 0.4s ease-out';
-      preloader.style.opacity = '0';
-      setTimeout(() => { 
-        preloader.remove(); 
-        document.body.classList.remove('loading');
-        document.body.classList.add('animations-ready');
-        setTimeout(() => {
-          startPageAnimations();
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
+          document.body.classList.remove('loading');
+          document.body.classList.add('animations-ready');
+          setTimeout(() => {
+            startPageAnimations();
         }, 500);
       }, 400); 
     }
@@ -278,7 +278,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Start text animations immediately - these must complete FIRST on mobile
     console.log('🎬 Starting text animations (priority on mobile)');
-    initTextAndOtherAnimations();
+      initTextAndOtherAnimations();
     
     // Wait for text animations to mostly complete before starting images
     const imageDelay = isMobile ? 1500 : 800; // Much longer delay on mobile
@@ -715,7 +715,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately with mobile optimization
           const staggerDelay = isMobile ? index * 0.8 : index * 0.3;
-          const duration = isMobile ? 0.8 : 1.5; // Much faster on mobile
+          const duration = 1.2; // Same duration across all devices
           
           // Simpler easing for mobile performance
           const easing = isMobile ? "power1.out" : "power2.out";
@@ -749,7 +749,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: isMobile ? 0.6 : 1.2, // Much faster on mobile
+            duration: 1.2, // Same duration across all devices
             ease: isMobile ? "power1.out" : "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -915,7 +915,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               
               window.gsap.to(maskContainer, { 
                 width: maskContainer.dataset.targetWidth + 'px', 
-                duration: isMobileClone ? 0.8 : 1.5, // Faster on mobile
+                duration: 1.2, // Same duration across all devices
                 ease: isMobileClone ? "power1.out" : "power2.out",
                 scrollTrigger: { 
                   trigger: el, 
@@ -934,7 +934,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               if (hasParallax && !isMobileClone) {
                 window.gsap.to(el, { 
                   scale: 1.0, 
-                  duration: 1.5, 
+                  duration: 1.2, 
                   ease: "power2.out",
                   scrollTrigger: { 
                     trigger: el, 
@@ -1466,7 +1466,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('🔄 Rotating text started after scramble');
   }
-
+  
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
 })(window.portfolioAnimations);
