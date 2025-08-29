@@ -271,8 +271,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
+      // Skip hover effects for label-wrap elements to preserve line breaks
+      if (link.closest('.label-wrap')) {
+        link.dataset.hoverInit = 'true';
+        return;
+      }
+      
       const originalHTML = link.innerHTML.trim();
-      const hasLineBreaks = originalHTML.includes('<br>') || originalHTML.includes('\n') || link.offsetHeight > 25;
+      // Improved line break detection
+      const hasLineBreaks = originalHTML.includes('<br>') || 
+                           originalHTML.includes('<br/>') || 
+                           originalHTML.includes('<br />') || 
+                           originalHTML.includes('\n') || 
+                           link.scrollHeight > link.clientHeight + 5 || // Account for potential padding
+                           link.offsetHeight > 30; // More generous height check
       const rect = link.getBoundingClientRect();
       const height = rect.height;
       
