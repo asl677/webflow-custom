@@ -261,30 +261,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
 
-  // Start all page animations after preloader
+  // Start all page animations after preloader with mobile optimization
   function startPageAnimations() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
     // Animate ALL nav elements (including w-layout-grid) on initial page load
     const allNavElements = document.querySelectorAll('.nav:not(.fake-nav)');
     allNavElements.forEach(nav => {
       if (typeof gsap !== 'undefined') {
-        gsap.to(nav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" });
+        gsap.to(nav, { y: 0, opacity: 1, duration: isMobile ? 0.5 : 0.8, ease: "power2.out" });
       } else {
         nav.style.transform = 'translateY(0)';
         nav.style.opacity = '1';
       }
     });
     
-    // Start text animations and other content immediately
-    setTimeout(() => {
-      console.log('🎬 Starting text animations from preloader completion');
-      initTextAndOtherAnimations();
-    }, 100);
+    // Start text animations immediately - these must complete FIRST on mobile
+    console.log('🎬 Starting text animations (priority on mobile)');
+    initTextAndOtherAnimations();
     
-    // Start masked image animations exactly 1s after preloader completion
+    // Wait for text animations to mostly complete before starting images
+    const imageDelay = isMobile ? 1500 : 800; // Much longer delay on mobile
     setTimeout(() => {
-      console.log('🎭 Starting masked image animations 1s after preloader completion');
+      console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
-    }, 100); // Reduced delay for faster content display
+    }, imageDelay);
   }
 
 
@@ -327,7 +328,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Scramble text effect function
+  // Scramble text effect function with mobile optimization
   function scrambleText(element, duration = 2000, delay = 0) {
     if (element.classList.contains('counter')) {
       console.log('🔢 scrambleText called for Webflow counter:', element, 'duration:', duration, 'delay:', delay);
@@ -347,14 +348,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const originalText = element.textContent.trim();
     if (!originalText) return;
     
-    const chars = '!<>-_\\/[]{}—=+*^?#________';
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    // Mobile optimization: much faster scramble, simpler chars
+    const chars = isMobile ? '-_=' : '!<>-_\\/[]{}—=+*^?#________';
     let currentText = originalText;
     let iteration = 0;
     
-    // Adjust reveal rate based on text length - shorter text reveals faster
+    // Mobile: faster reveal rate and shorter duration
+    const mobileMultiplier = isMobile ? 0.4 : 1; // 60% faster on mobile
+    const optimizedDuration = duration * mobileMultiplier;
     const textLength = originalText.length;
-    const revealRate = Math.max(1 / 3, textLength / 50); // Faster for longer text
-    const totalIterations = Math.floor(duration / 80);
+    const revealRate = Math.max(isMobile ? 1 : 1/3, textLength / (isMobile ? 25 : 50));
+    const intervalSpeed = isMobile ? 50 : 80; // Faster interval on mobile
     
     setTimeout(() => {
       // Start scramble immediately with element visible
@@ -397,8 +403,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
         
         iteration += revealRate;
-      }, 80);
-    }, delay);
+      }, intervalSpeed);
+    }, delay * (isMobile ? 0.5 : 1)); // Reduce delays on mobile
   }
 
   // Wrap text lines for animation (simplified for hover effects only)
@@ -569,8 +575,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔄 No rotating text element found - skipping');
     }
     
-    // Apply scramble effect to all text elements with fallback safety
-    console.log('🎯 Total text elements for scramble:', textElements.length);
+    // Apply scramble effect to all text elements with mobile optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const staggerDelay = isMobile ? 30 : 100; // Much faster stagger on mobile
+    const baseDelay = isMobile ? 100 : 300; // Shorter base delay on mobile
+    
+    console.log('🎯 Total text elements for scramble:', textElements.length, `(Mobile: ${isMobile})`);
     textElements.forEach((element, index) => {
       if (element.classList.contains('counter')) {
         console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
@@ -579,24 +589,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 100, 300 + (index * 100));
-        // Safety fallback for hover elements
+        scrambleText(linkText1, 100, baseDelay + (index * staggerDelay));
+        // Safety fallback for hover elements - faster on mobile
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
             linkText1.style.opacity = '1';
             console.log('🔧 Fallback: Made hover text visible');
           }
-        }, 2000);
+        }, isMobile ? 1000 : 2000);
       } else {
         element.style.opacity = '0';
-        scrambleText(element, 100, 300 + (index * 100));
-        // Safety fallback for regular elements
+        scrambleText(element, 100, baseDelay + (index * staggerDelay));
+        // Safety fallback for regular elements - faster on mobile
         setTimeout(() => {
           if (element.style.opacity === '0') {
             element.style.opacity = '1';
             console.log('🔧 Fallback: Made element visible', element);
           }
-        }, 2000);
+        }, isMobile ? 1000 : 2000);
       }
     });
     
@@ -648,7 +658,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
   }
   
-  // Masked image animations - called 1s after preloader completion
+  // Masked image animations - called after text completes on mobile
   function startMaskedImageAnimations() {
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
@@ -661,11 +671,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Mobile-optimized mask reveal for images (exclude clones and preloader)
     const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     if (allImages.length) {
-      // On mobile, only animate first 4 images immediately to reduce load
-      const maxInitialImages = isMobile ? 4 : allImages.length;
+      // On mobile, only animate first 2 images immediately to reduce load even more
+      const maxInitialImages = isMobile ? 2 : allImages.length;
       
       allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
@@ -704,11 +714,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately with mobile optimization
-          const staggerDelay = isMobile ? index * 0.6 : index * 0.3;
-          const duration = isMobile ? 1.2 : 1.5;
+          const staggerDelay = isMobile ? index * 0.8 : index * 0.3;
+          const duration = isMobile ? 0.8 : 1.5; // Much faster on mobile
           
-          // Use consistent power2.out easing for all devices
-          const easing = "power2.out";
+          // Simpler easing for mobile performance
+          const easing = isMobile ? "power1.out" : "power2.out";
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -726,26 +736,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          if (hasParallax) {
+          if (hasParallax && !isMobile) { // Disable parallax on mobile for performance
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: isMobile ? duration + 0.5 : duration + 1, 
+              duration: duration + 0.5, 
               ease: easing, 
               delay: staggerDelay
             });
           }
-        } else if (isMobile) {
-          // On mobile, show remaining images with ScrollTrigger to reduce initial load
+        } else {
+          // Images below fold: use optimized ScrollTrigger
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2, 
-            ease: "power2.out",
+            duration: isMobile ? 0.6 : 1.2, // Much faster on mobile
+            ease: isMobile ? "power1.out" : "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top bottom", 
+              start: isMobile ? "top 85%" : "top bottom", // Earlier trigger on mobile
               end: "top center", 
-              once: true 
+              once: true,
+              // Reduce scroll trigger sensitivity on mobile
+              refreshPriority: isMobile ? -1 : 0
             },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -753,42 +765,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          if (hasParallax) {
+          // Only add parallax on desktop
+          if (hasParallax && !isMobile) {
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.2, 
-              ease: "power2.out",
-              scrollTrigger: { 
-                trigger: element, 
-                start: "top bottom", 
-                end: "top center", 
-                once: true 
-              }
-            });
-          }
-        } else {
-          // Images below fold: use ScrollTrigger for both mobile and desktop
-          window.gsap.set(maskContainer, { width: '0px' });
-          window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
-            duration: isMobile ? 1.5 : 1.5, 
-            ease: "power2.out",
-            scrollTrigger: { 
-              trigger: element, 
-              start: "top bottom", 
-              end: "top center", 
-              once: true 
-            },
-            onComplete: () => {
-              element.dataset.gsapAnimated = 'mask-revealed';
-              element.dataset.maskComplete = 'true';
-            }
-          });
-          
-          if (hasParallax) {
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: isMobile ? 1.5 : 1.5, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
@@ -927,18 +908,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             window.gsap.set(el, { scale: 1.2 });
           }
           
-          // Animate mask reveal with ScrollTrigger
+          // Animate mask reveal with ScrollTrigger - mobile optimized
           setTimeout(() => {
             if (typeof window.gsap !== 'undefined') {
+              const isMobileClone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+              
               window.gsap.to(maskContainer, { 
                 width: maskContainer.dataset.targetWidth + 'px', 
-                duration: 1.5, 
-                ease: "power2.out",
+                duration: isMobileClone ? 0.8 : 1.5, // Faster on mobile
+                ease: isMobileClone ? "power1.out" : "power2.out",
                 scrollTrigger: { 
                   trigger: el, 
-                  start: "top bottom", 
+                  start: isMobileClone ? "top 85%" : "top bottom", // Earlier on mobile
                   end: "top center", 
-                  once: true 
+                  once: true,
+                  refreshPriority: isMobileClone ? -1 : 0 // Lower priority on mobile
                 },
                 onComplete: () => {
                   el.dataset.gsapAnimated = 'mask-revealed';
@@ -946,8 +930,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 }
               });
               
-              // Add parallax scaling animation if needed
-              if (hasParallax) {
+              // Add parallax scaling animation only on desktop
+              if (hasParallax && !isMobileClone) {
                 window.gsap.to(el, { 
                   scale: 1.0, 
                   duration: 1.5, 
@@ -961,7 +945,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 });
               }
             }
-          }, imgIndex * 50); // Small stagger for multiple images
+          }, imgIndex * (isMobile ? 25 : 50)); // Faster stagger on mobile
         });
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
