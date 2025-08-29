@@ -340,6 +340,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
+          
+          // Start rotating text functionality after scramble completes
+          if (element.id === 'rotating-text') {
+            console.log('🔄 Scramble complete, starting rotating text');
+            element.dataset.rotatingStarted = 'true';
+            try {
+              startRotatingText(element);
+            } catch (error) {
+              console.error('🔄 Error starting rotating text:', error);
+            }
+          }
         }
         
         iteration += revealRate;
@@ -493,6 +504,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('❌ No .counter element found in DOM');
     }
     
+    // Force add rotating text if it exists
+    const rotatingText = document.getElementById('rotating-text');
+    if (rotatingText) {
+      if (!textElements.includes(rotatingText)) {
+        console.log('🔄 Force adding rotating text to textElements');
+        textElements.push(rotatingText);
+      } else {
+        console.log('🔄 Rotating text already in textElements');
+      }
+      console.log('🔄 Rotating text element found:', rotatingText);
+    } else {
+      console.log('🔄 No rotating text element found - skipping');
+    }
+    
     // Apply scramble effect to all text elements with fallback safety
     console.log('🎯 Total text elements for scramble:', textElements.length);
     textElements.forEach((element, index) => {
@@ -548,6 +573,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log('🔢 Fallback: Starting counter manually');
         fallbackCounter.dataset.counterStarted = 'true';
         startTimeCounter(fallbackCounter);
+      }
+      
+      // Fallback: ensure rotating text starts even if scramble doesn't trigger it
+      const fallbackRotatingText = document.getElementById('rotating-text');
+      if (fallbackRotatingText && !fallbackRotatingText.dataset.rotatingStarted) {
+        console.log('🔄 Fallback: Starting rotating text manually');
+        fallbackRotatingText.dataset.rotatingStarted = 'true';
+        try {
+          startRotatingText(fallbackRotatingText);
+        } catch (error) {
+          console.error('🔄 Error in fallback rotating text:', error);
+        }
       }
     }, 3000);
 
@@ -1377,34 +1414,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
   
-  // Rotating text functionality
-  function initRotatingText() {
-    const rotatingText = document.getElementById('rotating-text');
-    if (!rotatingText) return;
+  // Rotating text functionality - called after scramble completes
+  function startRotatingText(element) {
+    if (!element) {
+      console.error('🔄 No element provided to startRotatingText');
+      return;
+    }
     
     const texts = ['DC', 'SF', 'LA'];
     let currentIndex = 0;
     
     setInterval(() => {
       currentIndex = (currentIndex + 1) % texts.length;
-      rotatingText.textContent = texts[currentIndex];
+      element.textContent = texts[currentIndex];
     }, 2000);
     
-    console.log('🔄 Rotating text initialized');
-  }
-
-  // Initialize rotating text
-  function initializeRotatingText() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initRotatingText);
-    } else {
-      initRotatingText();
-    }
+    console.log('🔄 Rotating text started after scramble');
   }
 
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
-  
-  // Initialize rotating text
-  initializeRotatingText();
 })(window.portfolioAnimations);
