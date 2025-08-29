@@ -95,7 +95,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
 
-      .nav:not(.fake-nav):not(.w-layout-grid){transform:translateY(100%);opacity:0}
+      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
     `;
     document.head.appendChild(style);
@@ -249,8 +249,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader
   function startPageAnimations() {
-    const bottomNav = document.querySelector('.nav:not(.fake-nav):not(.w-layout-grid)');
-    if (bottomNav) typeof gsap !== 'undefined' ? gsap.to(bottomNav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }) : (bottomNav.style.transform = 'translateY(0)', bottomNav.style.opacity = '1');
+    // Animate ALL nav elements (including w-layout-grid) on initial page load
+    const allNavElements = document.querySelectorAll('.nav:not(.fake-nav)');
+    allNavElements.forEach(nav => {
+      if (typeof gsap !== 'undefined') {
+        gsap.to(nav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" });
+      } else {
+        nav.style.transform = 'translateY(0)';
+        nav.style.opacity = '1';
+      }
+    });
     
     // Start text animations and other content immediately
     setTimeout(() => {
