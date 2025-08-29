@@ -872,97 +872,99 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
         
         // Special handling for images and videos in clones - preserve mask animations
-        clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
-          el.dataset.infiniteClone = 'true';
-          el.dataset.gsapAnimated = 'infinite-clone';
-          
-          // Check if image already has a mask container, if not create one
-          let maskContainer = el.closest('.proper-mask-reveal');
-          
-          // Get correct dimensions - for clones, use computed styles or natural dimensions
-          const computedStyle = window.getComputedStyle(el);
-          const originalWidth = el.naturalWidth || 
-                              parseInt(computedStyle.width) || 
-                              el.offsetWidth || 
-                              el.getBoundingClientRect().width || 
-                              200;
-          const originalHeight = el.naturalHeight || 
-                               parseInt(computedStyle.height) || 
-                               el.offsetHeight || 
-                               el.getBoundingClientRect().height || 
-                               200;
-          
-          console.log(`🔧 Clone image ${imgIndex}: width=${originalWidth}px (natural: ${el.naturalWidth}, computed: ${parseInt(computedStyle.width)}, offset: ${el.offsetWidth})`);
-          
-          if (!maskContainer) {
-            const parent = el.parentNode;
-            maskContainer = document.createElement('div');
-            maskContainer.className = 'proper-mask-reveal';
-            maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-            maskContainer.dataset.targetWidth = originalWidth;
+        // Add slight delay to ensure cloned elements are properly laid out
+        setTimeout(() => {
+          clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
+            el.dataset.infiniteClone = 'true';
+            el.dataset.gsapAnimated = 'infinite-clone';
             
-            // Wrap the image in the mask container
-            parent.insertBefore(maskContainer, el);
-            maskContainer.appendChild(el);
+            // Check if image already has a mask container, if not create one
+            let maskContainer = el.closest('.proper-mask-reveal');
             
-            // Set image styles for masking
-            el.style.cssText = `opacity:1!important;visibility:visible!important;display:block;width:${originalWidth}px;height:${originalHeight}px;margin:0;padding:0;object-fit:cover`;
-          } else {
-            // Reset existing mask container AND update targetWidth for clones
-            maskContainer.style.width = '0px';
-            maskContainer.dataset.targetWidth = originalWidth; // Fix: Update target width for reused containers
-          }
-          
-          // Set up parallax scaling if needed
-          const hasParallax = el.classList.contains('img-parallax');
-          if (hasParallax) {
-            window.gsap.set(el, { scale: 1.2 });
-          }
-          
-          // Animate mask reveal with ScrollTrigger - mobile optimized
-          setTimeout(() => {
-            if (typeof window.gsap !== 'undefined') {
-              const isMobileClone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+            // Get correct dimensions - prioritize displayed size like originals do
+            const originalWidth = el.offsetWidth || 
+                                el.getBoundingClientRect().width || 
+                                parseInt(window.getComputedStyle(el).width) || 
+                                el.naturalWidth || 
+                                200;
+            const originalHeight = el.offsetHeight || 
+                                 el.getBoundingClientRect().height || 
+                                 parseInt(window.getComputedStyle(el).height) || 
+                                 el.naturalHeight || 
+                                 200;
+            
+            console.log(`🔧 Clone image ${imgIndex}: width=${originalWidth}px (offset: ${el.offsetWidth}, bounding: ${Math.round(el.getBoundingClientRect().width)}, natural: ${el.naturalWidth})`);
+            
+            if (!maskContainer) {
+              const parent = el.parentNode;
+              maskContainer = document.createElement('div');
+              maskContainer.className = 'proper-mask-reveal';
+              maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+              maskContainer.dataset.targetWidth = originalWidth;
               
-              console.log(`🎭 Starting clone mask animation: 0px → ${maskContainer.dataset.targetWidth}px`);
-              window.gsap.to(maskContainer, { 
-                width: maskContainer.dataset.targetWidth + 'px', 
-                duration: 1.2, // Same duration across all devices
-                ease: "power2.out",
-                scrollTrigger: { 
-                  trigger: el, 
-                  start: "top 90%", // Consistent trigger point
-                  end: "top center", 
-                  once: true,
-                  toggleActions: "play none none none"
-                },
-                onStart: () => {
-                  console.log(`🎭 Clone mask animation started: targeting ${maskContainer.dataset.targetWidth}px`);
-                },
-                onComplete: () => {
-                  console.log(`🎭 Clone mask animation completed: final width ${maskContainer.style.width}`);
-                  el.dataset.gsapAnimated = 'mask-revealed';
-                  el.dataset.maskComplete = 'true';
-                }
-              });
+              // Wrap the image in the mask container
+              parent.insertBefore(maskContainer, el);
+              maskContainer.appendChild(el);
               
-              // Add parallax scaling animation only on desktop
-              if (hasParallax && !isMobileClone) {
-                window.gsap.to(el, { 
-                  scale: 1.0, 
-                  duration: 1.2, 
+              // Set image styles for masking
+              el.style.cssText = `opacity:1!important;visibility:visible!important;display:block;width:${originalWidth}px;height:${originalHeight}px;margin:0;padding:0;object-fit:cover`;
+            } else {
+              // Reset existing mask container AND update targetWidth for clones
+              maskContainer.style.width = '0px';
+              maskContainer.dataset.targetWidth = originalWidth; // Fix: Update target width for reused containers
+            }
+            
+            // Set up parallax scaling if needed
+            const hasParallax = el.classList.contains('img-parallax');
+            if (hasParallax) {
+              window.gsap.set(el, { scale: 1.2 });
+            }
+            
+            // Animate mask reveal with ScrollTrigger - mobile optimized
+            setTimeout(() => {
+              if (typeof window.gsap !== 'undefined') {
+                const isMobileClone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+                
+                console.log(`🎭 Starting clone mask animation: 0px → ${maskContainer.dataset.targetWidth}px`);
+                window.gsap.to(maskContainer, { 
+                  width: maskContainer.dataset.targetWidth + 'px', 
+                  duration: 1.2, // Same duration across all devices
                   ease: "power2.out",
                   scrollTrigger: { 
                     trigger: el, 
-                    start: "top bottom", 
+                    start: "top 90%", // Consistent trigger point
                     end: "top center", 
-                    once: true 
+                    once: true,
+                    toggleActions: "play none none none"
+                  },
+                  onStart: () => {
+                    console.log(`🎭 Clone mask animation started: targeting ${maskContainer.dataset.targetWidth}px`);
+                  },
+                  onComplete: () => {
+                    console.log(`🎭 Clone mask animation completed: final width ${maskContainer.style.width}`);
+                    el.dataset.gsapAnimated = 'mask-revealed';
+                    el.dataset.maskComplete = 'true';
                   }
                 });
+                
+                // Add parallax scaling animation only on desktop
+                if (hasParallax && !isMobileClone) {
+                  window.gsap.to(el, { 
+                    scale: 1.0, 
+                    duration: 1.2, 
+                    ease: "power2.out",
+                    scrollTrigger: { 
+                      trigger: el, 
+                      start: "top bottom", 
+                      end: "top center", 
+                      once: true 
+                    }
+                  });
+                }
               }
-            }
-          }, imgIndex * 100); // Consistent stagger timing
-        });
+            }, imgIndex * 100); // Consistent stagger timing
+          });
+        }, 50); // Small delay to ensure layout is complete
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
