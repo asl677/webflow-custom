@@ -87,10 +87,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function createPreloader() {
     const style = document.createElement('style');
     style.textContent = `
-      #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease-out}
-      #preloader.visible{opacity:1}
+      #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1}
       #preloader .counter{font-family:monospace;font-size:0.8rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
-      #preloader .digit{display:inline-block;opacity:0}
+      #preloader .digit{display:inline-block;opacity:1;animation:pulse 2s ease-in-out infinite}
+      #preloader.loading .digit{animation:pulse 2s ease-in-out infinite}
+      #preloader.counting .digit{animation:none}
+      @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
@@ -102,34 +104,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
     const preloader = document.createElement('div');
     preloader.id = 'preloader';
+    preloader.className = 'loading';
     preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
     document.body.appendChild(preloader);
     document.body.classList.add('loading');
     
-    // GSAP stagger animation for counter appearance
-    requestAnimationFrame(() => {
-      preloader.classList.add('visible');
-      
-      // Animate counter digits with stagger
-      if (typeof gsap !== 'undefined') {
-        const digits = preloader.querySelectorAll('.digit');
-        gsap.set(digits, { opacity: 0, y: 20 });
-        gsap.to(digits, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "power2.out",
-          delay: 0.3
-        });
-      }
-    });
+    // Show immediately, no delay
+    console.log('🎬 Preloader visible immediately with pulsing digits');
     return preloader;
   }
 
   // Initialize preloader with image loading tracking
   function initPreloader() {
     loadGSAP();
+    
+    // Fallback: if GSAP doesn't load in 5 seconds, continue without it
+    setTimeout(() => {
+      if (!gsapLoaded) {
+        console.warn('⚠️ GSAP failed to load in 5 seconds - continuing without enhanced animations');
+      }
+    }, 5000);
+    
     const preloader = createPreloader();
     const counter = preloader.querySelector('.counter');
     
@@ -154,9 +149,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🖼️ Preloader starting: Found ${totalImages} images to preload`);
     
     if (totalImages === 0) {
-      console.log(`🖼️ No images found, completing preloader immediately`);
+      console.log(`🖼️ No images found, completing preloader after brief delay`);
+      preloader.className = 'counting';
       updateCounter(100);
-      setTimeout(completePreloader, 300);
+      setTimeout(completePreloader, 1000); // Slight delay even with no images
       return;
     }
     
@@ -164,6 +160,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       loadedCount++;
       const progress = (loadedCount / totalImages) * 100;
       updateCounter(progress);
+      
+      // Switch from pulsing to counting mode when images start loading
+      if (loadedCount === 1) {
+        preloader.className = 'counting';
+        console.log('🎬 Images loading detected - switching to counting mode');
+      }
       
       console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
@@ -200,10 +202,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
+    // Switch to counting mode after 3 seconds even if no images load (slow connection)
+    setTimeout(() => {
+      if (loadedCount === 0) {
+        preloader.className = 'counting';
+        console.log('🐌 Slow connection detected - switching to counting mode anyway');
+      }
+    }, 3000);
+    
     // Fallback: complete after 10 seconds regardless
     setTimeout(() => {
       if (!preloaderComplete) {
         console.log(`⏰ Preloader timeout: Completing after 10 seconds`);
+        preloader.className = 'counting';
         updateCounter(100);
         setTimeout(completePreloader, 200);
       }
@@ -215,6 +226,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (preloaderComplete) return;
     preloaderComplete = true;
     const preloader = document.getElementById('preloader');
+    
+    // Stop pulsing animation before fade out
+    preloader.className = 'counting';
     
     // Ensure preloader COMPLETELY fades out before starting animations
     if (typeof gsap !== 'undefined') {
@@ -233,17 +247,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
     } else {
+      // CSS transition fallback when GSAP isn't loaded
+      preloader.style.transition = 'opacity 0.4s ease-out';
+      preloader.style.opacity = '0';
       setTimeout(() => { 
-        preloader.style.opacity = '0'; 
-        setTimeout(() => { 
-          preloader.remove(); 
-          document.body.classList.remove('loading');
-          document.body.classList.add('animations-ready');
-          setTimeout(() => {
-            startPageAnimations();
-          }, 1100);
-        }, 300); 
-      }, 200);
+        preloader.remove(); 
+        document.body.classList.remove('loading');
+        document.body.classList.add('animations-ready');
+        setTimeout(() => {
+          startPageAnimations();
+        }, 500);
+      }, 400); 
     }
   }
 
