@@ -319,6 +319,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔢 scrambleText called for Webflow counter:', element, 'duration:', duration, 'delay:', delay);
     }
     if (element.dataset.scrambled || element.dataset.infiniteClone) return;
+    
+    // Skip scramble for elements inside label-wrap to preserve line breaks
+    if (element.closest('.label-wrap')) {
+      console.log('🔄 Skipping scramble for label-wrap element to preserve formatting');
+      element.dataset.scrambled = 'true';
+      element.style.opacity = '1'; // Make it visible immediately
+      return;
+    }
+    
     element.dataset.scrambled = 'true';
     
     const originalText = element.textContent.trim();
@@ -381,6 +390,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Wrap text lines for animation (simplified for hover effects only)
   function wrapLines(el) {
     if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
+    
+    // Skip line wrapping for label-wrap elements to preserve their formatting
+    if (el.closest('.label-wrap')) {
+      console.log('🔄 Skipping line wrapping for label-wrap element');
+      el.dataset.splitDone = 'true';
+      return [];
+    }
+    
     const originalHTML = el.innerHTML.trim();
     if (!originalHTML) return [];
 
@@ -452,11 +469,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       el.classList.remove('initial-hidden');
     });
     
-    const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone])');
-    const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone])');
-    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone])');
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text)');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]), .menu-link:not([data-infinite-clone]), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone])');
+    const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone]):not(.label-wrap .heading.large):not(.label-wrap *)');
+    const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone]):not(.label-wrap .heading.small):not(.label-wrap *)');
+    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h1):not(.label-wrap *), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h2):not(.label-wrap *), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h3):not(.label-wrap *), h4:not([data-infinite-clone]):not(.label-wrap h4):not(.label-wrap *), h5:not([data-infinite-clone]):not(.label-wrap h5):not(.label-wrap *), h6:not([data-infinite-clone]):not(.label-wrap h6):not(.label-wrap *)');
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text):not(.label-wrap *), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text):not(.label-wrap *)');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]):not(.label-wrap a):not(.label-wrap *), .menu-link:not([data-infinite-clone]):not(.label-wrap .menu-link):not(.label-wrap *), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone]):not(.label-wrap *)');
     
     console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
     const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
