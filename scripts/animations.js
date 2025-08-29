@@ -1038,7 +1038,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
-      typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.ScrollTrigger.refresh();
+      
+      // Refresh ScrollTrigger with nav protection
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+        // Store nav element styles before refresh
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        console.log(`🔍 Found ${navElements.length} nav elements for infinite scroll protection:`, [...navElements].map(el => el.className));
+        const navStyles = [];
+        navElements.forEach((nav, index) => {
+          navStyles[index] = {
+            opacity: nav.style.opacity || getComputedStyle(nav).opacity,
+            transform: nav.style.transform || getComputedStyle(nav).transform,
+            visibility: nav.style.visibility || getComputedStyle(nav).visibility
+          };
+        });
+        
+        window.gsap.ScrollTrigger.refresh();
+        
+        // Restore nav element styles after refresh
+        setTimeout(() => {
+          navElements.forEach((nav, index) => {
+            if (navStyles[index]) {
+              nav.style.setProperty('opacity', '1', 'important');
+              nav.style.setProperty('transform', 'translateY(0)', 'important');
+              nav.style.setProperty('visibility', 'visible', 'important');
+              console.log('🔧 Restored nav element:', nav.className, 'opacity:', nav.style.opacity);
+            }
+          });
+          console.log('🔧 Protected nav elements during infinite scroll refresh');
+        }, 50);
+      }
       setTimeout(() => isLoading = false, 500);
     }
     
@@ -1086,7 +1115,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     window.addEventListener('resize', () => {
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
         // Store nav element styles before refresh
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav');
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
           navStyles[index] = {
@@ -1103,9 +1133,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Restore nav element styles after refresh
           navElements.forEach((nav, index) => {
             if (navStyles[index]) {
-              nav.style.opacity = '1';
-              nav.style.transform = 'translateY(0)';
-              nav.style.visibility = 'visible';
+              nav.style.setProperty('opacity', '1', 'important');
+              nav.style.setProperty('transform', 'translateY(0)', 'important');
+              nav.style.setProperty('visibility', 'visible', 'important');
+              console.log('🔧 Restored resize nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
           console.log('🔧 Protected nav elements during ScrollTrigger refresh');
@@ -1139,7 +1170,38 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('✅ Infinite scroll fully initialized');
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
-    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
+    
+    // Final ScrollTrigger refresh with nav protection
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      setTimeout(() => {
+        // Store nav element styles before refresh
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        console.log(`🔍 Found ${navElements.length} nav elements for final protection:`, [...navElements].map(el => el.className));
+        const navStyles = [];
+        navElements.forEach((nav, index) => {
+          navStyles[index] = {
+            opacity: nav.style.opacity || getComputedStyle(nav).opacity,
+            transform: nav.style.transform || getComputedStyle(nav).transform,
+            visibility: nav.style.visibility || getComputedStyle(nav).visibility
+          };
+        });
+        
+        window.gsap.ScrollTrigger.refresh();
+        
+        // Restore nav element styles after refresh
+        setTimeout(() => {
+          navElements.forEach((nav, index) => {
+            if (navStyles[index]) {
+              nav.style.setProperty('opacity', '1', 'important');
+              nav.style.setProperty('transform', 'translateY(0)', 'important');
+              nav.style.setProperty('visibility', 'visible', 'important');
+              console.log('🔧 Restored final nav element:', nav.className, 'opacity:', nav.style.opacity);
+            }
+          });
+          console.log('🔧 Protected nav elements during infinite scroll final refresh');
+        }, 50);
+      }, 100);
+    }
   }
 
   // Three.js Scroll Effect Classes
