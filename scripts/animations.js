@@ -350,17 +350,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
-    // Mobile optimization: much faster scramble, simpler chars
+    // Same scramble speed for both mobile and desktop, simpler chars on mobile for performance
     const chars = isMobile ? '-_=' : '!<>-_\\/[]{}—=+*^?#________';
     let currentText = originalText;
     let iteration = 0;
     
-    // Mobile: faster reveal rate and shorter duration
-    const mobileMultiplier = isMobile ? 0.4 : 1; // 60% faster on mobile
-    const optimizedDuration = duration * mobileMultiplier;
+    // Same speed on both mobile and desktop
     const textLength = originalText.length;
-    const revealRate = Math.max(isMobile ? 1 : 1/3, textLength / (isMobile ? 25 : 50));
-    const intervalSpeed = isMobile ? 50 : 80; // Faster interval on mobile
+    const revealRate = Math.max(1/3, textLength / 50); // Same reveal rate for both
+    const intervalSpeed = 80; // Same interval speed for both
     
     setTimeout(() => {
       // Start scramble immediately with element visible
@@ -404,7 +402,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         iteration += revealRate;
       }, intervalSpeed);
-    }, delay * (isMobile ? 0.5 : 1)); // Reduce delays on mobile
+    }, delay * (isMobile ? 0.3 : 1)); // Start much sooner on mobile (30% of original delay)
   }
 
   // Wrap text lines for animation (simplified for hover effects only)
@@ -575,10 +573,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔄 No rotating text element found - skipping');
     }
     
-    // Apply scramble effect to all text elements with mobile optimization
+    // Apply scramble effect to all text elements - same speed, but starts sooner on mobile
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const staggerDelay = isMobile ? 30 : 100; // Much faster stagger on mobile
-    const baseDelay = isMobile ? 100 : 300; // Shorter base delay on mobile
+    const staggerDelay = isMobile ? 50 : 100; // Slightly faster stagger on mobile
+    const baseDelay = isMobile ? 50 : 300; // Much shorter base delay on mobile
     
     console.log('🎯 Total text elements for scramble:', textElements.length, `(Mobile: ${isMobile})`);
     textElements.forEach((element, index) => {
