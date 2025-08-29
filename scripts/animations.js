@@ -713,12 +713,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport && index < maxInitialImages) {
-          // Animate images in viewport immediately with mobile optimization
-          const staggerDelay = isMobile ? index * 0.8 : index * 0.3;
+          // Animate images in viewport immediately with proper top-to-bottom order
+          const staggerDelay = index * 0.2; // Consistent, slower stagger
           const duration = 1.2; // Same duration across all devices
           
-          // Simpler easing for mobile performance
-          const easing = isMobile ? "power1.out" : "power2.out";
+          // Consistent easing for stability
+          const easing = "power2.out";
           
           console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
@@ -750,14 +750,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: 1.2, // Same duration across all devices
-            ease: isMobile ? "power1.out" : "power2.out",
+            ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: isMobile ? "top 85%" : "top bottom", // Earlier trigger on mobile
+              start: "top 90%", // Consistent trigger point
               end: "top center", 
               once: true,
-              // Reduce scroll trigger sensitivity on mobile
-              refreshPriority: isMobile ? -1 : 0
+              toggleActions: "play none none none"
             },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -916,13 +915,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               window.gsap.to(maskContainer, { 
                 width: maskContainer.dataset.targetWidth + 'px', 
                 duration: 1.2, // Same duration across all devices
-                ease: isMobileClone ? "power1.out" : "power2.out",
+                ease: "power2.out",
                 scrollTrigger: { 
                   trigger: el, 
-                  start: isMobileClone ? "top 85%" : "top bottom", // Earlier on mobile
+                  start: "top 90%", // Consistent trigger point
                   end: "top center", 
                   once: true,
-                  refreshPriority: isMobileClone ? -1 : 0 // Lower priority on mobile
+                  toggleActions: "play none none none"
                 },
                 onComplete: () => {
                   el.dataset.gsapAnimated = 'mask-revealed';
@@ -945,7 +944,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 });
               }
             }
-          }, imgIndex * (isMobile ? 25 : 50)); // Faster stagger on mobile
+          }, imgIndex * 100); // Consistent stagger timing
         });
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
@@ -1063,10 +1062,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     };
     
     window.addEventListener('scroll', scrollListener, { passive: true });
-    // Separate resize handler to avoid fake-nav fading issues
+    
+    // Separate resize handler with nav protection
     window.addEventListener('resize', () => {
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-        setTimeout(() => window.gsap.ScrollTrigger.refresh(), 100);
+        // Store nav element styles before refresh
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav');
+        const navStyles = [];
+        navElements.forEach((nav, index) => {
+          navStyles[index] = {
+            opacity: nav.style.opacity || getComputedStyle(nav).opacity,
+            transform: nav.style.transform || getComputedStyle(nav).transform,
+            visibility: nav.style.visibility || getComputedStyle(nav).visibility
+          };
+        });
+        
+        // Refresh ScrollTrigger
+        setTimeout(() => {
+          window.gsap.ScrollTrigger.refresh();
+          
+          // Restore nav element styles after refresh
+          navElements.forEach((nav, index) => {
+            if (navStyles[index]) {
+              nav.style.opacity = '1';
+              nav.style.transform = 'translateY(0)';
+              nav.style.visibility = 'visible';
+            }
+          });
+          console.log('🔧 Protected nav elements during ScrollTrigger refresh');
+        }, 100);
       }
     }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
