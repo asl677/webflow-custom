@@ -1631,8 +1631,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         return;
       }
       
-      const allImages = document.querySelectorAll('img');
-      console.log(`🖱️ Found ${allImages.length} images, toggled state: ${imagesToggled}`);
+      const allImages = document.querySelectorAll('.img-parallax');
+      console.log(`🖱️ Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
       
       if (!imagesToggled) {
         // Fit all images to window width maintaining ratio
@@ -1683,7 +1683,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Make function accessible globally for testing
     window.testImageToggle = function() {
       console.log('🖱️ Manual toggle test triggered');
-      const allImages = document.querySelectorAll('img');
+      const allImages = document.querySelectorAll('.img-parallax');
       allImages.forEach((img, index) => {
         const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
         const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
@@ -1712,9 +1712,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Test if we can manually trigger image resizing
     window.emergencyImageTest = function() {
-      console.log('🔥 EMERGENCY: Manual image test');
-      const imgs = document.querySelectorAll('img');
-      console.log('🔥 Found images:', imgs.length);
+      console.log('🔥 EMERGENCY: Manual image test - targeting .img-parallax only');
+      const imgs = document.querySelectorAll('.img-parallax');
+      console.log('🔥 Found .img-parallax images:', imgs.length);
       
       imgs.forEach((img, index) => {
         console.log(`🔥 Image ${index} BEFORE:`, {
