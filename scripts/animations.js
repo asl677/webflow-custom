@@ -3,6 +3,15 @@
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
+// IMMEDIATE SCRIPT LOAD TEST
+console.log('🚀 SCRIPT LOADED: Portfolio animations starting...');
+console.log('🚀 URL:', window.location.href);
+window.scriptLoadTest = function() {
+  console.log('✅ SCRIPT IS DEFINITELY LOADED');
+  return 'SUCCESS: Script loaded and working';
+};
+console.log('🚀 Try: window.scriptLoadTest()');
+
 // Hide images but allow preloader
 (function() {
   const emergencyHide = document.createElement('style');
@@ -1716,4 +1725,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
+  
+  console.log('🚀 SCRIPT END: Animation system initialization completed');
 })(window.portfolioAnimations);
+
+console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading');
