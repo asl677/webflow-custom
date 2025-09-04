@@ -1588,10 +1588,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     document.addEventListener('click', (e) => {
       console.log('🖱️ Click detected on:', e.target.tagName, e.target);
-      console.log('🖱️ Event details:', e.type, e.bubbles, e.cancelable);
       
-      // Skip if clicking on interactive elements
-      if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) {
+      // Only trigger on body clicks, background containers, or images
+      const isBodyClick = e.target === document.body;
+      const isBackgroundClick = e.target.tagName === 'SECTION' || 
+                               e.target.classList.contains('section') ||
+                               e.target.classList.contains('main-wrapper') ||
+                               e.target.tagName === 'MAIN';
+      const isImageClick = e.target.tagName === 'IMG';
+      
+      if (!isBodyClick && !isBackgroundClick && !isImageClick) {
+        console.log('🖱️ Skipping - not a body/background/image click. Target:', e.target.tagName, e.target.className);
+        return;
+      }
+      
+      console.log('🖱️ Valid body/background/image click detected!');
+      
+      // Skip if clicking on interactive elements (double-check)
+      if (e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) {
         console.log('🖱️ Skipping interactive element');
         return;
       }
