@@ -256,7 +256,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           document.body.classList.add('animations-ready');
           setTimeout(() => {
             startPageAnimations();
+            console.log('🚀 About to initialize image toggle');
             initImageToggle();
+            console.log('🚀 Image toggle initialization completed');
         }, 500);
       }, 400); 
     }
@@ -1578,10 +1580,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Simple click toggle for image sizing
   function initImageToggle() {
+    console.log('🖱️ Initializing image toggle function');
     let imagesToggled = false;
+    
+    // Test if we can detect clicks at all
+    console.log('🖱️ Adding click listener to document');
     
     document.addEventListener('click', (e) => {
       console.log('🖱️ Click detected on:', e.target.tagName, e.target);
+      console.log('🖱️ Event details:', e.type, e.bubbles, e.cancelable);
       
       // Skip if clicking on interactive elements
       if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) {
@@ -1626,6 +1633,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
     
     console.log('🖱️ Image click toggle initialized');
+    
+    // Make function accessible globally for testing
+    window.testImageToggle = function() {
+      console.log('🖱️ Manual toggle test triggered');
+      const allImages = document.querySelectorAll('img');
+      allImages.forEach((img, index) => {
+        const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
+        const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
+        const aspectRatio = currentHeight / currentWidth;
+        const newWidth = window.innerWidth;
+        const newHeight = newWidth * aspectRatio;
+        
+        console.log(`🖱️ Test Image ${index}: ${currentWidth}x${currentHeight} → ${newWidth}x${Math.round(newHeight)}`);
+        
+        img.style.transition = 'all 0.3s ease';
+        img.style.width = newWidth + 'px';
+        img.style.height = newHeight + 'px';
+        img.style.objectFit = 'cover';
+      });
+    };
+    
+    console.log('🖱️ Test function added to window.testImageToggle()');
   }
   
   // Start preloader with Webflow safety
