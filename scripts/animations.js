@@ -256,6 +256,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           document.body.classList.add('animations-ready');
           setTimeout(() => {
             startPageAnimations();
+            initImageToggle();
         }, 500);
       }, 400); 
     }
@@ -1573,6 +1574,46 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 2000);
     
     console.log('🔄 Rotating text started after scramble');
+  }
+  
+  // Simple click toggle for image sizing
+  function initImageToggle() {
+    let imagesToggled = false;
+    
+    document.body.addEventListener('click', (e) => {
+      // Skip if clicking on interactive elements
+      if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button')) return;
+      
+      const allImages = document.querySelectorAll('img');
+      
+      if (!imagesToggled) {
+        // Fit all images to window width maintaining ratio
+        allImages.forEach(img => {
+          if (img.naturalWidth && img.naturalHeight) {
+            const aspectRatio = img.naturalHeight / img.naturalWidth;
+            const newWidth = window.innerWidth;
+            const newHeight = newWidth * aspectRatio;
+            
+            img.style.transition = 'all 0.3s ease';
+            img.style.width = newWidth + 'px';
+            img.style.height = newHeight + 'px';
+            img.style.objectFit = 'cover';
+          }
+        });
+        imagesToggled = true;
+      } else {
+        // Revert to original sizes
+        allImages.forEach(img => {
+          img.style.width = '';
+          img.style.height = '';
+          img.style.transition = '';
+          img.style.objectFit = '';
+        });
+        imagesToggled = false;
+      }
+    });
+    
+    console.log('🖱️ Image click toggle initialized');
   }
   
   // Start preloader with Webflow safety
