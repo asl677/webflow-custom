@@ -597,6 +597,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔄 No rotating text element found - skipping');
     }
     
+    // Sort all text elements by vertical position for consistent top-down animation
+    textElements.sort((a, b) => {
+      const rectA = a.getBoundingClientRect();
+      const rectB = b.getBoundingClientRect();
+      // Primary sort: top position
+      if (Math.abs(rectA.top - rectB.top) > 5) { // 5px threshold for "same line"
+        return rectA.top - rectB.top;
+      }
+      // Secondary sort: left position (for elements on same line)
+      return rectA.left - rectB.left;
+    });
+    console.log('📐 Sorted', textElements.length, 'text elements by vertical position for consistent top-down animation');
+    
     // Apply scramble effect to all text elements - same speed, but starts sooner on mobile
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     const staggerDelay = isMobile ? 50 : 100; // Slightly faster stagger on mobile
@@ -682,6 +695,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Masked image animations - called after text completes on mobile
   function startMaskedImageAnimations() {
+    // Detect Safari mobile for performance optimization
+    const isSafariMobile = /Safari/.test(navigator.userAgent) && 
+                          /Mobile|iPhone|iPad|iPod/.test(navigator.userAgent) && 
+                          !/Chrome|CriOS|FxiOS/.test(navigator.userAgent);
+    
+    if (isSafariMobile) {
+      console.log('🎭 SKIPPING mask animations on Safari mobile for performance');
+      // Just make all images visible without masking
+      document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])').forEach(img => {
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(img, { opacity: 1 });
+        } else {
+          img.style.opacity = '1';
+        }
+      });
+      return;
+    }
+    
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
     // NOW remove the emergency image hiding since mask animations are about to start
