@@ -119,6 +119,34 @@ Console logs provide detailed information:
 - Infinite scroll cloning system
 - ScrollTrigger refresh handling
 
+## Development Rules
+
+### 📝 **Commit Message Format**
+Use short, focused commit messages with exactly **3 bullet points**:
+
+```
+Brief title describing the main change
+
+- First specific change or fix
+- Second specific change or improvement  
+- Third specific change or addition
+```
+
+**Example:**
+```
+Fix mask animation flickering on scroll
+
+- Skip duplicate mask setup on cloned images
+- Add maskSetup flag to prevent re-processing
+- Improve console logging for debugging
+```
+
+**Guidelines:**
+- **Title**: One line summary (50 chars max)
+- **Bullets**: Specific, actionable changes
+- **Focus**: Each bullet should be a distinct change
+- **Clarity**: Technical but readable
+
 ## Stable Version Rules
 
 **Reference Commit: `fdc73e2`** [[memory:8072505]]
