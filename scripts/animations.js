@@ -106,7 +106,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
 
-      .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]){transform:translateY(100%);opacity:0}
+      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
+      .nav-middle, .nav-bottom, .middle-nav, .bottom-nav, .nav[class*="middle"], .nav[class*="bottom"]{transform:none!important;opacity:1!important}
       .flex-grid{margin-top:0.2vw!important}
     `;
     document.head.appendChild(style);
