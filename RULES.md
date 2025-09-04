@@ -133,6 +133,74 @@ Future changes should reference this stable baseline and avoid overcomplicating 
 - **ScrollTrigger** - Scroll-based animations (loaded automatically)
 - **Webflow** - Platform compatibility ensured
 
+## Webflow MCP Server Integration
+
+### 🔧 **MCP Configuration**
+
+The project includes Webflow MCP (Model Context Protocol) server for programmatic site management:
+
+```json
+{
+  "mcpServers": {
+    "webflow": {
+      "command": "npx",
+      "args": ["-y", "webflow-mcp-server@0.3.0"],
+      "env": {
+        "WEBFLOW_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
+
+### 🎯 **MCP Capabilities**
+
+- **Site Management**: List and get site information
+- **Page Operations**: List pages, update metadata, get/update content
+- **Collection Management**: Create/update collections and fields
+- **Item Operations**: Create/update/publish collection items
+- **Publishing**: Publish sites and individual items
+
+### 📝 **Common MCP Operations**
+
+```javascript
+// List all sites
+mcp_webflow_sites_list
+
+// Get site details
+mcp_webflow_sites_get({ site_id: "your_site_id" })
+
+// List pages
+mcp_webflow_pages_list({ site_id: "your_site_id" })
+
+// Update page content
+mcp_webflow_pages_update_static_content({
+  page_id: "page_id",
+  localeId: "locale_id", 
+  nodes: [{ nodeId: "node_id", text: "new_text" }]
+})
+
+// Publish site
+mcp_webflow_sites_publish({ 
+  site_id: "your_site_id",
+  publishToWebflowSubdomain: true 
+})
+```
+
+### ⚠️ **MCP Usage Guidelines**
+
+- **Content Updates**: Use MCP for programmatic content updates
+- **Animation Files**: Deploy animation changes via GitHub, not MCP
+- **Site Structure**: Avoid changing site structure through MCP during active development
+- **Publishing**: Test changes on staging before publishing to live domain
+
+### 🔐 **Security Notes**
+
+- **Token Management**: Webflow API token is configured in MCP settings
+- **Permissions**: Token has full site access - use carefully
+- **Rate Limits**: Respect Webflow API rate limitations
+- **Backup**: Always backup before bulk operations
+
 ## Browser Support
 
 - Modern browsers with ES6+ support
@@ -141,4 +209,4 @@ Future changes should reference this stable baseline and avoid overcomplicating 
 
 ---
 
-*Last Updated: Current with stable commit `fdc73e2`*
+*Last Updated: Current with stable commit `ea67e13` + MCP integration*
