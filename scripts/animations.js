@@ -94,8 +94,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       #preloader.counting .digit{animation:none}
       @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
-      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
-      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.proper-mask-reveal):not(.proper-mask-reveal *){opacity:0!important;visibility:hidden!important}
+      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
+      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
 
       .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
@@ -685,7 +685,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
-        maskContainer.className = 'proper-mask-reveal';
+        maskContainer.className = 'mask-wrap';
         maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         
         parent.insertBefore(maskContainer, element);
@@ -878,8 +878,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.dataset.infiniteClone = 'true';
             el.dataset.gsapAnimated = 'infinite-clone';
             
+            // Simple: if already has mask setup, skip to prevent duplicates
+            if (el.dataset.maskSetup) return;
+            
             // Check if image already has a mask container, if not create one
-            let maskContainer = el.closest('.proper-mask-reveal');
+            let maskContainer = el.closest('.mask-wrap');
             
             // Get correct dimensions - prioritize displayed size like originals do
             const originalWidth = el.offsetWidth || 
@@ -898,7 +901,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (!maskContainer) {
               const parent = el.parentNode;
               maskContainer = document.createElement('div');
-              maskContainer.className = 'proper-mask-reveal';
+              maskContainer.className = 'mask-wrap';
               maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
               maskContainer.dataset.targetWidth = originalWidth;
               
