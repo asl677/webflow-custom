@@ -1715,10 +1715,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔥 EMERGENCY: Manual image test');
       const imgs = document.querySelectorAll('img');
       console.log('🔥 Found images:', imgs.length);
-      imgs.forEach(img => {
-        img.style.width = '100vw';
-        img.style.transition = 'all 0.3s ease';
+      
+      imgs.forEach((img, index) => {
+        console.log(`🔥 Image ${index} BEFORE:`, {
+          offsetWidth: img.offsetWidth,
+          offsetHeight: img.offsetHeight,
+          styleWidth: img.style.width,
+          computedWidth: window.getComputedStyle(img).width
+        });
+        
+        // Force the style with !important
+        img.style.setProperty('width', window.innerWidth + 'px', 'important');
+        img.style.setProperty('height', 'auto', 'important');
+        img.style.setProperty('object-fit', 'cover', 'important');
+        img.style.setProperty('transition', 'all 0.3s ease', 'important');
+        
+        // Check if it worked
+        setTimeout(() => {
+          console.log(`🔥 Image ${index} AFTER:`, {
+            offsetWidth: img.offsetWidth,
+            offsetHeight: img.offsetHeight,
+            styleWidth: img.style.width,
+            computedWidth: window.getComputedStyle(img).width
+          });
+        }, 100);
       });
+      
+      return 'Emergency test with detailed logging completed';
     };
     console.log('🔥 EMERGENCY: Test functions ready. Try window.emergencyImageTest()');
   }, 2000);
