@@ -106,7 +106,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
       body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
 
-      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
+      .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]){transform:translateY(100%);opacity:0}
       .flex-grid{margin-top:0.2vw!important}
     `;
     document.head.appendChild(style);
@@ -284,8 +284,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startPageAnimations() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
-    // Animate ALL nav elements (including w-layout-grid) on initial page load
-    const allNavElements = document.querySelectorAll('.nav:not(.fake-nav)');
+    // Animate nav elements (excluding fake, middle, and bottom nav)
+    const allNavElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"])');
     allNavElements.forEach(nav => {
       if (typeof gsap !== 'undefined') {
         gsap.to(nav, { y: 0, opacity: 1, duration: isMobile ? 0.5 : 0.8, ease: "power2.out" });
@@ -1067,8 +1067,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Refresh ScrollTrigger with nav protection
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-        // Store nav element styles before refresh
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        // Store nav element styles before refresh (exclude middle/bottom nav)
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
         console.log(`🔍 Found ${navElements.length} nav elements for infinite scroll protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
@@ -1140,8 +1140,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Separate resize handler with nav protection
     window.addEventListener('resize', () => {
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-        // Store nav element styles before refresh - include ALL nav variants
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav, .nav-left, .nav-bottom, .bottom-nav, .left-nav, [class*="nav"]');
+        // Store nav element styles before refresh - exclude middle/bottom nav
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav, .nav-left, .left-nav');
         console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
@@ -1167,9 +1167,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          // EXTRA PROTECTION: Force all navigation to stay visible during resize
+          // EXTRA PROTECTION: Force navigation to stay visible during resize (exclude middle/bottom nav)
           document.querySelectorAll('[class*="nav"], [id*="nav"], .navigation, .menu').forEach(el => {
-            if (!el.classList.contains('fake-nav')) {
+            if (!el.classList.contains('fake-nav') && 
+                !el.classList.contains('nav-middle') && 
+                !el.classList.contains('nav-bottom') && 
+                !el.classList.contains('middle-nav') && 
+                !el.classList.contains('bottom-nav') &&
+                !el.className.includes('middle') &&
+                !el.className.includes('bottom')) {
               el.style.setProperty('opacity', '1', 'important');
               el.style.setProperty('visibility', 'visible', 'important');
             }
@@ -1210,8 +1216,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Final ScrollTrigger refresh with nav protection
     if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       setTimeout(() => {
-        // Store nav element styles before refresh
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        // Store nav element styles before refresh (exclude middle/bottom nav)
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
         console.log(`🔍 Found ${navElements.length} nav elements for final protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
