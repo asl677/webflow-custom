@@ -1635,21 +1635,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log(`🖱️ Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
       
       if (!imagesToggled) {
-        // Fit all images to window width maintaining ratio
-        console.log('🖱️ Expanding images to window width');
+        // Set all images height to 100vw maintaining aspect ratio
+        console.log('🖱️ Expanding images height to 100vw');
         allImages.forEach((img, index) => {
           // Use current dimensions if natural dimensions not available
           const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
           const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
-          const aspectRatio = currentHeight / currentWidth;
-          const newWidth = window.innerWidth;
-          const newHeight = newWidth * aspectRatio;
           
-          console.log(`🖱️ Image ${index}: ${currentWidth}x${currentHeight} → ${newWidth}x${Math.round(newHeight)}`);
+          console.log(`🖱️ Image ${index}: ${currentWidth}x${currentHeight} → height:100vw`);
           
           img.style.transition = 'all 0.3s ease';
-          img.style.width = newWidth + 'px';
-          img.style.height = newHeight + 'px';
+          img.style.height = '100vw';
+          img.style.width = 'auto';
           img.style.objectFit = 'cover';
         });
         imagesToggled = true;
@@ -1687,15 +1684,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       allImages.forEach((img, index) => {
         const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
         const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
-        const aspectRatio = currentHeight / currentWidth;
-        const newWidth = window.innerWidth;
-        const newHeight = newWidth * aspectRatio;
         
-        console.log(`🖱️ Test Image ${index}: ${currentWidth}x${currentHeight} → ${newWidth}x${Math.round(newHeight)}`);
+        console.log(`🖱️ Test Image ${index}: ${currentWidth}x${currentHeight} → height:100vw`);
         
         img.style.transition = 'all 0.3s ease';
-        img.style.width = newWidth + 'px';
-        img.style.height = newHeight + 'px';
+        img.style.height = '100vw';
+        img.style.width = 'auto';
         img.style.objectFit = 'cover';
       });
     };
@@ -1720,13 +1714,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`🔥 Image ${index} BEFORE:`, {
           offsetWidth: img.offsetWidth,
           offsetHeight: img.offsetHeight,
-          styleWidth: img.style.width,
-          computedWidth: window.getComputedStyle(img).width
+          styleHeight: img.style.height,
+          computedHeight: window.getComputedStyle(img).height
         });
         
-        // Force the style with !important
-        img.style.setProperty('width', window.innerWidth + 'px', 'important');
-        img.style.setProperty('height', 'auto', 'important');
+        // Force the style with !important - HEIGHT to 100vw!
+        img.style.setProperty('height', '100vw', 'important');
+        img.style.setProperty('width', 'auto', 'important');
         img.style.setProperty('object-fit', 'cover', 'important');
         img.style.setProperty('transition', 'all 0.3s ease', 'important');
         
@@ -1735,8 +1729,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log(`🔥 Image ${index} AFTER:`, {
             offsetWidth: img.offsetWidth,
             offsetHeight: img.offsetHeight,
-            styleWidth: img.style.width,
-            computedWidth: window.getComputedStyle(img).width
+            styleHeight: img.style.height,
+            computedHeight: window.getComputedStyle(img).height
           });
         }, 100);
       });
