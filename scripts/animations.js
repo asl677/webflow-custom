@@ -1616,7 +1616,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     let imagesToggled = false;
     
-    // Create visible toggle button - 10px red square top right
+    // Create hidden toggle button for debugging
     const toggleButton = document.createElement('div');
     toggleButton.style.cssText = `
       position: fixed;
@@ -1630,10 +1630,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       border-radius: 2px;
       opacity: 0.8;
       transition: all 0.2s ease;
+      display: none;
     `;
     toggleButton.title = 'Toggle Image Heights';
     document.body.appendChild(toggleButton);
-    console.log('🔴 Red toggle button created');
+    console.log('🔴 Hidden toggle button created (for debugging)');
     
     try {
     
@@ -1641,35 +1642,78 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔴 Red button clicked - toggling .img-parallax images');
       
       const allImages = document.querySelectorAll('.img-parallax');
-      console.log(`🖱️ Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
+      console.log(`🔴 TOGGLE DEBUG: Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
+      
+      // Debug: Show all images found
+      allImages.forEach((img, index) => {
+        console.log(`🔴 Image ${index}:`, {
+          src: img.src ? img.src.substring(0, 50) + '...' : 'no src',
+          className: img.className,
+          currentHeight: img.offsetHeight,
+          currentWidth: img.offsetWidth,
+          styleHeight: img.style.height,
+          computedHeight: window.getComputedStyle(img).height,
+          parent: img.parentElement ? img.parentElement.tagName + '.' + img.parentElement.className : 'no parent'
+        });
+      });
+      
+      if (allImages.length === 0) {
+        console.log('🔴 ERROR: No .img-parallax images found! Looking for alternatives...');
+        
+        // Debug: Look for any images with "parallax" in class name
+        const parallaxVariants = document.querySelectorAll('[class*="parallax"]');
+        console.log(`🔴 Found ${parallaxVariants.length} elements with "parallax" in class:`, 
+          [...parallaxVariants].map(el => ({ tag: el.tagName, class: el.className })));
+        
+        // Debug: Look for all images on page
+        const allImgs = document.querySelectorAll('img');
+        console.log(`🔴 Total images on page: ${allImgs.length}`);
+        [...allImgs].slice(0, 5).forEach((img, i) => {
+          console.log(`🔴 Sample img ${i}:`, img.className || 'no class');
+        });
+        return;
+      }
       
       if (!imagesToggled) {
         // Set all images height to 100vw maintaining aspect ratio
-        console.log('🖱️ Expanding images height to 100vw');
+        console.log('🔴 EXPANDING images height to 100vw');
         allImages.forEach((img, index) => {
-          // Use current dimensions if natural dimensions not available
-          const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
-          const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
+          const beforeHeight = img.offsetHeight;
+          const beforeStyleHeight = img.style.height;
           
-          console.log(`🖱️ Image ${index}: ${currentWidth}x${currentHeight} → height:100vw`);
+          console.log(`🔴 BEFORE Image ${index}:`, { 
+            height: beforeHeight, 
+            styleHeight: beforeStyleHeight,
+            computedHeight: window.getComputedStyle(img).height 
+          });
           
-          img.style.transition = 'all 0.3s ease';
-          img.style.height = '100vw';
-          img.style.width = 'auto';
-          img.style.objectFit = 'cover';
+          img.style.setProperty('transition', 'all 0.3s ease', 'important');
+          img.style.setProperty('height', '100vw', 'important');
+          img.style.setProperty('width', 'auto', 'important');
+          img.style.setProperty('object-fit', 'cover', 'important');
+          
+          setTimeout(() => {
+            console.log(`🔴 AFTER Image ${index}:`, { 
+              height: img.offsetHeight, 
+              styleHeight: img.style.height,
+              computedHeight: window.getComputedStyle(img).height 
+            });
+          }, 100);
         });
         imagesToggled = true;
+        console.log('🔴 Images toggled to EXPANDED state');
       } else {
         // Revert to original sizes
-        console.log('🖱️ Reverting images to original sizes');
+        console.log('🔴 REVERTING images to original sizes');
         allImages.forEach((img, index) => {
-          console.log(`🖱️ Reverting image ${index}`);
-          img.style.width = '';
-          img.style.height = '';
-          img.style.transition = '';
-          img.style.objectFit = '';
+          console.log(`🔴 Reverting image ${index}`);
+          img.style.removeProperty('width');
+          img.style.removeProperty('height');
+          img.style.removeProperty('transition');
+          img.style.removeProperty('object-fit');
         });
         imagesToggled = false;
+        console.log('🔴 Images toggled to ORIGINAL state');
       }
     });
     
@@ -1688,19 +1732,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Make function accessible globally for testing
     window.testImageToggle = function() {
-      console.log('🖱️ Manual toggle test triggered');
-      const allImages = document.querySelectorAll('.img-parallax');
-      allImages.forEach((img, index) => {
-        const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
-        const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
-        
-        console.log(`🖱️ Test Image ${index}: ${currentWidth}x${currentHeight} → height:100vw`);
-        
-        img.style.transition = 'all 0.3s ease';
-        img.style.height = '100vw';
-        img.style.width = 'auto';
-        img.style.objectFit = 'cover';
-      });
+      console.log('🔴 MANUAL TEST: Triggering image toggle');
+      toggleButton.click(); // Trigger the hidden button
+    };
+    
+    window.debugParallaxImages = function() {
+      console.log('🔍 DEBUGGING: Searching for .img-parallax images...');
+      const imgs = document.querySelectorAll('.img-parallax');
+      console.log(`Found ${imgs.length} .img-parallax images`);
+      
+      if (imgs.length === 0) {
+        console.log('🔍 No .img-parallax found. Checking alternatives:');
+        console.log('Images with "parallax":', document.querySelectorAll('[class*="parallax"]').length);
+        console.log('All images:', document.querySelectorAll('img').length);
+        console.log('Sample classes:', [...document.querySelectorAll('img')].slice(0,5).map(img => img.className));
+      }
+      
+      return imgs;
     };
     
     console.log('🖱️ Test function added to window.testImageToggle()');
