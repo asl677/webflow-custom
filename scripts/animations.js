@@ -1136,8 +1136,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Separate resize handler with nav protection
     window.addEventListener('resize', () => {
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-        // Store nav element styles before refresh
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav');
+        // Store nav element styles before refresh - include ALL nav variants
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav), .w-layout-grid.nav, .top-right-nav, .nav-left, .nav-bottom, .bottom-nav, .left-nav, [class*="nav"]');
         console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
@@ -1158,9 +1158,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               nav.style.setProperty('opacity', '1', 'important');
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
+              nav.style.setProperty('display', 'block', 'important');
               console.log('🔧 Restored resize nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
+          
+          // EXTRA PROTECTION: Force all navigation to stay visible during resize
+          document.querySelectorAll('[class*="nav"], [id*="nav"], .navigation, .menu').forEach(el => {
+            if (!el.classList.contains('fake-nav')) {
+              el.style.setProperty('opacity', '1', 'important');
+              el.style.setProperty('visibility', 'visible', 'important');
+            }
+          });
+          
           console.log('🔧 Protected nav elements during ScrollTrigger refresh');
         }, 100);
       }
