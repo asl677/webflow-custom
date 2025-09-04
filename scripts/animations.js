@@ -255,10 +255,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           document.body.classList.remove('loading');
           document.body.classList.add('animations-ready');
           setTimeout(() => {
+            console.log('🚀 Starting animations after preloader');
             startPageAnimations();
-            console.log('🚀 About to initialize image toggle');
-            initImageToggle();
-            console.log('🚀 Image toggle initialization completed');
+            console.log('🚀 startPageAnimations completed');
+            
+            console.log('🚀 About to call initImageToggle...');
+            try {
+              initImageToggle();
+              console.log('🚀 initImageToggle call completed successfully');
+            } catch (error) {
+              console.error('🚀 ERROR calling initImageToggle:', error);
+            }
         }, 500);
       }, 400); 
     }
@@ -1580,11 +1587,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Simple click toggle for image sizing
   function initImageToggle() {
-    console.log('🖱️ Initializing image toggle function');
+    console.log('🖱️ STARTING initImageToggle function');
+    console.log('🖱️ Document ready state:', document.readyState);
+    console.log('🖱️ Document body exists:', !!document.body);
+    
     let imagesToggled = false;
     
     // Test if we can detect clicks at all
-    console.log('🖱️ Adding click listener to document');
+    console.log('🖱️ About to add click listener to document');
+    
+    try {
     
     document.addEventListener('click', (e) => {
       console.log('🖱️ Click detected on:', e.target.tagName, e.target);
@@ -1646,7 +1658,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    console.log('🖱️ Image click toggle initialized');
+    console.log('🖱️ Event listener added successfully');
+    
+    } catch (error) {
+      console.error('🖱️ ERROR adding event listener:', error);
+    }
+    
+    // Simple test to see if any click events work at all
+    document.body.addEventListener('click', () => {
+      console.log('🖱️ BODY CLICK TEST - This should appear on any body click');
+    });
+    
+    console.log('🖱️ Image click toggle initialization COMPLETED');
     
     // Make function accessible globally for testing
     window.testImageToggle = function() {
@@ -1670,6 +1693,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('🖱️ Test function added to window.testImageToggle()');
   }
+  
+  // EMERGENCY FALLBACK: Simple click test that should ALWAYS work
+  setTimeout(() => {
+    console.log('🔥 EMERGENCY FALLBACK: Adding simple click test');
+    document.addEventListener('click', (e) => {
+      console.log('🔥 EMERGENCY: Any click detected:', e.target.tagName);
+    });
+    
+    // Test if we can manually trigger image resizing
+    window.emergencyImageTest = function() {
+      console.log('🔥 EMERGENCY: Manual image test');
+      const imgs = document.querySelectorAll('img');
+      console.log('🔥 Found images:', imgs.length);
+      imgs.forEach(img => {
+        img.style.width = '100vw';
+        img.style.transition = 'all 0.3s ease';
+      });
+    };
+    console.log('🔥 EMERGENCY: Test functions ready. Try window.emergencyImageTest()');
+  }, 2000);
   
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
