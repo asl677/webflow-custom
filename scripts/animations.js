@@ -369,8 +369,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
-    // Same scramble speed for both mobile and desktop, simpler chars on mobile for performance
-    const chars = isMobile ? '-_=' : '!<>-_\\/[]{}—=+*^?#________';
+    // Same scramble speed for both mobile and desktop, letters only
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let currentText = originalText;
     let iteration = 0;
     
@@ -390,7 +390,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (index < iteration) {
               return originalText[index];
             }
-            return chars[Math.floor(Math.random() * chars.length)];
+            // Only scramble letters, keep spaces and punctuation
+            if (/[a-zA-Z]/.test(char)) {
+              return chars[Math.floor(Math.random() * chars.length)];
+            }
+            return char; // Keep spaces, numbers, punctuation as-is
           })
           .join('');
         
@@ -1612,34 +1616,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     let imagesToggled = false;
     
-    // Test if we can detect clicks at all
-    console.log('🖱️ About to add click listener to document');
+    // Create visible toggle button - 10px red square top right
+    const toggleButton = document.createElement('div');
+    toggleButton.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      z-index: 99999;
+      cursor: pointer;
+      border-radius: 2px;
+      opacity: 0.8;
+      transition: all 0.2s ease;
+    `;
+    toggleButton.title = 'Toggle Image Heights';
+    document.body.appendChild(toggleButton);
+    console.log('🔴 Red toggle button created');
     
     try {
     
-    document.addEventListener('click', (e) => {
-      console.log('🖱️ Click detected on:', e.target.tagName, e.target);
-      
-      // Only trigger on body clicks, background containers, or images
-      const isBodyClick = e.target === document.body;
-      const isBackgroundClick = e.target.tagName === 'SECTION' || 
-                               e.target.classList.contains('section') ||
-                               e.target.classList.contains('main-wrapper') ||
-                               e.target.tagName === 'MAIN';
-      const isImageClick = e.target.tagName === 'IMG';
-      
-      if (!isBodyClick && !isBackgroundClick && !isImageClick) {
-        console.log('🖱️ Skipping - not a body/background/image click. Target:', e.target.tagName, e.target.className);
-        return;
-      }
-      
-      console.log('🖱️ Valid body/background/image click detected!');
-      
-      // Skip if clicking on interactive elements (double-check)
-      if (e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) {
-        console.log('🖱️ Skipping interactive element');
-        return;
-      }
+    toggleButton.addEventListener('click', (e) => {
+      console.log('🔴 Red button clicked - toggling .img-parallax images');
       
       const allImages = document.querySelectorAll('.img-parallax');
       console.log(`🖱️ Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
