@@ -1580,30 +1580,42 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initImageToggle() {
     let imagesToggled = false;
     
-    document.body.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
+      console.log('🖱️ Click detected on:', e.target.tagName, e.target);
+      
       // Skip if clicking on interactive elements
-      if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button')) return;
+      if (e.target.tagName === 'A' || e.target.closest('a') || e.target.closest('.nav') || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) {
+        console.log('🖱️ Skipping interactive element');
+        return;
+      }
       
       const allImages = document.querySelectorAll('img');
+      console.log(`🖱️ Found ${allImages.length} images, toggled state: ${imagesToggled}`);
       
       if (!imagesToggled) {
         // Fit all images to window width maintaining ratio
-        allImages.forEach(img => {
-          if (img.naturalWidth && img.naturalHeight) {
-            const aspectRatio = img.naturalHeight / img.naturalWidth;
-            const newWidth = window.innerWidth;
-            const newHeight = newWidth * aspectRatio;
-            
-            img.style.transition = 'all 0.3s ease';
-            img.style.width = newWidth + 'px';
-            img.style.height = newHeight + 'px';
-            img.style.objectFit = 'cover';
-          }
+        console.log('🖱️ Expanding images to window width');
+        allImages.forEach((img, index) => {
+          // Use current dimensions if natural dimensions not available
+          const currentWidth = img.offsetWidth || img.getBoundingClientRect().width || 200;
+          const currentHeight = img.offsetHeight || img.getBoundingClientRect().height || 200;
+          const aspectRatio = currentHeight / currentWidth;
+          const newWidth = window.innerWidth;
+          const newHeight = newWidth * aspectRatio;
+          
+          console.log(`🖱️ Image ${index}: ${currentWidth}x${currentHeight} → ${newWidth}x${Math.round(newHeight)}`);
+          
+          img.style.transition = 'all 0.3s ease';
+          img.style.width = newWidth + 'px';
+          img.style.height = newHeight + 'px';
+          img.style.objectFit = 'cover';
         });
         imagesToggled = true;
       } else {
         // Revert to original sizes
-        allImages.forEach(img => {
+        console.log('🖱️ Reverting images to original sizes');
+        allImages.forEach((img, index) => {
+          console.log(`🖱️ Reverting image ${index}`);
           img.style.width = '';
           img.style.height = '';
           img.style.transition = '';
