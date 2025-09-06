@@ -62,12 +62,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.head.appendChild(script);
   }
 
-  // Load all GSAP dependencies
+  // Load all GSAP dependencies including ScrambleTextPlugin
   function loadGSAP() {
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
       console.log('✅ GSAP loaded');
-              loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
+      // Load SplitText plugin for line-by-line animations
+      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/SplitText.min.js', () => {
+        console.log('✅ SplitText plugin loaded');
+        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
           console.log('✅ ScrollTrigger script loaded');
           // Wait a moment for ScrollTrigger to initialize, then register
@@ -87,6 +90,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log('✅ Observer loaded');
           });
         });
+      });
     });
   }
 
@@ -348,85 +352,112 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Scramble text effect function with mobile optimization
-  function scrambleText(element, duration = 2000, delay = 0) {
-    if (element.classList.contains('counter')) {
-      console.log('🔢 scrambleText called for Webflow counter:', element, 'duration:', duration, 'delay:', delay);
-    }
-    if (element.dataset.scrambled || element.dataset.infiniteClone) return;
+  // Simple scramble effect for individual lines
+  function scrambleLine(element, duration = 1000) {
+    const originalText = element.textContent;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let frame = 0;
+    const totalFrames = Math.floor(duration / 50); // 50ms per frame
+    const revealSpeed = originalText.length / (totalFrames * 0.7); // Reveal 70% through animation
     
-    // Skip scramble for elements inside label-wrap to preserve line breaks
-    if (element.closest('.label-wrap')) {
-      console.log('🔄 Skipping scramble for label-wrap element to preserve formatting');
-      element.dataset.scrambled = 'true';
-      element.style.opacity = '1'; // Make it visible immediately
+    const interval = setInterval(() => {
+      let scrambledText = '';
+      
+      for (let i = 0; i < originalText.length; i++) {
+        const revealPoint = i * revealSpeed;
+        
+        if (frame > revealPoint) {
+          scrambledText += originalText[i];
+        } else if (/[a-zA-Z]/.test(originalText[i])) {
+          scrambledText += chars[Math.floor(Math.random() * chars.length)];
+        } else {
+          scrambledText += originalText[i]; // Keep spaces and punctuation
+        }
+      }
+      
+      element.textContent = scrambledText;
+      frame++;
+      
+      if (frame >= totalFrames) {
+        clearInterval(interval);
+        element.textContent = originalText;
+        
+        // Handle special elements
+        if (element.classList.contains('counter')) {
+          element.dataset.counterStarted = 'true';
+          startTimeCounter(element);
+        }
+        if (element.id === 'rotating-text') {
+          element.dataset.rotatingStarted = 'true';
+          try {
+            startRotatingText(element);
+          } catch (error) {
+            console.error('🔄 Error starting rotating text:', error);
+          }
+        }
+      }
+    }, 50);
+  }
+
+  // Clean line-by-line scrambling with GSAP stagger
+  function initHeadingAnimations() {
+    if (typeof window.gsap === 'undefined') {
+      console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    element.dataset.scrambled = 'true';
+    console.log('🎭 Starting clean heading animations...');
     
-    const originalText = element.textContent.trim();
-    if (!originalText) return;
+    // Get all heading elements
+    const headings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
     
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    
-    // Same scramble speed for both mobile and desktop, letters only
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let currentText = originalText;
-    let iteration = 0;
-    
-    // Same speed on both mobile and desktop
-    const textLength = originalText.length;
-    const revealRate = Math.max(1/3, textLength / 50); // Same reveal rate for both
-    const intervalSpeed = 80; // Same interval speed for both
-    
-    setTimeout(() => {
-      // Start scramble immediately with element visible
-      element.style.opacity = '1';
+    headings.forEach((heading, headingIndex) => {
+      if (heading.dataset.animationInit || heading.dataset.infiniteClone) return;
+      if (heading.closest('.label-wrap')) return;
       
-      const interval = setInterval(() => {
-        currentText = originalText
-          .split('')
-          .map((char, index) => {
-            if (index < iteration) {
-              return originalText[index];
-            }
-            // Only scramble letters, keep spaces and punctuation
-            if (/[a-zA-Z]/.test(char)) {
-              return chars[Math.floor(Math.random() * chars.length)];
-            }
-            return char; // Keep spaces, numbers, punctuation as-is
-          })
-          .join('');
+      heading.dataset.animationInit = 'true';
+      
+      // Split into lines if has line breaks, otherwise treat as single line
+      let lines = [];
+      const text = heading.innerHTML.trim();
+      
+      if (text.includes('<br>')) {
+        const lineTexts = text.split(/<br\s*\/?>/i);
+        heading.innerHTML = '';
         
-        element.textContent = currentText;
-        
-        if (iteration >= originalText.length) {
-          clearInterval(interval);
-          element.textContent = originalText;
-          
-          // Start counter functionality after scramble completes
-          if (element.classList.contains('counter')) {
-            console.log('🔢 Scramble complete, starting counter');
-            element.dataset.counterStarted = 'true';
-            startTimeCounter(element);
+        lineTexts.forEach((lineText, i) => {
+          if (lineText.trim()) {
+            const lineDiv = document.createElement('div');
+            lineDiv.textContent = lineText.trim();
+            lineDiv.style.opacity = '0';
+            heading.appendChild(lineDiv);
+            lines.push(lineDiv);
           }
-          
-          // Start rotating text functionality after scramble completes
-          if (element.id === 'rotating-text') {
-            console.log('🔄 Scramble complete, starting rotating text');
-            element.dataset.rotatingStarted = 'true';
-            try {
-              startRotatingText(element);
-            } catch (error) {
-              console.error('🔄 Error starting rotating text:', error);
-            }
-          }
-        }
+        });
+      } else {
+        heading.style.opacity = '0';
+        lines.push(heading);
+      }
+      
+      // Stagger animation for each line
+      const baseDelay = headingIndex * 0.2; // Stagger headings
+      
+      lines.forEach((line, lineIndex) => {
+        const lineDelay = baseDelay + (lineIndex * 0.3); // Stagger lines within heading
         
-        iteration += revealRate;
-      }, intervalSpeed);
-    }, delay * (isMobile ? 0.3 : 1)); // Start much sooner on mobile (30% of original delay)
+        // Fade in with GSAP
+        window.gsap.to(line, {
+          opacity: 1,
+          duration: 0.5,
+          delay: lineDelay,
+          ease: "power2.out",
+          onComplete: () => {
+            // Start scrambling after fade in
+            scrambleLine(line, 1000);
+          }
+        });
+      });
+    });
   }
 
   // Wrap text lines for animation (simplified for hover effects only)
@@ -558,109 +589,52 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Scramble text animations (runs once on page load)
-    let textElements = [];
-    
-    // Collect all text elements (excluding infinite scroll clones)
-    largeHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
-    regularHeadings.forEach(h => { if (!h.classList.contains('link') && !h.dataset.hoverInit && !h.dataset.infiniteClone) textElements.push(h); });
-    smallHeadings.forEach(h => { if (!h.dataset.infiniteClone) textElements.push(h); });
-    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) textElements.push(p); });
-    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) textElements.push(link); });
-    
-    // Force add counter if it wasn't picked up by selectors
-    const counter = document.querySelector('.counter');
-    if (counter) {
-      if (!textElements.includes(counter)) {
-        console.log('🔢 Force adding counter to textElements');
-        textElements.push(counter);
-      } else {
-        console.log('🔢 Counter already in textElements');
-      }
-      console.log('🔢 Counter element found:', counter);
-      console.log('🔢 Counter classes:', counter.className);
-    } else {
-      console.log('❌ No .counter element found in DOM');
-    }
-    
-    // Force add rotating text if it exists
-    const rotatingText = document.getElementById('rotating-text');
-    if (rotatingText) {
-      if (!textElements.includes(rotatingText)) {
-        console.log('🔄 Force adding rotating text to textElements');
-        textElements.push(rotatingText);
-      } else {
-        console.log('🔄 Rotating text already in textElements');
-      }
-      console.log('🔄 Rotating text element found:', rotatingText);
-    } else {
-      console.log('🔄 No rotating text element found - skipping');
-    }
-    
-    // Sort all text elements by vertical position for consistent top-down animation
-    textElements.sort((a, b) => {
-      const rectA = a.getBoundingClientRect();
-      const rectB = b.getBoundingClientRect();
-      // Primary sort: top position
-      if (Math.abs(rectA.top - rectB.top) > 5) { // 5px threshold for "same line"
-        return rectA.top - rectB.top;
-      }
-      // Secondary sort: left position (for elements on same line)
-      return rectA.left - rectB.left;
-    });
-    console.log('📐 Sorted', textElements.length, 'text elements by vertical position for consistent top-down animation');
-    
-    // Apply scramble effect to all text elements - same speed, but starts sooner on mobile
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const staggerDelay = isMobile ? 50 : 100; // Slightly faster stagger on mobile
-    const baseDelay = isMobile ? 50 : 300; // Much shorter base delay on mobile
-    
-    console.log('🎯 Total text elements for scramble:', textElements.length, `(Mobile: ${isMobile})`);
-    textElements.forEach((element, index) => {
-      if (element.classList.contains('counter')) {
-        console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
-      }
-      // For hover elements, scramble the visible text span
-      const linkText1 = element.querySelector('.link-text-1');
-      if (linkText1) {
-        linkText1.style.opacity = '0';
-        scrambleText(linkText1, 100, baseDelay + (index * staggerDelay));
-        // Safety fallback for hover elements - faster on mobile
-        setTimeout(() => {
-          if (linkText1.style.opacity === '0') {
-            linkText1.style.opacity = '1';
-            console.log('🔧 Fallback: Made hover text visible');
-          }
-        }, isMobile ? 1000 : 2000);
-      } else {
-        element.style.opacity = '0';
-        scrambleText(element, 100, baseDelay + (index * staggerDelay));
-        // Safety fallback for regular elements - faster on mobile
-        setTimeout(() => {
-          if (element.style.opacity === '0') {
-            element.style.opacity = '1';
-            console.log('🔧 Fallback: Made element visible', element);
-          }
-        }, isMobile ? 1000 : 2000);
-      }
-    });
-    
-    // Emergency fallback - ensure all text is visible after x seconds (excluding clones)
+    // Clean heading animations with line-by-line staggered scrambling
     setTimeout(() => {
-      const hiddenElements = document.querySelectorAll('[style*="opacity: 0"]:not([data-infinite-clone]), .initial-hidden:not([data-infinite-clone])');
-      if (hiddenElements.length > 0) {
-        console.log('⚠️ Emergency fallback: Making all hidden text visible');
-        hiddenElements.forEach(el => {
-          if (!el.dataset.infiniteClone) {
-            el.style.opacity = '1';
-            el.style.transform = 'none';
-            el.classList.remove('initial-hidden');
-        }
+      initHeadingAnimations();
+    }, 100); // Small delay to ensure GSAP is ready
+    
+    // Handle special elements that need custom behavior
+    const counter = document.querySelector('.counter');
+    if (counter && !counter.closest('.label-wrap') && !counter.dataset.infiniteClone) {
+      counter.style.opacity = '0';
+      window.gsap.to(counter, {
+        opacity: 1,
+        duration: 0.5,
+        delay: 0.5,
+        onComplete: () => scrambleLine(counter, 1000)
       });
     }
-    }, 2000);
     
-    console.log(`🎯 Scramble effect applied to ${textElements.length} text elements`);
+    const rotatingText = document.getElementById('rotating-text');
+    if (rotatingText && !rotatingText.dataset.infiniteClone) {
+      rotatingText.style.opacity = '0';
+      window.gsap.to(rotatingText, {
+        opacity: 1,
+        duration: 0.5,
+        delay: 0.8,
+        onComplete: () => scrambleLine(rotatingText, 1000)
+      });
+    }
+    
+    console.log('🎭 Clean heading animations initialized');
+    
+    // Emergency fallback - ensure all heading text is visible after 5 seconds
+    setTimeout(() => {
+      const hiddenHeadings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
+      hiddenHeadings.forEach(heading => {
+        if (heading.style.opacity === '0' && !heading.dataset.infiniteClone) {
+          heading.style.opacity = '1';
+          console.log('🔧 Emergency fallback: Made heading visible', heading.tagName);
+        }
+        // Also check child divs (lines)
+        heading.querySelectorAll('div').forEach(div => {
+          if (div.style.opacity === '0') {
+            div.style.opacity = '1';
+          }
+        });
+      });
+    }, 5000);
     
     // Fallback: ensure counter starts even if scramble doesn't trigger it
     setTimeout(() => {
