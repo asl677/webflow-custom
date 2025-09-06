@@ -1014,10 +1014,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
-    console.log('✅ SIMPLIFIED text animations complete - ONLY heading scrambling, no other animations to prevent conflicts');
+    console.log('✅ Text animations complete - now setting up infinite scroll');
     
-    // Skip setupInfiniteScroll and other complex systems that might interfere
-    console.log('🚫 Skipping infinite scroll and other complex systems to focus on text scrambling only');
+    // Setup infinite scroll after text animations
+    setupInfiniteScroll();
   }
   
   // Masked image animations - called after text completes on mobile
