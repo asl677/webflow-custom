@@ -162,12 +162,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initPreloader() {
     loadGSAP();
     
+    // Wait for GSAP to load before starting preloader
+    function waitForGSAPThenStart() {
+      if (typeof window.gsap !== 'undefined') {
+        console.log('✅ GSAP ready, starting preloader');
+        console.log('📊 GSAP version:', window.gsap.version);
+        console.log('📊 ScrollTrigger available:', !!window.gsap.ScrollTrigger);
+        startActualPreloader();
+      } else {
+        console.log('⏳ Still waiting for GSAP...', {
+          gsap: typeof window.gsap,
+          Webflow: typeof window.Webflow,
+          readyState: document.readyState
+        });
+        setTimeout(waitForGSAPThenStart, 100);
+      }
+    }
+    
     // Fallback: if GSAP doesn't load in 5 seconds, continue without it
     setTimeout(() => {
       if (!gsapLoaded) {
         console.warn('⚠️ GSAP failed to load in 5 seconds - continuing without enhanced animations');
+        startActualPreloader();
       }
     }, 5000);
+    
+    waitForGSAPThenStart();
+  }
+  
+  function startActualPreloader() {
     
     const preloader = createPreloader();
     const counter = preloader.querySelector('.counter');
@@ -451,6 +474,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Get heading elements but SKIP any .link elements to avoid conflicts
     const headings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
+    console.log(`🔍 Found ${headings.length} heading elements:`, Array.from(headings).map(h => h.textContent.substring(0, 20)));
     
     headings.forEach((heading, headingIndex) => {
       if (heading.dataset.animationInit || heading.dataset.infiniteClone) return;
@@ -458,13 +482,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (heading.classList.contains('link')) return; // SKIP link elements completely
       
       heading.dataset.animationInit = 'true';
-      console.log('🎯 Scrambling heading:', heading.textContent.substring(0, 30));
+      console.log(`🎯 [${headingIndex}] Scrambling heading:`, heading.textContent.substring(0, 30), 'delay:', headingIndex * 100 + 'ms');
       
       // Don't mess with DOM structure - just scramble the text as-is
       const staggerDelay = headingIndex * 100; // 100ms between headings
       
       // Start scrambling immediately - no opacity changes, no DOM manipulation
       setTimeout(() => {
+        console.log(`🎬 [${headingIndex}] Starting scramble for:`, heading.textContent.substring(0, 30));
         scrambleLine(heading, 800); // Fast scramble duration
       }, staggerDelay);
     });
@@ -1547,8 +1572,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }, 2000);
 
-  // Fallback init
-  setTimeout(() => !isInit && init(), 2000);
+  // Fallback init - removed since main flow now waits for GSAP properly
 
   // Main initialization function with error protection
   function init() {
@@ -1558,13 +1582,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           try {
-            console.log('✅ GSAP loaded, ready for animations');
+            console.log('✅ GSAP loaded, starting text animations');
+            initTextAndOtherAnimations();
           } catch (error) {
             console.error('❌ Animation initialization error:', error);
             // Don't let our errors break Webflow
           }
         }); 
       } else {
+        console.log('⏳ Waiting for GSAP...');
         setTimeout(waitForGSAP, 100); 
       }
     }
