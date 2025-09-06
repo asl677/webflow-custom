@@ -538,74 +538,122 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 60);
   }
   
-  // Letter-by-letter hover effects with scrambling for links
+  // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
     const letterElements = document.querySelectorAll('.letter');
     console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
     
+    // Regular letter bouncing for non-links
     letterElements.forEach((letter, i) => {
       const parentElement = letter.closest('a, .link');
       const isLink = parentElement && parentElement.tagName === 'A';
       
-      letter.addEventListener('mouseenter', () => {
-        if (window.gsap) {
-          // Bouncy movement for all letters
-          window.gsap.to(letter, {
-            y: -15,
-            duration: 0.3,
-            delay: i * 0.02, // Stagger delay
-            ease: "power2.out"
-          });
-          
-          // Add scrambling effect for links
-          if (isLink) {
-            console.log(`🔥 Scrambling link letter: "${letter.textContent}"`);
-            startLetterScramble(letter);
+      if (!isLink) {
+        letter.addEventListener('mouseenter', () => {
+          if (window.gsap) {
+            window.gsap.to(letter, {
+              y: -15,
+              duration: 0.3,
+              delay: i * 0.02, // Stagger delay
+              ease: "power2.out"
+            });
           }
+        });
+        
+        letter.addEventListener('mouseleave', () => {
+          if (window.gsap) {
+            window.gsap.to(letter, {
+              y: 0,
+              duration: 0.3,
+              delay: i * 0.02, // Stagger delay
+              ease: "power2.in"
+            });
+          }
+        });
+      }
+    });
+    
+    // Whole-word hover scrambling for links
+    const linkElements = document.querySelectorAll('a');
+    linkElements.forEach(link => {
+      const letters = link.querySelectorAll('.letter');
+      if (letters.length === 0) return; // Skip links without letter spans
+      
+      console.log(`🔗 Setting up whole-word scramble for: "${link.textContent.trim()}"`);
+      
+      link.addEventListener('mouseenter', () => {
+        console.log(`🔥 Scrambling entire link: "${link.textContent.trim()}"`);
+        
+        // Bouncy movement for all letters in the link
+        if (window.gsap) {
+          letters.forEach((letter, i) => {
+            window.gsap.to(letter, {
+              y: -15,
+              duration: 0.3,
+              delay: i * 0.02,
+              ease: "power2.out"
+            });
+          });
         }
+        
+        // Start scrambling the entire word
+        startWordScramble(link);
       });
       
-      letter.addEventListener('mouseleave', () => {
+      link.addEventListener('mouseleave', () => {
+        console.log(`🔥 Stopping scramble for: "${link.textContent.trim()}"`);
+        
+        // Return letters to original position
         if (window.gsap) {
-          window.gsap.to(letter, {
-            y: 0,
-            duration: 0.3,
-            delay: i * 0.02, // Stagger delay
-            ease: "power2.in"
+          letters.forEach((letter, i) => {
+            window.gsap.to(letter, {
+              y: 0,
+              duration: 0.3,
+              delay: i * 0.02,
+              ease: "power2.in"
+            });
           });
-          
-          // Stop scrambling for links
-          if (isLink) {
-            stopLetterScramble(letter);
-          }
         }
+        
+        // Stop scrambling the word
+        stopWordScramble(link);
       });
     });
   }
   
-  // Start scrambling a single letter on hover
-  function startLetterScramble(letterSpan) {
-    if (letterSpan.scrambleInterval) return; // Already scrambling
+  // Start scrambling entire word on hover
+  function startWordScramble(linkElement) {
+    if (linkElement.wordScrambleInterval) return; // Already scrambling
     
-    const originalChar = letterSpan.textContent;
+    const letters = linkElement.querySelectorAll('.letter');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     
-    // Don't scramble spaces or punctuation
-    if (!/[a-zA-Z0-9]/.test(originalChar)) return;
+    // Store original text
+    linkElement.originalLetters = Array.from(letters).map(letter => letter.textContent);
     
-    letterSpan.originalChar = originalChar;
-    letterSpan.scrambleInterval = setInterval(() => {
-      letterSpan.textContent = chars[Math.floor(Math.random() * chars.length)];
+    linkElement.wordScrambleInterval = setInterval(() => {
+      letters.forEach(letter => {
+        if (/[a-zA-Z0-9]/.test(letter.textContent)) {
+          letter.textContent = chars[Math.floor(Math.random() * chars.length)];
+        }
+      });
     }, 80); // Fast scramble
   }
   
-  // Stop scrambling and restore original character
-  function stopLetterScramble(letterSpan) {
-    if (letterSpan.scrambleInterval) {
-      clearInterval(letterSpan.scrambleInterval);
-      letterSpan.scrambleInterval = null;
-      if (letterSpan.originalChar) {
-        letterSpan.textContent = letterSpan.originalChar;
+  // Stop scrambling and restore original word
+  function stopWordScramble(linkElement) {
+    if (linkElement.wordScrambleInterval) {
+      clearInterval(linkElement.wordScrambleInterval);
+      linkElement.wordScrambleInterval = null;
+      
+      // Restore original letters
+      if (linkElement.originalLetters) {
+        const letters = linkElement.querySelectorAll('.letter');
+        letters.forEach((letter, i) => {
+          if (linkElement.originalLetters[i] !== undefined) {
+            letter.textContent = linkElement.originalLetters[i];
+          }
+        });
       }
     }
   }
@@ -729,7 +777,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           scrambledText += originalText[i]; // Revealed character
         } else if (/[a-zA-Z0-9]/.test(originalText[i])) {
           scrambledText += chars[Math.floor(Math.random() * chars.length)]; // Scrambled character
-    } else {
+        } else {
           scrambledText += originalText[i]; // Keep spaces and punctuation
         }
       }
@@ -787,7 +835,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Start new line
         lines.push(currentLine.trim());
         currentLine = word;
-        } else {
+      } else {
         currentLine = testLine;
       }
     });
