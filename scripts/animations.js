@@ -626,32 +626,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const baseDelay = isMobile ? 50 : 300; // Much shorter base delay on mobile
     
     console.log('🎯 Total text elements for scramble:', textElements.length, `(Mobile: ${isMobile})`);
+    
+    // Debug: Show first few elements being processed
+    textElements.slice(0, 5).forEach((el, i) => {
+      console.log(`🔍 Element ${i}:`, {
+        tagName: el.tagName,
+        className: el.className,
+        text: el.textContent.substring(0, 30),
+        initialOpacity: window.getComputedStyle(el).opacity
+      });
+    });
+    
     textElements.forEach((element, index) => {
+      const delay = baseDelay + (index * staggerDelay);
+      console.log(`🎯 Processing element ${index}: "${element.textContent.substring(0, 20)}" with ${delay}ms delay`);
+      
       if (element.classList.contains('counter')) {
         console.log('🔢 Processing Webflow counter for scramble at index:', index, element);
       }
+      
       // For hover elements, scramble the visible text span
       const linkText1 = element.querySelector('.link-text-1');
       if (linkText1) {
+        console.log(`🔗 Hover element ${index}: setting opacity 0 and scrambling`);
         linkText1.style.opacity = '0';
-        scrambleText(linkText1, 100, baseDelay + (index * staggerDelay));
-        // Safety fallback for hover elements - faster on mobile
+        scrambleText(linkText1, 100, delay);
         setTimeout(() => {
           if (linkText1.style.opacity === '0') {
             linkText1.style.opacity = '1';
             console.log('🔧 Fallback: Made hover text visible');
           }
-        }, isMobile ? 1000 : 2000);
+        }, delay + 1000);
       } else {
+        console.log(`📝 Regular element ${index}: setting opacity 0 and scrambling`);
         element.style.opacity = '0';
-        scrambleText(element, 100, baseDelay + (index * staggerDelay));
-        // Safety fallback for regular elements - faster on mobile
+        scrambleText(element, 100, delay);
         setTimeout(() => {
           if (element.style.opacity === '0') {
             element.style.opacity = '1';
-            console.log('🔧 Fallback: Made element visible', element);
+            console.log('🔧 Fallback: Made element visible', element.tagName);
           }
-        }, isMobile ? 1000 : 2000);
+        }, delay + 1500);
       }
     });
     
