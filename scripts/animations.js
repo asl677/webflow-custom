@@ -399,14 +399,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 50);
   }
 
-  // Clean line-by-line scrambling with GSAP stagger
+  // Simple immediate scrambling without messing with Webflow opacity
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
       console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    console.log('🎭 Starting clean heading animations...');
+    console.log('🎭 Starting simple heading scrambling...');
     
     // Get all heading elements
     const headings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
@@ -417,46 +417,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       heading.dataset.animationInit = 'true';
       
-      // Split into lines if has line breaks, otherwise treat as single line
-      let lines = [];
-      const text = heading.innerHTML.trim();
+      // Don't mess with DOM structure - just scramble the text as-is
+      const staggerDelay = headingIndex * 200; // 200ms between headings
       
-      if (text.includes('<br>')) {
-        const lineTexts = text.split(/<br\s*\/?>/i);
-        heading.innerHTML = '';
-        
-        lineTexts.forEach((lineText, i) => {
-          if (lineText.trim()) {
-            const lineDiv = document.createElement('div');
-            lineDiv.textContent = lineText.trim();
-            lineDiv.style.opacity = '0';
-            heading.appendChild(lineDiv);
-            lines.push(lineDiv);
-          }
-        });
-      } else {
-        heading.style.opacity = '0';
-        lines.push(heading);
-      }
-      
-      // Stagger animation for each line
-      const baseDelay = headingIndex * 0.2; // Stagger headings
-      
-      lines.forEach((line, lineIndex) => {
-        const lineDelay = baseDelay + (lineIndex * 0.3); // Stagger lines within heading
-        
-        // Fade in with GSAP
-        window.gsap.to(line, {
-          opacity: 1,
-          duration: 0.5,
-          delay: lineDelay,
-          ease: "power2.out",
-          onComplete: () => {
-            // Start scrambling after fade in
-            scrambleLine(line, 1000);
-          }
-        });
-      });
+      // Start scrambling immediately - no opacity changes, no DOM manipulation
+      setTimeout(() => {
+        scrambleLine(heading, 1500); // Longer scramble duration
+      }, staggerDelay);
     });
   }
 
@@ -589,33 +556,63 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     }
 
-    // Clean heading animations with line-by-line staggered scrambling
+    // Clean heading animations - immediate scrambling
     setTimeout(() => {
       initHeadingAnimations();
-    }, 100); // Small delay to ensure GSAP is ready
+    }, 100);
     
-    // Handle special elements that need custom behavior
+    // Restore all other text animations and hover effects
+    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text):not(.label-wrap *), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text):not(.label-wrap *)');
+    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]):not(.label-wrap a):not(.label-wrap *), .menu-link:not([data-infinite-clone]):not(.label-wrap .menu-link):not(.label-wrap *), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone]):not(.label-wrap *)');
+    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
+    const otherEls = document.querySelectorAll('.nav:not(.w-layout-grid), .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+
+    // Initialize hover effects for links
+    initHover();
+    
+    const tl = window.gsap.timeline();
+    
+    // Animate paragraphs and links with stagger
+    let allTextElements = [];
+    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) allTextElements.push(p); });
+    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) allTextElements.push(link); });
+    
+    // Sort by position for natural staggering
+    allTextElements.sort((a, b) => {
+      const rectA = a.getBoundingClientRect();
+      const rectB = b.getBoundingClientRect();
+      if (Math.abs(rectA.top - rectB.top) > 5) {
+        return rectA.top - rectB.top;
+      }
+      return rectA.left - rectB.left;
+    });
+    
+    // Animate text elements with stagger
+    allTextElements.forEach((element, index) => {
+      const linkText1 = element.querySelector('.link-text-1');
+      if (linkText1) {
+        linkText1.style.opacity = '0';
+        window.gsap.to(linkText1, { opacity: 1, duration: 0.6, delay: 0.5 + (index * 0.1) });
+      } else {
+        element.style.opacity = '0';
+        window.gsap.to(element, { opacity: 1, duration: 0.6, delay: 0.5 + (index * 0.1) });
+      }
+    });
+    
+    // Handle special elements
     const counter = document.querySelector('.counter');
     if (counter && !counter.closest('.label-wrap') && !counter.dataset.infiniteClone) {
-      counter.style.opacity = '0';
-      window.gsap.to(counter, {
-        opacity: 1,
-        duration: 0.5,
-        delay: 0.5,
-        onComplete: () => scrambleLine(counter, 1000)
-      });
+      scrambleLine(counter, 1000);
     }
     
     const rotatingText = document.getElementById('rotating-text');
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      rotatingText.style.opacity = '0';
-      window.gsap.to(rotatingText, {
-        opacity: 1,
-        duration: 0.5,
-        delay: 0.8,
-        onComplete: () => scrambleLine(rotatingText, 1000)
-      });
+      scrambleLine(rotatingText, 1000);
     }
+    
+    // Animate other elements
+    slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
+    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
     
     console.log('🎭 Clean heading animations initialized');
     
