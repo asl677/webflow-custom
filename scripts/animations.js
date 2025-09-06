@@ -538,20 +538,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 60);
   }
   
-  // Letter-by-letter hover effects like the CodePen
+  // Letter-by-letter hover effects with scrambling for links
   function initLetterHoverEffects() {
     const letterElements = document.querySelectorAll('.letter');
     console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
     
     letterElements.forEach((letter, i) => {
+      const parentElement = letter.closest('a, .link');
+      const isLink = parentElement && parentElement.tagName === 'A';
+      
       letter.addEventListener('mouseenter', () => {
         if (window.gsap) {
+          // Bouncy movement for all letters
           window.gsap.to(letter, {
             y: -15,
             duration: 0.3,
             delay: i * 0.02, // Stagger delay
             ease: "power2.out"
           });
+          
+          // Add scrambling effect for links
+          if (isLink) {
+            console.log(`🔥 Scrambling link letter: "${letter.textContent}"`);
+            startLetterScramble(letter);
+          }
         }
       });
       
@@ -563,9 +573,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             delay: i * 0.02, // Stagger delay
             ease: "power2.in"
           });
+          
+          // Stop scrambling for links
+          if (isLink) {
+            stopLetterScramble(letter);
+          }
         }
       });
     });
+  }
+  
+  // Start scrambling a single letter on hover
+  function startLetterScramble(letterSpan) {
+    if (letterSpan.scrambleInterval) return; // Already scrambling
+    
+    const originalChar = letterSpan.textContent;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    
+    // Don't scramble spaces or punctuation
+    if (!/[a-zA-Z0-9]/.test(originalChar)) return;
+    
+    letterSpan.originalChar = originalChar;
+    letterSpan.scrambleInterval = setInterval(() => {
+      letterSpan.textContent = chars[Math.floor(Math.random() * chars.length)];
+    }, 80); // Fast scramble
+  }
+  
+  // Stop scrambling and restore original character
+  function stopLetterScramble(letterSpan) {
+    if (letterSpan.scrambleInterval) {
+      clearInterval(letterSpan.scrambleInterval);
+      letterSpan.scrambleInterval = null;
+      if (letterSpan.originalChar) {
+        letterSpan.textContent = letterSpan.originalChar;
+      }
+    }
   }
   
   // Visible line scrambling that handles multiple simultaneous lines
@@ -745,7 +787,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Start new line
         lines.push(currentLine.trim());
         currentLine = word;
-      } else {
+        } else {
         currentLine = testLine;
       }
     });
