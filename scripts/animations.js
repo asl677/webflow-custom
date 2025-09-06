@@ -1,4 +1,4 @@
-// Version 2.6: Revert to working custom scramble, ensure counter is included
+// Version 2.7: Revert to working custom scramble, ensure counter is included
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -313,8 +313,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
 
-  // Initialize hover effects for links - clean slide up animation
+  // Initialize hover effects ONLY for .link elements that need slide-up animation
   function initHover() {
+    // ONLY target elements with .link class - nothing else should be duplicated
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
       
@@ -324,37 +325,46 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         return;
       }
       
+      console.log('🔗 Applying hover effect to .link element:', link.textContent.substring(0, 20));
+      
       const originalText = link.textContent.trim();
+      const rect = link.getBoundingClientRect();
+      const height = rect.height;
       
-      // Simple container setup
-      link.style.cssText = `
-        position: relative;
-        overflow: hidden;
-        display: inline-block;
-      `;
+      // Set up container for hover effect
+      link.style.position = 'relative';
+      link.style.overflow = 'hidden';
+      link.style.display = 'inline-block';
+      link.style.height = height + 'px';
       
-      // Create two text elements stacked vertically
+      // Create slide-up hover effect with two texts
       link.innerHTML = `
-        <span class="text-original" style="display: block; transform: translateY(0%);">${originalText}</span>
-        <span class="text-hover" style="display: block; position: absolute; top: 0; left: 0; transform: translateY(100%);">${originalText}</span>
+        <span class="text-1" style="position:absolute;top:0;left:0;line-height:${height}px;">${originalText}</span>
+        <span class="text-2" style="position:absolute;top:${height}px;left:0;line-height:${height}px;">${originalText}</span>
       `;
       
-      // Simple GSAP hover animation
-      const original = link.querySelector('.text-original');
-      const hover = link.querySelector('.text-hover');
+      const text1 = link.querySelector('.text-1');
+      const text2 = link.querySelector('.text-2');
       
+      // Hover animations
       link.addEventListener('mouseenter', () => {
-        window.gsap.to(original, { yPercent: -100, duration: 0.3, ease: "power2.out" });
-        window.gsap.to(hover, { yPercent: 0, duration: 0.3, ease: "power2.out" });
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.to(text1, { y: -height, duration: 0.3, ease: "power2.out" });
+          window.gsap.to(text2, { y: -height, duration: 0.3, ease: "power2.out" });
+        }
       });
       
       link.addEventListener('mouseleave', () => {
-        window.gsap.to(original, { yPercent: 0, duration: 0.3, ease: "power2.out" });
-        window.gsap.to(hover, { yPercent: 100, duration: 0.3, ease: "power2.out" });
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.to(text1, { y: 0, duration: 0.3, ease: "power2.out" });
+          window.gsap.to(text2, { y: 0, duration: 0.3, ease: "power2.out" });
+        }
       });
       
       link.dataset.hoverInit = 'true';
     });
+    
+    console.log('🔗 Hover effects applied only to .link elements');
   }
 
   // Simple scramble effect for individual lines - much slower
@@ -413,14 +423,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('🎭 Starting simple heading scrambling...');
     
-    // Get all heading elements
+    // Get heading elements but SKIP any .link elements to avoid conflicts
     const headings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
     
     headings.forEach((heading, headingIndex) => {
       if (heading.dataset.animationInit || heading.dataset.infiniteClone) return;
       if (heading.closest('.label-wrap')) return;
+      if (heading.classList.contains('link')) return; // SKIP link elements completely
       
       heading.dataset.animationInit = 'true';
+      console.log('🎯 Scrambling heading:', heading.textContent.substring(0, 30));
       
       // Don't mess with DOM structure - just scramble the text as-is
       const staggerDelay = headingIndex * 200; // 200ms between headings
