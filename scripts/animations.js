@@ -597,6 +597,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔄 No rotating text element found - skipping');
     }
     
+    // Force add nav links that were excluded from the main links selector
+    const navLinks = document.querySelectorAll('.nav a:not([data-infinite-clone]):not(.label-wrap *), .fake-nav a:not([data-infinite-clone]):not(.label-wrap *), .w-layout-grid.nav a:not([data-infinite-clone]):not(.label-wrap *)');
+    console.log('🧭 Found', navLinks.length, 'nav links to add');
+    navLinks.forEach(navLink => {
+      if (!navLink.dataset.hoverInit && !navLink.dataset.infiniteClone && !textElements.includes(navLink)) {
+        console.log('🧭 Adding nav link:', navLink.textContent.substring(0, 20));
+        textElements.push(navLink);
+      }
+    });
+    
     // Sort all text elements by vertical position for consistent top-down animation
     textElements.sort((a, b) => {
       const rectA = a.getBoundingClientRect();
@@ -612,7 +622,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Apply scramble effect to all text elements - same speed, but starts sooner on mobile
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const staggerDelay = isMobile ? 50 : 100; // Slightly faster stagger on mobile
+    const staggerDelay = isMobile ? 150 : 200; // Clear sequential staggering for word-by-word effect
     const baseDelay = isMobile ? 50 : 300; // Much shorter base delay on mobile
     
     console.log('🎯 Total text elements for scramble:', textElements.length, `(Mobile: ${isMobile})`);
