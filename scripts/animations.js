@@ -313,7 +313,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
 
-  // Initialize hover effects for links - simple slide up animation
+  // Initialize hover effects for links - clean slide up animation
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
@@ -325,31 +325,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
       
       const originalText = link.textContent.trim();
-      const rect = link.getBoundingClientRect();
-      const height = rect.height;
       
-      // Reset link and create container
-      Object.assign(link.style, { 
-        position: 'relative', 
-        overflow: 'hidden', 
-        display: 'inline-block',
-        height: height + 'px',
-        width: 'auto'
+      // Simple container setup
+      link.style.cssText = `
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+      `;
+      
+      // Create two text elements stacked vertically
+      link.innerHTML = `
+        <span class="text-original" style="display: block; transform: translateY(0%);">${originalText}</span>
+        <span class="text-hover" style="display: block; position: absolute; top: 0; left: 0; transform: translateY(100%);">${originalText}</span>
+      `;
+      
+      // Simple GSAP hover animation
+      const original = link.querySelector('.text-original');
+      const hover = link.querySelector('.text-hover');
+      
+      link.addEventListener('mouseenter', () => {
+        window.gsap.to(original, { yPercent: -100, duration: 0.3, ease: "power2.out" });
+        window.gsap.to(hover, { yPercent: 0, duration: 0.3, ease: "power2.out" });
       });
       
-      // Create wrapper with proper stacking
-      link.innerHTML = `<div class="hover-wrapper" style="position:relative;height:100%;width:100%;">
-        <span class="link-text-1" style="position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(0%);">${originalText}</span>
-        <span class="link-text-2" style="position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(100%);">${originalText}</span>
-      </div>`;
+      link.addEventListener('mouseleave', () => {
+        window.gsap.to(original, { yPercent: 0, duration: 0.3, ease: "power2.out" });
+        window.gsap.to(hover, { yPercent: 100, duration: 0.3, ease: "power2.out" });
+      });
       
-      // Create smooth slide-up animation
-      const tl = window.gsap.timeline({ paused: true, defaults: { duration: 0.3, ease: "power2.out" }});
-      tl.to(link.querySelector('.link-text-1'), { y: -height }, 0)
-        .to(link.querySelector('.link-text-2'), { y: -height }, 0);
-      
-      link.addEventListener('mouseenter', () => tl.play());
-      link.addEventListener('mouseleave', () => tl.reverse());
       link.dataset.hoverInit = 'true';
     });
   }
