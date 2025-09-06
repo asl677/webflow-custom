@@ -404,7 +404,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           element.textContent = originalText;
           
         // Handle special elements
-          if (element.classList.contains('counter')) {
+    if (element.classList.contains('counter')) {
             element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
@@ -449,21 +449,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🔍 Found ${validElements.length} text elements for scrambling`);
     
-    // Apply scrambling with stagger
+    // Apply line-by-line stagger reveal with scrambling (no fading)
     validElements.forEach((element, index) => {
       if (element.dataset.animationInit || element.dataset.infiniteClone) return;
       if (element.closest('.label-wrap')) return;
       
       element.dataset.animationInit = 'true';
-      console.log(`🎯 [${index}] SCRAMBLING:`, element.textContent.substring(0, 40));
+      console.log(`🎯 [${index}] LINE-BY-LINE:`, element.textContent.substring(0, 40));
+      
+      // Start invisible for line-by-line reveal
+      element.style.visibility = 'hidden';
+      element.style.opacity = '1'; // No fading, just visibility
       
       // Prepare element for hover effects by wrapping letters in spans
       wrapLettersInSpans(element);
       
-      // Start scrambling with stagger
-      const staggerDelay = index * 100; // 100ms between each element
-      setTimeout(() => {
-        simpleScrambleText(element, 1200); // 1.2 second scramble
+      // Line-by-line reveal with scrambling (faster stagger for clean sequential feel)
+      const staggerDelay = index * 80; // 80ms between each line
+    setTimeout(() => {
+        console.log(`📍 Revealing line ${index}`);
+        element.style.visibility = 'visible'; // Show immediately, no fade
+        simpleScrambleText(element, 1000); // 1 second scramble
       }, staggerDelay);
     });
     
@@ -503,8 +509,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     let frame = 0;
     const totalFrames = duration / 60; // 60ms intervals
-    
-    const interval = setInterval(() => {
+      
+      const interval = setInterval(() => {
       spans.forEach((span, i) => {
         const revealPoint = (i / spans.length) * totalFrames * 0.8;
         
@@ -522,7 +528,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       frame++;
       
       if (frame >= totalFrames) {
-        clearInterval(interval);
+          clearInterval(interval);
         // Ensure all letters are revealed
         spans.forEach((span, i) => {
           span.textContent = originalLetters[i];
@@ -650,7 +656,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           if (element.id === 'rotating-text') {
             element.dataset.rotatingStarted = 'true';
-            startRotatingText(element);
+              startRotatingText(element);
           }
           
           console.log(`🎉 All line scrambles completed for: ${element.textContent.substring(0, 30)}`);
@@ -681,7 +687,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           scrambledText += originalText[i]; // Revealed character
         } else if (/[a-zA-Z0-9]/.test(originalText[i])) {
           scrambledText += chars[Math.floor(Math.random() * chars.length)]; // Scrambled character
-        } else {
+    } else {
           scrambledText += originalText[i]; // Keep spaces and punctuation
         }
       }
