@@ -367,18 +367,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
 
-  // Initialize hover effects ONLY for .link elements that need slide-up animation
+  // Initialize hover effects - now handled by initLetterHoverEffects
   function initHover() {
-    // DISABLE ALL HOVER EFFECTS TO PREVENT TEXT DUPLICATION
-    console.log('🔗 Hover effects disabled to prevent text duplication');
-        return;
-    
-    /* ORIGINAL HOVER CODE DISABLED - WAS CAUSING DUPLICATION
-    document.querySelectorAll('.link').forEach(link => {
-      // Just use simple CSS hover, no JS duplication
-      link.style.transition = 'transform 0.3s ease';
-    });
-    */
+    // Hover effects are now handled by initLetterHoverEffects() in initHeadingAnimations
+    console.log('🔗 Hover effects handled by letter-based system');
   }
 
   // Simple scramble effect for individual lines - much slower
@@ -434,80 +426,138 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return text.replace(/[a-zA-Z0-9]/g, () => chars[Math.floor(Math.random() * chars.length)]);
   }
 
-  // Line-by-line scrambling for all visible text elements
+  // Simple working scrambling for all visible text elements
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
       console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    console.log('🎭 Starting line-by-line scrambling for all visible text...');
+    console.log('🎭 Starting SIMPLE working scrambling...');
     
-    // Find all visible text elements in viewport
-    const allTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, [class*="heading"], p, span, div, a');
-    const visibleElements = Array.from(allTextElements).filter(el => {
-      const rect = el.getBoundingClientRect();
-      const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+    // Find all text elements - cast wide net
+    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
+    const validElements = Array.from(textElements).filter(el => {
       const text = el.textContent?.trim();
-      const hasChildren = el.children.length > 0;
+      const hasChildren = el.children.length === 0; // No child elements
       const isVisible = window.getComputedStyle(el).display !== 'none';
+      const rect = el.getBoundingClientRect();
+      const inViewport = rect.top < window.innerHeight + 200; // Include elements slightly below fold
       
-      return text && text.length > 2 && text.length < 200 && !hasChildren && isVisible && inViewport;
+      return text && text.length > 2 && text.length < 150 && hasChildren && isVisible && inViewport;
     });
     
-    console.log(`🔍 Found ${visibleElements.length} visible text elements for line-by-line animation`);
+    console.log(`🔍 Found ${validElements.length} text elements for scrambling`);
     
-    // Log each element found
-    visibleElements.forEach((el, i) => {
-      console.log(`📍 [${i}] Element:`, {
-        tag: el.tagName,
-        classes: el.className,
-        text: el.textContent.substring(0, 30),
-        inViewport: true
-      });
-    });
-    
-    let globalLineIndex = 0; // Global counter for staggering across ALL lines
-    
-    visibleElements.forEach((element, elementIndex) => {
-      if (element.dataset.animationInit || element.dataset.infiniteClone) {
-        console.log(`⏭️ [${elementIndex}] Skipping already initialized element`);
-        return;
-      }
-      if (element.closest('.label-wrap')) {
-        console.log(`⏭️ [${elementIndex}] Skipping label-wrap element`);
-        return;
-      }
+    // Apply scrambling with stagger
+    validElements.forEach((element, index) => {
+      if (element.dataset.animationInit || element.dataset.infiniteClone) return;
+      if (element.closest('.label-wrap')) return;
       
       element.dataset.animationInit = 'true';
-      console.log(`🎯 [${elementIndex}] PROCESSING text element:`, element.textContent);
+      console.log(`🎯 [${index}] SCRAMBLING:`, element.textContent.substring(0, 40));
       
-      // Store original text and IMMEDIATELY replace with scrambled version
-      const originalText = element.textContent;
+      // Prepare element for hover effects by wrapping letters in spans
+      wrapLettersInSpans(element);
       
-      // Force element to be visible and prevent any CSS animations from interfering
-      element.style.opacity = '1';
-      element.style.visibility = 'visible';
-      element.style.transform = 'none';
-      
-      // Start with completely scrambled text - NO fade-in, NO original text showing
-      element.textContent = scrambleText(originalText);
-      console.log(`🔄 Started with fully scrambled text: ${element.textContent.substring(0, 30)}`);
-      
-      // Detect lines by simulating word wrapping using original text
-      const lines = detectTextLines({...element, textContent: originalText});
-      console.log(`📏 [${elementIndex}] Detected ${lines.length} lines:`, lines.map(line => line.substring(0, 15)));
-      
-      // Apply staggered scrambling to each line with proper timing
-      lines.forEach((lineText, lineIndex) => {
-        const staggerDelay = globalLineIndex * 120; // 120ms between each line across ALL elements
+      // Start scrambling with stagger
+      const staggerDelay = index * 100; // 100ms between each element
+      setTimeout(() => {
+        simpleScrambleText(element, 1200); // 1.2 second scramble
+      }, staggerDelay);
+    });
+    
+    // Setup hover effects after wrapping letters
+    setTimeout(() => {
+      initLetterHoverEffects();
+    }, 500);
+  }
+  
+  // Wrap individual letters in spans for hover effects
+  function wrapLettersInSpans(element) {
+    const text = element.textContent;
+    let wrappedHTML = '';
+    
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === ' ') {
+        wrappedHTML += ' '; // Keep spaces unwrapped
+      } else {
+        wrappedHTML += `<span class="letter">${char}</span>`;
+      }
+    }
+    
+    element.innerHTML = wrappedHTML;
+    console.log(`📝 Wrapped letters for: ${text.substring(0, 20)}`);
+  }
+  
+  // Simple, reliable text scrambling
+  function simpleScrambleText(element, duration = 1200) {
+    const spans = element.querySelectorAll('.letter');
+    if (spans.length === 0) return;
+    
+    const originalLetters = Array.from(spans).map(span => span.textContent);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    
+    console.log(`🎬 Starting scramble for ${originalLetters.length} letters`);
+    
+    let frame = 0;
+    const totalFrames = duration / 60; // 60ms intervals
+    
+    const interval = setInterval(() => {
+      spans.forEach((span, i) => {
+        const revealPoint = (i / spans.length) * totalFrames * 0.8;
         
-        setTimeout(() => {
-          console.log(`🎬 [${elementIndex}.${lineIndex}] Scrambling line ${globalLineIndex}:`, lineText.substring(0, 20));
-          scrambleTextLineVisible(element, lineText, lineIndex, 1000, originalText); // Longer duration, pass original text
-        }, staggerDelay);
-        
-        globalLineIndex++;
+        if (frame > revealPoint) {
+          span.textContent = originalLetters[i]; // Revealed
+    } else {
+          if (/[a-zA-Z0-9]/.test(originalLetters[i])) {
+            span.textContent = chars[Math.floor(Math.random() * chars.length)]; // Scrambled
+          } else {
+            span.textContent = originalLetters[i]; // Keep punctuation
+          }
+        }
+      });
+      
+      frame++;
+      
+      if (frame >= totalFrames) {
+        clearInterval(interval);
+        // Ensure all letters are revealed
+        spans.forEach((span, i) => {
+          span.textContent = originalLetters[i];
+        });
+        console.log(`✅ Completed scrambling`);
+      }
+    }, 60);
+  }
+  
+  // Letter-by-letter hover effects like the CodePen
+  function initLetterHoverEffects() {
+    const letterElements = document.querySelectorAll('.letter');
+    console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
+    
+    letterElements.forEach((letter, i) => {
+      letter.addEventListener('mouseenter', () => {
+        if (window.gsap) {
+          window.gsap.to(letter, {
+            y: -15,
+            duration: 0.3,
+            delay: i * 0.02, // Stagger delay
+            ease: "power2.out"
+          });
+        }
+      });
+      
+      letter.addEventListener('mouseleave', () => {
+        if (window.gsap) {
+          window.gsap.to(letter, {
+            y: 0,
+            duration: 0.3,
+            delay: i * 0.02, // Stagger delay
+            ease: "power2.in"
+          });
+        }
       });
     });
   }
