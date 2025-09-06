@@ -103,24 +103,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
       console.log('✅ GSAP loaded externally');
-      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
-        scrollTriggerLoaded = true;
+              loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
+          scrollTriggerLoaded = true;
         console.log('✅ ScrollTrigger loaded externally');
-        setTimeout(() => {
-          if (window.gsap && window.gsap.registerPlugin) {
-            try {
+          setTimeout(() => {
+            if (window.gsap && window.gsap.registerPlugin) {
+              try {
               window.gsap.registerPlugin(ScrollTrigger);
               console.log('✅ ScrollTrigger registered');
-            } catch (e) {
-              console.error('❌ ScrollTrigger registration failed:', e);
+              } catch (e) {
+                console.error('❌ ScrollTrigger registration failed:', e);
+              }
             }
-          }
-        }, 100);
-        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
-          observerLoaded = true;
-          console.log('✅ Observer loaded');
+          }, 100);
+          loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
+            observerLoaded = true;
+            console.log('✅ Observer loaded');
+          });
         });
-      });
     });
   }
 
@@ -368,52 +368,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Initialize hover effects ONLY for .link elements that need slide-up animation
   function initHover() {
-    // ONLY target elements with .link class - nothing else should be duplicated
-    document.querySelectorAll('.link').forEach(link => {
-      if (link.dataset.hoverInit) return;
-      
-      // Skip hover effects for label-wrap elements to preserve line breaks
-      if (link.closest('.label-wrap')) {
-        link.dataset.hoverInit = 'true';
+    // DISABLE ALL HOVER EFFECTS TO PREVENT TEXT DUPLICATION
+    console.log('🔗 Hover effects disabled to prevent text duplication');
         return;
-      }
-      
-      console.log('🔗 Applying hover effect to .link element:', link.textContent.substring(0, 20));
-      
-      const originalText = link.textContent.trim();
-      const rect = link.getBoundingClientRect();
-      const height = rect.height;
-      
-      // Set up container for hover effect
-      link.style.position = 'relative';
-      link.style.overflow = 'hidden';
-      link.style.display = 'inline-block';
-      link.style.height = height + 'px';
-      
-      // Create slide-up hover effect with proper positioning
-      link.innerHTML = `
-        <span class="original-text" style="position:absolute;top:0;left:0;width:100%;line-height:${height}px;transition:transform 0.3s ease;">${originalText}</span>
-        <span class="hover-text" style="position:absolute;top:100%;left:0;width:100%;line-height:${height}px;transition:transform 0.3s ease;">${originalText}</span>
-      `;
-      
-      const originalTextSpan = link.querySelector('.original-text');
-      const hoverTextSpan = link.querySelector('.hover-text');
-      
-      // Hover animations using CSS transforms
-      link.addEventListener('mouseenter', () => {
-        originalTextSpan.style.transform = 'translateY(-100%)';
-        hoverTextSpan.style.transform = 'translateY(-100%)';
-      });
-      
-      link.addEventListener('mouseleave', () => {
-        originalTextSpan.style.transform = 'translateY(0%)';
-        hoverTextSpan.style.transform = 'translateY(0%)';
-      });
-      
-      link.dataset.hoverInit = 'true';
-    });
     
-    console.log('🔗 Hover effects applied only to .link elements');
+    /* ORIGINAL HOVER CODE DISABLED - WAS CAUSING DUPLICATION
+    document.querySelectorAll('.link').forEach(link => {
+      // Just use simple CSS hover, no JS duplication
+      link.style.transition = 'transform 0.3s ease';
+    });
+    */
   }
 
   // Simple scramble effect for individual lines - much slower
@@ -443,22 +407,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       frame++;
       
       if (frame >= totalFrames) {
-        clearInterval(interval);
-        element.textContent = originalText;
-        
+          clearInterval(interval);
+          element.textContent = originalText;
+          
         // Handle special elements
-        if (element.classList.contains('counter')) {
-          element.dataset.counterStarted = 'true';
-          startTimeCounter(element);
-        }
-        if (element.id === 'rotating-text') {
-          element.dataset.rotatingStarted = 'true';
-          try {
-            startRotatingText(element);
-          } catch (error) {
-            console.error('🔄 Error starting rotating text:', error);
+          if (element.classList.contains('counter')) {
+            element.dataset.counterStarted = 'true';
+            startTimeCounter(element);
           }
-        }
+          if (element.id === 'rotating-text') {
+            element.dataset.rotatingStarted = 'true';
+            try {
+              startRotatingText(element);
+            } catch (error) {
+              console.error('🔄 Error starting rotating text:', error);
+            }
+          }
       }
     }, 100); // Slower interval to match frame rate
   }
@@ -497,203 +461,48 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Wrap text lines for animation (simplified for hover effects only)
   function wrapLines(el) {
-    if (el.dataset.splitDone) return el.querySelectorAll('.line-inner');
-    
-    // Skip line wrapping for label-wrap elements to preserve their formatting
-    if (el.closest('.label-wrap')) {
-      console.log('🔄 Skipping line wrapping for label-wrap element');
-      el.dataset.splitDone = 'true';
-      return [];
-    }
-    
-    const originalHTML = el.innerHTML.trim();
-    if (!originalHTML) return [];
-
-    if (originalHTML.includes('<br>')) {
-      const lines = originalHTML.split(/<br\s*\/?>/i);
-      el.innerHTML = '';
-      lines.forEach(lineHTML => {
-        if (lineHTML.trim()) {
-          const lineDiv = document.createElement('div');
-          lineDiv.className = 'split-line';
-          lineDiv.style.overflow = 'hidden';
-          const lineInner = document.createElement('div');
-          lineInner.className = 'line-inner';
-          lineInner.innerHTML = lineHTML.trim();
-          lineDiv.appendChild(lineInner);
-          el.appendChild(lineDiv);
-        }
-      });
-    } else {
-      const lineDiv = document.createElement('div');
-      lineDiv.className = 'split-line';
-      lineDiv.style.overflow = 'hidden';
-      const lineInner = document.createElement('div');
-      lineInner.className = 'line-inner';
-      lineInner.innerHTML = originalHTML;
-      lineDiv.appendChild(lineInner);
-      el.innerHTML = '';
-      el.appendChild(lineDiv);
-    }
-
+    // DISABLED: This function was creating text duplication by modifying innerHTML
+    console.log('🚫 wrapLines disabled to prevent text duplication');
     el.dataset.splitDone = 'true';
-    return el.querySelectorAll('.line-inner');
+    return [el]; // Return the original element, no DOM manipulation
   }
 
-  // Text and other animations (non-masked content)
+  // Text and other animations (non-masked content) - SIMPLIFIED TO PREVENT DUPLICATION
   function initTextAndOtherAnimations() {
     isInit = true;
-    console.log('🎬 Initializing text animations...');
+    console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
-    // Remove the class that keeps content hidden and reset all element visibility
+    // Remove the class that keeps content hidden
     document.body.classList.remove('animations-ready');
     
-    // Don't remove image hiding here - wait for mask animations to start
+    // DO NOT reset all element visibility - this was causing issues
+    console.log('🚫 Skipping global visibility reset to prevent conflicts');
+    // SUPER SIMPLE: Just start heading animations, nothing else
+    console.log('✨ SIMPLIFIED: Only doing heading scrambling to prevent duplication');
     
-    // Force reset visibility for all elements that were hidden
-    if (typeof gsap !== 'undefined') {
-      gsap.set('*:not(#preloader):not(#preloader *)', { clearProps: 'visibility,opacity' });
-    }
-    // Use existing Webflow counter element - will scramble first, then count
-    const counterElement = document.querySelector('.counter');
-    if (counterElement) {
-      console.log('🔢 Found Webflow counter element:', counterElement);
-      console.log('🔢 Counter classes:', counterElement.className);
-      console.log('🔢 Counter matches .heading.small?', counterElement.matches('.heading.small'));
-      // Set initial text for scrambling, counting will start after scramble
-      counterElement.textContent = '0000';
-    } else {
-      console.log('❌ No .counter element found');
-    }
-    
-    // Immediately make any existing cloned content visible (for mid-page loads)
-    document.querySelectorAll('[data-infinite-clone="true"]').forEach(el => {
-      // Skip the counter element to preserve its positioning
-      //if (el.id === 'time-counter' || el.closest('#time-counter')) return;
-      
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-      el.style.visibility = 'visible';
-      el.classList.remove('initial-hidden');
-    });
-    
-    const largeHeadings = document.querySelectorAll('.heading.large:not([data-infinite-clone]):not(.label-wrap .heading.large):not(.label-wrap *)');
-    const smallHeadings = document.querySelectorAll('.heading.small:not([data-infinite-clone]):not(.label-wrap .heading.small):not(.label-wrap *)');
-    const regularHeadings = document.querySelectorAll('h1:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h1):not(.label-wrap *), h2:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h2):not(.label-wrap *), h3:not(.heading.large):not(.heading.small):not([data-infinite-clone]):not(.label-wrap h3):not(.label-wrap *), h4:not([data-infinite-clone]):not(.label-wrap h4):not(.label-wrap *), h5:not([data-infinite-clone]):not(.label-wrap h5):not(.label-wrap *), h6:not([data-infinite-clone]):not(.label-wrap h6):not(.label-wrap *)');
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text):not(.label-wrap *), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text):not(.label-wrap *)');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]):not(.label-wrap a):not(.label-wrap *), .menu-link:not([data-infinite-clone]):not(.label-wrap .menu-link):not(.label-wrap *), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone]):not(.label-wrap *)');
-    
-    console.log('🔍 SmallHeadings found:', smallHeadings.length, [...smallHeadings].map(el => ({ tag: el.tagName, classes: el.className, text: el.textContent.substring(0, 20) })));
-    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    const mediaEls = document.querySelectorAll('img:not([data-infinite-clone]), video:not([data-infinite-clone])');
-    const otherEls = document.querySelectorAll('.nav:not(.w-layout-grid), .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
-
-    initHover();
-    
-    // Continue with all text animations, scrambles, and other content
-    const tl = window.gsap.timeline();
-
-    // Media elements - ONLY animate videos, skip ALL images (they use mask animations)
-    if (mediaEls.length) {
-      mediaEls.forEach((el, i) => {
-        if (el.dataset.gsapAnimated) return;
-        if (el.dataset.infiniteClone) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-clone'; return; } // Skip cloned content
-        
-        // SKIP ALL IMAGES - they use mask animations only
-        if (el.tagName.toLowerCase() === 'img') {
-          window.gsap.set(el, { opacity: 1 });
-          el.dataset.gsapAnimated = 'image-skipped';
-          return;
-        }
-        
-        // Only animate videos and other media
-        if (el.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'reveal-container'; return; }
-        if (el.closest('.flex-grid, .container.video-wrap-hide')) { window.gsap.set(el, { opacity: 1 }); el.dataset.gsapAnimated = 'infinite-scroll'; return; }
-        
-        const rect = el.getBoundingClientRect();
-        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if (inViewport) {
-          window.gsap.set(el, { opacity: 0, y: 0 });
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", delay: 0.18 + (i * 0.15), onComplete: () => el.dataset.gsapAnimated = 'completed' });
-        } else {
-          window.gsap.set(el, { opacity: 0, y: 0 });
-          if (el.loading !== 'eager') el.loading = 'eager';
-          window.gsap.to(el, { opacity: 1, y: 0, duration: 1.6, ease: "power2.out", scrollTrigger: { trigger: el, start: "top bottom", end: "top center", toggleActions: "play none none reverse", once: true, onEnter: () => el.dataset.gsapAnimated = 'animating', onComplete: () => el.dataset.gsapAnimated = 'completed' }});
-        }
-      });
-    }
-
-    // Clean heading animations - immediate scrambling
+    // Start heading animations immediately
     setTimeout(() => {
+      console.log('🎯 Starting initHeadingAnimations...');
       initHeadingAnimations();
     }, 100);
     
-    // Let all other text animations work naturally - don't interfere
-    
-    // Handle special elements
+    // Start a few special elements but SKIP everything else that causes duplication
     const counter = document.querySelector('.counter');
     if (counter && !counter.closest('.label-wrap') && !counter.dataset.infiniteClone) {
-      scrambleLine(counter, 800);
+      console.log('🔢 Scrambling counter');
+      setTimeout(() => scrambleLine(counter, 800), 200);
     }
     
     const rotatingText = document.getElementById('rotating-text');
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      scrambleLine(rotatingText, 800);
+      console.log('🔄 Scrambling rotating text');
+      setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
-    // Animate other elements
-    slideEls.length && (window.gsap.set(slideEls, { x: 0, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
-    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 0 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
+    console.log('✅ SIMPLIFIED text animations complete - ONLY heading scrambling, no other animations to prevent conflicts');
     
-    console.log('🎭 Clean heading animations initialized');
-    
-    // Emergency fallback - ensure all heading text is visible after 5 seconds
-    setTimeout(() => {
-      const hiddenHeadings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
-      hiddenHeadings.forEach(heading => {
-        if (heading.style.opacity === '0' && !heading.dataset.infiniteClone) {
-          heading.style.opacity = '1';
-          console.log('🔧 Emergency fallback: Made heading visible', heading.tagName);
-        }
-        // Also check child divs (lines)
-        heading.querySelectorAll('div').forEach(div => {
-          if (div.style.opacity === '0') {
-            div.style.opacity = '1';
-          }
-        });
-      });
-    }, 5000);
-    
-    // Fallback: ensure counter starts even if scramble doesn't trigger it
-    setTimeout(() => {
-      const fallbackCounter = document.querySelector('.counter');
-      if (fallbackCounter && !fallbackCounter.dataset.counterStarted) {
-        console.log('🔢 Fallback: Starting counter manually');
-        fallbackCounter.dataset.counterStarted = 'true';
-        startTimeCounter(fallbackCounter);
-      }
-      
-      // Fallback: ensure rotating text starts even if scramble doesn't trigger it
-      const fallbackRotatingText = document.getElementById('rotating-text');
-      if (fallbackRotatingText && !fallbackRotatingText.dataset.rotatingStarted) {
-        console.log('🔄 Fallback: Starting rotating text manually');
-        fallbackRotatingText.dataset.rotatingStarted = 'true';
-        try {
-          startRotatingText(fallbackRotatingText);
-        } catch (error) {
-          console.error('🔄 Error in fallback rotating text:', error);
-        }
-      }
-    }, 3000);
-
-    slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
-    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
-
-    setupInfiniteScroll();
-    
-    // Three.js disabled due to infinite scroll conflicts
-    console.log('🎨 Three.js effects disabled to preserve infinite scroll functionality');
+    // Skip setupInfiniteScroll and other complex systems that might interfere
+    console.log('🚫 Skipping infinite scroll and other complex systems to focus on text scrambling only');
   }
   
   // Masked image animations - called after text completes on mobile
