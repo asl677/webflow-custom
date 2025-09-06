@@ -462,10 +462,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`⏭️ [${headingIndex}] Skipping label-wrap element`);
         return;
       }
-      if (heading.classList.contains('link')) {
-        console.log(`⏭️ [${headingIndex}] Skipping link element`);
-        return;
-      }
+      // Allow headings that are also links - they should still be scrambled
+      // if (heading.classList.contains('link')) {
+      //   console.log(`⏭️ [${headingIndex}] Skipping link element`);
+      //   return;
+      // }
       
       heading.dataset.animationInit = 'true';
       console.log(`🎯 [${headingIndex}] PROCESSING heading:`, heading.textContent);
