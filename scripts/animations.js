@@ -138,10 +138,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
       body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
-      body.animations-ready *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
-
-      .nav:not(.fake-nav){transform:translateY(100%);opacity:0}
-      .nav-middle, .nav-bottom, .middle-nav, .bottom-nav, .nav[class*="middle"], .nav[class*="bottom"]{transform:none!important;opacity:1!important}
+      
+      /* REMOVE animations-ready hiding to prevent slide-up effects */
+      
+      .nav:not(.fake-nav){opacity:0}
+      .nav-middle, .nav-bottom, .middle-nav, .bottom-nav, .nav[class*="middle"], .nav[class*="bottom"]{opacity:1!important}
       .flex-grid{margin-top:0.2vw!important}
     `;
     document.head.appendChild(style);
@@ -423,22 +424,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               console.error('🔄 Error starting rotating text:', error);
             }
           }
-      }
+        }
     }, 100); // Slower interval to match frame rate
   }
 
-  // Simple immediate scrambling without messing with Webflow opacity
+  // Line-by-line scrambling with stagger - NO DOM MANIPULATION
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
       console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    console.log('🎭 Starting simple heading scrambling...');
+    console.log('🎭 Starting line-by-line heading scrambling...');
     
     // Get heading elements but SKIP any .link elements to avoid conflicts
     const headings = document.querySelectorAll('.heading.small, .heading.large, h1, h2, h3, h4, h5, h6');
-    console.log(`🔍 Found ${headings.length} heading elements:`, Array.from(headings).map(h => h.textContent.substring(0, 20)));
+    console.log(`🔍 Found ${headings.length} heading elements for line-by-line animation`);
+    
+    let globalLineIndex = 0; // Global counter for staggering across all headings
     
     headings.forEach((heading, headingIndex) => {
       if (heading.dataset.animationInit || heading.dataset.infiniteClone) return;
@@ -446,17 +449,124 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (heading.classList.contains('link')) return; // SKIP link elements completely
       
       heading.dataset.animationInit = 'true';
-      console.log(`🎯 [${headingIndex}] Scrambling heading:`, heading.textContent.substring(0, 30), 'delay:', headingIndex * 100 + 'ms');
+      console.log(`🎯 [${headingIndex}] Processing heading:`, heading.textContent.substring(0, 30));
       
-      // Don't mess with DOM structure - just scramble the text as-is
-      const staggerDelay = headingIndex * 100; // 100ms between headings
+      // Detect lines by simulating word wrapping
+      const lines = detectTextLines(heading);
+      console.log(`📏 [${headingIndex}] Detected ${lines.length} lines:`, lines.map(line => line.substring(0, 15)));
       
-      // Start scrambling immediately - no opacity changes, no DOM manipulation
-      setTimeout(() => {
-        console.log(`🎬 [${headingIndex}] Starting scramble for:`, heading.textContent.substring(0, 30));
-        scrambleLine(heading, 800); // Fast scramble duration
-      }, staggerDelay);
+      // Apply staggered scrambling to each line
+      lines.forEach((lineText, lineIndex) => {
+        const staggerDelay = globalLineIndex * 150; // 150ms between each line across all headings
+        
+        setTimeout(() => {
+          console.log(`🎬 [${headingIndex}.${lineIndex}] Scrambling line ${globalLineIndex}:`, lineText.substring(0, 20));
+          scrambleTextLine(heading, lineText, lineIndex, 600); // Scramble specific line content
+        }, staggerDelay);
+        
+        globalLineIndex++;
+      });
     });
+  }
+  
+  // Detect text lines without DOM manipulation
+  function detectTextLines(element) {
+    const text = element.textContent.trim();
+    const words = text.split(' ');
+    const style = window.getComputedStyle(element);
+    const elementWidth = element.offsetWidth;
+    
+    // Create a temporary span to measure text width
+    const tempSpan = document.createElement('span');
+    tempSpan.style.cssText = `
+      visibility: hidden;
+      position: absolute;
+      white-space: nowrap;
+      font-family: ${style.fontFamily};
+      font-size: ${style.fontSize};
+      font-weight: ${style.fontWeight};
+      letter-spacing: ${style.letterSpacing};
+    `;
+    document.body.appendChild(tempSpan);
+    
+    const lines = [];
+    let currentLine = '';
+    
+    words.forEach((word, index) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      tempSpan.textContent = testLine;
+      
+      if (tempSpan.offsetWidth > elementWidth && currentLine) {
+        // Start new line
+        lines.push(currentLine.trim());
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    
+    // Add the last line
+    if (currentLine) {
+      lines.push(currentLine.trim());
+    }
+    
+    document.body.removeChild(tempSpan);
+    
+    // If no lines detected or single line, return the full text as one line
+    return lines.length > 0 ? lines : [text];
+  }
+  
+  // Scramble specific line content within an element
+  function scrambleTextLine(element, lineText, lineIndex, duration = 600) {
+    const originalText = element.textContent;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let frame = 0;
+    const totalFrames = Math.floor(duration / 60); // 60ms per frame
+    const revealSpeed = lineText.length / (totalFrames * 0.8);
+    
+    const interval = setInterval(() => {
+      let scrambledText = originalText;
+      
+      // Find the line in the original text and scramble only that part
+      const lineStart = originalText.indexOf(lineText);
+      if (lineStart !== -1) {
+        let scrambledLine = '';
+        
+        for (let i = 0; i < lineText.length; i++) {
+          const revealPoint = i * revealSpeed;
+          
+          if (frame > revealPoint) {
+            scrambledLine += lineText[i];
+          } else if (/[a-zA-Z]/.test(lineText[i])) {
+            scrambledLine += chars[Math.floor(Math.random() * chars.length)];
+      } else {
+            scrambledLine += lineText[i]; // Keep spaces and punctuation
+          }
+        }
+        
+        // Replace just this line in the full text
+        scrambledText = originalText.substring(0, lineStart) + scrambledLine + originalText.substring(lineStart + lineText.length);
+      }
+      
+      element.textContent = scrambledText;
+      frame++;
+      
+      if (frame >= totalFrames) {
+        clearInterval(interval);
+        element.textContent = originalText; // Restore original text
+        
+        // Handle special elements
+      if (element.classList.contains('counter')) {
+          element.dataset.counterStarted = 'true';
+          startTimeCounter(element);
+        }
+        
+        if (element.id === 'rotating-text') {
+          element.dataset.rotatingStarted = 'true';
+          startRotatingText(element);
+        }
+      }
+    }, 60);
   }
 
   // Wrap text lines for animation (simplified for hover effects only)
