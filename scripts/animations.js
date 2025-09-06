@@ -562,11 +562,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 100);
     
     // Restore all other text animations and hover effects (using existing variables)
-
-    // Initialize hover effects for links
-    initHover();
-    
-    const tl = window.gsap.timeline();
     
     // Animate paragraphs and links with stagger
     let allTextElements = [];
