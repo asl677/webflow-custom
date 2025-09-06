@@ -412,7 +412,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           element.textContent = originalText;
           
         // Handle special elements
-    if (element.classList.contains('counter')) {
+          if (element.classList.contains('counter')) {
             element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
@@ -428,62 +428,170 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 100); // Slower interval to match frame rate
   }
 
-  // SUPER VISIBLE line-by-line scrambling with debugging
+  // Line-by-line scrambling for all visible text elements
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
       console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    console.log('🎭 Starting SUPER VISIBLE line-by-line heading scrambling...');
+    console.log('🎭 Starting line-by-line scrambling for all visible text...');
     
-    // Cast a wide net to find ALL text elements
-    const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, [class*="heading"]');
-    console.log(`🔍 Found ${headings.length} heading elements for line-by-line animation`);
+    // Find all visible text elements in viewport
+    const allTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, [class*="heading"], p, span, div, a');
+    const visibleElements = Array.from(allTextElements).filter(el => {
+      const rect = el.getBoundingClientRect();
+      const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+      const text = el.textContent?.trim();
+      const hasChildren = el.children.length > 0;
+      const isVisible = window.getComputedStyle(el).display !== 'none';
+      
+      return text && text.length > 2 && text.length < 200 && !hasChildren && isVisible && inViewport;
+    });
+    
+    console.log(`🔍 Found ${visibleElements.length} visible text elements for line-by-line animation`);
     
     // Log each element found
-    headings.forEach((el, i) => {
+    visibleElements.forEach((el, i) => {
       console.log(`📍 [${i}] Element:`, {
         tag: el.tagName,
         classes: el.className,
-        text: el.textContent.substring(0, 50),
-        visible: window.getComputedStyle(el).display !== 'none'
+        text: el.textContent.substring(0, 30),
+        inViewport: true
       });
     });
     
-    let globalLineIndex = 0; // Global counter for staggering across all headings
+    let globalLineIndex = 0; // Global counter for staggering across ALL lines
     
-    headings.forEach((heading, headingIndex) => {
-      if (heading.dataset.animationInit || heading.dataset.infiniteClone) {
-        console.log(`⏭️ [${headingIndex}] Skipping already initialized element`);
+    visibleElements.forEach((element, elementIndex) => {
+      if (element.dataset.animationInit || element.dataset.infiniteClone) {
+        console.log(`⏭️ [${elementIndex}] Skipping already initialized element`);
         return;
       }
-      if (heading.closest('.label-wrap')) {
-        console.log(`⏭️ [${headingIndex}] Skipping label-wrap element`);
-        return;
-      }
-      // Allow headings that are also links - they should still be scrambled
-      // if (heading.classList.contains('link')) {
-      //   console.log(`⏭️ [${headingIndex}] Skipping link element`);
-      //   return;
-      // }
-      
-      heading.dataset.animationInit = 'true';
-      console.log(`🎯 [${headingIndex}] PROCESSING heading:`, heading.textContent);
-      
-      // For now, just scramble the whole element to make it super visible
-      const staggerDelay = headingIndex * 300; // Much longer delay to see stagger
+    if (element.closest('.label-wrap')) {
+        console.log(`⏭️ [${elementIndex}] Skipping label-wrap element`);
+      return;
+    }
     
-    setTimeout(() => {
-        console.log(`🎬 [${headingIndex}] STARTING VISIBLE SCRAMBLE for:`, heading.textContent.substring(0, 30));
-        scrambleEntireElement(heading, 2000); // Very long scramble to make it obvious
-      }, staggerDelay);
+      element.dataset.animationInit = 'true';
+      console.log(`🎯 [${elementIndex}] PROCESSING text element:`, element.textContent);
       
-      globalLineIndex++;
+      // Detect lines by simulating word wrapping
+      const lines = detectTextLines(element);
+      console.log(`📏 [${elementIndex}] Detected ${lines.length} lines:`, lines.map(line => line.substring(0, 15)));
+      
+      // Apply staggered scrambling to each line with proper timing
+      lines.forEach((lineText, lineIndex) => {
+        const staggerDelay = globalLineIndex * 100; // 100ms between each line across ALL elements
+        
+        setTimeout(() => {
+          console.log(`🎬 [${elementIndex}.${lineIndex}] Scrambling line ${globalLineIndex}:`, lineText.substring(0, 20));
+          scrambleTextLineVisible(element, lineText, lineIndex, 800); // 800ms scramble duration
+        }, staggerDelay);
+        
+        globalLineIndex++;
+      });
     });
   }
   
-  // Simple, super visible element scrambling
+  // Visible line scrambling that handles multiple simultaneous lines
+  function scrambleTextLineVisible(element, lineText, lineIndex, duration = 800) {
+    // Initialize element scramble state if not exists
+    if (!element.scrambleState) {
+      element.scrambleState = {
+        originalText: element.textContent,
+        lines: [],
+        activeScrambles: new Map(),
+        updateInterval: null
+      };
+    }
+    
+    const state = element.scrambleState;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const totalFrames = Math.floor(duration / 80); // 80ms per frame for visible effect
+    const revealSpeed = lineText.length / (totalFrames * 0.7);
+    
+    // Add this line to active scrambles
+    state.activeScrambles.set(lineIndex, {
+      text: lineText,
+      frame: 0,
+      totalFrames: totalFrames,
+      revealSpeed: revealSpeed,
+      startTime: Date.now()
+    });
+    
+    console.log(`🎬 Started line scrambling ${lineIndex}: "${lineText}" for ${duration}ms`);
+    
+    // Start the update loop if not already running
+    if (!state.updateInterval) {
+      state.updateInterval = setInterval(() => {
+        let displayText = state.originalText;
+        let completedScrambles = [];
+        
+        // Process each active scramble
+        state.activeScrambles.forEach((scramble, index) => {
+          const lineStart = state.originalText.indexOf(scramble.text);
+          if (lineStart !== -1) {
+            let scrambledLine = '';
+            
+            // Generate scrambled version of this line
+            for (let i = 0; i < scramble.text.length; i++) {
+              const revealPoint = i * scramble.revealSpeed;
+              
+              if (scramble.frame > revealPoint) {
+                scrambledLine += scramble.text[i]; // Revealed character
+              } else if (/[a-zA-Z0-9]/.test(scramble.text[i])) {
+                scrambledLine += chars[Math.floor(Math.random() * chars.length)]; // Scrambled character
+    } else {
+                scrambledLine += scramble.text[i]; // Keep spaces and punctuation
+              }
+            }
+            
+            // Replace this line in the display text
+            displayText = displayText.substring(0, lineStart) + scrambledLine + displayText.substring(lineStart + scramble.text.length);
+          }
+          
+          scramble.frame++;
+          
+          // Check if this scramble is complete
+          if (scramble.frame >= scramble.totalFrames) {
+            completedScrambles.push(index);
+          }
+        });
+        
+        // Update the element with combined scrambled text
+        element.textContent = displayText;
+        
+        // Remove completed scrambles
+        completedScrambles.forEach(index => {
+          console.log(`✅ Completed line scrambling ${index}`);
+          state.activeScrambles.delete(index);
+        });
+        
+        // Stop the update loop if no more active scrambles
+        if (state.activeScrambles.size === 0) {
+          clearInterval(state.updateInterval);
+          state.updateInterval = null;
+          element.textContent = state.originalText; // Final restore
+          
+          // Handle special elements
+          if (element.classList.contains('counter')) {
+            element.dataset.counterStarted = 'true';
+            startTimeCounter(element);
+          }
+          
+          if (element.id === 'rotating-text') {
+            element.dataset.rotatingStarted = 'true';
+            startRotatingText(element);
+          }
+          
+          console.log(`🎉 All line scrambles completed for: ${element.textContent.substring(0, 30)}`);
+        }
+      }, 80); // 80ms update interval for smooth effect
+    }
+  }
+  
+  // Simple, super visible element scrambling (backup function)
   function scrambleEntireElement(element, duration = 2000) {
     const originalText = element.textContent.trim();
     if (!originalText) return;
@@ -494,8 +602,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     let frame = 0;
     const totalFrames = Math.floor(duration / 100); // 100ms per frame for very visible effect
     const revealSpeed = originalText.length / (totalFrames * 0.6); // Slower reveal
-      
-      const interval = setInterval(() => {
+    
+    const interval = setInterval(() => {
       let scrambledText = '';
       
       for (let i = 0; i < originalText.length; i++) {
@@ -514,19 +622,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       frame++;
       
       if (frame >= totalFrames) {
-          clearInterval(interval);
-          element.textContent = originalText;
+        clearInterval(interval);
+        element.textContent = originalText;
         console.log(`✅ COMPLETED scrambling "${originalText}"`);
-          
+        
         // Handle special elements
-          if (element.classList.contains('counter')) {
-            element.dataset.counterStarted = 'true';
-            startTimeCounter(element);
-          }
-          
-          if (element.id === 'rotating-text') {
-            element.dataset.rotatingStarted = 'true';
-              startRotatingText(element);
+        if (element.classList.contains('counter')) {
+          element.dataset.counterStarted = 'true';
+          startTimeCounter(element);
+        }
+        
+        if (element.id === 'rotating-text') {
+          element.dataset.rotatingStarted = 'true';
+          startRotatingText(element);
         }
       }
     }, 100); // Slower update for visibility
@@ -563,7 +671,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Start new line
         lines.push(currentLine.trim());
         currentLine = word;
-    } else {
+      } else {
         currentLine = testLine;
       }
     });
