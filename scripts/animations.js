@@ -428,6 +428,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 100); // Slower interval to match frame rate
   }
 
+  // Generate initial scrambled text
+  function scrambleText(text) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return text.replace(/[a-zA-Z0-9]/g, () => chars[Math.floor(Math.random() * chars.length)]);
+  }
+
   // Line-by-line scrambling for all visible text elements
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
@@ -468,25 +474,37 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`⏭️ [${elementIndex}] Skipping already initialized element`);
         return;
       }
-    if (element.closest('.label-wrap')) {
+      if (element.closest('.label-wrap')) {
         console.log(`⏭️ [${elementIndex}] Skipping label-wrap element`);
-      return;
-    }
-    
+        return;
+      }
+      
       element.dataset.animationInit = 'true';
       console.log(`🎯 [${elementIndex}] PROCESSING text element:`, element.textContent);
       
-      // Detect lines by simulating word wrapping
-      const lines = detectTextLines(element);
+      // Store original text and IMMEDIATELY replace with scrambled version
+      const originalText = element.textContent;
+      
+      // Force element to be visible and prevent any CSS animations from interfering
+      element.style.opacity = '1';
+      element.style.visibility = 'visible';
+      element.style.transform = 'none';
+      
+      // Start with completely scrambled text - NO fade-in, NO original text showing
+      element.textContent = scrambleText(originalText);
+      console.log(`🔄 Started with fully scrambled text: ${element.textContent.substring(0, 30)}`);
+      
+      // Detect lines by simulating word wrapping using original text
+      const lines = detectTextLines({...element, textContent: originalText});
       console.log(`📏 [${elementIndex}] Detected ${lines.length} lines:`, lines.map(line => line.substring(0, 15)));
       
       // Apply staggered scrambling to each line with proper timing
       lines.forEach((lineText, lineIndex) => {
-        const staggerDelay = globalLineIndex * 100; // 100ms between each line across ALL elements
+        const staggerDelay = globalLineIndex * 120; // 120ms between each line across ALL elements
         
         setTimeout(() => {
           console.log(`🎬 [${elementIndex}.${lineIndex}] Scrambling line ${globalLineIndex}:`, lineText.substring(0, 20));
-          scrambleTextLineVisible(element, lineText, lineIndex, 800); // 800ms scramble duration
+          scrambleTextLineVisible(element, lineText, lineIndex, 1000, originalText); // Longer duration, pass original text
         }, staggerDelay);
         
         globalLineIndex++;
@@ -495,11 +513,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
   
   // Visible line scrambling that handles multiple simultaneous lines
-  function scrambleTextLineVisible(element, lineText, lineIndex, duration = 800) {
+  function scrambleTextLineVisible(element, lineText, lineIndex, duration = 800, originalText) {
     // Initialize element scramble state if not exists
     if (!element.scrambleState) {
       element.scrambleState = {
-        originalText: element.textContent,
+        originalText: originalText || element.textContent,
         lines: [],
         activeScrambles: new Map(),
         updateInterval: null
