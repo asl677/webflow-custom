@@ -561,34 +561,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       initHeadingAnimations();
     }, 100);
     
-    // Restore all other text animations and hover effects (using existing variables)
-    
-    // Animate paragraphs and links with stagger
-    let allTextElements = [];
-    paragraphs.forEach(p => { if (!p.classList.contains('link') && !p.dataset.hoverInit && !p.dataset.infiniteClone) allTextElements.push(p); });
-    links.forEach(link => { if (!link.dataset.hoverInit && !link.dataset.infiniteClone) allTextElements.push(link); });
-    
-    // Sort by position for natural staggering
-    allTextElements.sort((a, b) => {
-      const rectA = a.getBoundingClientRect();
-      const rectB = b.getBoundingClientRect();
-      if (Math.abs(rectA.top - rectB.top) > 5) {
-        return rectA.top - rectB.top;
-      }
-      return rectA.left - rectB.left;
-    });
-    
-    // Animate text elements with stagger
-    allTextElements.forEach((element, index) => {
-      const linkText1 = element.querySelector('.link-text-1');
-      if (linkText1) {
-        linkText1.style.opacity = '0';
-        window.gsap.to(linkText1, { opacity: 1, duration: 0.6, delay: 0.5 + (index * 0.1) });
-      } else {
-        element.style.opacity = '0';
-        window.gsap.to(element, { opacity: 1, duration: 0.6, delay: 0.5 + (index * 0.1) });
-      }
-    });
+    // Let all other text animations work naturally - don't interfere
     
     // Handle special elements
     const counter = document.querySelector('.counter');
