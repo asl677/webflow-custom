@@ -62,33 +62,63 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.head.appendChild(script);
   }
 
-  // Load all GSAP dependencies including ScrambleTextPlugin
+  // Check for Webflow's built-in GSAP first, then load externally if needed
   function loadGSAP() {
-    loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
+    // Check if GSAP is already available from Webflow
+    if (typeof window.gsap !== 'undefined') {
+      console.log('✅ Using Webflow\'s built-in GSAP');
       gsapLoaded = true;
-      console.log('✅ GSAP loaded');
-      // Load SplitText plugin for line-by-line animations
-      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/SplitText.min.js', () => {
-        console.log('✅ SplitText plugin loaded');
+      
+      // Check for ScrollTrigger
+      if (window.gsap.ScrollTrigger) {
+        console.log('✅ Using Webflow\'s built-in ScrollTrigger');
+        scrollTriggerLoaded = true;
+      } else {
+        // Load ScrollTrigger if not available
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
-          console.log('✅ ScrollTrigger script loaded');
-          // Wait a moment for ScrollTrigger to initialize, then register
-          setTimeout(() => {
-            if (window.gsap && window.gsap.registerPlugin) {
-              try {
-                window.gsap.registerPlugin(window.gsap.ScrollTrigger || ScrollTrigger);
-                console.log('✅ ScrollTrigger registered successfully');
-                console.log('📊 Available ScrollTrigger:', !!window.gsap.ScrollTrigger);
-              } catch (e) {
-                console.error('❌ ScrollTrigger registration failed:', e);
-              }
+          console.log('✅ ScrollTrigger loaded externally');
+          if (window.gsap && window.gsap.registerPlugin) {
+            try {
+              window.gsap.registerPlugin(ScrollTrigger);
+              console.log('✅ ScrollTrigger registered');
+            } catch (e) {
+              console.error('❌ ScrollTrigger registration failed:', e);
             }
-          }, 100);
-          loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
-            observerLoaded = true;
-            console.log('✅ Observer loaded');
-          });
+          }
+        });
+      }
+      
+      // Load Observer plugin
+      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
+        observerLoaded = true;
+        console.log('✅ Observer loaded');
+      });
+      
+      return;
+    }
+    
+    // Fallback: Load GSAP externally if not provided by Webflow
+    console.log('ℹ️ Webflow GSAP not found, loading externally...');
+    loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
+      gsapLoaded = true;
+      console.log('✅ GSAP loaded externally');
+      loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
+        scrollTriggerLoaded = true;
+        console.log('✅ ScrollTrigger loaded externally');
+        setTimeout(() => {
+          if (window.gsap && window.gsap.registerPlugin) {
+            try {
+              window.gsap.registerPlugin(ScrollTrigger);
+              console.log('✅ ScrollTrigger registered');
+            } catch (e) {
+              console.error('❌ ScrollTrigger registration failed:', e);
+            }
+          }
+        }, 100);
+        loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
+          observerLoaded = true;
+          console.log('✅ Observer loaded');
         });
       });
     });
@@ -337,28 +367,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       link.style.display = 'inline-block';
       link.style.height = height + 'px';
       
-      // Create slide-up hover effect with two texts
+      // Create slide-up hover effect with proper positioning
       link.innerHTML = `
-        <span class="text-1" style="position:absolute;top:0;left:0;line-height:${height}px;">${originalText}</span>
-        <span class="text-2" style="position:absolute;top:${height}px;left:0;line-height:${height}px;">${originalText}</span>
+        <span class="original-text" style="position:absolute;top:0;left:0;width:100%;line-height:${height}px;transition:transform 0.3s ease;">${originalText}</span>
+        <span class="hover-text" style="position:absolute;top:100%;left:0;width:100%;line-height:${height}px;transition:transform 0.3s ease;">${originalText}</span>
       `;
       
-      const text1 = link.querySelector('.text-1');
-      const text2 = link.querySelector('.text-2');
+      const originalTextSpan = link.querySelector('.original-text');
+      const hoverTextSpan = link.querySelector('.hover-text');
       
-      // Hover animations
+      // Hover animations using CSS transforms
       link.addEventListener('mouseenter', () => {
-        if (typeof window.gsap !== 'undefined') {
-          window.gsap.to(text1, { y: -height, duration: 0.3, ease: "power2.out" });
-          window.gsap.to(text2, { y: -height, duration: 0.3, ease: "power2.out" });
-        }
+        originalTextSpan.style.transform = 'translateY(-100%)';
+        hoverTextSpan.style.transform = 'translateY(-100%)';
       });
       
       link.addEventListener('mouseleave', () => {
-        if (typeof window.gsap !== 'undefined') {
-          window.gsap.to(text1, { y: 0, duration: 0.3, ease: "power2.out" });
-          window.gsap.to(text2, { y: 0, duration: 0.3, ease: "power2.out" });
-        }
+        originalTextSpan.style.transform = 'translateY(0%)';
+        hoverTextSpan.style.transform = 'translateY(0%)';
       });
       
       link.dataset.hoverInit = 'true';
@@ -368,12 +394,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
   // Simple scramble effect for individual lines - much slower
-  function scrambleLine(element, duration = 3000) {
+  function scrambleLine(element, duration = 800) {
     const originalText = element.textContent;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let frame = 0;
-    const totalFrames = Math.floor(duration / 100); // 100ms per frame (slower)
-    const revealSpeed = originalText.length / (totalFrames * 0.8); // Reveal 80% through animation
+    const totalFrames = Math.floor(duration / 50); // 50ms per frame (faster)
+    const revealSpeed = originalText.length / (totalFrames * 0.7); // Reveal 70% through animation
     
     const interval = setInterval(() => {
       let scrambledText = '';
@@ -435,11 +461,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🎯 Scrambling heading:', heading.textContent.substring(0, 30));
       
       // Don't mess with DOM structure - just scramble the text as-is
-      const staggerDelay = headingIndex * 200; // 200ms between headings
+      const staggerDelay = headingIndex * 100; // 100ms between headings
       
       // Start scrambling immediately - no opacity changes, no DOM manipulation
       setTimeout(() => {
-        scrambleLine(heading, 3000); // Much longer scramble duration
+        scrambleLine(heading, 800); // Fast scramble duration
       }, staggerDelay);
     });
   }
@@ -583,12 +609,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Handle special elements
     const counter = document.querySelector('.counter');
     if (counter && !counter.closest('.label-wrap') && !counter.dataset.infiniteClone) {
-      scrambleLine(counter, 1000);
+      scrambleLine(counter, 800);
     }
     
     const rotatingText = document.getElementById('rotating-text');
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      scrambleLine(rotatingText, 1000);
+      scrambleLine(rotatingText, 800);
     }
     
     // Animate other elements
