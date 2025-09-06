@@ -561,11 +561,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       initHeadingAnimations();
     }, 100);
     
-    // Restore all other text animations and hover effects
-    const paragraphs = document.querySelectorAll('p:not([data-infinite-clone]):not(.label-wrap p):not(.label-wrap .hover-text):not(.label-wrap *), .hover-text:not([data-infinite-clone]):not(.label-wrap .hover-text):not(.label-wrap *)');
-    const links = document.querySelectorAll('a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone]):not(.label-wrap a):not(.label-wrap *), .menu-link:not([data-infinite-clone]):not(.label-wrap .menu-link):not(.label-wrap *), .menu-link.shimmer.accordion.chip-link:not([data-infinite-clone]):not(.label-wrap *)');
-    const slideEls = document.querySelectorAll('.grid-down.project-down.mobile-down');
-    const otherEls = document.querySelectorAll('.nav:not(.w-layout-grid), .preloader-counter, .card-project, .top-right-nav,.fake-nav, .inner-top, .mobile-down:not(.grid-down.project-down.mobile-down)');
+    // Restore all other text animations and hover effects (using existing variables)
 
     // Initialize hover effects for links
     initHover();
