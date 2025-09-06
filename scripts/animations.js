@@ -313,7 +313,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
 
-  // Initialize hover effects for links - proper slide up animation
+  // Initialize hover effects for links - simple slide up animation
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
@@ -328,24 +328,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const rect = link.getBoundingClientRect();
       const height = rect.height;
       
-      // Create proper slide-up hover effect
+      // Reset link and create container
       Object.assign(link.style, { 
         position: 'relative', 
         overflow: 'hidden', 
         display: 'inline-block',
-        height: height + 'px'
+        height: height + 'px',
+        width: 'auto'
       });
       
-      // Create two identical text spans stacked vertically
-      link.innerHTML = `
-        <span class="link-text-1" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(0%)">${originalText}</span>
-        <span class="link-text-2" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(100%)">${originalText}</span>
-      `;
+      // Create wrapper with proper stacking
+      link.innerHTML = `<div class="hover-wrapper" style="position:relative;height:100%;width:100%;">
+        <span class="link-text-1" style="position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(0%);">${originalText}</span>
+        <span class="link-text-2" style="position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(100%);">${originalText}</span>
+      </div>`;
       
       // Create smooth slide-up animation
       const tl = window.gsap.timeline({ paused: true, defaults: { duration: 0.3, ease: "power2.out" }});
-      tl.to(link.querySelector('.link-text-1'), { yPercent: -100 }, 0)
-        .to(link.querySelector('.link-text-2'), { yPercent: -100 }, 0);
+      tl.to(link.querySelector('.link-text-1'), { y: -height }, 0)
+        .to(link.querySelector('.link-text-2'), { y: -height }, 0);
       
       link.addEventListener('mouseenter', () => tl.play());
       link.addEventListener('mouseleave', () => tl.reverse());
@@ -353,13 +354,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
 
-  // Simple scramble effect for individual lines
-  function scrambleLine(element, duration = 1000) {
+  // Simple scramble effect for individual lines - much slower
+  function scrambleLine(element, duration = 3000) {
     const originalText = element.textContent;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let frame = 0;
-    const totalFrames = Math.floor(duration / 50); // 50ms per frame
-    const revealSpeed = originalText.length / (totalFrames * 0.7); // Reveal 70% through animation
+    const totalFrames = Math.floor(duration / 100); // 100ms per frame (slower)
+    const revealSpeed = originalText.length / (totalFrames * 0.8); // Reveal 80% through animation
     
     const interval = setInterval(() => {
       let scrambledText = '';
@@ -397,7 +398,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }
       }
-    }, 50);
+    }, 100); // Slower interval to match frame rate
   }
 
   // Simple immediate scrambling without messing with Webflow opacity
@@ -423,7 +424,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Start scrambling immediately - no opacity changes, no DOM manipulation
       setTimeout(() => {
-        scrambleLine(heading, 1500); // Longer scramble duration
+        scrambleLine(heading, 3000); // Much longer scramble duration
       }, staggerDelay);
     });
   }
