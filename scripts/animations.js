@@ -313,7 +313,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
 
 
-  // Initialize hover effects for links
+  // Initialize hover effects for links - proper slide up animation
   function initHover() {
     document.querySelectorAll('.link').forEach(link => {
       if (link.dataset.hoverInit) return;
@@ -324,30 +324,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         return;
       }
       
-      const originalHTML = link.innerHTML.trim();
-      // Improved line break detection
-      const hasLineBreaks = originalHTML.includes('<br>') || 
-                           originalHTML.includes('<br/>') || 
-                           originalHTML.includes('<br />') || 
-                           originalHTML.includes('\n') || 
-                           link.scrollHeight > link.clientHeight + 5 || // Account for potential padding
-                           link.offsetHeight > 30; // More generous height check
+      const originalText = link.textContent.trim();
       const rect = link.getBoundingClientRect();
       const height = rect.height;
       
-      if (hasLineBreaks) {
-        Object.assign(link.style, { position: 'relative', overflow: 'hidden', display: 'block' });
-        link.innerHTML = `<span class="link-text-1" style="display:block;position:relative;opacity:1">${originalHTML}</span><span class="link-text-2" style="display:block;position:absolute;width:100%;left:0;top:0;opacity:0">${originalHTML}</span>`;
-      } else {
-        const text = link.textContent.trim();
-        Object.assign(link.style, { position: 'relative', overflow: 'hidden', display: 'inline-block', height: height + 'px', lineHeight: height + 'px' });
-        link.innerHTML = `<span class="link-text-1" style="display:block;position:relative;height:${height}px;line-height:${height}px;opacity:1">${text}</span><span class="link-text-2" style="display:block;position:absolute;height:${height}px;line-height:${height}px;width:100%;left:0;top:50%;opacity:0">${text}</span>`;
-      }
+      // Create proper slide-up hover effect
+      Object.assign(link.style, { 
+        position: 'relative', 
+        overflow: 'hidden', 
+        display: 'inline-block',
+        height: height + 'px'
+      });
       
-      const tl = window.gsap.timeline({ paused: true, defaults: { duration: 0.4, ease: "power2.out" }});
-      tl.to(link.querySelector('.link-text-1'), { yPercent: -50, opacity: 0 }).to(link.querySelector('.link-text-2'), { yPercent: -50, opacity: 1 }, 0.1);
-      link.addEventListener('mouseenter', () => tl.timeScale(1).play());
-      link.addEventListener('mouseleave', () => tl.timeScale(1).reverse());
+      // Create two identical text spans stacked vertically
+      link.innerHTML = `
+        <span class="link-text-1" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(0%)">${originalText}</span>
+        <span class="link-text-2" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;line-height:${height}px;transform:translateY(100%)">${originalText}</span>
+      `;
+      
+      // Create smooth slide-up animation
+      const tl = window.gsap.timeline({ paused: true, defaults: { duration: 0.3, ease: "power2.out" }});
+      tl.to(link.querySelector('.link-text-1'), { yPercent: -100 }, 0)
+        .to(link.querySelector('.link-text-2'), { yPercent: -100 }, 0);
+      
+      link.addEventListener('mouseenter', () => tl.play());
+      link.addEventListener('mouseleave', () => tl.reverse());
       link.dataset.hoverInit = 'true';
     });
   }
@@ -575,8 +576,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Animate other elements
-    slideEls.length && (window.gsap.set(slideEls, { x: 40, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
-    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 10 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
+    slideEls.length && (window.gsap.set(slideEls, { x: 0, opacity: 0 }), tl.to(slideEls, { x: 0, opacity: 1, duration: 1.1, stagger: 0.06, ease: "power2.out" }, 1.6));
+    otherEls.length && (window.gsap.set(otherEls, { opacity: 0, y: 0 }), tl.to(otherEls, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 1.7));
     
     console.log('🎭 Clean heading animations initialized');
     
