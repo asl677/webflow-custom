@@ -17,7 +17,7 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img), video { opacity: 0 !important; }
+    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -1387,13 +1387,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Special handling for images and videos in clones - preserve mask animations
-        // Add slight delay to ensure cloned elements are properly laid out
+        // Special handling for images and videos in clones - prevent flickering
+        clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
+          el.dataset.infiniteClone = 'true';
+          
+          // Immediately stabilize cloned images to prevent flickering
+          el.style.setProperty('opacity', '1', 'important');
+          el.style.setProperty('visibility', 'visible', 'important');
+          el.style.setProperty('display', 'block', 'important');
+          
+          console.log(`🔧 Stabilized clone image ${imgIndex} to prevent flickering`);
+        });
+        
+        // Add slight delay for mask system processing
         setTimeout(() => {
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
-            el.dataset.infiniteClone = 'true';
-            // Don't mark as animated - let them get proper mask animations
-            
             // Remove any existing mask setup flags so they get fresh animations
             delete el.dataset.maskSetup;
             delete el.dataset.gsapAnimated;
@@ -1407,8 +1415,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               maskContainer.remove();
             }
             
-            // Don't aggressively hide cloned images - let mask system handle visibility naturally
-            // Just ensure they're ready for mask processing
             console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
