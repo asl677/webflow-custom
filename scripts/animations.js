@@ -354,8 +354,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Start text animations immediately - these must complete FIRST on mobile
-    console.log('🎬 Starting text animations (priority on mobile)');
+    // Start text animations immediately
+    console.log('🎬 Starting text animations');
     console.log('🎬 About to call initTextAndOtherAnimations()');
     try {
       initTextAndOtherAnimations();
@@ -365,7 +365,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = isMobile ? 1500 : 800; // Much longer delay on mobile
+    const imageDelay = 800; // Same delay for all devices
     setTimeout(() => {
       console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
@@ -1033,32 +1033,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
   
-  // Masked image animations - called after text completes on mobile
+  // Masked image animations - unified for all devices
   function startMaskedImageAnimations() {
-    // Detect mobile devices for performance optimization
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const isSafariMobile = /Safari/.test(navigator.userAgent) && 
-                          /Mobile|iPhone|iPad|iPod/.test(navigator.userAgent) && 
-                          !/Chrome|CriOS|FxiOS/.test(navigator.userAgent);
-    
-    // Skip complex mask animations on Safari mobile, but allow them on other mobile browsers
-    if (isSafariMobile) {
-      console.log('🎭 SKIPPING mask animations on Safari mobile for performance');
-      // Make all images visible without masking - but ensure they're REALLY visible
-      document.querySelectorAll('img:not(#preloader img), video').forEach(img => {
-        // Force complete visibility on mobile
-        img.style.setProperty('opacity', '1', 'important');
-        img.style.setProperty('visibility', 'visible', 'important');
-        img.style.setProperty('display', 'block', 'important');
-        
-        if (typeof window.gsap !== 'undefined') {
-          window.gsap.set(img, { opacity: 1, clearProps: "opacity" });
-        }
-        
-        console.log('📱 Made mobile image visible:', img.src?.substring(0, 50) + '...');
-      });
-      return;
-    }
+    console.log('🎭 Starting mask animations (unified for all devices)');
     
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
