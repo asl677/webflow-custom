@@ -364,9 +364,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
       
-      // Initialize image toggle functionality
-      console.log('🔴 Starting image toggle functionality');
-      initImageToggle();
     }, imageDelay);
   }
 
@@ -1085,16 +1082,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Also store original CSS classes to preserve Webflow responsive behavior
         element.dataset.webflowClasses = element.className;
         
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
         
-        // Force immediate opacity and clear any existing GSAP animations
+        // Force immediate opacity and visibility and clear any existing GSAP animations
         if (typeof window.gsap !== 'undefined') {
           window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
         }
         element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
@@ -1287,8 +1285,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               maskContainer.remove();
             }
             
-            // Let the main mask animation system handle cloned images
-            console.log(`🔧 Clone image ${imgIndex} prepared for main mask system`);
+            // Initially hide cloned images completely until mask system processes them
+            el.style.setProperty('opacity', '0', 'important');
+            el.style.setProperty('visibility', 'hidden', 'important');
+            
+            console.log(`🔧 Clone image ${imgIndex} prepared and hidden for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
         
@@ -1362,10 +1363,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Setup mask animations specifically for newly cloned images
+        // Setup mask animations for cloned images after a short delay to ensure DOM is ready
         setTimeout(() => {
+          console.log('🎭 Starting mask setup for cloned images...');
           setupMaskAnimationsForNewClones(clone);
-        }, 200);
+        }, 300);
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
@@ -1551,7 +1553,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
 
-  // Setup mask animations specifically for newly cloned images
+  // Setup mask animations for cloned images - same behavior as original images
   function setupMaskAnimationsForNewClones(cloneElement) {
     if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
       console.log('⚠️ GSAP or ScrollTrigger not available for clone mask animations');
@@ -1563,55 +1565,54 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const clonedImages = cloneElement.querySelectorAll('img:not(#preloader img), video');
     
     clonedImages.forEach((element, index) => {
-      // Skip if already has mask setup
+      // Skip if already processed
       if (element.dataset.maskSetup) {
-        console.log(`⏭️ Skipping image ${index} - already has mask setup`);
+        console.log(`⏭️ Skipping cloned image ${index} - already has mask setup`);
         return;
       }
       
-      const originalWidth = element.offsetWidth;
-      const originalHeight = element.offsetHeight;
+      // Get original image dimensions BEFORE any styling is applied
+      const rect = element.getBoundingClientRect();
+      const originalWidth = element.offsetWidth || rect.width || 400; // Fallback to reasonable size
+      const originalHeight = element.offsetHeight || rect.height || 300;
       
-      console.log(`🔍 Cloned image ${index}: ${originalWidth}x${originalHeight}px`);
+      console.log(`🔍 Processing cloned image ${index}: ${originalWidth}x${originalHeight}px`);
       
-      // Skip images with no dimensions
-      if (originalWidth === 0 || originalHeight === 0) {
-        console.log(`⏭️ Skipping image ${index} - no dimensions`);
+      // Skip images with invalid dimensions
+      if (originalWidth <= 0 || originalHeight <= 0) {
+        console.log(`⏭️ Skipping cloned image ${index} - invalid dimensions`);
         return;
       }
       
-      // Create mask container
+      // Create mask container exactly like original images
       const parent = element.parentNode;
       const maskContainer = document.createElement('div');
       maskContainer.className = 'mask-wrap';
       maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-      maskContainer.dataset.targetWidth = originalWidth;
       
       // Wrap image in mask container
       parent.insertBefore(maskContainer, element);
       maskContainer.appendChild(element);
       
-      // Store original Webflow dimensions and styles before applying mask styles
-      const computedStyle = getComputedStyle(element);
-      element.dataset.webflowWidth = element.style.width || (computedStyle.width !== 'auto' ? computedStyle.width : '');
-      element.dataset.webflowHeight = element.style.height || (computedStyle.height !== 'auto' ? computedStyle.height : '');
-      element.dataset.webflowObjectFit = element.style.objectFit || computedStyle.objectFit;
-      
-      // Also store original CSS classes to preserve Webflow responsive behavior
-      element.dataset.webflowClasses = element.className;
-      
-      // Style the image
-      element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
+      // Apply the same styling as original images to ensure consistency
+      element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
       element.dataset.maskSetup = 'true';
-      element.dataset.originalMaskWidth = originalWidth;
-      element.dataset.originalMaskHeight = originalHeight;
       
-      // Set up ScrollTrigger animation
-      const staggerDelay = index * 0.1;
+      // Force immediate opacity and clear any existing GSAP animations
+      if (typeof window.gsap !== 'undefined') {
+        window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
+      }
+      element.style.setProperty('opacity', '1', 'important');
+      element.style.setProperty('visibility', 'visible', 'important');
+      
+      console.log(`🔧 Cloned image ${index} styled with dimensions: ${originalWidth}x${originalHeight}px`);
+      
+      // Create the exact same ScrollTrigger animation as original images
+      const staggerDelay = index * 0.05; // Minimal stagger for clones
       const duration = 1.2;
       const easing = "power2.out";
       
-      console.log(`🎭 Creating mask animation for cloned image ${index}: 0 → ${originalWidth}px`);
+      console.log(`🎭 Creating mask animation for cloned image ${index}: 0px → ${originalWidth}px`);
       
       window.gsap.to(maskContainer, { 
         width: originalWidth + 'px', 
@@ -1620,27 +1621,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         delay: staggerDelay,
         scrollTrigger: { 
           trigger: element, 
-          start: "top 90%", 
+          start: "top 90%", // Same trigger point as original images
           end: "bottom 10%", 
           once: true,
           toggleActions: "play none none none",
           onToggle: self => {
             if (self.isActive) {
-              console.log(`🎭 Cloned image ${index} mask animation triggered`);
+              console.log(`🎭 Cloned image ${index} ScrollTrigger activated`);
             }
           }
         },
         onStart: () => {
-          console.log(`🎭 Cloned image ${index} mask animation started`);
+          console.log(`🎭 Cloned mask animation started for image ${index}`);
         },
         onComplete: () => {
-          console.log(`🎭 Cloned image ${index} mask animation completed`);
-          element.dataset.gsapAnimated = 'mask-revealed';
+          console.log(`🎭 Cloned mask animation completed for image ${index}`);
+          element.dataset.gsapAnimated = 'mask-revealed-clone';
           element.dataset.maskComplete = 'true';
         }
       });
       
-      // Add parallax scaling if the image has the parallax class
+      // Handle parallax scaling if needed
       const hasParallax = element.classList.contains('img-parallax');
       if (hasParallax && window.innerWidth >= 768) {
         window.gsap.set(element, { scale: 1.2 });
@@ -1656,16 +1657,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             once: true 
           }
         });
+        console.log(`🎭 Added parallax scaling for cloned image ${index}`);
       }
     });
     
-    console.log(`✅ Mask animations setup complete for ${clonedImages.length} newly cloned images`);
+    console.log(`✅ Mask animations setup complete for ${clonedImages.length} cloned images`);
     
-    // Refresh ScrollTrigger to ensure all new triggers are registered
+    // Refresh ScrollTrigger to register all new animations
     setTimeout(() => {
-      if (window.gsap.ScrollTrigger) {
+      if (window.gsap && window.gsap.ScrollTrigger) {
         window.gsap.ScrollTrigger.refresh();
-        console.log('🔄 ScrollTrigger refreshed for new cloned images');
+        console.log('🔄 ScrollTrigger refreshed for cloned images');
       }
     }, 100);
   }
@@ -2039,243 +2041,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('🔄 Rotating text started after scramble');
   }
   
-  // Simple click toggle for image sizing
-  function initImageToggle() {
-    console.log('🖱️ STARTING initImageToggle function');
-    console.log('🖱️ Document ready state:', document.readyState);
-    console.log('🖱️ Document body exists:', !!document.body);
-    
-    let imagesToggled = false;
-    
-    // Create hidden toggle button for debugging
-    const toggleButton = document.createElement('div');
-    toggleButton.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 10px;
-      height: 10px;
-      background-color: red;
-      z-index: 99999;
-      cursor: pointer;
-      border-radius: 2px;
-      opacity: 0.8;
-      transition: all 0.2s ease;
-      display: block;
-    `;
-    toggleButton.title = 'Toggle Image Heights';
-    document.body.appendChild(toggleButton);
-    console.log('🔴 Hidden toggle button created (for debugging)');
-    
-    // Also look for any existing .toggle elements in Webflow design
-    const webflowToggle = document.querySelector('.toggle');
-    if (webflowToggle) {
-      console.log('🎯 Found Webflow .toggle element:', webflowToggle);
-      webflowToggle.style.cursor = 'pointer';
-    }
-    
-    // Create shared toggle function
-    const performToggle = (source) => {
-      console.log(`🔴 Toggle activated from: ${source}`);
-      console.log('🔴 Toggling .img-parallax images');
-      
-      const allImages = document.querySelectorAll('.img-parallax');
-      console.log(`🔴 TOGGLE DEBUG: Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
-      
-      // Debug: Show all images found
-      allImages.forEach((img, index) => {
-        console.log(`🔴 Image ${index}:`, {
-          src: img.src ? img.src.substring(0, 50) + '...' : 'no src',
-          className: img.className,
-          currentHeight: img.offsetHeight,
-          currentWidth: img.offsetWidth,
-          styleHeight: img.style.height,
-          computedHeight: window.getComputedStyle(img).height,
-          parent: img.parentElement ? img.parentElement.tagName + '.' + img.parentElement.className : 'no parent'
-        });
-      });
-      
-      if (allImages.length === 0) {
-        console.log('🔴 ERROR: No .img-parallax images found! Looking for alternatives...');
-        
-        // Debug: Look for any images with "parallax" in class name
-        const parallaxVariants = document.querySelectorAll('[class*="parallax"]');
-        console.log(`🔴 Found ${parallaxVariants.length} elements with "parallax" in class:`, 
-          [...parallaxVariants].map(el => ({ tag: el.tagName, class: el.className })));
-        
-        // Debug: Look for all images on page
-        const allImgs = document.querySelectorAll('img');
-        console.log(`🔴 Total images on page: ${allImgs.length}`);
-        [...allImgs].slice(0, 5).forEach((img, i) => {
-          console.log(`🔴 Sample img ${i}:`, img.className || 'no class');
-        });
-        return;
-      }
-      
-      if (!imagesToggled) {
-        // Set all images height to 100vw maintaining aspect ratio
-        console.log('🔴 EXPANDING images height to 100vw');
-        allImages.forEach((img, index) => {
-          const beforeHeight = img.offsetHeight;
-          const beforeStyleHeight = img.style.height;
-          
-          console.log(`🔴 BEFORE Image ${index}:`, { 
-            height: beforeHeight, 
-            styleHeight: beforeStyleHeight,
-            computedHeight: window.getComputedStyle(img).height 
-          });
-          
-          img.style.setProperty('transition', 'all 0.3s ease', 'important');
-          img.style.setProperty('height', '100vw', 'important');
-          img.style.setProperty('width', 'auto', 'important');
-          img.style.setProperty('object-fit', 'cover', 'important');
-          
-          setTimeout(() => {
-            console.log(`🔴 AFTER Image ${index}:`, { 
-              height: img.offsetHeight, 
-              styleHeight: img.style.height,
-              computedHeight: window.getComputedStyle(img).height 
-            });
-          }, 100);
-        });
-        imagesToggled = true;
-        console.log('🔴 Images toggled to EXPANDED state');
-      } else {
-        // Revert to original Webflow sizes
-        console.log('🔴 REVERTING images to original Webflow sizes');
-        allImages.forEach((img, index) => {
-          console.log(`🔴 Reverting image ${index} to Webflow dimensions`);
-          
-          // Remove toggle styles
-          img.style.removeProperty('transition');
-          
-          // Restore original Webflow dimensions and behavior
-          if (img.dataset.webflowWidth && img.dataset.webflowWidth !== '') {
-            img.style.setProperty('width', img.dataset.webflowWidth, 'important');
-            console.log(`🔴 Restored width: ${img.dataset.webflowWidth}`);
-          } else {
-            // Clear width completely to let Webflow CSS classes handle it
-          img.style.removeProperty('width');
-            console.log(`🔴 Cleared width - using Webflow CSS classes`);
-          }
-          
-          if (img.dataset.webflowHeight && img.dataset.webflowHeight !== '') {
-            img.style.setProperty('height', img.dataset.webflowHeight, 'important');  
-            console.log(`🔴 Restored height: ${img.dataset.webflowHeight}`);
-          } else {
-            // Clear height completely to let Webflow CSS classes handle it
-          img.style.removeProperty('height');
-            console.log(`🔴 Cleared height - using Webflow CSS classes`);
-          }
-          
-          if (img.dataset.webflowObjectFit && img.dataset.webflowObjectFit !== 'fill') {
-            img.style.setProperty('object-fit', img.dataset.webflowObjectFit, 'important');
-            console.log(`🔴 Restored object-fit: ${img.dataset.webflowObjectFit}`);
-          } else {
-          img.style.removeProperty('object-fit');
-            console.log(`🔴 Cleared object-fit - using Webflow CSS classes`);
-          }
-          
-          // Ensure Webflow CSS classes are preserved
-          if (img.dataset.webflowClasses) {
-            img.className = img.dataset.webflowClasses;
-            console.log(`🔴 Restored Webflow classes: ${img.dataset.webflowClasses}`);
-          }
-        });
-        imagesToggled = false;
-        console.log('🔴 Images toggled to ORIGINAL WEBFLOW state');
-      }
-    };
-    
-    try {
-      // Add event listener to debug button
-      toggleButton.addEventListener('click', () => performToggle('debug button'));
-      
-      // Add event listener to Webflow toggle if it exists
-      if (webflowToggle) {
-        webflowToggle.addEventListener('click', () => performToggle('.toggle element'));
-        console.log('🎯 Event listener added to Webflow .toggle element');
-      }
-      
-      console.log('🖱️ Event listeners added successfully');
-      
-    } catch (error) {
-      console.error('🖱️ ERROR adding event listeners:', error);
-    }
-    
-    // Simple test to see if any click events work at all
-    document.body.addEventListener('click', () => {
-      console.log('🖱️ BODY CLICK TEST - This should appear on any body click');
-    });
-    
-    console.log('🖱️ Image click toggle initialization COMPLETED');
-    
-    // Make function accessible globally for testing
-    window.testImageToggle = function() {
-      console.log('🔴 MANUAL TEST: Triggering image toggle');
-      performToggle('manual test');
-    };
-    
-    window.debugParallaxImages = function() {
-      console.log('🔍 DEBUGGING: Searching for .img-parallax images...');
-      const imgs = document.querySelectorAll('.img-parallax');
-      console.log(`Found ${imgs.length} .img-parallax images`);
-      
-      if (imgs.length === 0) {
-        console.log('🔍 No .img-parallax found. Checking alternatives:');
-        console.log('Images with "parallax":', document.querySelectorAll('[class*="parallax"]').length);
-        console.log('All images:', document.querySelectorAll('img').length);
-        console.log('Sample classes:', [...document.querySelectorAll('img')].slice(0,5).map(img => img.className));
-      }
-      
-      return imgs;
-    };
-    
-    console.log('🖱️ Test function added to window.testImageToggle()');
-  }
-  
-  // EMERGENCY FALLBACK: Simple click test that should ALWAYS work
-  setTimeout(() => {
-    console.log('🔥 EMERGENCY FALLBACK: Adding simple click test');
-    document.addEventListener('click', (e) => {
-      console.log('🔥 EMERGENCY: Any click detected:', e.target.tagName);
-    });
-    
-    // Test if we can manually trigger image resizing
-    window.emergencyImageTest = function() {
-      console.log('🔥 EMERGENCY: Manual image test - targeting .img-parallax only');
-      const imgs = document.querySelectorAll('.img-parallax');
-      console.log('🔥 Found .img-parallax images:', imgs.length);
-      
-      imgs.forEach((img, index) => {
-        console.log(`🔥 Image ${index} BEFORE:`, {
-          offsetWidth: img.offsetWidth,
-          offsetHeight: img.offsetHeight,
-          styleHeight: img.style.height,
-          computedHeight: window.getComputedStyle(img).height
-        });
-        
-        // Force the style with !important - HEIGHT to 100vw!
-        img.style.setProperty('height', '100vw', 'important');
-        img.style.setProperty('width', 'auto', 'important');
-        img.style.setProperty('object-fit', 'cover', 'important');
-        img.style.setProperty('transition', 'all 0.3s ease', 'important');
-        
-        // Check if it worked
-        setTimeout(() => {
-          console.log(`🔥 Image ${index} AFTER:`, {
-            offsetWidth: img.offsetWidth,
-            offsetHeight: img.offsetHeight,
-            styleHeight: img.style.height,
-            computedHeight: window.getComputedStyle(img).height
-          });
-        }, 100);
-      });
-      
-      return 'Emergency test with detailed logging completed';
-    };
-    console.log('🔥 EMERGENCY: Test functions ready. Try window.emergencyImageTest()');
-  }, 2000);
+  // Toggle functionality removed - was causing issues with cloned images
   
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
