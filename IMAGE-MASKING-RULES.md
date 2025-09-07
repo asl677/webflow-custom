@@ -3,7 +3,8 @@
 ## 🚨 CRITICAL RULES - READ BEFORE ANY CHANGES
 
 ### **Rule #1: Never Break the Mask Animation System**
-- **STABLE BASELINE V4**: Commit `fed8c2f` represents the proven unified mask animation system
+- **STABLE BASELINE V4**: Commit `32b9b02` represents the proven unified mask animation system with mobile-desktop parity
+- **PREVIOUS STABLE V4**: Commit `fed8c2f` (deprecated) - had mobile-specific issues
 - **PREVIOUS STABLE V3**: Commit `f0b8715` with working mask animations (fallback reference)
 - Original images use `style.cssText` for styling (this works)
 - Cloned images must get identical treatment to original images
@@ -161,7 +162,8 @@ document.querySelectorAll('img').forEach((img, i) => {
 
 ## 📚 STABLE REFERENCE COMMITS
 
-- **`fed8c2f`**: **STABLE V4** - Unified mask animation system using single code path for all images
+- **`32b9b02`**: **STABLE V4** - Unified mask animation system with mobile-desktop parity and perfect cloned image handling
+- **`fed8c2f`**: STABLE V4 (deprecated) - Had mobile-specific issues that broke masking on mobile
 - **`f0b8715`**: Complete stable V3 with working text animations, link hover, infinite scroll, and mask animations
 - **`cd0556e`**: Fixed cloned image masking behavior to match original images exactly
 - **`2a751aa`**: Added comprehensive debugging and verification for cloned image visibility
@@ -189,7 +191,7 @@ setTimeout(() => {
 
 If images break completely:
 
-1. **Immediate**: Revert to commit `fed8c2f` (STABLE V4)
+1. **Immediate**: Revert to commit `32b9b02` (STABLE V4)
 2. **Fallback**: Revert to commit `f0b8715` (STABLE V3)
 3. **Check**: Are you seeing console errors about mask setup?
 4. **Test**: Run `window.fixHiddenClonedImages()` in browser console

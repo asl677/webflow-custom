@@ -4,8 +4,9 @@ Advanced animation system for the Alex Lakas portfolio website featuring mask re
 
 ## Current Stable Version
 
-**Commit: `fed8c2f`** - **STABLE V4** - Unified mask animation system with perfect cloned image handling.
+**Commit: `32b9b02`** - **STABLE V4** - Unified mask animation system with mobile-desktop parity and perfect cloned image handling.
 
+**Previous Stable: `fed8c2f`** - STABLE V4 (deprecated) - Had mobile-specific issues.
 **Previous Stable: `f0b8715`** - STABLE V3 with working text animations, link hover effects, and infinite scroll.
 
 ## Implementation in Webflow
