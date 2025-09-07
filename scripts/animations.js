@@ -1035,20 +1035,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Masked image animations - called after text completes on mobile
   function startMaskedImageAnimations() {
-    // Detect Safari mobile for performance optimization
+    // Detect mobile devices for performance optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     const isSafariMobile = /Safari/.test(navigator.userAgent) && 
                           /Mobile|iPhone|iPad|iPod/.test(navigator.userAgent) && 
                           !/Chrome|CriOS|FxiOS/.test(navigator.userAgent);
     
+    // Skip complex mask animations on Safari mobile, but allow them on other mobile browsers
     if (isSafariMobile) {
       console.log('🎭 SKIPPING mask animations on Safari mobile for performance');
-      // Just make all images visible without masking
+      // Make all images visible without masking - but ensure they're REALLY visible
       document.querySelectorAll('img:not(#preloader img), video').forEach(img => {
+        // Force complete visibility on mobile
+        img.style.setProperty('opacity', '1', 'important');
+        img.style.setProperty('visibility', 'visible', 'important');
+        img.style.setProperty('display', 'block', 'important');
+        
         if (typeof window.gsap !== 'undefined') {
-          window.gsap.set(img, { opacity: 1 });
-        } else {
-          img.style.opacity = '1';
+          window.gsap.set(img, { opacity: 1, clearProps: "opacity" });
         }
+        
+        console.log('📱 Made mobile image visible:', img.src?.substring(0, 50) + '...');
       });
       return;
     }
@@ -1062,9 +1069,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency image hiding for mask animations');
     }
     
-    // Mobile-optimized mask reveal for images (include clones, exclude preloader)
+    // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
+    console.log(`📱 Mobile device detected: ${isMobile}`);
+    
+    // Debug: Check if any images are already hidden
+    const hiddenImages = Array.from(allImages).filter(img => {
+      const computed = getComputedStyle(img);
+      return computed.visibility === 'hidden' || computed.opacity === '0';
+    });
+    console.log(`🔍 Found ${hiddenImages.length} initially hidden images that need mask setup`);
     
     if (allImages.length) {
       // On mobile, only animate first 2 images immediately to reduce load even more
@@ -1599,6 +1614,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     };
     
     console.log('🔧 Added window.fixHiddenClonedImages() for manual debugging');
+    
+    // Add mobile image debugging function
+    window.fixMobileImages = function() {
+      console.log('📱 Checking and fixing mobile image visibility...');
+      const allImages = document.querySelectorAll('img:not(#preloader img), video');
+      let fixedCount = 0;
+      
+      allImages.forEach((img, index) => {
+        const computedStyle = getComputedStyle(img);
+        const isHidden = computedStyle.visibility === 'hidden' || 
+                        computedStyle.opacity === '0' || 
+                        computedStyle.display === 'none';
+        
+        if (isHidden) {
+          console.log(`📱 Fixing hidden mobile image ${index}:`, img.src?.substring(0, 50) + '...');
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+          fixedCount++;
+        }
+      });
+      
+      console.log(`✅ Fixed ${fixedCount} hidden images out of ${allImages.length} total on mobile`);
+      return `Fixed ${fixedCount}/${allImages.length} mobile images`;
+    };
+    
+    console.log('📱 Added window.fixMobileImages() for mobile debugging');
     
     // Final ScrollTrigger refresh with nav protection
     if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
