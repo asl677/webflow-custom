@@ -1420,6 +1420,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             maskContainer.remove();
           }
         });
+        
+        // Setup mask animations for cloned images
+        setTimeout(() => {
+          setupMaskAnimationsForClones(clone);
+        }, 100);
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
@@ -1603,6 +1608,83 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, 50);
       }, 100);
     }
+  }
+
+  // Setup mask animations for cloned elements
+  function setupMaskAnimationsForClones(cloneElement) {
+    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
+      console.log('⚠️ GSAP or ScrollTrigger not available for clone mask animations');
+      return;
+    }
+    
+    console.log('🎭 Setting up mask animations for cloned images...');
+    
+    const clonedImages = cloneElement.querySelectorAll('img, video');
+    clonedImages.forEach(el => {
+      // Skip if already animated or if it's a preloader image
+      if (el.dataset.gsapAnimated || el.closest('#preloader')) return;
+      
+      const maskContainer = el.closest('.proper-mask-reveal');
+      if (!maskContainer || maskContainer.dataset.maskSetup) return;
+      
+      console.log(`🔍 Processing cloned image: ${el.src || el.tagName}`);
+      
+      // Get original dimensions
+      const originalWidth = el.naturalWidth || el.videoWidth || el.offsetWidth || 800;
+      const originalHeight = el.naturalHeight || el.videoHeight || el.offsetHeight || 600;
+      
+      // Store target dimensions
+      maskContainer.dataset.targetWidth = originalWidth;
+      maskContainer.dataset.targetHeight = originalHeight;
+      maskContainer.dataset.maskSetup = 'true';
+      
+      // Set initial state
+      window.gsap.set(maskContainer, { width: '0px', overflow: 'hidden' });
+      window.gsap.set(el, { opacity: 1 });
+      
+      console.log(`🎭 Clone mask setup: ${maskContainer.dataset.targetWidth}px width`);
+      
+      // Create scroll-triggered mask reveal animation
+      window.gsap.to(maskContainer, { 
+        width: maskContainer.dataset.targetWidth + 'px', 
+        duration: 1.2,
+        ease: "power2.out",
+        scrollTrigger: { 
+          trigger: el, 
+          start: "top 90%",
+          end: "top center", 
+          once: true,
+          toggleActions: "play none none none"
+        },
+        onStart: () => {
+          console.log(`🎭 Cloned mask animation started: ${maskContainer.dataset.targetWidth}px`);
+        },
+        onComplete: () => {
+          console.log(`🎭 Cloned mask animation completed`);
+          el.dataset.gsapAnimated = 'mask-revealed-clone';
+          el.dataset.maskComplete = 'true';
+        }
+      });
+      
+      // Add parallax scaling if the image has the parallax class
+      const hasParallax = el.classList.contains('img-parallax');
+      if (hasParallax && window.innerWidth >= 768) {
+        window.gsap.set(el, { scale: 1.2 });
+        window.gsap.to(el, { 
+          scale: 1.0, 
+          duration: 1.2, 
+          ease: "power2.out",
+          scrollTrigger: { 
+            trigger: el, 
+            start: "top bottom", 
+            end: "top center", 
+            once: true 
+          }
+        });
+      }
+    });
+    
+    console.log(`✅ Mask animations setup complete for ${clonedImages.length} cloned images`);
   }
 
   // Three.js Scroll Effect Classes
