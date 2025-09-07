@@ -1340,6 +1340,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔄 Loading more items...');
       
       originalItems.forEach(item => {
+        // Exclude items that contain .reveal-full.new-fixed elements from cloning
+        if (item.classList.contains('reveal-full') && item.classList.contains('new-fixed')) {
+          console.log('🚫 Skipping cloning of .reveal-full.new-fixed element:', item.className);
+          return;
+        }
+        
+        // Also check if the item contains any .reveal-full.new-fixed descendants
+        if (item.querySelector('.reveal-full.new-fixed')) {
+          console.log('🚫 Skipping cloning of item containing .reveal-full.new-fixed descendant:', item.className);
+          return;
+        }
+        
         const clone = item.cloneNode(true);
         
         // Mark cloned elements to prevent text animations from affecting them
