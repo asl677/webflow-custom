@@ -1030,7 +1030,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (isSafariMobile) {
       console.log('🎭 SKIPPING mask animations on Safari mobile for performance');
       // Just make all images visible without masking
-      document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])').forEach(img => {
+      document.querySelectorAll('img:not(#preloader img), video').forEach(img => {
         if (typeof window.gsap !== 'undefined') {
           window.gsap.set(img, { opacity: 1 });
         } else {
@@ -1347,12 +1347,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Trigger mask animations for newly added cloned images
+        // Setup mask animations specifically for newly cloned images
         setTimeout(() => {
-          if (typeof window.startMaskedImageAnimations === 'function') {
-            console.log('🎭 Refreshing mask animations for cloned images');
-            window.startMaskedImageAnimations();
-          }
+          setupMaskAnimationsForNewClones(clone);
         }, 200);
       });
       
@@ -1539,7 +1536,113 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
 
-  // All images (original and cloned) now use the same mask animation system
+  // Setup mask animations specifically for newly cloned images
+  function setupMaskAnimationsForNewClones(cloneElement) {
+    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
+      console.log('⚠️ GSAP or ScrollTrigger not available for clone mask animations');
+      return;
+    }
+    
+    console.log('🎭 Setting up mask animations for newly cloned images...');
+    
+    const clonedImages = cloneElement.querySelectorAll('img:not(#preloader img), video');
+    
+    clonedImages.forEach((element, index) => {
+      // Skip if already has mask setup
+      if (element.dataset.maskSetup) {
+        console.log(`⏭️ Skipping image ${index} - already has mask setup`);
+        return;
+      }
+      
+      const originalWidth = element.offsetWidth;
+      const originalHeight = element.offsetHeight;
+      
+      console.log(`🔍 Cloned image ${index}: ${originalWidth}x${originalHeight}px`);
+      
+      // Skip images with no dimensions
+      if (originalWidth === 0 || originalHeight === 0) {
+        console.log(`⏭️ Skipping image ${index} - no dimensions`);
+        return;
+      }
+      
+      // Create mask container
+      const parent = element.parentNode;
+      const maskContainer = document.createElement('div');
+      maskContainer.className = 'mask-wrap';
+      maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+      maskContainer.dataset.targetWidth = originalWidth;
+      
+      // Wrap image in mask container
+      parent.insertBefore(maskContainer, element);
+      maskContainer.appendChild(element);
+      
+      // Style the image
+      element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
+      element.dataset.maskSetup = 'true';
+      
+      // Set up ScrollTrigger animation
+      const staggerDelay = index * 0.1;
+      const duration = 1.2;
+      const easing = "power2.out";
+      
+      console.log(`🎭 Creating mask animation for cloned image ${index}: 0 → ${originalWidth}px`);
+      
+      window.gsap.to(maskContainer, { 
+        width: originalWidth + 'px', 
+        duration: duration, 
+        ease: easing, 
+        delay: staggerDelay,
+        scrollTrigger: { 
+          trigger: element, 
+          start: "top 90%", 
+          end: "bottom 10%", 
+          once: true,
+          toggleActions: "play none none none",
+          onToggle: self => {
+            if (self.isActive) {
+              console.log(`🎭 Cloned image ${index} mask animation triggered`);
+            }
+          }
+        },
+        onStart: () => {
+          console.log(`🎭 Cloned image ${index} mask animation started`);
+        },
+        onComplete: () => {
+          console.log(`🎭 Cloned image ${index} mask animation completed`);
+          element.dataset.gsapAnimated = 'mask-revealed';
+          element.dataset.maskComplete = 'true';
+        }
+      });
+      
+      // Add parallax scaling if the image has the parallax class
+      const hasParallax = element.classList.contains('img-parallax');
+      if (hasParallax && window.innerWidth >= 768) {
+        window.gsap.set(element, { scale: 1.2 });
+        window.gsap.to(element, { 
+          scale: 1.0, 
+          duration: duration, 
+          ease: easing,
+          delay: staggerDelay,
+          scrollTrigger: { 
+            trigger: element, 
+            start: "top bottom", 
+            end: "top center", 
+            once: true 
+          }
+        });
+      }
+    });
+    
+    console.log(`✅ Mask animations setup complete for ${clonedImages.length} newly cloned images`);
+    
+    // Refresh ScrollTrigger to ensure all new triggers are registered
+    setTimeout(() => {
+      if (window.gsap.ScrollTrigger) {
+        window.gsap.ScrollTrigger.refresh();
+        console.log('🔄 ScrollTrigger refreshed for new cloned images');
+      }
+    }, 100);
+  }
 
   // Three.js Scroll Effect Classes
   class ThreeJSScrollEffect {
