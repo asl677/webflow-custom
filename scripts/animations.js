@@ -363,6 +363,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setTimeout(() => {
       console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
+      
+      // Initialize image toggle functionality
+      console.log('🔴 Starting image toggle functionality');
+      initImageToggle();
     }, imageDelay);
   }
 
@@ -2057,16 +2061,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       border-radius: 2px;
       opacity: 0.8;
       transition: all 0.2s ease;
-      display: none;
+      display: block;
     `;
     toggleButton.title = 'Toggle Image Heights';
     document.body.appendChild(toggleButton);
     console.log('🔴 Hidden toggle button created (for debugging)');
     
-    try {
+    // Also look for any existing .toggle elements in Webflow design
+    const webflowToggle = document.querySelector('.toggle');
+    if (webflowToggle) {
+      console.log('🎯 Found Webflow .toggle element:', webflowToggle);
+      webflowToggle.style.cursor = 'pointer';
+    }
     
-    toggleButton.addEventListener('click', (e) => {
-      console.log('🔴 Red button clicked - toggling .img-parallax images');
+    // Create shared toggle function
+    const performToggle = (source) => {
+      console.log(`🔴 Toggle activated from: ${source}`);
+      console.log('🔴 Toggling .img-parallax images');
       
       const allImages = document.querySelectorAll('.img-parallax');
       console.log(`🔴 TOGGLE DEBUG: Found ${allImages.length} .img-parallax images, toggled state: ${imagesToggled}`);
@@ -2174,12 +2185,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesToggled = false;
         console.log('🔴 Images toggled to ORIGINAL WEBFLOW state');
       }
-    });
+    };
     
-    console.log('🖱️ Event listener added successfully');
-    
+    try {
+      // Add event listener to debug button
+      toggleButton.addEventListener('click', () => performToggle('debug button'));
+      
+      // Add event listener to Webflow toggle if it exists
+      if (webflowToggle) {
+        webflowToggle.addEventListener('click', () => performToggle('.toggle element'));
+        console.log('🎯 Event listener added to Webflow .toggle element');
+      }
+      
+      console.log('🖱️ Event listeners added successfully');
+      
     } catch (error) {
-      console.error('🖱️ ERROR adding event listener:', error);
+      console.error('🖱️ ERROR adding event listeners:', error);
     }
     
     // Simple test to see if any click events work at all
@@ -2192,7 +2213,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Make function accessible globally for testing
     window.testImageToggle = function() {
       console.log('🔴 MANUAL TEST: Triggering image toggle');
-      toggleButton.click(); // Trigger the hidden button
+      performToggle('manual test');
     };
     
     window.debugParallaxImages = function() {
