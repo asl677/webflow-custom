@@ -1094,14 +1094,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Also store original CSS classes to preserve Webflow responsive behavior
         element.dataset.webflowClasses = element.className;
         
-        // Use setProperty for consistency with cloned image handling
-        element.style.setProperty('width', `${originalWidth}px`, 'important');
-        element.style.setProperty('height', `${originalHeight}px`, 'important');
-        element.style.setProperty('display', 'block', 'important');
-        element.style.setProperty('margin', '0', 'important');
-        element.style.setProperty('padding', '0', 'important');
-        element.style.setProperty('opacity', '1', 'important');
-        element.style.setProperty('visibility', 'visible', 'important');
+        // Revert to cssText for original images (this was working before)
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
@@ -1110,6 +1104,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (typeof window.gsap !== 'undefined') {
           window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
         }
+        element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
@@ -1310,11 +1306,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               maskContainer.remove();
             }
             
-            // Initially hide cloned images completely until mask system processes them
-            el.style.setProperty('opacity', '0', 'important');
-            el.style.setProperty('visibility', 'hidden', 'important');
-            
-            console.log(`🔧 Clone image ${imgIndex} prepared and hidden for mask system`);
+            // Don't aggressively hide cloned images - let mask system handle visibility naturally
+            // Just ensure they're ready for mask processing
+            console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
         
