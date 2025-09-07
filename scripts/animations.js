@@ -967,16 +967,46 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initRevealFadeAnimations() {
     console.log('🎭 Starting reveal fade-in animations');
     
+    // Debug: Check for various reveal class combinations
+    const allReveals = document.querySelectorAll('[class*="reveal"]');
+    console.log(`🔍 DEBUG: Found ${allReveals.length} elements with "reveal" in class name:`, 
+      [...allReveals].slice(0, 5).map(el => el.className)
+    );
+    
     // Target elements: .reveal.reveal-full.fixed-full and their mask-wrap containers
     const revealElements = document.querySelectorAll('.reveal.reveal-full.fixed-full');
-    console.log(`🎭 Found ${revealElements.length} reveal elements to fade in`);
+    console.log(`🎭 Found ${revealElements.length} .reveal.reveal-full.fixed-full elements to fade in`);
+    
+    // Also try broader selectors in case the exact class combination doesn't exist
+    const revealFull = document.querySelectorAll('.reveal-full');
+    const fixedFull = document.querySelectorAll('.fixed-full');
+    const reveal = document.querySelectorAll('.reveal');
+    
+    console.log(`🔍 DEBUG: .reveal-full: ${revealFull.length}, .fixed-full: ${fixedFull.length}, .reveal: ${reveal.length}`);
     
     if (revealElements.length === 0) {
-      console.log('🎭 No reveal elements found, skipping fade-in animations');
-      return;
+      console.log('🎭 No .reveal.reveal-full.fixed-full elements found');
+      
+      // Try fallback: look for any .reveal elements that might need fading
+      const fallbackReveals = document.querySelectorAll('.reveal');
+      if (fallbackReveals.length > 0) {
+        console.log(`🎭 FALLBACK: Found ${fallbackReveals.length} .reveal elements, will fade those instead`);
+        processRevealElements(fallbackReveals);
+        return;
+      } else {
+        console.log('🎭 No reveal elements found at all, skipping fade-in animations');
+        return;
+      }
     }
     
-    revealElements.forEach((element, index) => {
+    processRevealElements(revealElements);
+  }
+  
+  // Process reveal elements for fade-in animation
+  function processRevealElements(elements) {
+    console.log(`🎭 Processing ${elements.length} reveal elements for fade-in`);
+    
+    elements.forEach((element, index) => {
       // Skip if already processed
       if (element.dataset.revealFadeInit) return;
       element.dataset.revealFadeInit = 'true';
@@ -1027,6 +1057,78 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }, delay * 1000);
       }
     });
+  }
+
+  // Fix container responsiveness and window coverage issues
+  function fixContainerResponsiveness() {
+    console.log('📐 Fixing container responsiveness');
+    
+    // Target main containers that might have responsiveness issues
+    const containers = document.querySelectorAll('.container, .main-wrapper, .page-wrapper, .flex-grid, .w-layout-grid, main, body');
+    
+    containers.forEach((container, index) => {
+      if (!container) return;
+      
+      console.log(`📐 Processing container ${index}: ${container.className || container.tagName}`);
+      
+      // Ensure containers are responsive and cover window properly
+      const currentStyle = getComputedStyle(container);
+      
+      // Fix common responsiveness issues
+      if (container.tagName.toLowerCase() === 'body') {
+        // Ensure body covers full viewport
+        container.style.cssText += `
+          min-height: 100vh !important;
+          width: 100% !important;
+          overflow-x: hidden !important;
+        `;
+      } else if (container.classList.contains('container') || container.classList.contains('main-wrapper') || container.classList.contains('page-wrapper')) {
+        // Main content containers
+        container.style.cssText += `
+          width: 100% !important;
+          max-width: 100% !important;
+          min-height: 100vh !important;
+          box-sizing: border-box !important;
+        `;
+      } else if (container.classList.contains('flex-grid') || container.classList.contains('w-layout-grid')) {
+        // Grid containers
+        container.style.cssText += `
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        `;
+      }
+      
+      // Add resize listener to maintain responsiveness
+      if (index === 0) { // Only add once
+        window.addEventListener('resize', () => {
+          console.log('📐 Window resized, updating container dimensions');
+          // Force recalculation of container dimensions
+          containers.forEach(c => {
+            if (c && c.style) {
+              c.style.width = '100%';
+              c.style.maxWidth = '100%';
+            }
+          });
+        });
+      }
+    });
+    
+    // Also fix any fixed-positioned elements that might cause issues
+    const fixedElements = document.querySelectorAll('.fixed-full, [style*="position: fixed"], [style*="position:fixed"]');
+    fixedElements.forEach((element, index) => {
+      console.log(`📐 Fixing fixed element ${index}: ${element.className}`);
+      element.style.cssText += `
+        width: 100vw !important;
+        height: 100vh !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+      `;
+    });
+    
+    console.log(`📐 Fixed ${containers.length} containers and ${fixedElements.length} fixed elements`);
   }
 
   // Text and other animations (non-masked content) - SIMPLIFIED TO PREVENT DUPLICATION
@@ -1091,6 +1193,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Initialize reveal fade-in animations
     initRevealFadeAnimations();
+    
+    // Fix container responsiveness
+    fixContainerResponsiveness();
     
     // Setup infinite scroll after text animations
     console.log('🔄 About to call setupInfiniteScroll()');
