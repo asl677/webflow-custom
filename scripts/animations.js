@@ -1037,6 +1037,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
+    // Detect mobile devices (keeping detection for performance optimization only)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
     // NOW remove the emergency image hiding since mask animations are about to start
