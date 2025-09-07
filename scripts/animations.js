@@ -970,7 +970,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Debug: Check for various reveal class combinations
     const allReveals = document.querySelectorAll('[class*="reveal"]');
     console.log(`🔍 DEBUG: Found ${allReveals.length} elements with "reveal" in class name:`, 
-      [...allReveals].slice(0, 5).map(el => el.className)
+      [...allReveals].slice(0, 10).map(el => ({
+        className: el.className,
+        tagName: el.tagName,
+        hasImages: el.querySelectorAll('img, video').length
+      }))
     );
     
     // Target elements: .reveal.reveal-full.fixed-full and their mask-wrap containers
@@ -981,25 +985,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const revealFull = document.querySelectorAll('.reveal-full');
     const fixedFull = document.querySelectorAll('.fixed-full');
     const reveal = document.querySelectorAll('.reveal');
+    const revealFullFixed = document.querySelectorAll('.reveal-full.fixed-full');
     
-    console.log(`🔍 DEBUG: .reveal-full: ${revealFull.length}, .fixed-full: ${fixedFull.length}, .reveal: ${reveal.length}`);
+    console.log(`🔍 DEBUG: .reveal-full: ${revealFull.length}, .fixed-full: ${fixedFull.length}, .reveal: ${reveal.length}, .reveal-full.fixed-full: ${revealFullFixed.length}`);
+    
+    // Try multiple fallback strategies
+    let targetElements = revealElements;
+    let strategy = '.reveal.reveal-full.fixed-full';
     
     if (revealElements.length === 0) {
-      console.log('🎭 No .reveal.reveal-full.fixed-full elements found');
+      console.log('🎭 No .reveal.reveal-full.fixed-full elements found, trying fallbacks...');
       
-      // Try fallback: look for any .reveal elements that might need fading
-      const fallbackReveals = document.querySelectorAll('.reveal');
-      if (fallbackReveals.length > 0) {
-        console.log(`🎭 FALLBACK: Found ${fallbackReveals.length} .reveal elements, will fade those instead`);
-        processRevealElements(fallbackReveals);
-        return;
+      if (revealFullFixed.length > 0) {
+        targetElements = revealFullFixed;
+        strategy = '.reveal-full.fixed-full';
+        console.log(`🎭 FALLBACK 1: Using ${revealFullFixed.length} .reveal-full.fixed-full elements`);
+      } else if (fixedFull.length > 0) {
+        targetElements = fixedFull;
+        strategy = '.fixed-full';
+        console.log(`🎭 FALLBACK 2: Using ${fixedFull.length} .fixed-full elements`);
+      } else if (revealFull.length > 0) {
+        targetElements = revealFull;
+        strategy = '.reveal-full';
+        console.log(`🎭 FALLBACK 3: Using ${revealFull.length} .reveal-full elements`);
+      } else if (reveal.length > 0) {
+        targetElements = reveal;
+        strategy = '.reveal';
+        console.log(`🎭 FALLBACK 4: Using ${reveal.length} .reveal elements`);
       } else {
         console.log('🎭 No reveal elements found at all, skipping fade-in animations');
         return;
       }
     }
     
-    processRevealElements(revealElements);
+    console.log(`🎭 PROCESSING: Using strategy "${strategy}" with ${targetElements.length} elements`);
+    processRevealElements(targetElements);
   }
   
   // Process reveal elements for fade-in animation
@@ -1051,16 +1071,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const delay = index * 0.1; // Small stagger between multiple elements
       
       if (typeof window.gsap !== 'undefined') {
+        // Make the animation more visible by starting from scale 0.8 and opacity 0
+        window.gsap.set(elementsToFade, { 
+          opacity: 0, 
+          scale: 0.8,
+          transformOrigin: "center center"
+        });
+        
         window.gsap.to(elementsToFade, {
           opacity: 1,
+          scale: 1,
           duration: 1.5,
           delay: delay,
           ease: "power2.out",
           onStart: () => {
-            console.log(`🎭 Starting fade-in for reveal element ${index}`);
+            console.log(`🎭 Starting ENHANCED fade-in for reveal element ${index} with scale animation`);
+            console.log(`🎭 Element classes:`, element.className);
+            console.log(`🎭 Element has ${images.length} images`);
           },
           onComplete: () => {
-            console.log(`🎭 Fade-in completed for reveal element ${index}`);
+            console.log(`🎭 ENHANCED fade-in completed for reveal element ${index}`);
             element.dataset.revealFadeComplete = 'true';
             
             // Re-apply object-fit properties after animation to ensure they're preserved
