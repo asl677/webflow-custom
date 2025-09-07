@@ -4,7 +4,9 @@ Advanced animation system for the Alex Lakas portfolio website featuring mask re
 
 ## Current Stable Version
 
-**Commit: `fdc73e2`** - Stable baseline with working mask animations and click toggle functionality.
+**Commit: `fed8c2f`** - **STABLE V4** - Unified mask animation system with perfect cloned image handling.
+
+**Previous Stable: `f0b8715`** - STABLE V3 with working text animations, link hover effects, and infinite scroll.
 
 ## Implementation in Webflow
 
@@ -237,4 +239,4 @@ mcp_webflow_sites_publish({
 
 ---
 
-*Last Updated: Current with stable commit `ea67e13` + MCP integration*
+*Last Updated: Current with **STABLE V4** commit `fed8c2f` - Unified image masking system*
