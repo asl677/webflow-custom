@@ -1382,12 +1382,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Setup mask animations for cloned images after a short delay to ensure DOM is ready
+        // Let the main mask animation system handle cloned images naturally
+        // Trigger mask animations for any new images that weren't processed yet
         setTimeout(() => {
-          console.log(`🎭 Starting mask setup for cloned images in clone element:`, clone);
-          console.log(`🎭 Clone has ${clone.querySelectorAll('img, video').length} images/videos`);
-          setupMaskAnimationsForNewClones(clone);
-        }, 300);
+          console.log('🎭 Triggering mask animations for any unprocessed images...');
+          if (typeof window.gsap !== 'undefined') {
+            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
+            
+            unprocessedImages.forEach((img, i) => {
+              console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
+            });
+            
+            // Call the main mask animation function to process any new images
+            if (unprocessedImages.length > 0) {
+              startMaskedImageAnimations();
+            }
+          }
+        }, 500);
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
@@ -1621,165 +1633,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
   }
 
-  // Setup mask animations for cloned images - same behavior as original images
-  function setupMaskAnimationsForNewClones(cloneElement) {
-    console.log('🎭 setupMaskAnimationsForNewClones called with element:', cloneElement);
-    
-    if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
-      console.log('⚠️ GSAP or ScrollTrigger not available for clone mask animations');
-      return;
-    }
-    
-    console.log('🎭 Setting up mask animations for newly cloned images...');
-    
-    const clonedImages = cloneElement.querySelectorAll('img:not(#preloader img), video');
-    console.log(`🎭 Found ${clonedImages.length} images/videos in clone element for mask setup`);
-    
-    if (clonedImages.length === 0) {
-      console.log('⚠️ No images found in clone element - checking all descendants');
-      const allImages = cloneElement.querySelectorAll('*');
-      console.log(`🔍 Clone has ${allImages.length} total descendants`);
-      return;
-    }
-    
-    clonedImages.forEach((element, index) => {
-      // Skip if already processed
-      if (element.dataset.maskSetup) {
-        console.log(`⏭️ Skipping cloned image ${index} - already has mask setup`);
-        return;
-      }
-      
-      // Get original image dimensions BEFORE any styling is applied
-      const rect = element.getBoundingClientRect();
-      const originalWidth = element.offsetWidth || rect.width || 400; // Fallback to reasonable size
-      const originalHeight = element.offsetHeight || rect.height || 300;
-      
-      console.log(`🔍 Processing cloned image ${index}: ${originalWidth}x${originalHeight}px`);
-      
-      // Skip images with invalid dimensions
-      if (originalWidth <= 0 || originalHeight <= 0) {
-        console.log(`⏭️ Skipping cloned image ${index} - invalid dimensions`);
-        return;
-      }
-      
-      // Create mask container exactly like original images
-      const parent = element.parentNode;
-      const maskContainer = document.createElement('div');
-      maskContainer.className = 'mask-wrap';
-      maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-      
-      // Wrap image in mask container
-      parent.insertBefore(maskContainer, element);
-      maskContainer.appendChild(element);
-      
-      // Apply the same styling as original images - use setProperty to properly override !important rules
-      element.style.setProperty('width', `${originalWidth}px`, 'important');
-      element.style.setProperty('height', `${originalHeight}px`, 'important');
-      element.style.setProperty('display', 'block', 'important');
-      element.style.setProperty('margin', '0', 'important');
-      element.style.setProperty('padding', '0', 'important');
-      element.style.setProperty('opacity', '1', 'important');
-      element.style.setProperty('visibility', 'visible', 'important');
-      element.dataset.maskSetup = 'true';
-      
-      console.log(`🔧 Cloned image ${index} - forced visible with setProperty:`, {
-        opacity: element.style.opacity,
-        visibility: element.style.visibility,
-        width: element.style.width,
-        height: element.style.height
-      });
-      
-      // Force immediate opacity and clear any existing GSAP animations
-      if (typeof window.gsap !== 'undefined') {
-        window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
-      }
-      
-      // Verify styles took effect after a brief delay
-      setTimeout(() => {
-        const computedStyle = getComputedStyle(element);
-        console.log(`🔧 VERIFICATION - Cloned image ${index} final styles:`, {
-          opacity: computedStyle.opacity,
-          visibility: computedStyle.visibility,
-          width: computedStyle.width,
-          height: computedStyle.height,
-          inlineOpacity: element.style.opacity,
-          inlineVisibility: element.style.visibility
-        });
-        
-        if (computedStyle.visibility === 'hidden' || computedStyle.opacity === '0') {
-          console.error(`🚨 CLONED IMAGE ${index} STILL HIDDEN! Forcing visibility again...`);
-          element.style.setProperty('opacity', '1', 'important');
-          element.style.setProperty('visibility', 'visible', 'important');
-          element.style.setProperty('display', 'block', 'important');
-        }
-      }, 50);
-      
-      console.log(`🔧 Cloned image ${index} styled with dimensions: ${originalWidth}x${originalHeight}px`);
-      
-      // Create the exact same ScrollTrigger animation as original images
-      const staggerDelay = index * 0.05; // Minimal stagger for clones
-      const duration = 1.2;
-      const easing = "power2.out";
-      
-      console.log(`🎭 Creating mask animation for cloned image ${index}: 0px → ${originalWidth}px`);
-      
-      window.gsap.to(maskContainer, { 
-        width: originalWidth + 'px', 
-        duration: duration, 
-        ease: easing, 
-        delay: staggerDelay,
-        scrollTrigger: { 
-          trigger: element, 
-          start: "top 90%", // Same trigger point as original images
-          end: "bottom 10%", 
-          once: true,
-          toggleActions: "play none none none",
-          onToggle: self => {
-            if (self.isActive) {
-              console.log(`🎭 Cloned image ${index} ScrollTrigger activated`);
-            }
-          }
-        },
-        onStart: () => {
-          console.log(`🎭 Cloned mask animation started for image ${index}`);
-        },
-        onComplete: () => {
-          console.log(`🎭 Cloned mask animation completed for image ${index}`);
-          element.dataset.gsapAnimated = 'mask-revealed-clone';
-          element.dataset.maskComplete = 'true';
-        }
-      });
-      
-      // Handle parallax scaling if needed
-      const hasParallax = element.classList.contains('img-parallax');
-      if (hasParallax && window.innerWidth >= 768) {
-        window.gsap.set(element, { scale: 1.2 });
-        window.gsap.to(element, { 
-          scale: 1.0, 
-          duration: duration, 
-          ease: easing,
-          delay: staggerDelay,
-          scrollTrigger: { 
-            trigger: element, 
-            start: "top bottom", 
-            end: "top center", 
-            once: true 
-          }
-        });
-        console.log(`🎭 Added parallax scaling for cloned image ${index}`);
-      }
-    });
-    
-    console.log(`✅ Mask animations setup complete for ${clonedImages.length} cloned images`);
-    
-    // Refresh ScrollTrigger to register all new animations
-    setTimeout(() => {
-      if (window.gsap && window.gsap.ScrollTrigger) {
-        window.gsap.ScrollTrigger.refresh();
-        console.log('🔄 ScrollTrigger refreshed for cloned images');
-      }
-    }, 100);
-  }
+  // Cloned images now handled by main mask system - no separate function needed
 
   // Three.js Scroll Effect Classes
   class ThreeJSScrollEffect {
