@@ -963,6 +963,72 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     return [el]; // Return the original element, no DOM manipulation
   }
 
+  // Initialize reveal fade-in animations for specific elements
+  function initRevealFadeAnimations() {
+    console.log('🎭 Starting reveal fade-in animations');
+    
+    // Target elements: .reveal.reveal-full.fixed-full and their mask-wrap containers
+    const revealElements = document.querySelectorAll('.reveal.reveal-full.fixed-full');
+    console.log(`🎭 Found ${revealElements.length} reveal elements to fade in`);
+    
+    if (revealElements.length === 0) {
+      console.log('🎭 No reveal elements found, skipping fade-in animations');
+      return;
+    }
+    
+    revealElements.forEach((element, index) => {
+      // Skip if already processed
+      if (element.dataset.revealFadeInit) return;
+      element.dataset.revealFadeInit = 'true';
+      
+      // Find the mask-wrap container if it exists
+      const maskWrap = element.querySelector('.mask-wrap');
+      const elementsToFade = [element];
+      
+      if (maskWrap) {
+        elementsToFade.push(maskWrap);
+        console.log(`🎭 Found mask-wrap for reveal element ${index}`);
+      }
+      
+      // Set initial state (hidden)
+      elementsToFade.forEach(el => {
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(el, { opacity: 0 });
+        } else {
+          el.style.opacity = '0';
+        }
+      });
+      
+      // Animate fade-in with 1.5s duration
+      const delay = index * 0.1; // Small stagger between multiple elements
+      
+      if (typeof window.gsap !== 'undefined') {
+        window.gsap.to(elementsToFade, {
+          opacity: 1,
+          duration: 1.5,
+          delay: delay,
+          ease: "power2.out",
+          onStart: () => {
+            console.log(`🎭 Starting fade-in for reveal element ${index}`);
+          },
+          onComplete: () => {
+            console.log(`🎭 Fade-in completed for reveal element ${index}`);
+            element.dataset.revealFadeComplete = 'true';
+          }
+        });
+      } else {
+        // Fallback without GSAP
+        setTimeout(() => {
+          elementsToFade.forEach(el => {
+            el.style.transition = 'opacity 1.5s ease-out';
+            el.style.opacity = '1';
+          });
+          console.log(`🎭 Fallback fade-in for reveal element ${index}`);
+        }, delay * 1000);
+      }
+    });
+  }
+
   // Text and other animations (non-masked content) - SIMPLIFIED TO PREVENT DUPLICATION
   function initTextAndOtherAnimations() {
     isInit = true;
@@ -1021,7 +1087,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
-    console.log('✅ Text animations complete - now setting up infinite scroll');
+    console.log('✅ Text animations complete - now setting up reveal fade and infinite scroll');
+    
+    // Initialize reveal fade-in animations
+    initRevealFadeAnimations();
     
     // Setup infinite scroll after text animations
     console.log('🔄 About to call setupInfiniteScroll()');
