@@ -356,7 +356,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Start text animations immediately - these must complete FIRST on mobile
     console.log('🎬 Starting text animations (priority on mobile)');
+    console.log('🎬 About to call initTextAndOtherAnimations()');
+    try {
       initTextAndOtherAnimations();
+      console.log('✅ initTextAndOtherAnimations() completed');
+    } catch (error) {
+      console.error('❌ initTextAndOtherAnimations() failed:', error);
+    }
     
     // Wait for text animations to mostly complete before starting images
     const imageDelay = isMobile ? 1500 : 800; // Much longer delay on mobile
@@ -1018,7 +1024,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('✅ Text animations complete - now setting up infinite scroll');
     
     // Setup infinite scroll after text animations
-    setupInfiniteScroll();
+    console.log('🔄 About to call setupInfiniteScroll()');
+    try {
+      setupInfiniteScroll();
+      console.log('✅ setupInfiniteScroll() completed successfully');
+        } catch (error) {
+      console.error('❌ setupInfiniteScroll() failed:', error);
+    }
   }
   
   // Masked image animations - called after text completes on mobile
@@ -1082,7 +1094,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Also store original CSS classes to preserve Webflow responsive behavior
         element.dataset.webflowClasses = element.className;
         
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
+        // Use setProperty for consistency with cloned image handling
+        element.style.setProperty('width', `${originalWidth}px`, 'important');
+        element.style.setProperty('height', `${originalHeight}px`, 'important');
+        element.style.setProperty('display', 'block', 'important');
+        element.style.setProperty('margin', '0', 'important');
+        element.style.setProperty('padding', '0', 'important');
+        element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('visibility', 'visible', 'important');
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
@@ -1091,8 +1110,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (typeof window.gsap !== 'undefined') {
           window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
         }
-        element.style.setProperty('opacity', '1', 'important');
-        element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
@@ -1196,22 +1213,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
-    console.log('🔄 Starting infinite scroll setup...');
+    console.log('🔄 STARTING INFINITE SCROLL SETUP - DEBUG MODE');
+    console.log('🔄 Document ready state:', document.readyState);
+    console.log('🔄 Body exists:', !!document.body);
+    
     // Back to simpler working selectors
     const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
+    console.log('🔍 Searching for infinite scroll container...');
     for (const selector of selectors) {
       const found = document.querySelector(selector);
+      console.log(`🔍 Checking ${selector}:`, found ? `Found with ${found.children.length} children` : 'Not found');
       if (found && found.children.length > 1) { 
         container = found; 
-        console.log(`✅ Found container: ${selector} with ${found.children.length} items`); 
+        console.log(`✅ SELECTED container: ${selector} with ${found.children.length} items`); 
         break; 
       }
     }
     
     if (!container) { 
-      console.log('❌ No container found for infinite scroll'); 
+      console.log('❌ NO CONTAINER FOUND for infinite scroll');
+      console.log('🔍 Available elements with classes:', 
+        [...document.querySelectorAll('[class]')].slice(0, 10).map(el => el.className)
+      );
       return; 
     }
     
@@ -1365,7 +1390,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Setup mask animations for cloned images after a short delay to ensure DOM is ready
         setTimeout(() => {
-          console.log('🎭 Starting mask setup for cloned images...');
+          console.log(`🎭 Starting mask setup for cloned images in clone element:`, clone);
+          console.log(`🎭 Clone has ${clone.querySelectorAll('img, video').length} images/videos`);
           setupMaskAnimationsForNewClones(clone);
         }, 300);
       });
@@ -1443,6 +1469,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     };
     
     window.addEventListener('scroll', scrollListener, { passive: true });
+    console.log('🔄 Infinite scroll event listener attached to window');
+    
+    // Test scroll immediately
+    setTimeout(() => {
+      console.log('🔄 Testing initial scroll state...');
+      handleScroll();
+    }, 1000);
     
     // Separate resize handler with nav protection
     window.addEventListener('resize', () => {
@@ -1520,6 +1553,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     
+    // Add manual test function
+    window.testInfiniteScroll = function() {
+      console.log('🔄 Manual infinite scroll test triggered');
+      loadMoreItems();
+      return 'Infinite scroll test completed';
+    };
+    
+    window.getInfiniteScrollStatus = function() {
+      return {
+        active: window.infiniteScrollActive,
+        container: container ? container.className : 'none',
+        containerChildren: container ? container.children.length : 0,
+        isLoading: isLoading
+      };
+    };
+    
+    console.log('🔄 Added window.testInfiniteScroll() and window.getInfiniteScrollStatus() for debugging');
+    
+    // Add function to fix hidden cloned images
+    window.fixHiddenClonedImages = function() {
+      console.log('🔧 Checking for hidden cloned images...');
+      const clonedImages = document.querySelectorAll('img[data-infinite-clone="true"], video[data-infinite-clone="true"]');
+      let fixedCount = 0;
+      
+      clonedImages.forEach((img, index) => {
+        const computedStyle = getComputedStyle(img);
+        if (computedStyle.visibility === 'hidden' || computedStyle.opacity === '0') {
+          console.log(`🔧 Fixing hidden cloned image ${index}:`, img.src?.substring(0, 50) + '...');
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+          fixedCount++;
+        }
+      });
+      
+      console.log(`✅ Fixed ${fixedCount} hidden cloned images out of ${clonedImages.length} total`);
+      return `Fixed ${fixedCount}/${clonedImages.length} hidden cloned images`;
+    };
+    
+    console.log('🔧 Added window.fixHiddenClonedImages() for manual debugging');
+    
     // Final ScrollTrigger refresh with nav protection
     if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       setTimeout(() => {
@@ -1555,6 +1629,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Setup mask animations for cloned images - same behavior as original images
   function setupMaskAnimationsForNewClones(cloneElement) {
+    console.log('🎭 setupMaskAnimationsForNewClones called with element:', cloneElement);
+    
     if (typeof window.gsap === 'undefined' || !window.gsap.ScrollTrigger) {
       console.log('⚠️ GSAP or ScrollTrigger not available for clone mask animations');
       return;
@@ -1563,6 +1639,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('🎭 Setting up mask animations for newly cloned images...');
     
     const clonedImages = cloneElement.querySelectorAll('img:not(#preloader img), video');
+    console.log(`🎭 Found ${clonedImages.length} images/videos in clone element for mask setup`);
+    
+    if (clonedImages.length === 0) {
+      console.log('⚠️ No images found in clone element - checking all descendants');
+      const allImages = cloneElement.querySelectorAll('*');
+      console.log(`🔍 Clone has ${allImages.length} total descendants`);
+      return;
+    }
     
     clonedImages.forEach((element, index) => {
       // Skip if already processed
@@ -1594,16 +1678,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       parent.insertBefore(maskContainer, element);
       maskContainer.appendChild(element);
       
-      // Apply the same styling as original images to ensure consistency
-      element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
+      // Apply the same styling as original images - use setProperty to properly override !important rules
+      element.style.setProperty('width', `${originalWidth}px`, 'important');
+      element.style.setProperty('height', `${originalHeight}px`, 'important');
+      element.style.setProperty('display', 'block', 'important');
+      element.style.setProperty('margin', '0', 'important');
+      element.style.setProperty('padding', '0', 'important');
+      element.style.setProperty('opacity', '1', 'important');
+      element.style.setProperty('visibility', 'visible', 'important');
       element.dataset.maskSetup = 'true';
+      
+      console.log(`🔧 Cloned image ${index} - forced visible with setProperty:`, {
+        opacity: element.style.opacity,
+        visibility: element.style.visibility,
+        width: element.style.width,
+        height: element.style.height
+      });
       
       // Force immediate opacity and clear any existing GSAP animations
       if (typeof window.gsap !== 'undefined') {
         window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
       }
-      element.style.setProperty('opacity', '1', 'important');
-      element.style.setProperty('visibility', 'visible', 'important');
+      
+      // Verify styles took effect after a brief delay
+      setTimeout(() => {
+        const computedStyle = getComputedStyle(element);
+        console.log(`🔧 VERIFICATION - Cloned image ${index} final styles:`, {
+          opacity: computedStyle.opacity,
+          visibility: computedStyle.visibility,
+          width: computedStyle.width,
+          height: computedStyle.height,
+          inlineOpacity: element.style.opacity,
+          inlineVisibility: element.style.visibility
+        });
+        
+        if (computedStyle.visibility === 'hidden' || computedStyle.opacity === '0') {
+          console.error(`🚨 CLONED IMAGE ${index} STILL HIDDEN! Forcing visibility again...`);
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.style.setProperty('display', 'block', 'important');
+        }
+      }, 50);
       
       console.log(`🔧 Cloned image ${index} styled with dimensions: ${originalWidth}x${originalHeight}px`);
       
