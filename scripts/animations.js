@@ -1020,6 +1020,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         console.log(`🎭 Found mask-wrap for reveal element ${index}`);
       }
       
+      // Find and preserve object-fit for images within reveal elements
+      const images = element.querySelectorAll('img, video');
+      const imageStyles = [];
+      
+      images.forEach((img, imgIndex) => {
+        const computedStyle = getComputedStyle(img);
+        const objectFit = img.style.objectFit || computedStyle.objectFit || 'cover';
+        imageStyles[imgIndex] = {
+          objectFit: objectFit,
+          width: computedStyle.width,
+          height: computedStyle.height
+        };
+        
+        // Ensure object-fit is set and preserved
+        img.style.setProperty('object-fit', objectFit, 'important');
+        console.log(`🎭 Preserved object-fit for reveal image ${imgIndex}: ${objectFit}`);
+      });
+      
       // Set initial state (hidden)
       elementsToFade.forEach(el => {
         if (typeof window.gsap !== 'undefined') {
@@ -1044,6 +1062,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           onComplete: () => {
             console.log(`🎭 Fade-in completed for reveal element ${index}`);
             element.dataset.revealFadeComplete = 'true';
+            
+            // Re-apply object-fit properties after animation to ensure they're preserved
+            images.forEach((img, imgIndex) => {
+              if (imageStyles[imgIndex]) {
+                img.style.setProperty('object-fit', imageStyles[imgIndex].objectFit, 'important');
+                console.log(`🎭 Re-applied object-fit after fade-in: ${imageStyles[imgIndex].objectFit}`);
+              }
+            });
           }
         });
       } else {
@@ -1053,6 +1079,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.style.transition = 'opacity 1.5s ease-out';
             el.style.opacity = '1';
           });
+          
+          // Re-apply object-fit properties after fallback animation
+          images.forEach((img, imgIndex) => {
+            if (imageStyles[imgIndex]) {
+              img.style.setProperty('object-fit', imageStyles[imgIndex].objectFit, 'important');
+              console.log(`🎭 Re-applied object-fit after fallback fade-in: ${imageStyles[imgIndex].objectFit}`);
+            }
+          });
+          
           console.log(`🎭 Fallback fade-in for reveal element ${index}`);
         }, delay * 1000);
       }
@@ -1263,8 +1298,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Also store original CSS classes to preserve Webflow responsive behavior
         element.dataset.webflowClasses = element.className;
         
-        // Revert to cssText for original images (this was working before)
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
+        // Preserve object-fit and other important properties while setting dimensions
+        const objectFit = element.dataset.webflowObjectFit || 'cover';
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important;object-fit:${objectFit}!important`;
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
@@ -1281,7 +1317,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         maskContainer.dataset.targetWidth = originalWidth;
         
         const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) window.gsap.set(element, { scale: 1.2 });
+        if (hasParallax) {
+          window.gsap.set(element, { 
+            scale: 1.2,
+            onComplete: () => {
+              // Ensure object-fit is preserved after scaling
+              element.style.setProperty('object-fit', objectFit, 'important');
+            }
+          });
+        }
         
         // Check if image is in viewport for immediate animation
         const rect = element.getBoundingClientRect();
@@ -1316,7 +1360,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               scale: 1.0, 
               duration: duration + 0.5, 
               ease: easing, 
-              delay: staggerDelay
+              delay: staggerDelay,
+              onComplete: () => {
+                // Ensure object-fit is preserved after scaling animation
+                element.style.setProperty('object-fit', objectFit, 'important');
+                console.log('🎭 Preserved object-fit after parallax scaling:', objectFit);
+              }
             });
           }
         } else {
@@ -1350,6 +1399,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 start: "top bottom", 
                 end: "top center", 
                 once: true 
+              },
+              onComplete: () => {
+                // Ensure object-fit is preserved after ScrollTrigger scaling animation
+                element.style.setProperty('object-fit', objectFit, 'important');
+                console.log('🎭 Preserved object-fit after ScrollTrigger scaling:', objectFit);
               }
             });
           }
