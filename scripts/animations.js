@@ -1072,8 +1072,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
+        // Store original Webflow dimensions and styles before applying mask styles
+        const computedStyle = getComputedStyle(element);
+        element.dataset.webflowWidth = element.style.width || (computedStyle.width !== 'auto' ? computedStyle.width : '');
+        element.dataset.webflowHeight = element.style.height || (computedStyle.height !== 'auto' ? computedStyle.height : '');
+        element.dataset.webflowObjectFit = element.style.objectFit || computedStyle.objectFit;
+        
+        // Also store original CSS classes to preserve Webflow responsive behavior
+        element.dataset.webflowClasses = element.className;
+        
         element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
         element.dataset.maskSetup = 'true';
+        element.dataset.originalMaskWidth = originalWidth;
+        element.dataset.originalMaskHeight = originalHeight;
         
         // Force immediate opacity and clear any existing GSAP animations
         if (typeof window.gsap !== 'undefined') {
@@ -1576,9 +1587,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       parent.insertBefore(maskContainer, element);
       maskContainer.appendChild(element);
       
+      // Store original Webflow dimensions and styles before applying mask styles
+      const computedStyle = getComputedStyle(element);
+      element.dataset.webflowWidth = element.style.width || (computedStyle.width !== 'auto' ? computedStyle.width : '');
+      element.dataset.webflowHeight = element.style.height || (computedStyle.height !== 'auto' ? computedStyle.height : '');
+      element.dataset.webflowObjectFit = element.style.objectFit || computedStyle.objectFit;
+      
+      // Also store original CSS classes to preserve Webflow responsive behavior
+      element.dataset.webflowClasses = element.className;
+      
       // Style the image
       element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important`;
       element.dataset.maskSetup = 'true';
+      element.dataset.originalMaskWidth = originalWidth;
+      element.dataset.originalMaskHeight = originalHeight;
       
       // Set up ScrollTrigger animation
       const staggerDelay = index * 0.1;
@@ -2108,17 +2130,49 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesToggled = true;
         console.log('🔴 Images toggled to EXPANDED state');
       } else {
-        // Revert to original sizes
-        console.log('🔴 REVERTING images to original sizes');
+        // Revert to original Webflow sizes
+        console.log('🔴 REVERTING images to original Webflow sizes');
         allImages.forEach((img, index) => {
-          console.log(`🔴 Reverting image ${index}`);
-          img.style.removeProperty('width');
-          img.style.removeProperty('height');
+          console.log(`🔴 Reverting image ${index} to Webflow dimensions`);
+          
+          // Remove toggle styles
           img.style.removeProperty('transition');
+          
+          // Restore original Webflow dimensions and behavior
+          if (img.dataset.webflowWidth && img.dataset.webflowWidth !== '') {
+            img.style.setProperty('width', img.dataset.webflowWidth, 'important');
+            console.log(`🔴 Restored width: ${img.dataset.webflowWidth}`);
+          } else {
+            // Clear width completely to let Webflow CSS classes handle it
+          img.style.removeProperty('width');
+            console.log(`🔴 Cleared width - using Webflow CSS classes`);
+          }
+          
+          if (img.dataset.webflowHeight && img.dataset.webflowHeight !== '') {
+            img.style.setProperty('height', img.dataset.webflowHeight, 'important');  
+            console.log(`🔴 Restored height: ${img.dataset.webflowHeight}`);
+          } else {
+            // Clear height completely to let Webflow CSS classes handle it
+          img.style.removeProperty('height');
+            console.log(`🔴 Cleared height - using Webflow CSS classes`);
+          }
+          
+          if (img.dataset.webflowObjectFit && img.dataset.webflowObjectFit !== 'fill') {
+            img.style.setProperty('object-fit', img.dataset.webflowObjectFit, 'important');
+            console.log(`🔴 Restored object-fit: ${img.dataset.webflowObjectFit}`);
+          } else {
           img.style.removeProperty('object-fit');
+            console.log(`🔴 Cleared object-fit - using Webflow CSS classes`);
+          }
+          
+          // Ensure Webflow CSS classes are preserved
+          if (img.dataset.webflowClasses) {
+            img.className = img.dataset.webflowClasses;
+            console.log(`🔴 Restored Webflow classes: ${img.dataset.webflowClasses}`);
+          }
         });
         imagesToggled = false;
-        console.log('🔴 Images toggled to ORIGINAL state');
+        console.log('🔴 Images toggled to ORIGINAL WEBFLOW state');
       }
     });
     
