@@ -1235,11 +1235,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
           }
         } else {
-          // Images below fold: use optimized ScrollTrigger
+          // Mobile: Skip scroll-based mask animations for better performance
+          if (isMobile) {
+            console.log('📱 Skipping scroll mask animations on mobile for performance');
+            // Just show the image immediately on mobile
+            window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
+            element.dataset.gsapAnimated = 'mask-revealed-mobile';
+            element.dataset.maskComplete = 'true';
+          } else {
+            // Desktop: use optimized ScrollTrigger
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2, // Same duration across all devices
+              duration: 1.2,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -1253,6 +1261,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          }
           
           // Only add parallax on desktop
           if (hasParallax && !isMobile) {
@@ -1388,8 +1397,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
         
         // Special handling for images and videos in clones - prevent flickering
-        clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
-          el.dataset.infiniteClone = 'true';
+          clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
+            el.dataset.infiniteClone = 'true';
           
           // Immediately stabilize cloned images to prevent flickering
           el.style.setProperty('opacity', '1', 'important');
@@ -1400,7 +1409,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
         
         // Add slight delay for mask system processing
-        setTimeout(() => {
+            setTimeout(() => {
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             // Remove any existing mask setup flags so they get fresh animations
             delete el.dataset.maskSetup;
