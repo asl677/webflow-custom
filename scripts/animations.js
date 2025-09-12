@@ -1316,8 +1316,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
             element.dataset.gsapAnimated = 'mask-revealed-mobile';
             element.dataset.maskComplete = 'true';
-          } else {
-            // Desktop: use optimized ScrollTrigger
+          } else if (!isMobile) {
+            // Desktop only: use optimized ScrollTrigger
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
@@ -1335,6 +1335,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          } else {
+            // Mobile: show mask immediately without ScrollTrigger to prevent flickering
+            console.log(`📱 Mobile: Showing mask immediately for image ${index} to prevent scroll flickering`);
+            window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
+            element.dataset.gsapAnimated = 'mask-revealed-mobile';
+            element.dataset.maskComplete = 'true';
           }
           
           // Only add parallax on desktop
@@ -1614,8 +1620,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       
-      // Refresh ScrollTrigger with nav protection
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      // Refresh ScrollTrigger with nav protection (desktop only)
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
         // Store nav element styles before refresh (exclude middle/bottom nav)
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
         console.log(`🔍 Found ${navElements.length} nav elements for infinite scroll protection:`, [...navElements].map(el => el.className));
@@ -1693,9 +1699,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       handleScroll();
     }, 1000);
     
-    // Separate resize handler with nav protection
+    // Separate resize handler with nav protection (desktop only)
     window.addEventListener('resize', () => {
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
         // Store nav element styles before refresh - exclude middle/bottom nav
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav, .nav-left, .left-nav');
         console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
@@ -1837,8 +1843,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('📱 Added window.fixMobileImages() for mobile debugging');
     
-    // Final ScrollTrigger refresh with nav protection
-    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+    // Final ScrollTrigger refresh with nav protection (desktop only)
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
       setTimeout(() => {
         // Store nav element styles before refresh (exclude middle/bottom nav)
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
