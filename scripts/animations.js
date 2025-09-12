@@ -40,7 +40,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.warn('Webflow script error detected, not interfering:', e.message);
       return;
     }
-    console.error('Global JavaScript error:', e.error);
+    console.error('Global JavaScript error:', e.error || e.message || 'Unknown error');
   });
 
   // Load GSAP scripts sequentially with error handling
@@ -1187,34 +1187,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Continue with mask animations only for above fold images
-    // Update allImages to only include above fold for mask processing
+    // Create filtered list for above fold processing
     const originalAllImages = allImages;
     const aboveFoldNodeList = document.querySelectorAll('img:not(#preloader img), video');
     const filteredImages = Array.from(aboveFoldNodeList).slice(0, 5);
     
-    // Replace allImages reference for the rest of this function
-    allImages = filteredImages;
+    // Use filtered images for the rest of this function
+    var imagesToProcess = filteredImages;
   } else {
-    // Desktop: remove emergency hide normally
+    // Desktop: remove emergency hide normally and process all images
     const emergencyHide = document.getElementById('emergency-image-hide');
     if (emergencyHide) {
       emergencyHide.remove();
       console.log('🔧 Removed emergency image hiding for desktop mask animations');
     }
+    var imagesToProcess = allImages;
   }
     
     // Debug: Check if any images are already hidden
-    const hiddenImages = Array.from(allImages).filter(img => {
+    const hiddenImages = Array.from(imagesToProcess).filter(img => {
       const computed = getComputedStyle(img);
       return computed.visibility === 'hidden' || computed.opacity === '0';
     });
     console.log(`🔍 Found ${hiddenImages.length} initially hidden images that need mask setup`);
     
-    if (allImages.length) {
+    if (imagesToProcess.length) {
       // On mobile, only animate first 2 images immediately to reduce load even more
-      const maxInitialImages = isMobile ? 2 : allImages.length;
+      const maxInitialImages = isMobile ? 2 : imagesToProcess.length;
       
-      allImages.forEach((element, index) => {
+      imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         // Process both original and cloned images the same way
         const originalWidth = element.offsetWidth;
@@ -1367,7 +1368,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Safety fallback: force completion of any stuck reveals after 5 seconds
       setTimeout(() => {
-        allImages.forEach(element => {
+        imagesToProcess.forEach(element => {
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
             if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
