@@ -1149,11 +1149,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const belowFoldImages = Array.from(allImages).slice(5, 15); // Preload next 10
     const remainingImages = Array.from(allImages).slice(15);
     
-    // Show below fold and remaining images immediately (no scroll animations)
+    // Show below fold and remaining images with smooth fade stagger (no heavy mask animations)
     [...belowFoldImages, ...remainingImages].forEach((img, index) => {
-      img.style.setProperty('opacity', '1', 'important');
+      // Start hidden then fade in with stagger
+      img.style.setProperty('opacity', '0', 'important');
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
+      
+      // Simple fade in with stagger delay
+      setTimeout(() => {
+        if (window.gsap) {
+          window.gsap.to(img, {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out"
+          });
+        } else {
+          // Fallback without GSAP
+          img.style.setProperty('opacity', '1', 'important');
+        }
+      }, index * 100 + 200); // 100ms stagger, 200ms initial delay
     });
     
     console.log(`📱 Mobile: Animating ${aboveFoldImages.length} above fold, preloading ${belowFoldImages.length}, showing ${remainingImages.length} remaining`);
@@ -1439,14 +1454,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
           
-          // On mobile, show cloned images immediately (no animations)
+          // On mobile, show cloned images with fade stagger (no heavy mask animations)
           // On desktop, allow mask animations for cloned images
           if (isMobile) {
-            el.style.setProperty('opacity', '1', 'important');
+            // Start hidden then fade in with stagger
+            el.style.setProperty('opacity', '0', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
-            console.log(`📱 Mobile: Stabilized clone image ${imgIndex} immediately (no animation)`);
+            
+            // Fade in with stagger delay
+            setTimeout(() => {
+              if (window.gsap) {
+                window.gsap.to(el, {
+                  opacity: 1,
+                  duration: 0.5,
+                  ease: "power2.out"
+                });
             } else {
+                el.style.setProperty('opacity', '1', 'important');
+              }
+            }, imgIndex * 80 + 300); // 80ms stagger for cloned images
+            
+            console.log(`📱 Mobile: Clone image ${imgIndex} will fade in smoothly`);
+          } else {
             // Desktop: prepare for mask animations but don't show yet
             console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
           }
