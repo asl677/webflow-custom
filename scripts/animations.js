@@ -547,6 +547,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
+    // Detect mobile for performance optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (isMobile) {
+      console.log('📱 Mobile detected - skipping hover effects for performance');
+      return; // Exit early, no hover effects on mobile
+    }
+    
     const letterElements = document.querySelectorAll('.letter');
     console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
     
@@ -1040,6 +1048,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     isInit = true;
     console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
+    // Detect mobile for performance optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (isMobile) {
+      console.log('📱 Mobile detected - skipping text scrambling for performance');
+      
+      // On mobile, just show all text immediately without animations
+      const allTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a, span, div');
+      allTextElements.forEach(el => {
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+      });
+      
+      // Remove the class that keeps content hidden
+      document.body.classList.remove('animations-ready');
+      console.log('📱 Mobile: All text shown immediately without scrambling');
+      return; // Exit early, no text animations on mobile
+    }
+    
     // Remove the class that keeps content hidden
     document.body.classList.remove('animations-ready');
     
@@ -1099,12 +1126,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     fixContainerResponsiveness();
     
     // Setup infinite scroll after text animations
-    console.log('🔄 About to call setupInfiniteScroll()');
-    try {
-      setupInfiniteScroll();
-      console.log('✅ setupInfiniteScroll() completed successfully');
-        } catch (error) {
-      console.error('❌ setupInfiniteScroll() failed:', error);
+    // Check if mobile for performance optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (isMobile) {
+      console.log('📱 Mobile detected - skipping infinite scroll for performance');
+    } else {
+      console.log('🔄 About to call setupInfiniteScroll()');
+      try {
+        setupInfiniteScroll();
+        console.log('✅ setupInfiniteScroll() completed successfully');
+          } catch (error) {
+        console.error('❌ setupInfiniteScroll() failed:', error);
+      }
     }
   }
   
@@ -1112,8 +1146,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
-    // Detect mobile devices (keeping detection for performance optimization only)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  // Detect mobile devices for aggressive performance optimization
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  
+  // On mobile, skip all heavy animations for performance
+  if (isMobile) {
+    console.log('📱 Mobile detected - using aggressive performance optimization');
+    
+    // Simply show all images immediately without animations
+    allImages.forEach((img, index) => {
+      img.style.setProperty('opacity', '1', 'important');
+      img.style.setProperty('visibility', 'visible', 'important');
+      img.style.setProperty('display', 'block', 'important');
+    });
+    
+    console.log('📱 Mobile: All images shown immediately without mask animations');
+    return; // Exit early, no mask animations on mobile
+  }
     
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
