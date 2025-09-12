@@ -1128,13 +1128,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
-    // NOW remove the emergency image hiding since mask animations are about to start
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for mask animations');
-    }
-    
     // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
@@ -1151,27 +1144,47 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Show below fold and remaining images with smooth fade stagger (no heavy mask animations)
     [...belowFoldImages, ...remainingImages].forEach((img, index) => {
+      console.log(`📱 Setting up fade stagger for image ${index}:`, img.src || img.tagName);
+      
+      // Mark as mobile fade processed to prevent other systems from interfering
+      img.dataset.mobileFadeProcessed = 'true';
+      
       // Start hidden then fade in with stagger
       img.style.setProperty('opacity', '0', 'important');
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
       
       // Simple fade in with stagger delay
+      const delay = index * 150 + 500; // Increased stagger and delay for visibility
+      console.log(`📱 Image ${index} will fade in after ${delay}ms`);
+      
       setTimeout(() => {
+        console.log(`📱 Starting fade for image ${index}`);
         if (window.gsap) {
           window.gsap.to(img, {
             opacity: 1,
-            duration: 0.6,
-            ease: "power2.out"
+            duration: 0.8,
+            ease: "power2.out",
+            onComplete: () => {
+              console.log(`📱 Fade complete for image ${index}`);
+            }
           });
         } else {
           // Fallback without GSAP
+          console.log(`📱 GSAP not available, showing image ${index} immediately`);
           img.style.setProperty('opacity', '1', 'important');
         }
-      }, index * 100 + 200); // 100ms stagger, 200ms initial delay
+      }, delay);
     });
     
     console.log(`📱 Mobile: Animating ${aboveFoldImages.length} above fold, preloading ${belowFoldImages.length}, showing ${remainingImages.length} remaining`);
+    
+    // NOW remove the emergency image hiding for mobile after fade stagger is set up
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mobile fade stagger');
+    }
     
     // Continue with mask animations only for above fold images
     // Update allImages to only include above fold for mask processing
@@ -1181,6 +1194,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Replace allImages reference for the rest of this function
     allImages = filteredImages;
+  } else {
+    // Desktop: remove emergency hide normally
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for desktop mask animations');
+    }
   }
     
     // Debug: Check if any images are already hidden
