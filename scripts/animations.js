@@ -26,6 +26,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
+  
+  // Global mobile detection (used across multiple functions)
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
   // Remove the initial hide style when animations start
   const initialHideStyle = document.querySelector('style');
@@ -341,7 +344,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader with mobile optimization
   function startPageAnimations() {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     // Animate nav elements (excluding fake, middle, and bottom nav)
     const allNavElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"])');
@@ -547,8 +549,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
-    // Detect mobile for performance optimization
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     if (isMobile) {
       console.log('📱 Mobile detected - skipping hover effects for performance');
@@ -1048,9 +1048,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     isInit = true;
     console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
-    // Detect mobile for performance optimization
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    
     if (isMobile) {
       console.log('📱 Mobile detected - skipping text scrambling for performance');
       
@@ -1126,12 +1123,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     fixContainerResponsiveness();
     
     // Setup infinite scroll after text animations
-    // Check if mobile for performance optimization
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     if (isMobile) {
       console.log('📱 Mobile detected - skipping infinite scroll for performance');
-    } else {
+        } else {
       console.log('🔄 About to call setupInfiniteScroll()');
       try {
         setupInfiniteScroll();
@@ -1146,8 +1141,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
-  // Detect mobile devices for aggressive performance optimization
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    
+    // NOW remove the emergency image hiding since mask animations are about to start
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mask animations');
+    }
+    
+    // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
+    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
+    console.log(`📱 Mobile device detected: ${isMobile}`);
   
   // On mobile, skip all heavy animations for performance
   if (isMobile) {
@@ -1162,21 +1168,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('📱 Mobile: All images shown immediately without mask animations');
     return; // Exit early, no mask animations on mobile
-  }
-    
-    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
-    
-    // NOW remove the emergency image hiding since mask animations are about to start
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for mask animations');
     }
-    
-    // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
-    const allImages = document.querySelectorAll('img:not(#preloader img), video');
-    console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
-    console.log(`📱 Mobile device detected: ${isMobile}`);
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(allImages).filter(img => {
