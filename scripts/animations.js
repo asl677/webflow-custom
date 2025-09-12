@@ -551,8 +551,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function initLetterHoverEffects() {
     
     if (isMobile) {
-      console.log('📱 Mobile detected - skipping hover effects for performance');
-      return; // Exit early, no hover effects on mobile
+      console.log('📱 Mobile detected - skipping hover effects for touch devices');
+      return; // Exit early, no hover effects on mobile (touch doesn't need hover)
     }
     
     const letterElements = document.querySelectorAll('.letter');
@@ -1049,19 +1049,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
     if (isMobile) {
-      console.log('📱 Mobile detected - skipping text scrambling for performance');
-      
-      // On mobile, just show all text immediately without animations
-      const allTextElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a, span, div');
-      allTextElements.forEach(el => {
-        el.style.setProperty('visibility', 'visible', 'important');
-        el.style.setProperty('opacity', '1', 'important');
-      });
-      
-      // Remove the class that keeps content hidden
-      document.body.classList.remove('animations-ready');
-      console.log('📱 Mobile: All text shown immediately without scrambling');
-      return; // Exit early, no text animations on mobile
+      console.log('📱 Mobile detected - using text scrambling (keeping desktop parity)');
+      // Continue with normal text animations on mobile for parity
     }
     
     // Remove the class that keeps content hidden
@@ -1124,16 +1113,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Setup infinite scroll after text animations
     
-    if (isMobile) {
-      console.log('📱 Mobile detected - skipping infinite scroll for performance');
-        } else {
-      console.log('🔄 About to call setupInfiniteScroll()');
-      try {
-        setupInfiniteScroll();
-        console.log('✅ setupInfiniteScroll() completed successfully');
-          } catch (error) {
-        console.error('❌ setupInfiniteScroll() failed:', error);
-      }
+    console.log('🔄 About to call setupInfiniteScroll()');
+    try {
+      setupInfiniteScroll();
+      console.log('✅ setupInfiniteScroll() completed successfully');
+        } catch (error) {
+      console.error('❌ setupInfiniteScroll() failed:', error);
     }
   }
   
@@ -1155,20 +1140,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
-  // On mobile, skip all heavy animations for performance
+  // Mobile optimization: animate above fold, preload below fold
   if (isMobile) {
-    console.log('📱 Mobile detected - using aggressive performance optimization');
+    console.log('📱 Mobile detected - selective optimization (above fold animations, below fold preload)');
     
-    // Simply show all images immediately without animations
-    allImages.forEach((img, index) => {
+    // Animate first ~5 images above the fold with masks like desktop
+    const aboveFoldImages = Array.from(allImages).slice(0, 5);
+    const belowFoldImages = Array.from(allImages).slice(5, 15); // Preload next 10
+    const remainingImages = Array.from(allImages).slice(15);
+    
+    // Show below fold and remaining images immediately (no scroll animations)
+    [...belowFoldImages, ...remainingImages].forEach((img, index) => {
       img.style.setProperty('opacity', '1', 'important');
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
     });
     
-    console.log('📱 Mobile: All images shown immediately without mask animations');
-    return; // Exit early, no mask animations on mobile
-    }
+    console.log(`📱 Mobile: Animating ${aboveFoldImages.length} above fold, preloading ${belowFoldImages.length}, showing ${remainingImages.length} remaining`);
+    
+    // Continue with mask animations only for above fold images
+    // Update allImages to only include above fold for mask processing
+    const originalAllImages = allImages;
+    const aboveFoldNodeList = document.querySelectorAll('img:not(#preloader img), video');
+    const filteredImages = Array.from(aboveFoldNodeList).slice(0, 5);
+    
+    // Replace allImages reference for the rest of this function
+    allImages = filteredImages;
+  }
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(allImages).filter(img => {
@@ -1441,12 +1439,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
           
-          // Immediately stabilize cloned images to prevent flickering
-          el.style.setProperty('opacity', '1', 'important');
-          el.style.setProperty('visibility', 'visible', 'important');
-          el.style.setProperty('display', 'block', 'important');
-          
-          console.log(`🔧 Stabilized clone image ${imgIndex} to prevent flickering`);
+          // On mobile, show cloned images immediately (no animations)
+          // On desktop, allow mask animations for cloned images
+          if (isMobile) {
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('visibility', 'visible', 'important');
+            el.style.setProperty('display', 'block', 'important');
+            console.log(`📱 Mobile: Stabilized clone image ${imgIndex} immediately (no animation)`);
+            } else {
+            // Desktop: prepare for mask animations but don't show yet
+            console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
+          }
         });
         
         // Add slight delay for mask system processing
