@@ -1149,53 +1149,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency image hiding for mask animations');
     }
     
-  // GSAP-based fade stagger for mobile (reliable method)
+  // SIMPLE mobile stagger - copy desktop approach without masking
   if (isMobile) {
-    console.log('🚨 VERSION 3.0 MOBILE GSAP STAGGER LOADING 🚨');
-    console.log('📱 Mobile: GSAP fade stagger');
+    console.log('🚨 SIMPLE MOBILE STAGGER - NO COMPLEX LOGIC 🚨');
     
-    // FORCE remove emergency hide CSS for mobile
-    const emergencyHideForMobile = document.getElementById('emergency-image-hide');
-    if (emergencyHideForMobile) {
-      emergencyHideForMobile.remove();
-      console.log('🚨 FORCE REMOVED EMERGENCY HIDE FOR MOBILE 🚨');
-    }
-    
-    // Set up all images first
+    // Just animate opacity like desktop, but immediately visible
     allImages.forEach((img, index) => {
-      img.style.setProperty('visibility', 'visible', 'important');
-      img.style.setProperty('display', 'block', 'important');
-      img.style.setProperty('transform', 'none', 'important');
-      // Start with opacity 0 for GSAP animation
-      img.style.setProperty('opacity', '0', 'important');
-    });
-    
-    console.log(`🚨 STARTING GSAP STAGGER FOR ${allImages.length} IMAGES 🚨`);
-    
-    // DISABLE mobile protection during stagger animation
-    window.mobileProtectionPaused = true;
-    console.log('🚨 PAUSING MOBILE PROTECTION FOR STAGGER 🚨');
-    
-    // Use GSAP stagger - this should work reliably
-    window.gsap.to(allImages, {
-      opacity: 1,
-      duration: 0.6,
-      stagger: 0.2, // 200ms between each image
-      delay: 0.5, // 500ms initial delay
-      ease: "power2.out",
-      onComplete: function() {
-        // Lock all images after animation and re-enable protection
-        allImages.forEach(img => {
+      // Make visible but start at opacity 0
+      img.style.visibility = 'visible';
+      img.style.display = 'block';
+      img.style.opacity = '0';
+      
+      // Simple stagger delay
+      const delay = index * 200 + 500;
+      
+      // Use GSAP like desktop
+      window.gsap.to(img, {
+        opacity: 1,
+        duration: 0.6,
+        delay: delay / 1000, // Convert to seconds
+        ease: "power2.out",
+        onComplete: function() {
           img.dataset.mobileLocked = 'true';
-          img.style.setProperty('opacity', '1', 'important');
-        });
-        window.mobileProtectionPaused = false;
-        console.log('🚨 ALL MOBILE IMAGES STAGGER COMPLETE - PROTECTION RESUMED 🚨');
-      },
-      onStart: function() {
-        console.log('🚨 GSAP STAGGER ANIMATION STARTED 🚨');
-      }
+          console.log(`📱 Image ${index} completed fade`);
+        }
+      });
     });
+    
+    console.log(`📱 Started simple stagger for ${allImages.length} images`);
   }
   
   // Process images for mask setup
