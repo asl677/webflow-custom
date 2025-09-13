@@ -1154,19 +1154,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('📱 Mobile: CSS transition fade stagger');
     
     allImages.forEach((img, index) => {
-      // Start hidden with CSS transition
-      img.style.setProperty('opacity', '0', 'important');
+      // Set up transition but don't change opacity yet (emergency hide is already doing that)
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
       img.style.setProperty('transform', 'none', 'important');
       img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
       
-      // Use requestAnimationFrame for smooth stagger
-      const delay = index * 80 + 200;
+      // Stagger the fade in with proper delays
+      const delay = index * 120 + 300;
       setTimeout(() => {
         img.style.setProperty('opacity', '1', 'important');
         img.dataset.mobileLocked = 'true';
-        console.log(`📱 Image ${index} faded in (CSS transition)`);
+        console.log(`📱 Image ${index} faded in at ${delay}ms (CSS transition)`);
       }, delay);
     });
   }
@@ -1485,17 +1484,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           // CSS transition fade for cloned images
           if (isMobile) {
+            // Cloned images start hidden, set up transition
             el.style.setProperty('opacity', '0', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
             el.style.setProperty('transform', 'none', 'important');
             el.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
             
-            const delay = imgIndex * 80 + 300;
+            const delay = imgIndex * 120 + 500;
             setTimeout(() => {
               el.style.setProperty('opacity', '1', 'important');
               el.dataset.mobileLocked = 'true';
-              console.log(`📱 Clone image ${imgIndex} faded in (CSS transition)`);
+              console.log(`📱 Clone image ${imgIndex} faded in at ${delay}ms (CSS transition)`);
             }, delay);
             } else {
             // Desktop: prepare for mask animations but don't show yet
@@ -1594,11 +1594,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             img.style.setProperty('transform', 'none', 'important');
             img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
             
-            const delay = imgIndex * 80 + 400;
+            const delay = imgIndex * 120 + 600;
             setTimeout(() => {
               img.style.setProperty('opacity', '1', 'important');
               img.dataset.mobileLocked = 'true';
-              console.log(`📱 New clone image ${imgIndex} faded in (CSS transition)`);
+              console.log(`📱 New clone image ${imgIndex} faded in at ${delay}ms (CSS transition)`);
             }, delay);
           });
         }
@@ -1781,11 +1781,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             img.style.setProperty('opacity', '1', 'important');
             img.dataset.mobileLocked = 'true';
-            console.log('📱 Infinite scroll image faded in (CSS transition)');
-          }, 500);
+            console.log('📱 Infinite scroll image faded in at 700ms (CSS transition)');
+          }, 700);
         } else {
           // Desktop: normal immediate visibility
-        window.gsap.set(img, { opacity: 1 });
+          window.gsap.set(img, { opacity: 1 });
         }
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
