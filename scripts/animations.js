@@ -551,6 +551,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
     
+    // Note: Keeping hover effects disabled on mobile since touch devices don't need hover
     if (isMobile) {
       console.log('📱 Mobile detected - skipping hover effects for touch devices');
       return; // Exit early, no hover effects on mobile (touch doesn't need hover)
@@ -1051,6 +1052,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     if (isMobile) {
       console.log('📱 Mobile detected - using text scrambling (keeping desktop parity)');
+      console.log('📱 Mobile will get: text scrambling, line-by-line reveals, link scrambling');
       // Continue with normal text animations on mobile for parity
     }
     
@@ -1721,7 +1723,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log('📱 Mobile: Infinite scroll image shown immediately');
         } else {
           // Desktop: normal immediate visibility
-          window.gsap.set(img, { opacity: 1 });
+        window.gsap.set(img, { opacity: 1 });
         }
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
