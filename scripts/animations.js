@@ -1172,6 +1172,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🚨 STARTING GSAP STAGGER FOR ${allImages.length} IMAGES 🚨`);
     
+    // DISABLE mobile protection during stagger animation
+    window.mobileProtectionPaused = true;
+    console.log('🚨 PAUSING MOBILE PROTECTION FOR STAGGER 🚨');
+    
     // Use GSAP stagger - this should work reliably
     window.gsap.to(allImages, {
       opacity: 1,
@@ -1180,12 +1184,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       delay: 0.5, // 500ms initial delay
       ease: "power2.out",
       onComplete: function() {
-        // Lock all images after animation
+        // Lock all images after animation and re-enable protection
         allImages.forEach(img => {
           img.dataset.mobileLocked = 'true';
           img.style.setProperty('opacity', '1', 'important');
         });
-        console.log('🚨 ALL MOBILE IMAGES STAGGER COMPLETE 🚨');
+        window.mobileProtectionPaused = false;
+        console.log('🚨 ALL MOBILE IMAGES STAGGER COMPLETE - PROTECTION RESUMED 🚨');
       },
       onStart: function() {
         console.log('🚨 GSAP STAGGER ANIMATION STARTED 🚨');
@@ -1203,6 +1208,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Add aggressive mobile image protection against scroll interference
     const protectMobileImages = () => {
+      // Skip protection if stagger animation is running
+      if (window.mobileProtectionPaused) {
+      return;
+    }
+    
       document.querySelectorAll('img[data-mobile-locked="true"]').forEach(img => {
         const currentOpacity = getComputedStyle(img).opacity;
         const currentVisibility = getComputedStyle(img).visibility;
