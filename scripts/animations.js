@@ -1141,48 +1141,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency image hiding for mask animations');
     }
     
-  // Simple mobile fade stagger for ALL images on mobile
+  // Mobile: Show all images immediately (exactly like desktop but no masking)
   if (isMobile) {
-    console.log('📱 Mobile detected - applying fade stagger to all images');
-    console.log('📱 Found', allImages.length, 'images to fade stagger');
+    console.log('📱 Mobile detected - showing all images immediately (desktop parity)');
     
     allImages.forEach((img, index) => {
-      console.log(`📱 Setting up fade for image ${index}:`, img.src || img.tagName);
-      
-      // Mark as mobile processed
-      img.dataset.mobileFadeProcessed = 'true';
-      
-      // Start hidden then fade in with stagger
-      img.style.setProperty('opacity', '0', 'important');
+      // Simply show all images immediately - no animations, no delays
+      img.style.setProperty('opacity', '1', 'important');
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
-      
-      // Simple fade in with slower stagger delay
-      const delay = index * 200 + 800; // Increased from 100ms to 200ms stagger, 300ms to 800ms initial delay
-      console.log(`📱 Image ${index} will fade after ${delay}ms`);
-      
-      setTimeout(() => {
-        console.log(`📱 Fading image ${index} now`);
-        if (window.gsap) {
-          window.gsap.to(img, {
-            opacity: 1,
-            duration: 1.0, // Increased from 0.6s to 1.0s for slower fade
-            ease: "power2.out",
-            onComplete: () => {
-              console.log(`📱 Fade complete for image ${index}`);
-              // Lock the image visibility permanently after fade
-              img.style.setProperty('opacity', '1', 'important');
-              img.style.setProperty('visibility', 'visible', 'important');
-              img.dataset.mobileProtected = 'true';
-            }
-          });
-        } else {
-          console.log(`📱 No GSAP, showing image ${index} immediately`);
-          img.style.setProperty('opacity', '1', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.dataset.mobileProtected = 'true';
-        }
-      }, delay);
+      img.dataset.mobileProcessed = 'true';
+      console.log(`📱 Image ${index} shown immediately`);
     });
   }
   
@@ -1192,23 +1161,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   const imagesToProcess = isMobile ? [] : allImages;
   
   if (isMobile) {
-    console.log('📱 Mobile: Skipping ALL mask processing, using fade stagger only');
-    
-    // Add mobile image protection - prevent any system from hiding images
-    const protectMobileImages = () => {
-      document.querySelectorAll('img[data-mobile-fade-processed="true"], img[data-mobile-protected="true"]').forEach(img => {
-        if (img.style.opacity !== '1' || img.style.visibility === 'hidden') {
-          console.log('📱 Protecting mobile image from being hidden:', img.src || img.tagName);
-          img.style.setProperty('opacity', '1', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.style.setProperty('display', 'block', 'important');
-        }
-      });
-    };
-    
-    // Run protection every 500ms to catch any interference
-    setInterval(protectMobileImages, 500);
-    console.log('📱 Mobile image protection active');
+    console.log('📱 Mobile: Skipping ALL mask processing, images shown immediately');
   } else {
     console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
   }
@@ -1487,41 +1440,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
           
-          // On mobile, show cloned images with fade stagger (no heavy mask animations)
+          // On mobile, show cloned images immediately (desktop parity)
           // On desktop, allow mask animations for cloned images
           if (isMobile) {
-            // Mark as mobile processed to prevent mask system interference
-            el.dataset.mobileFadeProcessed = 'true';
-            
-            // Start hidden then fade in with stagger
-            el.style.setProperty('opacity', '0', 'important');
+            // Simply show immediately - no animations
+            el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
-            
-            // Fade in with slower stagger delay (matching main mobile timing)
-            const delay = imgIndex * 200 + 500; // Match main mobile stagger timing
-            setTimeout(() => {
-              if (window.gsap) {
-                window.gsap.to(el, {
-                  opacity: 1,
-                  duration: 1.0, // Match main mobile fade duration
-                  ease: "power2.out",
-                  onComplete: () => {
-                    // Lock cloned image visibility permanently after fade
-                    el.style.setProperty('opacity', '1', 'important');
-                    el.style.setProperty('visibility', 'visible', 'important');
-                    el.dataset.mobileProtected = 'true';
-                  }
-                });
-              } else {
-                el.style.setProperty('opacity', '1', 'important');
-                el.style.setProperty('visibility', 'visible', 'important');
-                el.dataset.mobileProtected = 'true';
-              }
-            }, delay);
-            
-            console.log(`📱 Mobile: Clone image ${imgIndex} will fade in after ${delay}ms`);
-          } else {
+            el.dataset.mobileProcessed = 'true';
+            console.log(`📱 Mobile: Clone image ${imgIndex} shown immediately`);
+            } else {
             // Desktop: prepare for mask animations but don't show yet
             console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
           }
@@ -1608,6 +1536,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         container.appendChild(clone);
         console.log('✅ Clone appended with visible text');
+        
+        // Immediate mobile visibility for newly added clone (desktop parity)
+        if (isMobile) {
+          clone.querySelectorAll('img, video').forEach((img, imgIndex) => {
+            // Show immediately - exactly like desktop but no masking
+            img.style.setProperty('opacity', '1', 'important');
+            img.style.setProperty('visibility', 'visible', 'important');
+            img.style.setProperty('display', 'block', 'important');
+            img.dataset.mobileProcessed = 'true';
+            console.log(`📱 New clone image ${imgIndex} shown immediately`);
+          });
+        }
         
         // Clean up any orphaned mask containers in the clone
         clone.querySelectorAll('.proper-mask-reveal').forEach(maskContainer => {
@@ -1773,9 +1713,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
         if (isMobile) {
-          // Mobile: mark for fade processing but don't set opacity yet (fade stagger will handle it)
-          img.dataset.mobileFadeProcessed = 'true';
-          console.log('📱 Mobile: Marked infinite scroll image for fade processing');
+          // Mobile: show immediately (desktop parity)
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+          img.dataset.mobileProcessed = 'true';
+          console.log('📱 Mobile: Infinite scroll image shown immediately');
         } else {
           // Desktop: normal immediate visibility
           window.gsap.set(img, { opacity: 1 });
