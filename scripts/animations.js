@@ -1154,6 +1154,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log('🚨 VERSION 3.0 MOBILE GSAP STAGGER LOADING 🚨');
     console.log('📱 Mobile: GSAP fade stagger');
     
+    // FORCE remove emergency hide CSS for mobile
+    const emergencyHideForMobile = document.getElementById('emergency-image-hide');
+    if (emergencyHideForMobile) {
+      emergencyHideForMobile.remove();
+      console.log('🚨 FORCE REMOVED EMERGENCY HIDE FOR MOBILE 🚨');
+    }
+    
     // Set up all images first
     allImages.forEach((img, index) => {
       img.style.setProperty('visibility', 'visible', 'important');
