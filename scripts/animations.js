@@ -1153,20 +1153,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   if (isMobile) {
     console.log('📱 Mobile: CSS transition fade stagger');
     
+    // Set up all images first
     allImages.forEach((img, index) => {
-      // Set up transition but don't change opacity yet (emergency hide is already doing that)
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
       img.style.setProperty('transform', 'none', 'important');
       img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
-      
-      // Stagger the fade in with proper delays
-      const delay = index * 200 + 500;
+    });
+    
+    // Then fade them in sequentially with proper stagger
+    let currentDelay = 500;
+    allImages.forEach((img, index) => {
       setTimeout(() => {
         img.style.setProperty('opacity', '1', 'important');
         img.dataset.mobileLocked = 'true';
-        console.log(`📱 Image ${index} faded in at ${delay}ms (CSS transition)`);
-      }, delay);
+        console.log(`📱 Image ${index} faded in at ${currentDelay}ms (CSS transition)`);
+      }, currentDelay);
+      currentDelay += 200; // Add 200ms for next image
     });
   }
   
@@ -1491,7 +1494,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.style.setProperty('transform', 'none', 'important');
             el.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
             
-            const delay = imgIndex * 200 + 700;
+            // Sequential delay for cloned images
+            const delay = 700 + (imgIndex * 200);
             setTimeout(() => {
               el.style.setProperty('opacity', '1', 'important');
               el.dataset.mobileLocked = 'true';
