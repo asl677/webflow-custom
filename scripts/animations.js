@@ -1180,8 +1180,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
   }
   
-  // Process all images for mask setup (but skip ScrollTrigger on mobile)
-  const imagesToProcess = allImages;
+  // Process images for mask setup
+  // On mobile: skip mask system entirely, only use fade stagger
+  // On desktop: use full mask system
+  const imagesToProcess = isMobile ? [] : allImages;
+  
+  if (isMobile) {
+    console.log('📱 Mobile: Skipping ALL mask processing, using fade stagger only');
+  } else {
+    console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
+  }
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
@@ -1196,6 +1204,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
+        
+        // Skip mask setup for mobile images that are handled by fade stagger
+        if (isMobile && element.dataset.mobileFadeProcessed) {
+          console.log(`📱 Skipping mask setup for mobile fade processed image ${index}`);
+          return;
+        }
         // Process both original and cloned images the same way
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
@@ -1661,14 +1675,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     };
     
+    // Only attach scroll listener on desktop to prevent mobile interference
+    if (!isMobile) {
     window.addEventListener('scroll', scrollListener, { passive: true });
-    console.log('🔄 Infinite scroll event listener attached to window');
-    
-    // Test scroll immediately
-    setTimeout(() => {
-      console.log('🔄 Testing initial scroll state...');
-      handleScroll();
-    }, 1000);
+      console.log('🔄 Infinite scroll event listener attached to window (desktop only)');
+      
+      // Test scroll immediately
+      setTimeout(() => {
+        console.log('🔄 Testing initial scroll state...');
+        handleScroll();
+      }, 1000);
+    } else {
+      console.log('📱 Mobile: Skipping infinite scroll listener to prevent image interference');
+    }
     
     // Separate resize handler with nav protection (desktop only)
     window.addEventListener('resize', () => {
@@ -1720,11 +1739,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
     
-    // Set visibility for infinite scroll images
+    // Set visibility for infinite scroll images (desktop only)
+    if (!isMobile) {
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
         window.gsap.set(img, { opacity: 1 });
         img.dataset.gsapAnimated = 'infinite-scroll';
+        }
+      });
+    } else {
+      console.log('📱 Mobile: Skipping infinite scroll image visibility changes');
       }
     });
     
