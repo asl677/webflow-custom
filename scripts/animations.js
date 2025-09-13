@@ -1170,11 +1170,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             onComplete: () => {
               console.log(`📱 Fade complete for image ${index}`);
+              // Lock the image visibility permanently after fade
+              img.style.setProperty('opacity', '1', 'important');
+              img.style.setProperty('visibility', 'visible', 'important');
+              img.dataset.mobileProtected = 'true';
             }
           });
         } else {
           console.log(`📱 No GSAP, showing image ${index} immediately`);
           img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.dataset.mobileProtected = 'true';
         }
       }, delay);
     });
@@ -1187,6 +1193,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   if (isMobile) {
     console.log('📱 Mobile: Skipping ALL mask processing, using fade stagger only');
+    
+    // Add mobile image protection - prevent any system from hiding images
+    const protectMobileImages = () => {
+      document.querySelectorAll('img[data-mobile-fade-processed="true"], img[data-mobile-protected="true"]').forEach(img => {
+        if (img.style.opacity !== '1' || img.style.visibility === 'hidden') {
+          console.log('📱 Protecting mobile image from being hidden:', img.src || img.tagName);
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+        }
+      });
+    };
+    
+    // Run protection every 500ms to catch any interference
+    setInterval(protectMobileImages, 500);
+    console.log('📱 Mobile image protection active');
   } else {
     console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
   }
@@ -1483,10 +1505,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 window.gsap.to(el, {
                   opacity: 1,
                   duration: 1.0, // Match main mobile fade duration
-                  ease: "power2.out"
+                  ease: "power2.out",
+                  onComplete: () => {
+                    // Lock cloned image visibility permanently after fade
+                    el.style.setProperty('opacity', '1', 'important');
+                    el.style.setProperty('visibility', 'visible', 'important');
+                    el.dataset.mobileProtected = 'true';
+                  }
                 });
               } else {
                 el.style.setProperty('opacity', '1', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.dataset.mobileProtected = 'true';
               }
             }, delay);
             
