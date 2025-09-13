@@ -1163,17 +1163,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
     
     // Then fade them in sequentially with proper stagger
-    let currentDelay = 500;
     console.log(`🚨 STARTING SEQUENTIAL FADE FOR ${allImages.length} IMAGES 🚨`);
-    allImages.forEach((img, index) => {
-      console.log(`⏰ Setting timeout for image ${index} at ${currentDelay}ms`);
+    
+    function fadeNextImage(index) {
+      if (index >= allImages.length) return;
+      
+      const img = allImages[index];
+      const delay = 500 + (index * 200);
+      
+      console.log(`⏰ Fading image ${index} at ${delay}ms`);
+      
       setTimeout(() => {
         img.style.setProperty('opacity', '1', 'important');
         img.dataset.mobileLocked = 'true';
-        console.log(`🚨 IMAGE ${index} FADED IN AT ${currentDelay}ms 🚨`);
-      }, currentDelay);
-      currentDelay += 200; // Add 200ms for next image
-    });
+        console.log(`🚨 IMAGE ${index} FADED IN 🚨`);
+        
+        // Fade next image after a delay
+        setTimeout(() => fadeNextImage(index + 1), 200);
+      }, index === 0 ? 500 : 0); // Only first image has initial delay
+    }
+    
+    fadeNextImage(0);
   }
   
   // Process images for mask setup
