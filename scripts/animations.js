@@ -1149,50 +1149,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency image hiding for mask animations');
     }
     
-  // Mobile fade stagger for ALL images on mobile (restored)
+  // EMERGENCY MOBILE FIX: Show ALL images immediately, no animations
   if (isMobile) {
-    console.log('📱 Mobile detected - applying fade stagger to all images');
-    console.log('📱 Found', allImages.length, 'images to fade stagger');
+    console.log('📱 EMERGENCY MOBILE FIX: Showing all images immediately, no animations');
     
     allImages.forEach((img, index) => {
-      console.log(`📱 Setting up fade for image ${index}:`, img.src || img.tagName);
-      
-      // Mark as mobile processed
-      img.dataset.mobileFadeProcessed = 'true';
-      
-      // Start hidden then fade in with stagger
-      img.style.setProperty('opacity', '0', 'important');
+      // IMMEDIATELY show all images with no delays or animations
+      img.style.setProperty('opacity', '1', 'important');
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
+      img.style.setProperty('transform', 'none', 'important');
+      img.dataset.mobileLocked = 'true';
+      img.dataset.mobileProcessed = 'true';
       
-      // Fade in with stagger delay (restored timing)
-      const delay = index * 200 + 400;
-      console.log(`📱 Image ${index} will fade after ${delay}ms`);
+      // Kill any existing GSAP animations
+      if (window.gsap) {
+        window.gsap.killTweensOf(img);
+      }
       
-      setTimeout(() => {
-        console.log(`📱 Fading image ${index} now`);
-        if (window.gsap) {
-          window.gsap.to(img, {
-            opacity: 1,
-            duration: 1.0,
-            ease: "power2.out",
-            onComplete: () => {
-              console.log(`📱 Fade complete for image ${index}`);
-              // Lock image permanently to prevent scroll interference
-              img.style.setProperty('opacity', '1', 'important');
-              img.style.setProperty('visibility', 'visible', 'important');
-              img.style.setProperty('display', 'block', 'important');
-              img.dataset.mobileLocked = 'true';
-            }
-          });
-        } else {
-          console.log(`📱 No GSAP, showing image ${index} immediately`);
-          img.style.setProperty('opacity', '1', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.style.setProperty('display', 'block', 'important');
-          img.dataset.mobileLocked = 'true';
-        }
-      }, delay);
+      console.log(`📱 Image ${index} shown immediately (no animation)`);
     });
   }
   
@@ -1508,43 +1483,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
           
-          // On mobile, show cloned images with fade stagger (restored)
-          // On desktop, allow mask animations for cloned images
+          // EMERGENCY MOBILE FIX: Show cloned images immediately
           if (isMobile) {
-            // Mark as mobile processed to prevent mask system interference
-            el.dataset.mobileFadeProcessed = 'true';
-            
-            // Start hidden then fade in with stagger
-            el.style.setProperty('opacity', '0', 'important');
+            // IMMEDIATELY show cloned images with no animations
+            el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('transform', 'none', 'important');
+            el.dataset.mobileLocked = 'true';
+            el.dataset.mobileProcessed = 'true';
             
-            // Fade in with stagger delay (matching main mobile timing)
-            const delay = imgIndex * 200 + 500;
-            setTimeout(() => {
-              if (window.gsap) {
-                window.gsap.to(el, {
-                  opacity: 1,
-                  duration: 1.0,
-                  ease: "power2.out",
-                  onComplete: () => {
-                    // Lock cloned image permanently
-                    el.style.setProperty('opacity', '1', 'important');
-                    el.style.setProperty('visibility', 'visible', 'important');
-                    el.style.setProperty('display', 'block', 'important');
-                    el.dataset.mobileLocked = 'true';
-                  }
-                });
+            // Kill any existing GSAP animations
+            if (window.gsap) {
+              window.gsap.killTweensOf(el);
+            }
+            
+            console.log(`📱 Clone image ${imgIndex} shown immediately (no animation)`);
             } else {
-                el.style.setProperty('opacity', '1', 'important');
-                el.style.setProperty('visibility', 'visible', 'important');
-                el.style.setProperty('display', 'block', 'important');
-                el.dataset.mobileLocked = 'true';
-              }
-            }, delay);
-            
-            console.log(`📱 Mobile: Clone image ${imgIndex} will fade in after ${delay}ms`);
-          } else {
             // Desktop: prepare for mask animations but don't show yet
             console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
           }
@@ -1632,40 +1587,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         container.appendChild(clone);
         console.log('✅ Clone appended with visible text');
         
-        // Mobile fade stagger for newly added clone (restored)
+        // EMERGENCY MOBILE FIX: Show new clone images immediately
         if (isMobile) {
           clone.querySelectorAll('img, video').forEach((img, imgIndex) => {
-            // Apply fade stagger to prevent glitching
-            img.dataset.mobileFadeProcessed = 'true';
-            img.style.setProperty('opacity', '0', 'important');
+            // IMMEDIATELY show new clone images with no animations
+            img.style.setProperty('opacity', '1', 'important');
             img.style.setProperty('visibility', 'visible', 'important');
             img.style.setProperty('display', 'block', 'important');
+            img.style.setProperty('transform', 'none', 'important');
+            img.dataset.mobileLocked = 'true';
+            img.dataset.mobileProcessed = 'true';
             
-            // Fade in with delay
-            const delay = imgIndex * 200 + 300;
-            setTimeout(() => {
-              if (window.gsap) {
-                window.gsap.to(img, {
-                  opacity: 1,
-                  duration: 1.0,
-                  ease: "power2.out",
-                  onComplete: () => {
-                    // Lock new infinite scroll image permanently
-                    img.style.setProperty('opacity', '1', 'important');
-                    img.style.setProperty('visibility', 'visible', 'important');
-                    img.style.setProperty('display', 'block', 'important');
-                    img.dataset.mobileLocked = 'true';
-                  }
-                });
-              } else {
-                img.style.setProperty('opacity', '1', 'important');
-                img.style.setProperty('visibility', 'visible', 'important');
-                img.style.setProperty('display', 'block', 'important');
-                img.dataset.mobileLocked = 'true';
-              }
-            }, delay);
+            // Kill any existing GSAP animations
+            if (window.gsap) {
+              window.gsap.killTweensOf(img);
+            }
             
-            console.log(`📱 New clone image ${imgIndex} will fade in after ${delay}ms`);
+            console.log(`📱 New clone image ${imgIndex} shown immediately (no animation)`);
           });
         }
         
@@ -1837,9 +1775,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
         if (isMobile) {
-          // Mobile: mark for fade processing (will be handled by fade stagger)
-          img.dataset.mobileFadeProcessed = 'true';
-          console.log('📱 Mobile: Infinite scroll image marked for fade processing');
+          // EMERGENCY MOBILE FIX: Show infinite scroll images immediately
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+          img.style.setProperty('transform', 'none', 'important');
+          img.dataset.mobileLocked = 'true';
+          img.dataset.mobileProcessed = 'true';
+          
+          // Kill any existing GSAP animations
+          if (window.gsap) {
+            window.gsap.killTweensOf(img);
+          }
+          
+          console.log('📱 Infinite scroll image shown immediately (no animation)');
         } else {
           // Desktop: normal immediate visibility
         window.gsap.set(img, { opacity: 1 });
