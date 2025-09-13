@@ -1,4 +1,4 @@
-// Version 2.8: Simplified mobile logic - fade stagger for all images, no ScrollTrigger flickering
+// Version 3.0: Sequential Mobile Fade Stagger Fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1151,6 +1151,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
   // CSS transition-based fade stagger for mobile
   if (isMobile) {
+    console.log('🚨 VERSION 3.0 MOBILE STAGGER LOADING 🚨');
     console.log('📱 Mobile: CSS transition fade stagger');
     
     // Set up all images first
@@ -1163,11 +1164,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Then fade them in sequentially with proper stagger
     let currentDelay = 500;
+    console.log(`🚨 STARTING SEQUENTIAL FADE FOR ${allImages.length} IMAGES 🚨`);
     allImages.forEach((img, index) => {
+      console.log(`⏰ Setting timeout for image ${index} at ${currentDelay}ms`);
       setTimeout(() => {
         img.style.setProperty('opacity', '1', 'important');
         img.dataset.mobileLocked = 'true';
-        console.log(`📱 Image ${index} faded in at ${currentDelay}ms (CSS transition)`);
+        console.log(`🚨 IMAGE ${index} FADED IN AT ${currentDelay}ms 🚨`);
       }, currentDelay);
       currentDelay += 200; // Add 200ms for next image
     });
