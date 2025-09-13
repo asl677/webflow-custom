@@ -1161,7 +1161,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
       
       // Stagger the fade in with proper delays
-      const delay = index * 120 + 300;
+      const delay = index * 200 + 300;
       setTimeout(() => {
         img.style.setProperty('opacity', '1', 'important');
         img.dataset.mobileLocked = 'true';
@@ -1491,7 +1491,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.style.setProperty('transform', 'none', 'important');
             el.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
             
-            const delay = imgIndex * 120 + 500;
+            const delay = imgIndex * 200 + 500;
             setTimeout(() => {
               el.style.setProperty('opacity', '1', 'important');
               el.dataset.mobileLocked = 'true';
@@ -1594,7 +1594,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             img.style.setProperty('transform', 'none', 'important');
             img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
             
-            const delay = imgIndex * 120 + 600;
+            const delay = imgIndex * 200 + 600;
             setTimeout(() => {
               img.style.setProperty('opacity', '1', 'important');
               img.dataset.mobileLocked = 'true';
@@ -1785,7 +1785,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }, 700);
         } else {
           // Desktop: normal immediate visibility
-          window.gsap.set(img, { opacity: 1 });
+        window.gsap.set(img, { opacity: 1 });
         }
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
