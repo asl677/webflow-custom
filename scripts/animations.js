@@ -1157,8 +1157,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
       
-      // Simple fade in with stagger delay
-      const delay = index * 100 + 300;
+      // Simple fade in with slower stagger delay
+      const delay = index * 200 + 800; // Increased from 100ms to 200ms stagger, 300ms to 800ms initial delay
       console.log(`📱 Image ${index} will fade after ${delay}ms`);
       
       setTimeout(() => {
@@ -1166,7 +1166,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (window.gsap) {
           window.gsap.to(img, {
             opacity: 1,
-            duration: 0.6,
+            duration: 1.0, // Increased from 0.6s to 1.0s for slower fade
             ease: "power2.out",
             onComplete: () => {
               console.log(`📱 Fade complete for image ${index}`);
