@@ -1129,7 +1129,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
-    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    // Only register ScrollTrigger on desktop to prevent mobile flickering
+    if (!isMobile && typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+      window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+      console.log('🖥️ ScrollTrigger registered for desktop only');
+    } else if (isMobile) {
+      console.log('📱 Mobile: ScrollTrigger disabled to prevent flickering');
+    }
     
     // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
@@ -1206,9 +1212,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (currentOpacity !== '1' || currentVisibility === 'hidden') {
           console.log('📱 PROTECTING mobile image from scroll interference:', img.src || img.tagName);
+          
+          // Kill any GSAP animations on this image
+          if (window.gsap) {
+            window.gsap.killTweensOf(img);
+          }
+          
+          // Force visibility with !important
           img.style.setProperty('opacity', '1', 'important');
           img.style.setProperty('visibility', 'visible', 'important');
           img.style.setProperty('display', 'block', 'important');
+          img.style.setProperty('transform', 'none', 'important');
         }
       });
     };
@@ -1699,7 +1713,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           };
         });
         
+        if (!isMobile) {
         window.gsap.ScrollTrigger.refresh();
+        }
         
         // Restore nav element styles after refresh
         setTimeout(() => {
@@ -1782,7 +1798,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Refresh ScrollTrigger
         setTimeout(() => {
+          if (!isMobile) {
           window.gsap.ScrollTrigger.refresh();
+        }
           
           // Restore nav element styles after refresh
           navElements.forEach((nav, index) => {
@@ -1931,7 +1949,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           };
         });
         
+        if (!isMobile) {
         window.gsap.ScrollTrigger.refresh();
+        }
         
         // Restore nav element styles after refresh
         setTimeout(() => {
