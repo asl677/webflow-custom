@@ -1149,41 +1149,41 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency image hiding for mask animations');
     }
     
-  // CSS transition-based fade stagger for mobile
+  // GSAP-based fade stagger for mobile (reliable method)
   if (isMobile) {
-    console.log('🚨 VERSION 3.0 MOBILE STAGGER LOADING 🚨');
-    console.log('📱 Mobile: CSS transition fade stagger');
+    console.log('🚨 VERSION 3.0 MOBILE GSAP STAGGER LOADING 🚨');
+    console.log('📱 Mobile: GSAP fade stagger');
     
     // Set up all images first
     allImages.forEach((img, index) => {
       img.style.setProperty('visibility', 'visible', 'important');
       img.style.setProperty('display', 'block', 'important');
       img.style.setProperty('transform', 'none', 'important');
-      img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
+      // Start with opacity 0 for GSAP animation
+      img.style.setProperty('opacity', '0', 'important');
     });
     
-    // Then fade them in sequentially with proper stagger
-    console.log(`🚨 STARTING SEQUENTIAL FADE FOR ${allImages.length} IMAGES 🚨`);
+    console.log(`🚨 STARTING GSAP STAGGER FOR ${allImages.length} IMAGES 🚨`);
     
-    function fadeNextImage(index) {
-      if (index >= allImages.length) return;
-      
-      const img = allImages[index];
-      const delay = 500 + (index * 200);
-      
-      console.log(`⏰ Fading image ${index} at ${delay}ms`);
-      
-      setTimeout(() => {
-        img.style.setProperty('opacity', '1', 'important');
-        img.dataset.mobileLocked = 'true';
-        console.log(`🚨 IMAGE ${index} FADED IN 🚨`);
-        
-        // Fade next image after a delay
-        setTimeout(() => fadeNextImage(index + 1), 200);
-      }, index === 0 ? 500 : 0); // Only first image has initial delay
-    }
-    
-    fadeNextImage(0);
+    // Use GSAP stagger - this should work reliably
+    window.gsap.to(allImages, {
+      opacity: 1,
+      duration: 0.6,
+      stagger: 0.2, // 200ms between each image
+      delay: 0.5, // 500ms initial delay
+      ease: "power2.out",
+      onComplete: function() {
+        // Lock all images after animation
+        allImages.forEach(img => {
+          img.dataset.mobileLocked = 'true';
+          img.style.setProperty('opacity', '1', 'important');
+        });
+        console.log('🚨 ALL MOBILE IMAGES STAGGER COMPLETE 🚨');
+      },
+      onStart: function() {
+        console.log('🚨 GSAP STAGGER ANIMATION STARTED 🚨');
+      }
+    });
   }
   
   // Process images for mask setup
