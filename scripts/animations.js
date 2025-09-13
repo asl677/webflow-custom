@@ -1172,11 +1172,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             onComplete: () => {
               console.log(`📱 Fade complete for image ${index}`);
+              // Lock image permanently to prevent scroll interference
+              img.style.setProperty('opacity', '1', 'important');
+              img.style.setProperty('visibility', 'visible', 'important');
+              img.style.setProperty('display', 'block', 'important');
+              img.dataset.mobileLocked = 'true';
             }
           });
         } else {
           console.log(`📱 No GSAP, showing image ${index} immediately`);
           img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+          img.dataset.mobileLocked = 'true';
         }
       }, delay);
     });
@@ -1189,6 +1197,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   if (isMobile) {
     console.log('📱 Mobile: Skipping ALL mask processing, using fade stagger only');
+    
+    // Add aggressive mobile image protection against scroll interference
+    const protectMobileImages = () => {
+      document.querySelectorAll('img[data-mobile-locked="true"]').forEach(img => {
+        const currentOpacity = getComputedStyle(img).opacity;
+        const currentVisibility = getComputedStyle(img).visibility;
+        
+        if (currentOpacity !== '1' || currentVisibility === 'hidden') {
+          console.log('📱 PROTECTING mobile image from scroll interference:', img.src || img.tagName);
+          img.style.setProperty('opacity', '1', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          img.style.setProperty('display', 'block', 'important');
+        }
+      });
+    };
+    
+    // Run protection every 100ms to catch any scroll interference immediately
+    setInterval(protectMobileImages, 100);
+    console.log('📱 Mobile image protection active - checking every 100ms');
   } else {
     console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
   }
@@ -1485,10 +1512,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 window.gsap.to(el, {
                   opacity: 1,
                   duration: 1.0,
-                  ease: "power2.out"
+                  ease: "power2.out",
+                  onComplete: () => {
+                    // Lock cloned image permanently
+                    el.style.setProperty('opacity', '1', 'important');
+                    el.style.setProperty('visibility', 'visible', 'important');
+                    el.style.setProperty('display', 'block', 'important');
+                    el.dataset.mobileLocked = 'true';
+                  }
                 });
             } else {
                 el.style.setProperty('opacity', '1', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.style.setProperty('display', 'block', 'important');
+                el.dataset.mobileLocked = 'true';
               }
             }, delay);
             
@@ -1597,10 +1634,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 window.gsap.to(img, {
                   opacity: 1,
                   duration: 1.0,
-                  ease: "power2.out"
+                  ease: "power2.out",
+                  onComplete: () => {
+                    // Lock new infinite scroll image permanently
+                    img.style.setProperty('opacity', '1', 'important');
+                    img.style.setProperty('visibility', 'visible', 'important');
+                    img.style.setProperty('display', 'block', 'important');
+                    img.dataset.mobileLocked = 'true';
+                  }
                 });
               } else {
                 img.style.setProperty('opacity', '1', 'important');
+                img.style.setProperty('visibility', 'visible', 'important');
+                img.style.setProperty('display', 'block', 'important');
+                img.dataset.mobileLocked = 'true';
               }
             }, delay);
             
