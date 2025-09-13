@@ -1468,25 +1468,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // On mobile, show cloned images with fade stagger (no heavy mask animations)
           // On desktop, allow mask animations for cloned images
           if (isMobile) {
+            // Mark as mobile processed to prevent mask system interference
+            el.dataset.mobileFadeProcessed = 'true';
+            
             // Start hidden then fade in with stagger
             el.style.setProperty('opacity', '0', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
             
-            // Fade in with stagger delay
+            // Fade in with slower stagger delay (matching main mobile timing)
+            const delay = imgIndex * 200 + 500; // Match main mobile stagger timing
             setTimeout(() => {
               if (window.gsap) {
                 window.gsap.to(el, {
                   opacity: 1,
-                  duration: 0.5,
+                  duration: 1.0, // Match main mobile fade duration
                   ease: "power2.out"
                 });
-            } else {
+              } else {
                 el.style.setProperty('opacity', '1', 'important');
               }
-            }, imgIndex * 80 + 300); // 80ms stagger for cloned images
+            }, delay);
             
-            console.log(`📱 Mobile: Clone image ${imgIndex} will fade in smoothly`);
+            console.log(`📱 Mobile: Clone image ${imgIndex} will fade in after ${delay}ms`);
           } else {
             // Desktop: prepare for mask animations but don't show yet
             console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
@@ -1675,19 +1679,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     };
     
-    // Only attach scroll listener on desktop to prevent mobile interference
-    if (!isMobile) {
+    // Attach scroll listener for infinite scroll (mobile gets simpler handling)
     window.addEventListener('scroll', scrollListener, { passive: true });
-      console.log('🔄 Infinite scroll event listener attached to window (desktop only)');
-      
-      // Test scroll immediately
-      setTimeout(() => {
-        console.log('🔄 Testing initial scroll state...');
-        handleScroll();
-      }, 1000);
-    } else {
-      console.log('📱 Mobile: Skipping infinite scroll listener to prevent image interference');
-    }
+    console.log('🔄 Infinite scroll event listener attached to window');
+    
+    // Test scroll immediately
+    setTimeout(() => {
+      console.log('🔄 Testing initial scroll state...');
+      handleScroll();
+    }, 1000);
     
     // Separate resize handler with nav protection (desktop only)
     window.addEventListener('resize', () => {
@@ -1739,17 +1739,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
     
-    // Set visibility for infinite scroll images (desktop only)
-    if (!isMobile) {
+    // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
       if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
-        window.gsap.set(img, { opacity: 1 });
-        img.dataset.gsapAnimated = 'infinite-scroll';
+        if (isMobile) {
+          // Mobile: mark for fade processing but don't set opacity yet (fade stagger will handle it)
+          img.dataset.mobileFadeProcessed = 'true';
+          console.log('📱 Mobile: Marked infinite scroll image for fade processing');
+        } else {
+          // Desktop: normal immediate visibility
+          window.gsap.set(img, { opacity: 1 });
         }
-      });
-    } else {
-      console.log('📱 Mobile: Skipping infinite scroll image visibility changes');
-    }
+        img.dataset.gsapAnimated = 'infinite-scroll';
+      }
+    });
     
     // Initial check to see if we need to load content immediately  
     setTimeout(() => {
