@@ -1133,20 +1133,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
-  // Mobile optimization: animate above fold, preload below fold
+  // Remove emergency hide for all devices
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mask animations');
+    }
+    
+  // Simple mobile fade stagger for ALL images on mobile
   if (isMobile) {
-    console.log('📱 Mobile detected - selective optimization (above fold animations, below fold preload)');
+    console.log('📱 Mobile detected - applying fade stagger to all images');
     
-    // Animate first ~5 images above the fold with masks like desktop
-    const aboveFoldImages = Array.from(allImages).slice(0, 5);
-    const belowFoldImages = Array.from(allImages).slice(5, 15); // Preload next 10
-    const remainingImages = Array.from(allImages).slice(15);
-    
-    // Show below fold and remaining images with smooth fade stagger (no heavy mask animations)
-    [...belowFoldImages, ...remainingImages].forEach((img, index) => {
-      console.log(`📱 Setting up fade stagger for image ${index}:`, img.src || img.tagName);
-      
-      // Mark as mobile fade processed to prevent other systems from interfering
+    allImages.forEach((img, index) => {
+      // Mark as mobile processed
       img.dataset.mobileFadeProcessed = 'true';
       
       // Start hidden then fade in with stagger
@@ -1155,54 +1154,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.style.setProperty('display', 'block', 'important');
       
       // Simple fade in with stagger delay
-      const delay = index * 150 + 500; // Increased stagger and delay for visibility
-      console.log(`📱 Image ${index} will fade in after ${delay}ms`);
+      const delay = index * 100 + 300;
       
       setTimeout(() => {
-        console.log(`📱 Starting fade for image ${index}`);
         if (window.gsap) {
           window.gsap.to(img, {
             opacity: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            onComplete: () => {
-              console.log(`📱 Fade complete for image ${index}`);
-            }
+            duration: 0.6,
+            ease: "power2.out"
           });
         } else {
-          // Fallback without GSAP
-          console.log(`📱 GSAP not available, showing image ${index} immediately`);
           img.style.setProperty('opacity', '1', 'important');
         }
       }, delay);
     });
-    
-    console.log(`📱 Mobile: Animating ${aboveFoldImages.length} above fold, preloading ${belowFoldImages.length}, showing ${remainingImages.length} remaining`);
-    
-    // NOW remove the emergency image hiding for mobile after fade stagger is set up
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for mobile fade stagger');
-    }
-    
-    // Continue with mask animations only for above fold images
-    // Create filtered list for above fold processing
-    const originalAllImages = allImages;
-    const aboveFoldNodeList = document.querySelectorAll('img:not(#preloader img), video');
-    const filteredImages = Array.from(aboveFoldNodeList).slice(0, 5);
-    
-    // Use filtered images for the rest of this function
-    var imagesToProcess = filteredImages;
-  } else {
-    // Desktop: remove emergency hide normally and process all images
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for desktop mask animations');
-    }
-    var imagesToProcess = allImages;
   }
+  
+  // Process all images for mask setup (but skip ScrollTrigger on mobile)
+  const imagesToProcess = allImages;
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
@@ -1309,24 +1278,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             });
           }
+        } else if (isMobile) {
+          // Mobile: show mask immediately, no ScrollTrigger
+          console.log(`📱 Mobile: Showing mask immediately for image ${index}`);
+          window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
+          element.dataset.gsapAnimated = 'mask-revealed-mobile';
+          element.dataset.maskComplete = 'true';
         } else {
-          // Mobile: Skip scroll-based mask animations for better performance
-          if (isMobile) {
-            console.log('📱 Skipping scroll mask animations on mobile for performance');
-            // Just show the image immediately on mobile
-            window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
-            element.dataset.gsapAnimated = 'mask-revealed-mobile';
-            element.dataset.maskComplete = 'true';
-          } else if (!isMobile) {
-            // Desktop only: use optimized ScrollTrigger
+          // Desktop: use ScrollTrigger for mask reveal
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-              duration: 1.2,
+            duration: 1.2,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%", // Consistent trigger point
+              start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1336,13 +1303,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
-          } else {
-            // Mobile: show mask immediately without ScrollTrigger to prevent flickering
-            console.log(`📱 Mobile: Showing mask immediately for image ${index} to prevent scroll flickering`);
-            window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
-            element.dataset.gsapAnimated = 'mask-revealed-mobile';
-            element.dataset.maskComplete = 'true';
-          }
           
           // Only add parallax on desktop
           if (hasParallax && !isMobile) {
