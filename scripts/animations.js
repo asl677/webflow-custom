@@ -1,11 +1,12 @@
-// Version 2.7: Revert to working custom scramble, ensure counter is included
+// Version 2.8: Simplified mobile logic - fade stagger for all images, no ScrollTrigger flickering
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
 // IMMEDIATE SCRIPT LOAD TEST
-console.log('🚀 SCRIPT LOADED: Portfolio animations starting...');
+console.log('🚀 SCRIPT LOADED: Portfolio animations v2.8 starting...');
 console.log('🚀 URL:', window.location.href);
+console.log('🚀 MOBILE DETECTION:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
 window.scriptLoadTest = function() {
   console.log('✅ SCRIPT IS DEFINITELY LOADED');
   return 'SUCCESS: Script loaded and working';
@@ -1143,8 +1144,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Simple mobile fade stagger for ALL images on mobile
   if (isMobile) {
     console.log('📱 Mobile detected - applying fade stagger to all images');
+    console.log('📱 Found', allImages.length, 'images to fade stagger');
     
     allImages.forEach((img, index) => {
+      console.log(`📱 Setting up fade for image ${index}:`, img.src || img.tagName);
+      
       // Mark as mobile processed
       img.dataset.mobileFadeProcessed = 'true';
       
@@ -1155,15 +1159,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Simple fade in with stagger delay
       const delay = index * 100 + 300;
+      console.log(`📱 Image ${index} will fade after ${delay}ms`);
       
       setTimeout(() => {
+        console.log(`📱 Fading image ${index} now`);
         if (window.gsap) {
           window.gsap.to(img, {
             opacity: 1,
             duration: 0.6,
-            ease: "power2.out"
+            ease: "power2.out",
+            onComplete: () => {
+              console.log(`📱 Fade complete for image ${index}`);
+            }
           });
         } else {
+          console.log(`📱 No GSAP, showing image ${index} immediately`);
           img.style.setProperty('opacity', '1', 'important');
         }
       }, delay);
