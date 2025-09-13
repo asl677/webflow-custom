@@ -1749,8 +1749,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     } else {
       console.log('📱 Mobile: Skipping infinite scroll image visibility changes');
-      }
-    });
+    }
     
     // Initial check to see if we need to load content immediately  
     setTimeout(() => {
