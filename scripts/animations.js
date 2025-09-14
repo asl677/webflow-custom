@@ -1160,8 +1160,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.style.display = 'block';
       img.style.opacity = '0';
       
-      // Simple stagger delay
-      const delay = index * 200 + 500;
+      // Simple stagger delay - more noticeable
+      const delay = index * 400 + 500;
       
       // Use GSAP like desktop
       window.gsap.to(img, {
@@ -1298,7 +1298,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         if (inViewport && index < maxInitialImages) {
           // Animate images in viewport immediately with proper top-to-bottom order
-          const staggerDelay = index * 0.2; // Consistent, slower stagger
+          const staggerDelay = index * 0.4; // More noticeable stagger for mobile
           const duration = 1.2; // Same duration across all devices
           
           // Consistent easing for stability
