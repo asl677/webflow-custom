@@ -1215,9 +1215,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     };
     
-    // Run protection every 100ms to catch any scroll interference immediately
-    setInterval(protectMobileImages, 100);
-    console.log('📱 Mobile image protection active - checking every 100ms');
+    // DISABLE protection to allow stagger to work
+    // setInterval(protectMobileImages, 100);
+    console.log('📱 Mobile image protection DISABLED to allow stagger');
   } else {
     console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
   }
