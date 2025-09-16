@@ -1142,26 +1142,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
-  // Remove emergency hide for all devices
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for mask animations');
-    }
-    
   // SIMPLE mobile stagger - copy desktop approach without masking
   if (isMobile) {
     console.log('🚨 SIMPLE MOBILE STAGGER - NO COMPLEX LOGIC 🚨');
     
-    // Just animate opacity like desktop, but immediately visible
+    // First set all images to controlled opacity 0 BEFORE removing emergency CSS
     allImages.forEach((img, index) => {
-      // Make visible but start at opacity 0
+      // Force controlled opacity 0 to override emergency CSS
+      img.style.setProperty('opacity', '0', 'important');
       img.style.visibility = 'visible';
       img.style.display = 'block';
-      img.style.opacity = '0';
-      
+      console.log(`📱 Image ${index} prepped for stagger at opacity 0`);
+    });
+    
+    // NOW remove emergency hide since we have control
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding AFTER mobile prep');
+    }
+    
+    // Start stagger animations
+    allImages.forEach((img, index) => {
       // Simple stagger delay - more noticeable
       const delay = index * 400 + 500;
+      
+      console.log(`📱 Starting stagger for image ${index} with ${delay}ms delay`);
       
       // Use GSAP like desktop
       window.gsap.to(img, {
@@ -1169,14 +1175,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         duration: 0.6,
         delay: delay / 1000, // Convert to seconds
         ease: "power2.out",
+        onStart: function() {
+          console.log(`⏰ Image ${index} fade started at ${Date.now()}`);
+        },
         onComplete: function() {
           img.dataset.mobileLocked = 'true';
-          console.log(`📱 Image ${index} completed fade`);
+          console.log(`✅ Image ${index} fade completed at ${Date.now()}`);
         }
       });
     });
     
     console.log(`📱 Started simple stagger for ${allImages.length} images`);
+  } else {
+    // Remove emergency hide for desktop
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mask animations');
+    }
   }
   
   // Process images for mask setup
