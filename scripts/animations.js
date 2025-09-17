@@ -1142,50 +1142,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
-  // SIMPLE mobile stagger - copy desktop approach without masking
+  // ULTRA SIMPLE mobile stagger - just setTimeout + CSS transition
   if (isMobile) {
-    console.log('🚨 SIMPLE MOBILE STAGGER - NO COMPLEX LOGIC 🚨');
+    console.log('🚨 ULTRA SIMPLE MOBILE STAGGER 🚨');
     
-    // First set all images to controlled opacity 0 BEFORE removing emergency CSS
-    allImages.forEach((img, index) => {
-      // Force controlled opacity 0 to override emergency CSS
-      img.style.setProperty('opacity', '0', 'important');
-      img.style.visibility = 'visible';
-      img.style.display = 'block';
-      console.log(`📱 Image ${index} prepped for stagger at opacity 0`);
-    });
-    
-    // NOW remove emergency hide since we have control
+    // Remove emergency hide immediately
     const emergencyHide = document.getElementById('emergency-image-hide');
     if (emergencyHide) {
       emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding AFTER mobile prep');
+      console.log('🔧 Removed emergency hide for mobile');
     }
     
-    // Start stagger animations
+    // Set all images to hidden and add CSS transition
     allImages.forEach((img, index) => {
-      // Simple stagger delay - more noticeable
-      const delay = index * 400 + 500;
+      img.style.opacity = '0';
+      img.style.visibility = 'visible';
+      img.style.display = 'block';
+      img.style.transition = 'opacity 0.8s ease-out';
       
-      console.log(`📱 Starting stagger for image ${index} with ${delay}ms delay`);
+      // Simple setTimeout stagger - much more reliable
+      const delay = index * 600; // 600ms between each image
       
-      // Use GSAP like desktop
-      window.gsap.to(img, {
-        opacity: 1,
-        duration: 0.6,
-        delay: delay / 1000, // Convert to seconds
-        ease: "power2.out",
-        onStart: function() {
-          console.log(`⏰ Image ${index} fade started at ${Date.now()}`);
-        },
-        onComplete: function() {
-          img.dataset.mobileLocked = 'true';
-          console.log(`✅ Image ${index} fade completed at ${Date.now()}`);
-        }
-      });
+      setTimeout(() => {
+        console.log(`📱 Fading in image ${index} at ${Date.now()}`);
+          img.style.opacity = '1';
+        img.dataset.mobileLocked = 'true';
+      }, delay);
     });
     
-    console.log(`📱 Started simple stagger for ${allImages.length} images`);
+    console.log(`📱 Simple setTimeout stagger started for ${allImages.length} images`);
   } else {
     // Remove emergency hide for desktop
     const emergencyHide = document.getElementById('emergency-image-hide');
