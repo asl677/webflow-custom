@@ -1153,8 +1153,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔧 Removed emergency hide for mobile');
     }
     
-    // Set all images to hidden and add CSS transition
-    allImages.forEach((img, index) => {
+    // Separate original images from cloned/infinite images
+    const originalImages = Array.from(allImages).filter(img => !img.dataset.infiniteClone);
+    const clonedImages = Array.from(allImages).filter(img => img.dataset.infiniteClone);
+    
+    console.log(`📱 Found ${originalImages.length} original images, ${clonedImages.length} cloned images`);
+    
+    // Set original images to stagger fade
+    originalImages.forEach((img, index) => {
       img.style.opacity = '0';
       img.style.visibility = 'visible';
       img.style.display = 'block';
@@ -1164,13 +1170,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const delay = index * 600; // 600ms between each image
       
       setTimeout(() => {
-        console.log(`📱 Fading in image ${index} at ${Date.now()}`);
+        console.log(`📱 Fading in original image ${index} at ${Date.now()}`);
           img.style.opacity = '1';
         img.dataset.mobileLocked = 'true';
       }, delay);
     });
     
-    console.log(`📱 Simple setTimeout stagger started for ${allImages.length} images`);
+    // Cloned/infinite images appear immediately without animation
+    clonedImages.forEach((img, index) => {
+      img.style.opacity = '1';
+      img.style.visibility = 'visible';
+      img.style.display = 'block';
+      img.style.transition = 'none'; // No transition for clones
+      img.dataset.mobileLocked = 'true';
+      console.log(`📱 Cloned image ${index} shown immediately (no fade)`);
+    });
+    
+    console.log(`📱 Stagger: ${originalImages.length} original images, instant: ${clonedImages.length} clones`);
   } else {
     // Remove emergency hide for desktop
     const emergencyHide = document.getElementById('emergency-image-hide');
@@ -1216,9 +1232,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
     };
     
-    // DISABLE protection to allow stagger to work
-    // setInterval(protectMobileImages, 100);
-    console.log('📱 Mobile image protection DISABLED to allow stagger');
+    // RE-ENABLE protection to prevent scroll fadeout AFTER stagger completes
+    setTimeout(() => {
+      setInterval(protectMobileImages, 100);
+      console.log('📱 Mobile image protection RE-ENABLED after stagger');
+    }, 5000); // Wait for stagger to complete
   } else {
     console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
   }
