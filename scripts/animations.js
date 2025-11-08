@@ -31,6 +31,140 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Global mobile detection (used across multiple functions)
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
+  // Theme system - dark/light mode toggle
+  function initThemeSystem() {
+    console.log('🎨 Initializing theme system...');
+    
+    // Check for saved theme preference or use system preference
+    const savedTheme = localStorage.getItem('portfolio-theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+    
+    console.log(`🎨 System prefers: ${systemPrefersDark ? 'dark' : 'light'}, Saved: ${savedTheme}, Initial: ${initialTheme}`);
+    
+    // Create theme toggle button (4px x 4px, bottom right)
+    const toggleButton = document.createElement('div');
+    toggleButton.id = 'theme-toggle';
+    toggleButton.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 4px;
+      height: 4px;
+      background: #666;
+      border-radius: 1px;
+      cursor: pointer;
+      z-index: 9999;
+      transition: all 0.2s ease;
+      opacity: 0.7;
+    `;
+    
+    // Hover effect for better usability
+    toggleButton.addEventListener('mouseenter', () => {
+      toggleButton.style.opacity = '1';
+      toggleButton.style.transform = 'scale(2)';
+    });
+    
+    toggleButton.addEventListener('mouseleave', () => {
+      toggleButton.style.opacity = '0.7';
+      toggleButton.style.transform = 'scale(1)';
+    });
+    
+    document.body.appendChild(toggleButton);
+    console.log('🎨 Theme toggle button created');
+    
+    // Apply theme function
+    function applyTheme(theme) {
+      console.log(`🎨 Applying ${theme} theme`);
+      
+      if (theme === 'light') {
+        // Light mode: white background, black text
+        document.documentElement.style.setProperty('--bg-color', '#ffffff');
+        document.documentElement.style.setProperty('--text-color', '#000000');
+        document.documentElement.style.setProperty('--link-color', '#000000');
+        
+        // Apply to body and html
+        document.body.style.backgroundColor = '#ffffff';
+        document.body.style.color = '#000000';
+        document.documentElement.style.backgroundColor = '#ffffff';
+        
+        // Apply to all text elements
+        const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, a, li, td, th');
+        textElements.forEach(el => {
+          if (!el.closest('#theme-toggle')) {
+            el.style.color = '#000000';
+          }
+        });
+        
+        // Apply to links specifically
+        const links = document.querySelectorAll('a');
+        links.forEach(link => {
+          if (!link.closest('#theme-toggle')) {
+            link.style.color = '#000000';
+          }
+        });
+        
+        toggleButton.style.background = '#000000';
+        document.body.setAttribute('data-theme', 'light');
+        
+      } else {
+        // Dark mode: remove overrides to use original styles
+        document.documentElement.style.removeProperty('--bg-color');
+        document.documentElement.style.removeProperty('--text-color');
+        document.documentElement.style.removeProperty('--link-color');
+        
+        // Remove body overrides
+        document.body.style.removeProperty('background-color');
+        document.body.style.removeProperty('color');
+        document.documentElement.style.removeProperty('background-color');
+        
+        // Remove text element overrides
+        const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, a, li, td, th');
+        textElements.forEach(el => {
+          el.style.removeProperty('color');
+        });
+        
+        // Remove link overrides
+        const links = document.querySelectorAll('a');
+        links.forEach(link => {
+          link.style.removeProperty('color');
+        });
+        
+        toggleButton.style.background = '#666';
+        document.body.setAttribute('data-theme', 'dark');
+      }
+      
+      // Save preference
+      localStorage.setItem('portfolio-theme', theme);
+      console.log(`🎨 ${theme} theme applied and saved`);
+    }
+    
+    // Toggle function
+    function toggleTheme() {
+      const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+      console.log(`🎨 Theme toggled from ${currentTheme} to ${newTheme}`);
+    }
+    
+    // Add click listener to toggle button
+    toggleButton.addEventListener('click', toggleTheme);
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('portfolio-theme')) {
+        // Only auto-switch if user hasn't manually set a preference
+        applyTheme(e.matches ? 'dark' : 'light');
+        console.log(`🎨 System theme changed, auto-switching to ${e.matches ? 'dark' : 'light'}`);
+      }
+    });
+    
+    // Apply initial theme
+    applyTheme(initialTheme);
+    
+    console.log('🎨 Theme system initialized successfully');
+  }
+
   // Remove the initial hide style when animations start
   const initialHideStyle = document.querySelector('style');
 
@@ -2229,6 +2363,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Main initialization function with error protection
   function init() {
     if (isInit) return;
+    
+    // Initialize theme system immediately (doesn't need GSAP)
+    try {
+      initThemeSystem();
+    } catch (error) {
+      console.error('❌ Theme system initialization error:', error);
+    }
     
     function waitForGSAP() { 
       if (typeof window.gsap !== 'undefined') {
