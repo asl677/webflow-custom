@@ -148,10 +148,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function addFullscreenToImages() {
       // Target all images except preloader and already processed ones
       const images = document.querySelectorAll('img:not(#preloader img):not([data-fullscreen-enabled])');
+      console.log(`🖼️ Found ${images.length} images to process for fullscreen`);
       
-      images.forEach(img => {
-        // Skip if image is too small (likely decorative)
-        if (img.offsetWidth < 50 || img.offsetHeight < 50) return;
+      images.forEach((img, index) => {
+        // Debug image properties
+        console.log(`🖼️ Processing image ${index}:`, {
+          src: img.src?.substring(0, 50) + '...',
+          width: img.offsetWidth,
+          height: img.offsetHeight,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          hasParentLink: !!img.closest('a'),
+          hasParentButton: !!img.closest('button'),
+          hasOnClick: !!img.closest('[onclick]')
+        });
+        
+        // More lenient size check - include images that might not have loaded dimensions yet
+        const hasValidDimensions = (img.offsetWidth > 20 && img.offsetHeight > 20) || 
+                                  (img.naturalWidth > 20 && img.naturalHeight > 20) ||
+                                  (!img.offsetWidth && !img.offsetHeight); // Not loaded yet
+        
+        if (!hasValidDimensions) {
+          console.log(`🖼️ Skipping small image ${index}: ${img.offsetWidth}x${img.offsetHeight}`);
+          return;
+        }
         
         // Mark as processed
         img.dataset.fullscreenEnabled = 'true';
@@ -159,25 +179,55 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Ensure cursor stays as default (arrow)
         img.style.cursor = 'default';
         
-        // Add click listener
+        // Add click listener with more debugging
         img.addEventListener('click', (e) => {
+          console.log('🖼️ Image clicked!', img.src?.substring(0, 50) + '...');
+          
           // Don't interfere with existing interactions
           e.stopPropagation();
           
-          // Skip if image is inside a link or interactive element
-          if (img.closest('a, button, [onclick]')) return;
+          // Check for parent interactive elements
+          const parentLink = img.closest('a');
+          const parentButton = img.closest('button');
+          const parentOnClick = img.closest('[onclick]');
           
+          if (parentLink || parentButton || parentOnClick) {
+            console.log('🖼️ Skipping - image is inside interactive element:', {
+              parentLink: !!parentLink,
+              parentButton: !!parentButton,
+              parentOnClick: !!parentOnClick
+            });
+            return;
+          }
+          
+          console.log('🖼️ Entering fullscreen for image');
           enterFullscreen(img);
         });
         
         console.log('🖼️ Added fullscreen functionality to image:', img.src?.substring(0, 50) + '...');
       });
       
-      console.log(`🖼️ Added fullscreen to ${images.length} images`);
+      console.log(`🖼️ Successfully added fullscreen to ${images.length} images`);
     }
     
     // Initialize for existing images
     addFullscreenToImages();
+    
+    // Add delayed initialization for images that might load later
+    setTimeout(() => {
+      console.log('🖼️ Running delayed fullscreen initialization...');
+      addFullscreenToImages();
+    }, 2000);
+    
+    // Also try after page fully loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          console.log('🖼️ Running DOMContentLoaded fullscreen initialization...');
+          addFullscreenToImages();
+        }, 1000);
+      });
+    }
     
     // Return function to add to new images (for infinite scroll)
     return addFullscreenToImages;
@@ -2512,4 +2562,36 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   console.log('🚀 SCRIPT END: Animation system initialization completed');
 })(window.portfolioAnimations);
 
-console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading - VERSION 2.2 theme toggle removed');
+console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading - VERSION 2.3 with fullscreen debug');
+
+// Add global test function for debugging fullscreen
+window.testFullscreen = function() {
+  console.log('🖼️ Testing fullscreen functionality...');
+  const images = document.querySelectorAll('img:not(#preloader img)');
+  console.log(`🖼️ Found ${images.length} total images on page`);
+  
+  const enabledImages = document.querySelectorAll('img[data-fullscreen-enabled="true"]');
+  console.log(`🖼️ Found ${enabledImages.length} images with fullscreen enabled`);
+  
+  if (enabledImages.length > 0) {
+    console.log('🖼️ Testing first enabled image...');
+    const firstImage = enabledImages[0];
+    console.log('🖼️ Simulating click on:', firstImage.src?.substring(0, 50) + '...');
+    firstImage.click();
+  } else {
+    console.log('🖼️ No images have fullscreen enabled - checking why...');
+    images.forEach((img, i) => {
+      if (i < 5) { // Check first 5 images
+        console.log(`Image ${i}:`, {
+          src: img.src?.substring(0, 50) + '...',
+          hasFullscreen: img.dataset.fullscreenEnabled,
+          width: img.offsetWidth,
+          height: img.offsetHeight,
+          inLink: !!img.closest('a')
+        });
+      }
+    });
+  }
+};
+
+console.log('🖼️ Test fullscreen with: window.testFullscreen()');
