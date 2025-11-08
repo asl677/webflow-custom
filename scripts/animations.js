@@ -1459,11 +1459,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const itemHeight = originalItems[0] ? originalItems[0].offsetHeight : 100;
     let isLoading = false;
     
-    // Load more items function
+    // OPTIMIZED load more items function with cached selectors
     function loadMoreItems() {
       if (isLoading) return;
       isLoading = true;
       console.log('🔄 Loading more items...');
+      
+      // Use DocumentFragment for better performance
+      const fragment = document.createDocumentFragment();
       
       originalItems.forEach(item => {
         // Exclude items that contain .reveal-full.new-fixed elements from cloning
@@ -1615,8 +1618,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         clone.style.transform = 'none';
         clone.style.visibility = 'visible';
         
-        container.appendChild(clone);
-        console.log('✅ Clone appended with visible text');
+        fragment.appendChild(clone);
+        console.log('✅ Clone added to fragment');
         
         // Mobile: skip additional processing - images already set to visible above for performance
         
@@ -1652,75 +1655,96 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
+      // PERFORMANCE: Append all clones at once using DocumentFragment
+      container.appendChild(fragment);
+      console.log(`✅ Added ${originalItems.length} more items with protected visibility (batched append)`);
       
-      // Refresh ScrollTrigger with nav protection (desktop only)
+      // OPTIMIZED ScrollTrigger refresh with nav protection (desktop only) - batched
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
-        // Store nav element styles before refresh (exclude middle/bottom nav)
-        const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
-        console.log(`🔍 Found ${navElements.length} nav elements for infinite scroll protection:`, [...navElements].map(el => el.className));
-        const navStyles = [];
-        navElements.forEach((nav, index) => {
-          navStyles[index] = {
-            opacity: nav.style.opacity || getComputedStyle(nav).opacity,
-            transform: nav.style.transform || getComputedStyle(nav).transform,
-            visibility: nav.style.visibility || getComputedStyle(nav).visibility
-          };
-        });
-        
-        if (!isMobile) {
-        window.gsap.ScrollTrigger.refresh();
-        }
-        
-        // Restore nav element styles after refresh
-        setTimeout(() => {
-          navElements.forEach((nav, index) => {
-            if (navStyles[index]) {
+        // Batch ScrollTrigger refresh to avoid multiple calls
+        if (!window.scrollTriggerRefreshPending) {
+          window.scrollTriggerRefreshPending = true;
+          
+          // Cache nav elements for better performance
+          const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
+          
+          // Debounce ScrollTrigger refresh for performance
+          setTimeout(() => {
+            if (!isMobile) {
+              window.gsap.ScrollTrigger.refresh();
+            }
+            
+            // Restore nav elements with cached styles
+            navElements.forEach(nav => {
               nav.style.setProperty('opacity', '1', 'important');
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
-              console.log('🔧 Restored nav element:', nav.className, 'opacity:', nav.style.opacity);
-            }
-          });
-          console.log('🔧 Protected nav elements during infinite scroll refresh');
-        }, 50);
+            });
+            
+            window.scrollTriggerRefreshPending = false;
+            console.log('🔧 Batched ScrollTrigger refresh completed');
+          }, 200); // Debounce by 200ms
+        }
       }
       setTimeout(() => isLoading = false, 500);
     }
     
-    // Enhanced scroll handler with better detection
+    // PERFORMANCE OPTIMIZED scroll handler with caching
+    let cachedWindowHeight = window.innerHeight;
+    let cachedDocumentHeight = document.documentElement.scrollHeight;
+    let lastScrollTop = 0;
+    let scrollDirection = 'down';
+    
+    // Cache dimensions on resize
+    const updateCachedDimensions = () => {
+      cachedWindowHeight = window.innerHeight;
+      cachedDocumentHeight = document.documentElement.scrollHeight;
+    };
+    
     function handleScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Detect scroll direction for optimization
+      scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
+      lastScrollTop = scrollTop;
+      
+      // Only check for infinite scroll when scrolling down
+      if (scrollDirection === 'up') return;
+      
+      // Use cached dimensions for better performance
+      const windowHeight = cachedWindowHeight;
+      const documentHeight = cachedDocumentHeight;
       
       // Prevent immediate triggering on page load
       if (documentHeight <= windowHeight * 1.1) {
-        // Page is too short, wait for content to fully load
         return;
       }
       
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll for more reliable infinite scroll
+      const nearBottom = scrollPercent >= 0.85;
       
-      // Debug logging (only when approaching bottom)
-      if (scrollPercent > 0.8 || nearBottom) {
-        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
-      }
-      
+      // Reduced logging for performance
       if (nearBottom && !isLoading) {
         console.log('🎯 Infinite scroll triggered!');
         loadMoreItems();
+        // Update cached height after adding content
+        setTimeout(updateCachedDimensions, 100);
       }
     }
     
-    // More reliable scroll listener
+    // THROTTLED scroll listener for better performance
     let ticking = false;
+    let lastScrollTime = 0;
+    const SCROLL_THROTTLE = 16; // ~60fps
+    
     const scrollListener = () => { 
-      if (!ticking) { 
+      const now = performance.now();
+      
+      if (!ticking && (now - lastScrollTime) > SCROLL_THROTTLE) {
         requestAnimationFrame(() => { 
           handleScroll(); 
           ticking = false; 
+          lastScrollTime = now;
         }); 
         ticking = true; 
       }
@@ -1736,8 +1760,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       handleScroll();
     }, 1000);
     
-    // Separate resize handler with nav protection (desktop only)
+    // Add resize listener for cached dimensions
+    window.addEventListener('resize', updateCachedDimensions, { passive: true });
+    
+    // OPTIMIZED resize handler with nav protection (desktop only) - throttled
+    let resizeTimeout;
     window.addEventListener('resize', () => {
+      // Debounce resize events for better performance
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
         // Store nav element styles before refresh - exclude middle/bottom nav
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav, .nav-left, .left-nav');
@@ -1785,6 +1816,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log('🔧 Protected nav elements during ScrollTrigger refresh');
         }, 100);
       }
+      }, 150); // Debounce resize events by 150ms
     }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
     
