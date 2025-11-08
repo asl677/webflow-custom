@@ -42,36 +42,63 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🎨 System prefers: ${systemPrefersDark ? 'dark' : 'light'}, Saved: ${savedTheme}, Initial: ${initialTheme}`);
     
-    // Create theme toggle button (4px x 4px, bottom right)
-    const toggleButton = document.createElement('div');
-    toggleButton.id = 'theme-toggle';
-    toggleButton.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 4px;
-      height: 4px;
-      background: #666;
-      border-radius: 1px;
-      cursor: pointer;
-      z-index: 9999;
-      transition: all 0.2s ease;
-      opacity: 0.7;
-    `;
+    // Function to create toggle button
+    function createToggleButton() {
+      // Check if button already exists
+      if (document.getElementById('theme-toggle')) {
+        console.log('🎨 Theme toggle button already exists');
+        return document.getElementById('theme-toggle');
+      }
+      
+      // Create theme toggle button (4px x 4px, bottom right)
+      const toggleButton = document.createElement('div');
+      toggleButton.id = 'theme-toggle';
+      toggleButton.style.cssText = `
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 4px !important;
+        height: 4px !important;
+        background: #666 !important;
+        border-radius: 1px !important;
+        cursor: pointer !important;
+        z-index: 99999 !important;
+        transition: all 0.2s ease !important;
+        opacity: 0.7 !important;
+        pointer-events: auto !important;
+      `;
+      
+      // Hover effect - invert color
+      toggleButton.addEventListener('mouseenter', () => {
+        const currentBg = toggleButton.style.background;
+        toggleButton.style.background = currentBg.includes('rgb(0, 0, 0)') || currentBg === '#000000' ? '#ffffff' : '#000000';
+      });
+      
+      toggleButton.addEventListener('mouseleave', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+        toggleButton.style.background = currentTheme === 'light' ? '#000000' : '#666';
+      });
+      
+      // Wait for body to be available
+      if (document.body) {
+        document.body.appendChild(toggleButton);
+        console.log('🎨 Theme toggle button created and appended to body');
+      } else {
+        // If body not ready, wait for DOM
+        setTimeout(() => {
+          if (document.body) {
+            document.body.appendChild(toggleButton);
+            console.log('🎨 Theme toggle button created after DOM ready');
+          } else {
+            console.error('🎨 Could not create toggle button - no body element');
+          }
+        }, 100);
+      }
+      
+      return toggleButton;
+    }
     
-    // Hover effect - invert color
-    toggleButton.addEventListener('mouseenter', () => {
-      const currentBg = toggleButton.style.background;
-      toggleButton.style.background = currentBg === '#000000' ? '#ffffff' : '#000000';
-    });
-    
-    toggleButton.addEventListener('mouseleave', () => {
-      const currentTheme = document.body.getAttribute('data-theme') || 'dark';
-      toggleButton.style.background = currentTheme === 'light' ? '#000000' : '#666';
-    });
-    
-    document.body.appendChild(toggleButton);
-    console.log('🎨 Theme toggle button created');
+    const toggleButton = createToggleButton();
     
     // Apply theme function
     function applyTheme(theme) {
@@ -148,7 +175,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Add click listener to toggle button
-    toggleButton.addEventListener('click', toggleTheme);
+    if (toggleButton) {
+      toggleButton.addEventListener('click', () => {
+        console.log('🎨 Toggle button clicked!');
+        toggleTheme();
+      });
+      console.log('🎨 Click listener added to toggle button');
+    } else {
+      console.error('🎨 Could not add click listener - toggle button not found');
+    }
     
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -2364,12 +2399,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function init() {
     if (isInit) return;
     
-    // Initialize theme system immediately (doesn't need GSAP)
-    try {
-      initThemeSystem();
-    } catch (error) {
-      console.error('❌ Theme system initialization error:', error);
-    }
+    // Initialize theme system when DOM is ready
+    setTimeout(() => {
+      try {
+        console.log('🎨 DOM should be ready, initializing theme system...');
+        initThemeSystem();
+      } catch (error) {
+        console.error('❌ Theme system initialization error:', error);
+      }
+    }, 500);
     
     function waitForGSAP() { 
       if (typeof window.gsap !== 'undefined') {
