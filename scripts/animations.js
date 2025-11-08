@@ -59,15 +59,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       opacity: 0.7;
     `;
     
-    // Hover effect for better usability
+    // Hover effect - invert color
     toggleButton.addEventListener('mouseenter', () => {
-      toggleButton.style.opacity = '1';
-      toggleButton.style.transform = 'scale(2)';
+      const currentBg = toggleButton.style.background;
+      toggleButton.style.background = currentBg === '#000000' ? '#ffffff' : '#000000';
     });
     
     toggleButton.addEventListener('mouseleave', () => {
-      toggleButton.style.opacity = '0.7';
-      toggleButton.style.transform = 'scale(1)';
+      const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+      toggleButton.style.background = currentTheme === 'light' ? '#000000' : '#666';
     });
     
     document.body.appendChild(toggleButton);
