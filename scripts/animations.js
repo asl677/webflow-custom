@@ -33,6 +33,156 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Theme system removed to prevent complications
 
+  // Full-screen image viewer system
+  function initFullscreenImageViewer() {
+    console.log('🖼️ Initializing fullscreen image viewer...');
+    
+    // Create fullscreen overlay (hidden by default)
+    const overlay = document.createElement('div');
+    overlay.id = 'fullscreen-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 999999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: default;
+    `;
+    
+    // Create fullscreen image container
+    const imageContainer = document.createElement('div');
+    imageContainer.style.cssText = `
+      max-width: 90vw;
+      max-height: 90vh;
+      cursor: default;
+    `;
+    
+    const fullscreenImage = document.createElement('img');
+    fullscreenImage.style.cssText = `
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: default;
+    `;
+    
+    imageContainer.appendChild(fullscreenImage);
+    overlay.appendChild(imageContainer);
+    document.body.appendChild(overlay);
+    
+    // Function to enter fullscreen
+    function enterFullscreen(originalImage) {
+      console.log('🖼️ Entering fullscreen mode');
+      
+      // Set the source
+      fullscreenImage.src = originalImage.src;
+      fullscreenImage.alt = originalImage.alt || '';
+      
+      // Show overlay with fade in
+      overlay.style.display = 'flex';
+      overlay.style.opacity = '0';
+      
+      // Animate in
+      if (window.gsap) {
+        window.gsap.to(overlay, {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+        
+        window.gsap.fromTo(imageContainer, {
+          scale: 0.8,
+          opacity: 0
+        }, {
+          scale: 1,
+          opacity: 1,
+          duration: 0.4,
+          ease: "power2.out"
+        });
+      } else {
+        // Fallback without GSAP
+        overlay.style.opacity = '1';
+      }
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // Function to exit fullscreen
+    function exitFullscreen() {
+      console.log('🖼️ Exiting fullscreen mode');
+      
+      if (window.gsap) {
+        window.gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.2,
+          ease: "power2.out",
+          onComplete: () => {
+            overlay.style.display = 'none';
+          }
+        });
+      } else {
+        // Fallback without GSAP
+        overlay.style.display = 'none';
+      }
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+    
+    // Add click listener to overlay for exit
+    overlay.addEventListener('click', exitFullscreen);
+    
+    // Add escape key listener
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.style.display === 'flex') {
+        exitFullscreen();
+      }
+    });
+    
+    // Function to add fullscreen functionality to images
+    function addFullscreenToImages() {
+      // Target all images except preloader and already processed ones
+      const images = document.querySelectorAll('img:not(#preloader img):not([data-fullscreen-enabled])');
+      
+      images.forEach(img => {
+        // Skip if image is too small (likely decorative)
+        if (img.offsetWidth < 50 || img.offsetHeight < 50) return;
+        
+        // Mark as processed
+        img.dataset.fullscreenEnabled = 'true';
+        
+        // Ensure cursor stays as default (arrow)
+        img.style.cursor = 'default';
+        
+        // Add click listener
+        img.addEventListener('click', (e) => {
+          // Don't interfere with existing interactions
+          e.stopPropagation();
+          
+          // Skip if image is inside a link or interactive element
+          if (img.closest('a, button, [onclick]')) return;
+          
+          enterFullscreen(img);
+        });
+        
+        console.log('🖼️ Added fullscreen functionality to image:', img.src?.substring(0, 50) + '...');
+      });
+      
+      console.log(`🖼️ Added fullscreen to ${images.length} images`);
+    }
+    
+    // Initialize for existing images
+    addFullscreenToImages();
+    
+    // Return function to add to new images (for infinite scroll)
+    return addFullscreenToImages;
+  }
+
   // Remove the initial hide style when animations start
   const initialHideStyle = document.querySelector('style');
 
@@ -1653,6 +1803,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         } else {
           console.log('📱 Mobile: Skipping mask animation processing for performance during infinite scroll');
         }
+        
+        // Add fullscreen functionality to new images in clone
+        if (window.addFullscreenToNewImages) {
+          setTimeout(() => {
+            window.addFullscreenToNewImages();
+          }, 100);
+        }
       });
       
       // PERFORMANCE: Append all clones at once using DocumentFragment
@@ -1666,12 +1823,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.scrollTriggerRefreshPending = true;
           
           // Cache nav elements for better performance
-          const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
+        const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
           
           // Debounce ScrollTrigger refresh for performance
           setTimeout(() => {
             if (!isMobile) {
-              window.gsap.ScrollTrigger.refresh();
+        window.gsap.ScrollTrigger.refresh();
             }
             
             // Restore nav elements with cached styles
@@ -2263,6 +2420,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Main initialization function with error protection
   function init() {
     if (isInit) return;
+    
+    // Initialize fullscreen image viewer
+    let addFullscreenToNewImages;
+    try {
+      addFullscreenToNewImages = initFullscreenImageViewer();
+      window.addFullscreenToNewImages = addFullscreenToNewImages; // Make available globally
+    } catch (error) {
+      console.error('❌ Fullscreen viewer initialization error:', error);
+    }
     
     // Theme system removed
     
