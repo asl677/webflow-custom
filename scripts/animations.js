@@ -2489,4 +2489,76 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   console.log('🚀 SCRIPT END: Animation system initialization completed');
 })(window.portfolioAnimations);
 
-console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading');
+console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading - VERSION 2.1 with theme toggle');
+
+// IMMEDIATE theme toggle creation - don't wait for anything
+(function() {
+  console.log('🎨 IMMEDIATE: Creating theme toggle button...');
+  
+  function createImmediateToggle() {
+    // Remove any existing toggle
+    const existing = document.getElementById('theme-toggle-immediate');
+    if (existing) existing.remove();
+    
+    const toggle = document.createElement('div');
+    toggle.id = 'theme-toggle-immediate';
+    toggle.style.cssText = `
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      width: 4px !important;
+      height: 4px !important;
+      background: #666 !important;
+      border-radius: 1px !important;
+      cursor: pointer !important;
+      z-index: 999999 !important;
+      opacity: 0.7 !important;
+    `;
+    
+    // Simple theme toggle
+    toggle.addEventListener('click', function() {
+      console.log('🎨 IMMEDIATE toggle clicked!');
+      const isLight = document.body.style.backgroundColor === 'rgb(255, 255, 255)' || document.body.style.backgroundColor === '#ffffff';
+      
+      if (isLight) {
+        // Switch to dark
+        document.body.style.backgroundColor = '';
+        document.body.style.color = '';
+        document.documentElement.style.backgroundColor = '';
+        toggle.style.background = '#666';
+        console.log('🎨 Switched to DARK mode');
+      } else {
+        // Switch to light
+        document.body.style.backgroundColor = '#ffffff';
+        document.body.style.color = '#000000';
+        document.documentElement.style.backgroundColor = '#ffffff';
+        toggle.style.background = '#000000';
+        console.log('🎨 Switched to LIGHT mode');
+      }
+    });
+    
+    // Hover effect
+    toggle.addEventListener('mouseenter', function() {
+      const bg = toggle.style.background;
+      toggle.style.background = bg === '#000000' ? '#ffffff' : '#000000';
+    });
+    
+    toggle.addEventListener('mouseleave', function() {
+      const isLight = document.body.style.backgroundColor === 'rgb(255, 255, 255)' || document.body.style.backgroundColor === '#ffffff';
+      toggle.style.background = isLight ? '#000000' : '#666';
+    });
+    
+    document.body.appendChild(toggle);
+    console.log('🎨 IMMEDIATE toggle button created and added to DOM');
+  }
+  
+  // Try to create immediately
+  if (document.body) {
+    createImmediateToggle();
+  } else {
+    // Wait for body
+    document.addEventListener('DOMContentLoaded', createImmediateToggle);
+    // Fallback
+    setTimeout(createImmediateToggle, 1000);
+  }
+})();
