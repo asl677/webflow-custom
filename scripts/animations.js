@@ -33,6 +33,157 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Theme system removed to prevent complications
 
+  // Fullscreen scrolling toggle system
+  function initFullscreenScrollToggle() {
+    console.log('📺 Initializing fullscreen scroll toggle...');
+    
+    let isFullscreenMode = false;
+    
+    // Find existing .toggle element
+    const toggleButton = document.querySelector('.toggle');
+    
+    if (!toggleButton) {
+      console.warn('📺 No .toggle element found - fullscreen scroll toggle disabled');
+      return null;
+    }
+    
+    console.log('📺 Found .toggle element:', toggleButton);
+    
+    // Function to toggle fullscreen mode
+    function toggleFullscreenMode() {
+      isFullscreenMode = !isFullscreenMode;
+      console.log(`📺 Toggling fullscreen mode: ${isFullscreenMode ? 'ON' : 'OFF'}`);
+      
+      // Get all reveal elements
+      const revealElements = document.querySelectorAll('.reveal, .reveal-full, [class*="reveal"]');
+      console.log(`📺 Found ${revealElements.length} reveal elements to modify`);
+      
+      if (isFullscreenMode) {
+        // Enter fullscreen mode
+        toggleButton.classList.add('fullscreen-active');
+        
+        // Apply fullscreen styles to reveal elements
+        revealElements.forEach((element, index) => {
+          // Store original styles
+          if (!element.dataset.originalStyles) {
+            const computedStyle = window.getComputedStyle(element);
+            element.dataset.originalStyles = JSON.stringify({
+              width: element.style.width || computedStyle.width,
+              height: element.style.height || computedStyle.height,
+              maxWidth: element.style.maxWidth || computedStyle.maxWidth,
+              maxHeight: element.style.maxHeight || computedStyle.maxHeight,
+              position: element.style.position || computedStyle.position,
+              top: element.style.top || computedStyle.top,
+              left: element.style.left || computedStyle.left,
+              right: element.style.right || computedStyle.right,
+              bottom: element.style.bottom || computedStyle.bottom,
+              transform: element.style.transform || computedStyle.transform,
+              margin: element.style.margin || computedStyle.margin,
+              padding: element.style.padding || computedStyle.padding
+            });
+          }
+          
+          // Apply fullscreen styles
+          element.style.setProperty('width', '100vw', 'important');
+          element.style.setProperty('height', '100vh', 'important');
+          element.style.setProperty('max-width', 'none', 'important');
+          element.style.setProperty('max-height', 'none', 'important');
+          element.style.setProperty('position', 'relative', 'important');
+          element.style.setProperty('margin', '0', 'important');
+          element.style.setProperty('padding', '0', 'important');
+          element.style.setProperty('box-sizing', 'border-box', 'important');
+          
+          // Ensure images within fill the space
+          const images = element.querySelectorAll('img, video');
+          images.forEach(img => {
+            if (!img.dataset.originalImageStyles) {
+              const imgComputedStyle = window.getComputedStyle(img);
+              img.dataset.originalImageStyles = JSON.stringify({
+                width: img.style.width || imgComputedStyle.width,
+                height: img.style.height || imgComputedStyle.height,
+                objectFit: img.style.objectFit || imgComputedStyle.objectFit,
+                objectPosition: img.style.objectPosition || imgComputedStyle.objectPosition
+              });
+            }
+            
+            img.style.setProperty('width', '100%', 'important');
+            img.style.setProperty('height', '100%', 'important');
+            img.style.setProperty('object-fit', 'cover', 'important');
+            img.style.setProperty('object-position', 'center', 'important');
+          });
+          
+          console.log(`📺 Applied fullscreen styles to reveal element ${index}`);
+        });
+        
+        // Add body class for additional styling
+        document.body.classList.add('fullscreen-scroll-mode');
+        
+      } else {
+        // Exit fullscreen mode
+        toggleButton.classList.remove('fullscreen-active');
+        
+        // Restore original styles
+        revealElements.forEach((element, index) => {
+          if (element.dataset.originalStyles) {
+            const originalStyles = JSON.parse(element.dataset.originalStyles);
+            
+            // Remove fullscreen styles and restore originals
+            Object.keys(originalStyles).forEach(property => {
+              if (originalStyles[property] && originalStyles[property] !== 'auto') {
+                element.style.setProperty(property, originalStyles[property]);
+              } else {
+                element.style.removeProperty(property);
+              }
+            });
+            
+            // Restore image styles
+            const images = element.querySelectorAll('img, video');
+            images.forEach(img => {
+              if (img.dataset.originalImageStyles) {
+                const originalImageStyles = JSON.parse(img.dataset.originalImageStyles);
+                
+                Object.keys(originalImageStyles).forEach(property => {
+                  if (originalImageStyles[property] && originalImageStyles[property] !== 'auto') {
+                    img.style.setProperty(property, originalImageStyles[property]);
+                  } else {
+                    img.style.removeProperty(property);
+                  }
+                });
+              }
+            });
+            
+            console.log(`📺 Restored original styles to reveal element ${index}`);
+          }
+        });
+        
+        // Remove body class
+        document.body.classList.remove('fullscreen-scroll-mode');
+      }
+      
+      // Refresh ScrollTrigger if available (desktop only)
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
+        setTimeout(() => {
+          window.gsap.ScrollTrigger.refresh();
+          console.log('📺 ScrollTrigger refreshed after fullscreen toggle');
+        }, 100);
+      }
+    }
+    
+    // Add click listener to existing .toggle element
+    toggleButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleFullscreenMode();
+    });
+    
+    console.log('📺 Fullscreen scroll toggle initialized - Click .toggle element to activate');
+    
+    return {
+      toggle: toggleFullscreenMode,
+      isFullscreen: () => isFullscreenMode
+    };
+  }
+
   // Full-screen image viewer system
   function initFullscreenImageViewer() {
     console.log('🖼️ Initializing fullscreen image viewer...');
@@ -1876,7 +2027,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
           
           // Debounce ScrollTrigger refresh for performance
-          setTimeout(() => {
+        setTimeout(() => {
             if (!isMobile) {
         window.gsap.ScrollTrigger.refresh();
             }
@@ -2471,6 +2622,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function init() {
     if (isInit) return;
     
+    // Initialize fullscreen scroll toggle
+    try {
+      const fullscreenScrollToggle = initFullscreenScrollToggle();
+      window.fullscreenScrollToggle = fullscreenScrollToggle; // Make available globally
+    } catch (error) {
+      console.error('❌ Fullscreen scroll toggle initialization error:', error);
+    }
+    
     // Initialize fullscreen image viewer
     let addFullscreenToNewImages;
     try {
@@ -2586,7 +2745,7 @@ window.testFullscreen = function() {
           src: img.src?.substring(0, 50) + '...',
           hasFullscreen: img.dataset.fullscreenEnabled,
           width: img.offsetWidth,
-          height: img.offsetHeight,
+              height: img.offsetHeight, 
           inLink: !!img.closest('a')
         });
       }
