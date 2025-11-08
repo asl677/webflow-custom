@@ -1515,29 +1515,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
           
-          // CSS transition fade for cloned images
+          // MOBILE: instant visibility for performance during infinite scroll
           if (isMobile) {
-            // Cloned images start hidden, set up transition
-            el.style.setProperty('opacity', '0', 'important');
+            // Cloned images appear instantly - no animations during scroll for performance
+            el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
             el.style.setProperty('transform', 'none', 'important');
-            el.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
-            
-            // Sequential delay for cloned images
-            const delay = 700 + (imgIndex * 200);
-            setTimeout(() => {
-              el.style.setProperty('opacity', '1', 'important');
-              el.dataset.mobileLocked = 'true';
-              console.log(`📱 Clone image ${imgIndex} faded in at ${delay}ms (CSS transition)`);
-            }, delay);
+            el.dataset.mobileLocked = 'true';
+            console.log(`📱 Clone image ${imgIndex} instantly visible (performance mode)`);
             } else {
             // Desktop: prepare for mask animations but don't show yet
             console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
           }
         });
         
-        // Add slight delay for mask system processing
+        // Add slight delay for mask system processing (desktop only for performance)
+        if (!isMobile) {
             setTimeout(() => {
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             // Remove any existing mask setup flags so they get fresh animations
@@ -1556,6 +1550,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
+        } else {
+          console.log('📱 Mobile: Skipping mask container processing for performance');
+        }
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
@@ -1619,23 +1616,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         container.appendChild(clone);
         console.log('✅ Clone appended with visible text');
         
-        // CSS transition fade for new clone images
-        if (isMobile) {
-          clone.querySelectorAll('img, video').forEach((img, imgIndex) => {
-            img.style.setProperty('opacity', '0', 'important');
-            img.style.setProperty('visibility', 'visible', 'important');
-            img.style.setProperty('display', 'block', 'important');
-            img.style.setProperty('transform', 'none', 'important');
-            img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
-            
-            const delay = imgIndex * 200 + 800;
-            setTimeout(() => {
-              img.style.setProperty('opacity', '1', 'important');
-              img.dataset.mobileLocked = 'true';
-              console.log(`📱 New clone image ${imgIndex} faded in at ${delay}ms (CSS transition)`);
-            }, delay);
-          });
-        }
+        // Mobile: skip additional processing - images already set to visible above for performance
         
         // Clean up any orphaned mask containers in the clone
         clone.querySelectorAll('.proper-mask-reveal').forEach(maskContainer => {
@@ -1645,24 +1626,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Let the main mask animation system handle cloned images naturally
-        // Trigger mask animations for any new images that weren't processed yet
-        setTimeout(() => {
-          console.log('🎭 Triggering mask animations for any unprocessed images...');
-          if (typeof window.gsap !== 'undefined') {
-            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
-            console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
-            
-            unprocessedImages.forEach((img, i) => {
-              console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
-            });
-            
-            // Call the main mask animation function to process any new images
-            if (unprocessedImages.length > 0) {
-              startMaskedImageAnimations();
+        // Let the main mask animation system handle cloned images naturally (desktop only)
+        // Skip heavy mask processing on mobile for performance during infinite scroll
+        if (!isMobile) {
+          setTimeout(() => {
+            console.log('🎭 Triggering mask animations for any unprocessed images...');
+            if (typeof window.gsap !== 'undefined') {
+              const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+              console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
+              
+              unprocessedImages.forEach((img, i) => {
+                console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
+              });
+              
+              // Call the main mask animation function to process any new images
+              if (unprocessedImages.length > 0) {
+                startMaskedImageAnimations();
+              }
             }
-          }
-        }, 500);
+          }, 500);
+        } else {
+          console.log('📱 Mobile: Skipping mask animation processing for performance during infinite scroll');
+        }
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
