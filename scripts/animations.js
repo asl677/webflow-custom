@@ -1164,10 +1164,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       img.style.opacity = '0';
       img.style.visibility = 'visible';
       img.style.display = 'block';
-      img.style.transition = 'opacity 1.2s ease-out';
+      img.style.transition = 'opacity 1.6s ease-out';
       
       // Simple setTimeout stagger - much more reliable
-      const delay = index * 800; // 600ms between each image
+      const delay = index * 1000; // 1000ms between each image
       
       setTimeout(() => {
         console.log(`📱 Fading in original image ${index} at ${Date.now()}`);
