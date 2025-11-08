@@ -44,26 +44,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     if (!toggleButton) {
       console.warn('📺 No .toggle element found - fullscreen scroll toggle disabled');
+      // Try to find any element with toggle in the class name
+      const anyToggle = document.querySelector('[class*="toggle"]');
+      if (anyToggle) {
+        console.log('📺 Found element with toggle in class name:', anyToggle.className);
+      }
       return null;
     }
     
     console.log('📺 Found .toggle element:', toggleButton);
+    
+    // Also check for .img-parallax elements immediately
+    const testParallaxElements = document.querySelectorAll('.img-parallax');
+    console.log(`📺 Initial check: Found ${testParallaxElements.length} .img-parallax elements`);
     
     // Function to toggle fullscreen mode
     function toggleFullscreenMode() {
       isFullscreenMode = !isFullscreenMode;
       console.log(`📺 Toggling fullscreen mode: ${isFullscreenMode ? 'ON' : 'OFF'}`);
       
-      // Get all reveal elements
-      const revealElements = document.querySelectorAll('.reveal, .reveal-full, [class*="reveal"]');
-      console.log(`📺 Found ${revealElements.length} reveal elements to modify`);
+      // Get all img-parallax elements
+      const parallaxElements = document.querySelectorAll('.img-parallax');
+      console.log(`📺 Found ${parallaxElements.length} .img-parallax elements to modify`);
       
       if (isFullscreenMode) {
         // Enter fullscreen mode
         toggleButton.classList.add('fullscreen-active');
         
-        // Apply fullscreen styles to reveal elements
-        revealElements.forEach((element, index) => {
+        // Apply fullscreen styles to img-parallax elements
+        parallaxElements.forEach((element, index) => {
           // Store original styles
           if (!element.dataset.originalStyles) {
             const computedStyle = window.getComputedStyle(element);
@@ -112,7 +121,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             img.style.setProperty('object-position', 'center', 'important');
           });
           
-          console.log(`📺 Applied fullscreen styles to reveal element ${index}`);
+          console.log(`📺 Applied fullscreen styles to .img-parallax element ${index}`);
         });
         
         // Add body class for additional styling
@@ -123,7 +132,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         toggleButton.classList.remove('fullscreen-active');
         
         // Restore original styles
-        revealElements.forEach((element, index) => {
+        parallaxElements.forEach((element, index) => {
           if (element.dataset.originalStyles) {
             const originalStyles = JSON.parse(element.dataset.originalStyles);
             
@@ -152,7 +161,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             });
             
-            console.log(`📺 Restored original styles to reveal element ${index}`);
+            console.log(`📺 Restored original styles to .img-parallax element ${index}`);
           }
         });
         
