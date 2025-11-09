@@ -2840,108 +2840,45 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SIMPLE: Setting up direct toggle...');
   
+  // Add simple CSS for fullscreen mode
+  const style = document.createElement('style');
+  style.textContent = `
+    .fullscreen-scroll-mode .reveal,
+    .fullscreen-scroll-mode .reveal-full,
+    .fullscreen-scroll-mode [class*="reveal"] {
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    .fullscreen-scroll-mode .reveal img,
+    .fullscreen-scroll-mode .reveal-full img,
+    .fullscreen-scroll-mode [class*="reveal"] img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+    }
+  `;
+  document.head.appendChild(style);
+  console.log('📺 Added fullscreen CSS styles');
+  
   let isFullscreen = false;
   
   function simpleToggle() {
-    console.log('📺 SIMPLE TOGGLE TRIGGERED!');
-    
-    // Find ALL images on the page - don't mess with containers at all
-    const allImages = document.querySelectorAll('img:not(#preloader img), video');
-    console.log(`📺 Found ${allImages.length} images to toggle`);
+    console.log('📺 ULTRA SIMPLE TOGGLE!');
     
     isFullscreen = !isFullscreen;
     
     if (isFullscreen) {
-      // Add fullscreen class to body
+      // Add CSS class to body - let CSS handle everything
       document.body.classList.add('fullscreen-scroll-mode');
-      
-      allImages.forEach((img, i) => {
-        console.log(`📺 Making image ${i} fullscreen:`, img.src?.substring(0, 50) + '...');
-        
-        // Store original styles for restoration
-        if (!img.dataset.originalImageStyles) {
-          const computedStyle = getComputedStyle(img);
-          img.dataset.originalImageStyles = JSON.stringify({
-            width: img.style.width || computedStyle.width,
-            height: img.style.height || computedStyle.height,
-            position: img.style.position || computedStyle.position,
-            top: img.style.top || computedStyle.top,
-            left: img.style.left || computedStyle.left,
-            zIndex: img.style.zIndex || computedStyle.zIndex,
-            objectFit: img.style.objectFit || computedStyle.objectFit,
-            objectPosition: img.style.objectPosition || computedStyle.objectPosition,
-            transform: img.style.transform || computedStyle.transform
-          });
-        }
-        
-        // Scale image to viewport size with slight zoom to avoid scaling artifacts
-        img.style.setProperty('width', '105vw', 'important');
-        img.style.setProperty('height', '105vh', 'important');
-        img.style.setProperty('object-fit', 'cover', 'important');
-        img.style.setProperty('object-position', 'center', 'important');
-        img.style.setProperty('max-width', 'none', 'important');
-        img.style.setProperty('max-height', 'none', 'important');
-        img.style.setProperty('transform', 'scale(0.95)', 'important');
-        
-        // Scale the parent container to accommodate the large image
-        const parentContainer = img.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || img.parentElement;
-        if (parentContainer && !parentContainer.dataset.originalContainerStyles) {
-          const containerStyle = getComputedStyle(parentContainer);
-          parentContainer.dataset.originalContainerStyles = JSON.stringify({
-            width: parentContainer.style.width || containerStyle.width,
-            height: parentContainer.style.height || containerStyle.height,
-            overflow: parentContainer.style.overflow || containerStyle.overflow
-          });
-          
-          // Make container accommodate the fullscreen image
-          parentContainer.style.setProperty('width', '100vw', 'important');
-          parentContainer.style.setProperty('height', '100vh', 'important');
-          parentContainer.style.setProperty('overflow', 'hidden', 'important');
-        }
-      });
-      
+      console.log('📺 Added fullscreen class to body');
     } else {
-      // Remove fullscreen class from body
+      // Remove CSS class from body
       document.body.classList.remove('fullscreen-scroll-mode');
-      
-      allImages.forEach((img, i) => {
-        console.log(`📺 Restoring image ${i} to normal:`, img.src?.substring(0, 50) + '...');
-        
-        // Restore original image styles
-        if (img.dataset.originalImageStyles) {
-          const originalStyles = JSON.parse(img.dataset.originalImageStyles);
-          
-          Object.keys(originalStyles).forEach(property => {
-            if (originalStyles[property] && originalStyles[property] !== 'auto') {
-              img.style.setProperty(property, originalStyles[property]);
-            } else {
-              img.style.removeProperty(property);
-            }
-          });
-          
-          // Also remove the new properties we added
-          img.style.removeProperty('max-width');
-          img.style.removeProperty('max-height');
-          
-          delete img.dataset.originalImageStyles;
-        }
-        
-        // Restore parent container styles
-        const parentContainer = img.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || img.parentElement;
-        if (parentContainer && parentContainer.dataset.originalContainerStyles) {
-          const originalContainerStyles = JSON.parse(parentContainer.dataset.originalContainerStyles);
-          
-          Object.keys(originalContainerStyles).forEach(property => {
-            if (originalContainerStyles[property] && originalContainerStyles[property] !== 'auto') {
-              parentContainer.style.setProperty(property, originalContainerStyles[property]);
-            } else {
-              parentContainer.style.removeProperty(property);
-            }
-          });
-          
-          delete parentContainer.dataset.originalContainerStyles;
-        }
-      });
+      console.log('📺 Removed fullscreen class from body');
     }
     
     console.log(`📺 Toggle complete - Fullscreen: ${isFullscreen}`);
