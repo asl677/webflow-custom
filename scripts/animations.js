@@ -2845,142 +2845,70 @@ console.log('📺 Test toggle with: window.testToggle()');
   function simpleToggle() {
     console.log('📺 SIMPLE TOGGLE TRIGGERED!');
     
-    // Target ALL containers directly, regardless of content or visibility
-    const containerSelectors = [
-      '.reveal',
-      '.reveal-full', 
-      '[class*="reveal"]',
-      '.mask-wrap',
-      '.img-parallax',
-      '[class*="img-parallax"]'
-    ];
-    
-    let allTargetElements = new Set();
-    
-    containerSelectors.forEach(selector => {
-      const containers = document.querySelectorAll(selector);
-      console.log(`📺 Container selector "${selector}" found ${containers.length} elements`);
-      
-      containers.forEach(container => {
-        allTargetElements.add(container);
-        console.log(`📺 Added container: ${container.tagName}.${container.className}`);
-      });
-    });
-    
-    const uniqueElements = Array.from(allTargetElements);
-    console.log(`📺 Total unique containers to process: ${uniqueElements.length}`);
+    // Find ALL images on the page - don't mess with containers at all
+    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    console.log(`📺 Found ${allImages.length} images to toggle`);
     
     isFullscreen = !isFullscreen;
     
-    uniqueElements.forEach((targetElement, i) => {
-      console.log(`📺 Processing element ${i}: ${targetElement.tagName}.${targetElement.className}`);
+    if (isFullscreen) {
+      // Add fullscreen class to body
+      document.body.classList.add('fullscreen-scroll-mode');
       
-      if (isFullscreen) {
-        // Add fullscreen class to body for CSS-based styling
-        document.body.classList.add('fullscreen-scroll-mode');
+      allImages.forEach((img, i) => {
+        console.log(`📺 Making image ${i} fullscreen:`, img.src?.substring(0, 50) + '...');
         
-        // Make container fullscreen
-        targetElement.style.setProperty('width', '100vw', 'important');
-        targetElement.style.setProperty('height', '100vh', 'important');
-        targetElement.style.setProperty('position', 'relative', 'important');
-        targetElement.style.setProperty('margin', '0', 'important');
-        targetElement.style.setProperty('max-width', 'none', 'important');
-        targetElement.style.setProperty('max-height', 'none', 'important');
+        // Store original styles for restoration
+        if (!img.dataset.originalImageStyles) {
+          const computedStyle = getComputedStyle(img);
+          img.dataset.originalImageStyles = JSON.stringify({
+            width: img.style.width || computedStyle.width,
+            height: img.style.height || computedStyle.height,
+            position: img.style.position || computedStyle.position,
+            top: img.style.top || computedStyle.top,
+            left: img.style.left || computedStyle.left,
+            zIndex: img.style.zIndex || computedStyle.zIndex,
+            objectFit: img.style.objectFit || computedStyle.objectFit,
+            objectPosition: img.style.objectPosition || computedStyle.objectPosition,
+            transform: img.style.transform || computedStyle.transform
+          });
+        }
         
-        // For mask-wrap containers, be more careful to preserve animations
-        const maskWraps = targetElement.querySelectorAll('.mask-wrap');
-        console.log(`📺 Found ${maskWraps.length} mask-wrap containers`);
-        
-        maskWraps.forEach((maskWrap, maskIndex) => {
-          console.log(`📺 Processing mask-wrap ${maskIndex}:`, maskWrap.className);
-          
-          // Only set height and max constraints, let width be controlled by mask animation
-          maskWrap.style.setProperty('height', '100%', 'important');
-          maskWrap.style.setProperty('max-height', 'none', 'important');
-          maskWrap.style.setProperty('overflow', 'hidden', 'important');
-          
-          // Only set width to 100% if the mask animation is complete
-          if (maskWrap.dataset.maskComplete === 'true') {
-            maskWrap.style.setProperty('width', '100%', 'important');
-            maskWrap.style.setProperty('max-width', 'none', 'important');
-            console.log(`📺 Mask animation complete, setting full width for mask-wrap ${maskIndex}`);
-          } else {
-            console.log(`📺 Preserving mask width animation for mask-wrap ${maskIndex}`);
-          }
-        });
-        
-        // Make inner image fill the container - with detailed debugging
-        const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
-        console.log(`📺 Found ${innerImages.length} inner images in container:`, [...innerImages].map(img => ({
-          tagName: img.tagName,
-          className: img.className,
-          src: img.src?.substring(0, 50) + '...',
-          currentWidth: img.style.width,
-          currentHeight: img.style.height,
-          computedWidth: getComputedStyle(img).width,
-          computedHeight: getComputedStyle(img).height
-        })));
-        
-        innerImages.forEach((img, imgIndex) => {
-          console.log(`📺 Scaling inner image ${imgIndex}:`, img.tagName, img.className);
-          
-          // Force all possible size properties
-          img.style.setProperty('width', '100%', 'important');
-          img.style.setProperty('height', '100%', 'important');
-          img.style.setProperty('min-width', '100%', 'important');
-          img.style.setProperty('min-height', '100%', 'important');
-          img.style.setProperty('max-width', 'none', 'important');
-          img.style.setProperty('max-height', 'none', 'important');
+        // Make image fullscreen while keeping it in its container
+        img.style.setProperty('width', '100vw', 'important');
+        img.style.setProperty('height', '100vh', 'important');
+        img.style.setProperty('position', 'fixed', 'important');
+        img.style.setProperty('top', '0', 'important');
+        img.style.setProperty('left', '0', 'important');
+        img.style.setProperty('z-index', '1000', 'important');
         img.style.setProperty('object-fit', 'cover', 'important');
-          img.style.setProperty('object-position', 'center', 'important');
-          img.style.setProperty('transform', 'none', 'important');
+        img.style.setProperty('object-position', 'center', 'important');
+        img.style.setProperty('transform', 'none', 'important');
+      });
+      
+    } else {
+      // Remove fullscreen class from body
+      document.body.classList.remove('fullscreen-scroll-mode');
+      
+      allImages.forEach((img, i) => {
+        console.log(`📺 Restoring image ${i} to normal:`, img.src?.substring(0, 50) + '...');
+        
+        // Restore original styles
+        if (img.dataset.originalImageStyles) {
+          const originalStyles = JSON.parse(img.dataset.originalImageStyles);
           
-          console.log(`📺 After scaling - Width: ${img.style.width}, Height: ${img.style.height}`);
-        });
-        
-        console.log(`📺 Made element ${i} fullscreen with ${innerImages.length} inner images scaled`);
-      } else {
-        // Remove fullscreen from container
-        targetElement.style.removeProperty('width');
-        targetElement.style.removeProperty('height');
-        targetElement.style.removeProperty('position');
-        targetElement.style.removeProperty('margin');
-        targetElement.style.removeProperty('max-width');
-        targetElement.style.removeProperty('max-height');
-        
-        // Remove fullscreen class from body
-        document.body.classList.remove('fullscreen-scroll-mode');
-        
-        // Restore mask-wrap containers carefully
-        const maskWraps = targetElement.querySelectorAll('.mask-wrap');
-        maskWraps.forEach(maskWrap => {
-          // Only remove width if mask animation is complete, otherwise preserve it
-          if (maskWrap.dataset.maskComplete === 'true') {
-            maskWrap.style.removeProperty('width');
-            maskWrap.style.removeProperty('max-width');
-          }
-          maskWrap.style.removeProperty('height');
-          maskWrap.style.removeProperty('max-height');
-          maskWrap.style.removeProperty('overflow');
-        });
-        
-        // Restore inner images
-        const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
-        innerImages.forEach(img => {
-          img.style.removeProperty('width');
-          img.style.removeProperty('height');
-          img.style.removeProperty('min-width');
-          img.style.removeProperty('min-height');
-          img.style.removeProperty('max-width');
-          img.style.removeProperty('max-height');
-          img.style.removeProperty('object-fit');
-          img.style.removeProperty('object-position');
-          img.style.removeProperty('transform');
-        });
-        
-        console.log(`📺 Restored element ${i} to normal with ${innerImages.length} inner images restored`);
-      }
-    });
+          Object.keys(originalStyles).forEach(property => {
+            if (originalStyles[property] && originalStyles[property] !== 'auto') {
+              img.style.setProperty(property, originalStyles[property]);
+            } else {
+              img.style.removeProperty(property);
+            }
+          });
+          
+          delete img.dataset.originalImageStyles;
+        }
+      });
+    }
     
     console.log(`📺 Toggle complete - Fullscreen: ${isFullscreen}`);
   }
