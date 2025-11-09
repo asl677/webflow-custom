@@ -1656,9 +1656,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
           }
         } else {
-          // USE SCROLLTRIGGER FOR EVERYONE (mobile and desktop)
-          window.gsap.set(maskContainer, { width: '0px' });
-          
           // Check if element is already in viewport on load
           const rect = element.getBoundingClientRect();
           const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
@@ -1666,12 +1663,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // On mobile, stagger the first few images in viewport
           if (isMobile && inViewport && index < 5) {
             // Mobile stagger for initial images in view
+          window.gsap.set(maskContainer, { width: '0px' });
             const staggerDelay = index * 0.15; // 150ms between each image
             console.log(`📱 Mobile stagger for image ${index} - delay: ${staggerDelay}s`);
             
             setTimeout(() => {
-              window.gsap.to(maskContainer, { 
-                width: maskContainer.dataset.targetWidth + 'px', 
+          window.gsap.to(maskContainer, { 
+            width: maskContainer.dataset.targetWidth + 'px', 
                 duration: 0.8,
                 ease: "power2.out",
                 onComplete: () => {
@@ -1682,6 +1680,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }, staggerDelay * 1000);
           } else if (!isMobile && inViewport && index === 0) {
             // Desktop: first image reveals immediately
+            window.gsap.set(maskContainer, { width: '0px' });
             console.log(`🎭 First image in viewport - revealing immediately`);
             window.gsap.to(maskContainer, { 
               width: maskContainer.dataset.targetWidth + 'px', 
@@ -1694,28 +1693,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
           } else if (isMobile && !inViewport) {
             // Mobile: preload images not in view (instant reveal for performance)
+            // DON'T set to 0 - just set to full width immediately
             console.log(`📱 Mobile preload for image ${index} below fold`);
             window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
             element.dataset.gsapAnimated = 'mask-revealed-preload';
             element.dataset.maskComplete = 'true';
           } else {
             // Use ScrollTrigger for other images
+            window.gsap.set(maskContainer, { width: '0px' });
             window.gsap.to(maskContainer, { 
               width: maskContainer.dataset.targetWidth + 'px', 
               duration: 1.2,
-              ease: "power2.out",
-              scrollTrigger: { 
-                trigger: element, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
                 start: "top 90%",
-                end: "top center", 
-                once: true,
-                toggleActions: "play none none none"
-              },
-              onComplete: () => {
-                element.dataset.gsapAnimated = 'mask-revealed';
-                element.dataset.maskComplete = 'true';
-              }
-            });
+              end: "top center", 
+              once: true,
+              toggleActions: "play none none none"
+            },
+            onComplete: () => {
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
+            }
+          });
           }
           
           // Only add parallax when NOT in fullscreen mode and NOT on mobile
