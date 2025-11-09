@@ -2866,6 +2866,19 @@ console.log('📺 Test toggle with: window.testToggle()');
         targetElement.style.setProperty('max-width', 'none', 'important');
         targetElement.style.setProperty('max-height', 'none', 'important');
         
+        // Scale mask-wrap containers first
+        const maskWraps = targetElement.querySelectorAll('.mask-wrap');
+        console.log(`📺 Found ${maskWraps.length} mask-wrap containers`);
+        
+        maskWraps.forEach((maskWrap, maskIndex) => {
+          console.log(`📺 Scaling mask-wrap ${maskIndex}:`, maskWrap.className);
+          maskWrap.style.setProperty('width', '100%', 'important');
+          maskWrap.style.setProperty('height', '100%', 'important');
+          maskWrap.style.setProperty('max-width', 'none', 'important');
+          maskWrap.style.setProperty('max-height', 'none', 'important');
+          maskWrap.style.setProperty('overflow', 'hidden', 'important');
+        });
+        
         // Make inner image fill the container - with detailed debugging
         const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
         console.log(`📺 Found ${innerImages.length} inner images in container:`, [...innerImages].map(img => ({
@@ -2904,6 +2917,16 @@ console.log('📺 Test toggle with: window.testToggle()');
         targetElement.style.removeProperty('margin');
         targetElement.style.removeProperty('max-width');
         targetElement.style.removeProperty('max-height');
+        
+        // Restore mask-wrap containers
+        const maskWraps = targetElement.querySelectorAll('.mask-wrap');
+        maskWraps.forEach(maskWrap => {
+          maskWrap.style.removeProperty('width');
+          maskWrap.style.removeProperty('height');
+          maskWrap.style.removeProperty('max-width');
+          maskWrap.style.removeProperty('max-height');
+          maskWrap.style.removeProperty('overflow');
+        });
         
         // Restore inner images
         const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
