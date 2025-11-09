@@ -2843,17 +2843,36 @@ console.log('📺 Test toggle with: window.testToggle()');
   // DEAD SIMPLE - just change width/height of specific elements with CSS class
   const style = document.createElement('style');
   style.textContent = `
-    body.big-images .img-parallax {
+    /* SUPER high specificity to override everything */
+    body.big-images .img-parallax,
+    body.big-images .img-parallax.img-parallax {
       width: 100vw !important;
       height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
     }
-    body.big-images .reveal {
+    body.big-images .reveal,
+    body.big-images .reveal.reveal {
       width: 100vw !important;
       height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
     }
-    body.big-images .mask-wrap {
+    body.big-images .mask-wrap,
+    body.big-images .mask-wrap.mask-wrap {
       width: 100vw !important;
       height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+    }
+    
+    /* Make images fill the container */
+    body.big-images .mask-wrap img {
+      width: 105vw !important;
+      height: 105vh !important;
+      max-width: 105vw !important;
+      max-height: 105vh !important;
+      object-fit: cover !important;
     }
     
     /* Disable image scaling on smaller screens when in fullscreen */
@@ -2874,14 +2893,16 @@ console.log('📺 Test toggle with: window.testToggle()');
     if (isBig) {
       document.body.classList.add('big-images');
       console.log('📺 Added big-images class to body');
+      console.log('📺 Fullscreen mode ON');
     } else {
       document.body.classList.remove('big-images');
       console.log('📺 Removed big-images class from body');
+      console.log('📺 Fullscreen mode OFF');
     }
   }
   
   // Find toggle button
-        setTimeout(() => {
+  setTimeout(() => {
     const toggle = document.querySelector('.toggle');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
