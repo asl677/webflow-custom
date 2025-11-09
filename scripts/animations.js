@@ -2840,16 +2840,18 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SUPER SIMPLE toggle setup...');
   
-  // Add one simple CSS rule
+  // Add one simple CSS rule - just make wrapper full width
   const style = document.createElement('style');
   style.textContent = `
     .big-images .reveal,
     .big-images .reveal-full,
     .big-images .mask-wrap {
-      transform: scale(3) !important;
+      width: 100vw !important;
+      height: auto !important;
     }
     .big-images img {
-      transform: scale(3) !important;
+      width: 100% !important;
+      height: auto !important;
     }
   `;
   document.head.appendChild(style);
