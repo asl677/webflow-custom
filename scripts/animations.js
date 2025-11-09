@@ -2857,8 +2857,8 @@ console.log('📺 Test toggle with: window.testToggle()');
     }
     
     .fullscreen-scroll-mode .mask-wrap {
-      width: 100% !important;
-      height: 100% !important;
+      width: 100vw !important;
+      height: 100vh !important;
       max-width: none !important;
       max-height: none !important;
     }
@@ -2868,8 +2868,8 @@ console.log('📺 Test toggle with: window.testToggle()');
     .fullscreen-scroll-mode [class*="reveal"] img,
     .fullscreen-scroll-mode .mask-wrap img,
     .fullscreen-scroll-mode img {
-      width: 100% !important;
-      height: 100% !important;
+      width: 100vw !important;
+      height: 100vh !important;
       object-fit: cover !important;
       object-position: center !important;
       max-width: none !important;
