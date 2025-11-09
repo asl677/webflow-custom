@@ -2931,3 +2931,90 @@ console.log('📺 Test toggle with: window.testToggle()');
     window.toggleBigImages = toggleBigImages;
   }, 1000);
 })();
+
+// Infinite scroll for .fix-center text with subtle parallax
+(function() {
+  console.log('📜 Setting up .fix-center infinite scroll with parallax...');
+  
+  const fixCenter = document.querySelector('.fix-center');
+  if (!fixCenter) {
+    console.log('❌ No .fix-center element found');
+    return;
+  }
+  
+  console.log('✅ Found .fix-center element:', fixCenter.textContent?.substring(0, 50));
+  
+  // Create container to hold original + clones
+  const scrollContainer = document.createElement('div');
+  scrollContainer.style.cssText = 'position: relative; overflow: visible;';
+  
+  // Wrap the original element
+  const parent = fixCenter.parentNode;
+  parent.insertBefore(scrollContainer, fixCenter);
+  scrollContainer.appendChild(fixCenter);
+  
+  // Store original position for parallax calculation
+  let lastScrollY = window.scrollY;
+  let parallaxOffset = 0;
+  const PARALLAX_SPEED = 0.02; // 2% of scroll = subtle 10-20px movement
+  
+  // Apply parallax to container
+  function updateParallax() {
+    const currentScrollY = window.scrollY;
+    const scrollDelta = currentScrollY - lastScrollY;
+    parallaxOffset += scrollDelta * PARALLAX_SPEED;
+    
+    scrollContainer.style.transform = `translateY(${parallaxOffset}px)`;
+    lastScrollY = currentScrollY;
+  }
+  
+  // Clone the text infinitely as user scrolls
+  let cloneCount = 0;
+  const MAX_CLONES = 50; // Limit total clones
+  
+  function cloneFixCenter() {
+    if (cloneCount >= MAX_CLONES) return;
+    
+    const clone = fixCenter.cloneNode(true);
+    clone.dataset.fixCenterClone = 'true';
+    clone.style.cssText = fixCenter.style.cssText; // Copy all styles
+    scrollContainer.appendChild(clone);
+    cloneCount++;
+    
+    console.log(`📜 Cloned .fix-center (${cloneCount} total clones)`);
+  }
+  
+  // Check if we need more clones based on scroll position
+  function checkScrollPosition() {
+    const containerBottom = scrollContainer.getBoundingClientRect().bottom;
+    const viewportBottom = window.innerHeight;
+    
+    // If we're within 2 viewports of the bottom, add more clones
+    if (containerBottom < viewportBottom * 3) {
+      cloneFixCenter();
+    }
+  }
+  
+  // Throttled scroll handler
+  let scrollTicking = false;
+  function handleScroll() {
+    if (!scrollTicking) {
+      requestAnimationFrame(() => {
+        updateParallax();
+        checkScrollPosition();
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
+  }
+  
+  // Start with a few clones
+  for (let i = 0; i < 3; i++) {
+    cloneFixCenter();
+  }
+  
+  // Listen to scroll
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  
+  console.log('✅ .fix-center infinite scroll with parallax initialized');
+})();
