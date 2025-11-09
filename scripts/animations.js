@@ -2957,12 +2957,18 @@ console.log('📺 Test toggle with: window.testToggle()');
           el.style.height = cached.height || '';
           el.style.objectFit = cached.objectFit || '';
           el.style.scale = cached.scale || '';
-          // Restore opacity but ensure it's at least 1 if animation already ran
-          if (el.dataset.mobileLocked || el.dataset.gsapAnimated) {
+          // NEVER restore opacity to 0 - always keep at 1 if already animated
+          // This prevents fade re-triggering on mobile
+          if (el.dataset.mobileLocked || el.dataset.gsapAnimated || el.dataset.infiniteClone) {
             el.style.opacity = '1';
+          } else if (cached.opacity && cached.opacity !== '0') {
+            el.style.opacity = cached.opacity;
           } else {
-            el.style.opacity = cached.opacity || '';
+            el.style.opacity = '1'; // Default to visible
           }
+        } else {
+          // If no cache, ensure visible
+          el.style.opacity = '1';
         }
       });
       
