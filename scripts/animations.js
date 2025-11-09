@@ -1,4 +1,4 @@
-// Version 3.4: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.5: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1524,12 +1524,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
-    // Only register ScrollTrigger on desktop to prevent mobile flickering
-    if (!isMobile && typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+    // Register ScrollTrigger for all devices
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
-      console.log('🖥️ ScrollTrigger registered for desktop only');
-    } else if (isMobile) {
-      console.log('📱 Mobile: ScrollTrigger disabled to prevent flickering');
+      console.log('✅ ScrollTrigger registered for all devices');
     }
     
     // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
