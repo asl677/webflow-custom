@@ -2852,13 +2852,24 @@ console.log('📺 Test toggle with: window.testToggle()');
       padding: 0 !important;
     }
     
+    .fullscreen-scroll-mode .mask-wrap {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+    }
+    
     .fullscreen-scroll-mode .reveal img,
     .fullscreen-scroll-mode .reveal-full img,
-    .fullscreen-scroll-mode [class*="reveal"] img {
+    .fullscreen-scroll-mode [class*="reveal"] img,
+    .fullscreen-scroll-mode .mask-wrap img,
+    .fullscreen-scroll-mode img {
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
       object-position: center !important;
+      max-width: none !important;
+      max-height: none !important;
     }
   `;
   document.head.appendChild(style);
