@@ -1773,8 +1773,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          // Only add parallax on desktop
-          if (hasParallax && !isMobile) {
+          // Only add parallax on desktop and when NOT in fullscreen mode
+          if (hasParallax && !isMobile && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.2, 
@@ -2843,8 +2843,12 @@ console.log('📺 Test toggle with: window.testToggle()');
   let isBig = false;
   const dimensionCache = new WeakMap();
   
+  // Export state so mask animation can check it
+  window.isFullscreenMode = false;
+  
   function toggleBigImages() {
     isBig = !isBig;
+    window.isFullscreenMode = isBig;
     console.log(`📺 ${isBig ? 'FULLSCREEN ON' : 'FULLSCREEN OFF'}`);
     
     // Get EVERY element
@@ -2879,15 +2883,19 @@ console.log('📺 Test toggle with: window.testToggle()');
           dimensionCache.set(el, {
             width: el.style.width,
             height: el.style.height,
-            objectFit: el.style.objectFit
+            objectFit: el.style.objectFit,
+            transform: el.style.transform
           });
         }
         el.style.setProperty('width', '100%', 'important');
         el.style.setProperty('height', '100%', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
+        // Disable scale/transform in fullscreen
+        el.style.setProperty('transform', 'none', 'important');
+        el.style.setProperty('scale', 'none', 'important');
       });
       
-      console.log('📺 Applied fullscreen dimensions');
+      console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
       // RESTORE ONLY width/height, leave transform/opacity/etc alone
       [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
@@ -2907,6 +2915,8 @@ console.log('📺 Test toggle with: window.testToggle()');
           el.style.width = cached.width || '';
           el.style.height = cached.height || '';
           el.style.objectFit = cached.objectFit || '';
+          el.style.transform = cached.transform || '';
+          el.style.scale = '';
         }
       });
       
