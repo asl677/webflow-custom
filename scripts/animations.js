@@ -1538,8 +1538,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
   // ULTRA SIMPLE mobile stagger - just setTimeout + CSS transition
-  if (isMobile) {
+  // ONLY RUN ONCE - prevent re-triggering on ScrollTrigger refresh
+  if (isMobile && !window.mobileStaggerComplete) {
     console.log('🚨 ULTRA SIMPLE MOBILE STAGGER 🚨');
+    window.mobileStaggerComplete = true; // Set flag immediately
     
     // Remove emergency hide immediately
     const emergencyHide = document.getElementById('emergency-image-hide');
@@ -1582,6 +1584,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
     
     console.log(`📱 Stagger: ${originalImages.length} original images, instant: ${clonedImages.length} clones`);
+  } else if (isMobile && window.mobileStaggerComplete) {
+    console.log('📱 Mobile stagger already complete - skipping');
+    // Make sure all images are visible
+    allImages.forEach(img => {
+      if (img.dataset.mobileLocked) {
+        img.style.opacity = '1';
+        img.style.visibility = 'visible';
+      }
+    });
   } else {
     // Remove emergency hide for desktop
     const emergencyHide = document.getElementById('emergency-image-hide');
