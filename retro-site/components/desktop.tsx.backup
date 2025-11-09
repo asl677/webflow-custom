@@ -1,0 +1,3029 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect, useCallback } from "react"
+import { Taskbar } from "./taskbar"
+import { DesktopIcon } from "./desktop-icon"
+import { FolderWindow } from "./folder-window"
+import { HostingDashboard } from "./hosting-dashboard"
+import { TemplatesApp } from "./templates-app"
+import FactoryApp from "./factory-app"
+import { NotepadApp } from "./notepad-app"
+import { InternetExplorerApp } from "./internet-explorer-app"
+import { MooseStackApp } from "./moosestack-app"
+import { TemplateViewer } from "./template-viewer"
+// import { SloanAIApp DemoRequestForm } from "./demo-request-form" // Original import
+import { SloanAIApp } from "./sloan-ai-app" // New import
+import { DemoRequestForm } from "./demo-request-form" // New import
+import { CursorEditor } from "./cursor-editor"
+import { SignupForm } from "./signup-form"
+import { BlogPostViewer } from "./blog-post-viewer"
+import { EnterpriseApp } from "./enterprise-app"
+import { VideoPlayer } from "./video-player"
+import { Notepad } from "./notepad"
+import { AOLAIMApp } from "./aol-aim-app"
+import { DocsApp } from "./docs-app"
+import { Terminal } from "./terminal"
+import { SchemaWindow } from "./schema-window"
+import { PricingPage } from "./pricing-page"
+import { CaseStudyViewer } from "./case-study-viewer"
+import { TestimonialViewer } from "./testimonial-viewer"
+import { useScreensaver } from "../hooks/use-screensaver"
+import { AfterDarkScreensaver } from "./after-dark-screensaver"
+import { WhitePaperViewer } from "./white-paper-viewer"
+import { NapsterApp } from "./napster-app"
+import { GTAGame } from "./gta-game"
+import SimCityGame from "./simcity-game"
+import DoomGame from "./doom-game"
+import { UFADownloadWindow } from "./ufa-download-window"
+import { ODWDownloadWindow } from "./odw-download-window"
+import { AddProjectWindow } from "./add-project-window"
+import { CodeEditor } from "./code-editor"
+import FigmaApp from "./figma-app"
+
+// Removed the redeclaration of DemoRequestForm
+// import { SloanAIApp as DemoRequestForm } from "./demo-request-form"
+
+export type WindowType =
+  | "my-computer"
+  | "recycle-bin"
+  | "internet-explorer"
+  | "notepad"
+  | "command-prompt"
+  | "dataman"
+  | "signup"
+  | "diskettes"
+  | "factory"
+  | "cable"
+  | "color-profile"
+  | "hosting"
+  | "blog"
+  | "docs"
+  | "pricing"
+  | "pacman"
+  | "napster"
+  | "gta-game"
+  | "simcity-game"
+  | "figma"
+  | "analytics"
+  | "cursor"
+  | "request-demo"
+  | "calculator"
+  | "paint"
+  | "minesweeper"
+  | "solitaire"
+  | "outlook-express"
+  | "media-player"
+  | "control-panel"
+  | "system-properties"
+  | "display-properties"
+  | "sound-properties"
+  | "network-properties"
+  | "date-time"
+  | "regional-settings"
+  | "accessibility"
+  | "add-remove-programs"
+  | "add-project" // Added add-project type
+  | "figma" // Added figma type
+  | "system-information"
+  | "device-manager"
+  | "disk-defragmenter"
+  | "scandisk"
+  | "backup"
+  | "system-monitor"
+  | "registry-editor"
+  | "task-manager"
+  | "run-dialog"
+  | "find-files"
+  | "help"
+  | "about"
+  | "shutdown"
+  | "restart"
+  | "log-off"
+  | "lock-workstation"
+  | "switch-user"
+  | "sleep"
+  | "hibernate"
+  | "standby"
+  | "factory-app"
+  | "data-warehouse"
+  | "user-facing-analytics"
+
+// Define OpenWindowType to resolve the lint error
+type OpenWindowType =
+  | "folder"
+  | "editor"
+  | "code-editor"
+  | "hosting-dashboard"
+  | "registry"
+  | "factory"
+  | "internet-explorer"
+  | "moosestack"
+  | "template-viewer"
+  | "demo-request"
+  | "cursor-editor"
+  | "signup-form"
+  | "blog-post-viewer"
+  | "sloan-ai"
+  | "enterprise"
+  | "video-player"
+  | "notepad"
+  | "aol-aim"
+  | "docs"
+  | "terminal"
+  | "schema-window"
+  | "pricing-page"
+  | "case-study-viewer"
+  | "testimonial-viewer"
+  | "dataman-game"
+  | "white-paper-viewer"
+  | "napster"
+  | "gta-game" // Added GTA game type
+  | "simcity-game"
+  | "figma"
+  | "ufa-download-window"
+  | "odw-download-window"
+  | "word-editor" // Added word-editor type
+  | "add-project" // Added add-project type
+
+export interface OpenWindow {
+  id: string
+  type:
+    | "folder"
+    | "editor"
+    | "code-editor"
+    | "hosting-dashboard"
+    | "registry"
+    | "factory"
+    | "internet-explorer"
+    | "moosestack"
+    | "template-viewer"
+    | "demo-request"
+    | "cursor-editor"
+    | "signup-form"
+    | "blog-post-viewer"
+    | "sloan-ai"
+    | "enterprise"
+    | "video-player"
+    | "notepad"
+    | "aol-aim"
+    | "docs"
+    | "terminal"
+    | "schema-window"
+    | "pricing-page"
+    | "case-study-viewer"
+    | "testimonial-viewer"
+    | "dataman-game"
+    | "white-paper-viewer"
+    | "napster"
+    | "gta-game" // Added GTA game type
+    | "simcity-game"
+    | "figma"
+    | "ufa-download-window"
+    | "odw-download-window"
+    | "word-editor" // Added word-editor type
+    | "add-project" // Added add-project type
+  // Removed  from OpenWindow type
+  title: string
+  position: { x: number; y: number }
+  zIndex: number
+  isAnimating?: boolean
+  isMinimized?: boolean
+  size?: { width: number; height: number }
+  connectorName?: string
+  content?: any
+  item?: any
+  activeTab?: "connectors" | "pipelines"
+  isMaximized?: boolean
+  initialTab?: string
+  defaultTab?: string
+  caseStudyId?: string
+  testimonialId?: string
+  initialUrl?: string
+  initialTitle?: string
+  gameUrl?: string // Added for game windows
+  showBuddyList?: boolean // Added for AOLAIMApp
+  autoStartChat?: boolean // Added for FactoryApp
+  icon?: string
+}
+
+export function Desktop() {
+  const [openWindowsState, setOpenWindowsState] = useState<OpenWindow[]>([])
+  const [nextZIndex, setNextZIndex] = useState(1000)
+  const [activeWindowId, setActiveWindowId] = useState<string | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [width, setWidth] = useState(0)
+  const [height, setHeight] = useState(0)
+  const [factoryLoading, setFactoryLoading] = useState(false)
+  const [isStartMenuOpen, setIsStartMenuOpen] = useState(false) // Added state for start menu
+  const [isMobile, setIsMobile] = useState(false)
+
+  const {
+    isActive: isScreensaverActive,
+    deactivate: deactivateScreensaver,
+    setIsActive: setScreensaverActive
+  } = useScreensaver(70000) // Increased from 30000ms to 70000ms (70 seconds) - 40 seconds later
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      setWidth(window.innerWidth)
+      setHeight(window.innerHeight)
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    updateDimensions()
+    window.addEventListener("resize", updateDimensions)
+    return () => window.removeEventListener("resize", updateDimensions)
+  }, [])
+
+  useEffect(() => {
+    console.log("[v0] Dark mode changed:", isDarkMode)
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark")
+      console.log("[v0] Added dark class to document")
+    } else {
+      document.documentElement.classList.remove("dark")
+      console.log("[v0] Removed dark class from document")
+    }
+  }, [isDarkMode])
+
+  const getIconPositions = (viewportWidth: number, viewportHeight: number, iconSize = 64) => {
+    const gap = 5
+    const cols = 3 // number of columns in the grid
+    const startX = 20 // 20px padding from left edge
+    const startY = 20 // 20px padding from top edge
+
+    const icons = [
+      "my-computer",
+      "recycle-bin",
+      "gta-game",
+      "figma",
+      "internet-explorer",
+      "simcity-game",
+      "blog",
+      "napster",
+      "aol-aim",
+      "docs",
+      "resources",
+      "notepad",
+      "registry",
+      "sloan-ai",
+      "hosting",
+      "moosestack",
+      "request-demo",
+      "cursor",
+      "factory"    ]
+
+    const positions: Record<string, { x: number; y: number }> = {}
+
+    icons.forEach((name, i) => {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      positions[name] = {
+        x: startX + col * (iconSize + gap),
+        y: startY + row * (iconSize + gap)
+      }
+    })
+
+    return positions
+  }
+
+  const calculateIconPositions = useCallback(() => {
+    if (typeof window !== "undefined") {
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const iconSize = 64
+      const isMobile = viewportWidth < 768
+
+      console.log("[v0] Calculating icon positions - viewport width:", viewportWidth)
+
+      if (isMobile) {
+        const cols = 4
+        const minPadding = 15
+        const gap = 8
+        const verticalGap = 15
+        const maxGridWidth = viewportWidth - minPadding * 2
+        const iconWidth = Math.floor((maxGridWidth - gap * (cols - 1)) / cols)
+        const actualGridWidth = iconWidth * cols + gap * (cols - 1)
+        const startX = Math.max(minPadding (viewportWidth - actualGridWidth) / 2)
+        const startY = 25
+
+        const getGridPos = (index: number) => {
+          const col = index % cols
+          const row = Math.floor(index / cols)
+          return {
+            x: startX + col * (iconWidth + gap),
+            y: startY + row * (iconSize + verticalGap)
+          }
+        }
+
+        return {
+       
+        }
+      }
+
+      // Desktop layout - use your simplified function
+      return getIconPositions(viewportWidth, viewportHeight, iconSize)
+    }
+
+    // Fallback for SSR - 3 columns in top left
+    const gap = 5
+    const cols = 3
+    const startX = 20
+    const startY = 20
+    const iconSize = 64
+
+    const icons = [
+      "my-computer",
+      "recycle-bin",
+      "gta-game",
+      "figma",
+      "internet-explorer",
+      "simcity-game",
+      "blog",
+      "napster",
+      "aol-aim",
+      "docs",
+      "resources",
+      "notepad",
+      "registry",
+      "sloan-ai",
+      "hosting",
+      "moosestack",
+      "request-demo",
+      "cursor",
+      "factory"    ]
+
+    const positions: Record<string, { x: number; y: number }> = {}
+
+    icons.forEach((name, i) => {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      positions[name] = {
+        x: startX + col * (iconSize + gap),
+        y: startY + row * (iconSize + gap)
+      }
+    })
+
+    return positions
+  }, [])
+
+  const [publishedItems, setPublishedItems] = useState<
+    Array<{
+      name: string
+      type: string
+      githubHandle: string
+      version: string
+      publishedAt: Date
+    }>
+  >([])
+
+  const [iconPositions, setIconPositions] = useState(() => calculateIconPositions())
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleOpenCursor = (event: CustomEvent) => {
+      const { templateName } = event.detail
+      openCursorEditor(templateName)
+    }
+
+    window.addEventListener("openCursor", handleOpenCursor as EventListener)
+    return () => {
+      window.removeEventListener("openCursor", handleOpenCursor as EventListener)
+    }
+  }, [openWindowsState])
+
+  useEffect(() => {
+    const handleOpenTemplates = () => {
+      openRegistry()
+    }
+
+    window.addEventListener("openTemplates", handleOpenTemplates as EventListener)
+    return () => {
+      window.removeEventListener("openTemplates", handleOpenTemplates as EventListener)
+    }
+  }, [openWindowsState])
+
+  useEffect(() => {
+    const handleOpenApp = (event: CustomEvent) => {
+      const { type } = event.detail
+      console.log("[v0] openApp event received:", type)
+
+      switch (type) {
+        case "moosestack":
+          openMooseStack()
+          break
+        case "registry":
+          openRegistry()
+          break
+        case "factory":
+          openFactory()
+          break
+        case "hosting-dashboard":
+          openHostingDashboard()
+          break
+        default:
+          console.log("[v0] Unknown app type:", type)
+      }
+    }
+
+    window.addEventListener("openApp", handleOpenApp as EventListener)
+    return () => {
+      window.removeEventListener("openApp", handleOpenApp as EventListener)
+    }
+  }, [openWindowsState])
+
+  useEffect(() => {
+    if (width > 0 && height > 0) {
+      const screenWidth = width
+      const screenHeight = height
+
+      setOpenWindowsState((prevWindows) => {
+        const startupExists = prevWindows.some((window) => window.id === "notepad-startup")
+        if (!startupExists) {
+          const notepadWidth = 200
+          const notepadHeight = 210
+
+          const initialWindow: OpenWindow = {
+            id: "notepad-startup",
+            type: "notepad",
+            title: "why-514.txt",
+            icon: "/icons/notepad-icon.png",
+            position: {
+              x: Math.max(20, screenWidth - notepadWidth - 20),
+              y: Math.max(20, screenHeight - notepadHeight - 60)
+            },
+            zIndex: 1000,
+            size: { width: notepadWidth, height: notepadHeight }
+          }
+
+          console.log("[v0] Creating notepad window with size:", { width: notepadWidth, height: notepadHeight })
+          console.log("[v0] Screen dimensions:", { screenWidth, screenHeight })
+          console.log("[v0] Calculated position:", initialWindow.position)
+
+          setActiveWindowId("notepad-startup")
+
+          return [initialWindow]
+        }
+        return prevWindows
+      })
+    }
+  }, [width, height])
+
+  useEffect(() => {
+    const handleResize = () => {
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const isMobile = viewportWidth < 768
+
+      console.log("[v0] Window resized - new viewport width:", viewportWidth)
+
+      setIconPositions(calculateIconPositions())
+
+      // Update notepad window positions to maintain bottom-right anchoring
+      setOpenWindowsState((windows) =>
+        windows.map((window) => {
+          if (window.type === "notepad") {
+            const notepadWidth = window.size?.width || 200 // Updated default width to 200
+            const notepadHeight = window.size?.height || 210
+
+            const newPosition = {
+              x: Math.max(20, viewportWidth - notepadWidth - 20), // Changed margin from 5px to 20px
+              y: Math.max(20, viewportHeight - notepadHeight - 60) // 60 accounts for taskbar
+            }
+            console.log("[v0] Updating notepad window position to:", newPosition)
+            return { ...window, position: newPosition }
+          }
+          return window
+        })
+      )
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [calculateIconPositions])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      openAOLIM()
+    }, 10000) // 10 seconds
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  const findExistingWindow = (type: string, content?: any) => {
+    return openWindowsState.find((window) => {
+      if (window.type !== type) return false
+
+      if (type === "folder" && content?.iconType) {
+        return window.content?.iconType === content.iconType
+      }
+
+      if (type === "editor" && content?.text) {
+        return window.content?.text === content.text
+      }
+
+      if (type === "cursor-editor" && content?.templateName) {
+        return window.content?.templateName === content.templateName
+      }
+
+      if (type === "signup-form") {
+        return window.type === type
+      }
+
+      if (type === "blog-post-viewer" && content?.initialPost) {
+        return window.content?.initialPost === content.initialPost
+      }
+
+      if (type === "sloan-ai" && content?.templateName) {
+        return window.content?.templateName === content.templateName
+      }
+
+      if (type === "enterprise") {
+        return window.type === type
+      }
+
+      if (type === "video-player") {
+        return window.type === type
+      }
+
+      if (type === "notepad") {
+        return window.type === type
+      }
+
+      if (type === "aol-aim") {
+        return window.type === type
+      }
+
+      if (type === "docs") {
+        return window.type === type
+      }
+
+      if (type === "terminal") {
+        return window.type === type
+      }
+
+      if (type === "apps") {
+        return window.type === type
+      }
+
+      if (type === "registry") {
+        return window.type === type
+      }
+
+      return true
+    })
+  }
+
+  const createAnimatedWindow = (windowData: Omit<OpenWindow, "isAnimating">) => {
+    const newWindow = { ...windowData, isAnimating: true, zIndex: nextZIndex }
+    console.log("[v0] createAnimatedWindow - Setting activeWindowId to:", newWindow.id)
+    console.log("[v0] createAnimatedWindow - Window type:", newWindow.type)
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev, newWindow])
+    setNextZIndex((prev) => prev + 1)
+
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === newWindow.id ? { ...w, isAnimating: false } : w)))
+    }, 200)
+  }
+
+  const getWindowPosition = (windowWidth = 400, windowHeight = 320, windowCount = 0) => {
+    if (typeof window !== "undefined") {
+      const screenWidth = window.innerWidth
+      const screenHeight = window.innerHeight
+      const isMobile = screenWidth < 768
+
+      if (isMobile) {
+        const mobileHeight = Math.min(windowHeight * 0.7, screenHeight - 140) // 30% shorter leave room for taskbar
+        const mobileWidth = Math.min(windowWidth, screenWidth - 40) // 20px margin on each side
+
+        return {
+          x: Math.max(20, (screenWidth - mobileWidth) / 2), // Center horizontally
+          y: Math.max(20, (screenHeight - mobileHeight) / 2 - 30), // Center vertically slightly higher
+          width: mobileWidth,
+          height: mobileHeight
+        }
+      }
+
+      const padding = isMobile ? 20 : 20
+      const safeWidth = screenWidth - padding * 2
+      const safeHeight = screenHeight - padding * 2 - 50 // Account for taskbar
+
+      // Ensure window fits within safe bounds
+      const constrainedWidth = Math.min(windowWidth, safeWidth)
+      const constrainedHeight = Math.min(windowHeight, safeHeight)
+
+      const baseX = (screenWidth - constrainedWidth) / 2
+      const baseY = (screenHeight - constrainedHeight) / 2
+
+      const finalX = Math.max(padding, baseX)
+      const finalY = Math.max(padding, baseY)
+
+      console.log("[v0] Window positioning debug:", {
+        screenWidth,
+        screenHeight,
+        windowWidth,
+        windowHeight,
+        constrainedWidth,
+        constrainedHeight,
+        baseX,
+        baseY,
+        finalX,
+        finalY,
+        offset: windowCount * 5, // Keep offset for logging but not used in calculation
+        windowCount
+      })
+
+      return {
+        x: Math.round(finalX),
+        y: Math.round(finalY)
+      }
+    }
+    // Fallback for SSR
+    return { x: 50 + windowCount * 20, y: 50 + windowCount * 20 }
+  }
+
+  const openFolder = (iconType: string, title: string) => {
+    const existingWindow = findExistingWindow("folder", { iconType })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const folderWindows = openWindows.filter((w) => w.type === "folder")
+    const iconMap: { [key: string]: string } = {
+      "white-papers": "/icons/notepad.png",
+      "case-studies": "/icons/notepad.png",
+      "testimonials": "/icons/notepad.png",
+      "blog-posts": "/icons/notepad.png",
+      "my-computer": "/icons/computer-explorer-cool.png",
+      "recycle-bin": "/icons/recycle_bin_full-4.png",
+      "registry": "/icons/cable_2-0.png",
+      "apps": "https://blob.v0.app/app-icon.png",
+      "resources": "/icons/resources-folder.png"
+    }
+
+    const windowData: Omit<OpenWindow, "isAnimating"> = {
+      id: `${iconType}-${Date.now()}`,
+      type: "folder",
+      title,
+      content: { iconType },
+      position: getWindowPosition(500, 400, folderWindows.length),
+      zIndex: nextZIndex,
+      size: { width: 500, height: 400 },
+      icon: iconMap[iconType] || "/icons/directory_closed-4.png"
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openFactory = (connectorName?: string) => {
+    console.log("[v0] Opening factory with connector:", connectorName)
+
+    const existingWindow = findExistingWindow("factory")
+    if (existingWindow) {
+      console.log("[v0] Factory window already exists bringing to front")
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    console.log("[v0] Creating new factory window")
+    const windowWidth = 800
+    const windowHeight = 500
+
+    const windowData: Omit<OpenWindow, "isAnimating"> = {
+      id: `factory-${Date.now()}`,
+      type: "factory",
+      title: "Factory",
+      position: getWindowPosition(windowWidth, windowHeight),
+      zIndex: nextZIndex,
+      size: { width: windowWidth, height: windowHeight },
+      connectorName: connectorName,
+      autoStartChat: true,
+      icon: "/icons/factory-icon.png"
+    }
+    console.log("[v0] Factory window data:", windowData)
+    createAnimatedWindow(windowData)
+  }
+
+  const openFactoryWithData = () => {
+    const existingWindow = findExistingWindow("factory")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow, "isAnimating"> = {
+      id: `factory-${Date.now()}`,
+      type: "factory",
+      title: "Factory - Data.json",
+      content: { sampleData: true },
+      position: getWindowPosition(),
+      zIndex: nextZIndex,
+      size: { width: 800, height: 500 },
+      icon: "/icons/factory-icon.png"
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openDocument = (docTitle: string, content: string) => {
+    console.log("[v0] Opening video with docTitle:", docTitle)
+
+    if (docTitle === "open-folder") {
+      const folderTitleMap: { [key: string]: string } = {
+        "testimonials": "Clients",
+        "case-studies": "Case Studies",
+        "white-papers": "White Papers"
+      }
+      openFolder(content, folderTitleMap[content] || content)
+      return
+    }
+
+    if (docTitle === "blog-post-viewer") {
+      const existingWindow = findExistingWindow("blog-post-viewer")
+      if (existingWindow) {
+        if (existingWindow.isMinimized) {
+          restoreWindow(existingWindow.id)
+        } else {
+          bringToFront(existingWindow.id)
+        }
+        return
+      }
+
+      const windowData: Omit<OpenWindow, "isAnimating"> = {
+        id: `blog-${Date.now()}`,
+        type: "blog-post-viewer",
+        title: "Blog Posts",
+        content: { initialPost: content },
+        position: getWindowPosition(),
+        zIndex: nextZIndex,
+        size: { width: 500, height: 400 }
+      }
+      createAnimatedWindow(windowData)
+      return
+    }
+
+    if (docTitle === "case-study-viewer") {
+      const existingWindow = findExistingWindow("case-study-viewer")
+      if (existingWindow) {
+        if (existingWindow.isMinimized) {
+          restoreWindow(existingWindow.id)
+        } else {
+          bringToFront(existingWindow.id)
+        }
+        return
+      }
+
+      const windowData: Omit<OpenWindow "isAnimating"> = {
+        id: `case-study-${Date.now()}`        type: "case-study-viewer"        title: "Case Study"        content: { caseStudyId: content }        position: getWindowPosition()        zIndex: nextZIndex        size: { width: 700 height: 500 }      }
+      createAnimatedWindow(windowData)
+      return
+    }
+
+    if (docTitle === "testimonial-viewer") {
+      const existingWindow = findExistingWindow("testimonial-viewer")
+      if (existingWindow) {
+        if (existingWindow.isMinimized) {
+          restoreWindow(existingWindow.id)
+        } else {
+          bringToFront(existingWindow.id)
+        }
+        return
+      }
+
+      const windowData: Omit<OpenWindow "isAnimating"> = {
+        id: `testimonial-${Date.now()}`        type: "testimonial-viewer"        title: "Testimonial"        content: { testimonialId: content }        position: getWindowPosition()        zIndex: nextZIndex        size: { width: 700 height: 500 }      }
+      createAnimatedWindow(windowData)
+      return
+    }
+
+    if (docTitle === "white-paper-viewer") {
+      const existingWindow = findExistingWindow("white-paper-viewer" { content })
+      if (existingWindow) {
+        if (existingWindow.isMinimized) {
+          restoreWindow(existingWindow.id)
+        } else {
+          bringToFront(existingWindow.id)
+        }
+        return
+      }
+
+      const windowData: Omit<OpenWindow "isAnimating"> = {
+        id: `whitepaper-${Date.now()}`        type: "white-paper-viewer"        title: "AIOps Network Operations.pdf"        content: { content }        position: getWindowPosition(700 600)        zIndex: nextZIndex        size: { width: 700 height: 600 }      }
+      createAnimatedWindow(windowData)
+      return
+    }
+
+    if (docTitle === "getting-started-video" || content === "getting-started-video") {
+      openVideoPlayer()
+      return
+    }
+
+    if (content.includes("User Facing Analytics Template") || docTitle.includes("Analytics")) {
+      openTemplateViewer("analytics")
+      return
+    }
+
+    if (content.includes("Operational Data Warehouse") || docTitle.includes("Data Warehouse Architecture")) {
+      openTemplateViewer("data-warehouse")
+      return
+    }
+
+    if (content === "cursor-ide") {
+      const windowData: Omit<OpenWindow "isAnimating"> = {
+        id: `code-${Date.now()}`        type: "code-editor"        title: "main.tsx"        content: { code: content }        position: getWindowPosition()        zIndex: nextZIndex        size: { width: 500 height: 400 }      }
+      createAnimatedWindow(windowData)
+    } else {
+      const windowData: Omit<OpenWindow "isAnimating"> = {
+        id: `doc-${Date.now()}`        type: "editor"        title: docTitle        content: { text: content }        position: getWindowPosition()        zIndex: nextZIndex        size: { width: 500 height: 400 }      }
+      createAnimatedWindow(windowData)
+    }
+  }
+
+  const openCodeEditor = () => {
+    const existingWindow = findExistingWindow("code-editor")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `code-${Date.now()}`      type: "code-editor"      title: "Cursor IDE"      content: { code: "cursor-ide" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openDockerApp = () => {
+    const existingWindow = findExistingWindow("editor" { text: "docker-desktop" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `docker-${Date.now()}`      type: "editor"      title: "Docker Desktop"      content: { text: "docker-desktop" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openNeonApp = () => {
+    const existingWindow = findExistingWindow("editor" { text: "neon-db" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `neon-${Date.now()}`      type: "editor"      title: "Neon Database"      content: { text: "neon-db" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const closeWindow = (id: string) => {
+    setOpenWindowsState(openWindowsState.filter((w) => w.id !== id))
+  }
+
+  const bringToFront = (id: string) => {
+    const window = openWindowsState.find((w) => w.id === id)
+    console.log("[v0] bringToFront called for window:" id "type:" window?.type)
+    console.log("[v0] bringToFront - Current activeWindowId:" activeWindowId)
+    console.log("[v0] bringToFront - Setting activeWindowId to:" id)
+
+    const newZIndex = nextZIndex
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w zIndex: newZIndex } : w)))
+    setNextZIndex((prev) => prev + 1)
+    setActiveWindowId(id)
+  }
+
+  const moveWindow = (id: string position: { x: number; y: number }) => {
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w position } : w)))
+  }
+
+  const updateIconPosition = (iconId: string position: { x: number; y: number }) => {
+    setIconPositions((prev) => ({
+      ...prev      [iconId]: position    }))
+  }
+
+  const openTerminal = () => {
+    const existingWindow = findExistingWindow("terminal")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `terminal-${Date.now()}`      type: "terminal"      title: "MS-DOS Prompt"      content: {}      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 640 height: 480 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openApps = () => {
+    console.log("[v0] openApps called")
+    const existingWindow = findExistingWindow("apps")
+    if (existingWindow) {
+      console.log("[v0] Found existing apps window bringing to front")
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    console.log("[v0] Creating new apps window")
+    const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024
+    const screenHeight = typeof window !== "undefined" ? window.innerHeight : 768
+    const windowWidth = 700
+    const windowHeight = 500
+
+    const centerX = Math.max(0 (screenWidth - windowWidth) / 2)
+    const centerY = Math.max(0 (screenHeight - windowHeight) / 2)
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `apps-${Date.now()}`      type: "apps"      title: "Apps"      position: { x: centerX y: centerY }      size: { width: windowWidth height: windowHeight }      zIndex: getNextZIndex()      isMinimized: false      content: {}      defaultTab: "apps" // Set default tab to apps
+      icon: "/icons/notepad-icon.png"    }
+
+    setActiveWindowId(windowData.id)
+    setOpenWindowsState((prev) => [...prev { ...windowData isAnimating: true }])
+
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === windowData.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openRegistry = () => {
+    console.log("[v0] openRegistry called")
+    const existingWindow = findExistingWindow("registry")
+    if (existingWindow) {
+      console.log("[v0] Found existing registry window bringing to front")
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    console.log("[v0] Creating new registry window")
+    const windowWidth = 700
+    const windowHeight = 500
+    const screenWidth = window.innerWidth
+    const screenHeight = window.innerHeight
+
+    const centerX = Math.max(0 (screenWidth - windowWidth) / 2)
+    const centerY = Math.max(0 (screenHeight - windowHeight) / 2)
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `registry-${Date.now()}`      type: "registry"      title: "Registry"      position: { x: centerX y: centerY }      size: { width: windowWidth height: windowHeight }      zIndex: getNextZIndex()      isMinimized: false      content: {}      defaultTab: "connectors" // Set default tab to connectors for registry
+      icon: "/icons/cable_2-0.png"    }
+
+    setActiveWindowId(windowData.id)
+    setOpenWindowsState((prev) => [...prev { ...windowData isAnimating: true }])
+
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === windowData.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openCaseStudies = () => {
+    const existingWindow = findExistingWindow("case-studies")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `case-studies-${Date.now()}`      type: "folder"      title: "Case Studies"      content: { iconType: "case-studies" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 600 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openTestimonials = () => {
+    const existingWindow = findExistingWindow("testimonials")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `testimonials-${Date.now()}`      type: "folder"      title: "Clients" // Changed from "Testimonials" to "Clients"
+      content: { iconType: "testimonials" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 600 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openODW = () => {
+    const existingWindow = findExistingWindow("blog-post-viewer" { initialPost: "data-intensive" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `blog-odw-${Date.now()}`      type: "blog-post-viewer"      title: "Operational Data Warehouse - Blog Posts"      position: getWindowPosition()      size: { width: 700 height: 600 }      zIndex: getNextZIndex()      isMinimized: false      content: { initialPost: "data-intensive" }    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openUFA = () => {
+    const existingWindow = findExistingWindow("blog-post-viewer" { initialPost: "user-analytics" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `blog-ufa-${Date.now()}`      type: "blog-post-viewer"      title: "User Facing Analytics - Blog Posts"      position: getWindowPosition()      size: { width: 700 height: 600 }      zIndex: getNextZIndex()      isMinimized: false      content: { initialPost: "user-analytics" }    }
+    createAnimatedWindow(windowData)
+  }
+
+  const handleStartMenuClick = (item: string) => {
+    console.log("[v0] Start menu item clicked:" item)
+    setIsStartMenuOpen(false)
+
+    switch (item) {
+      case "Registry":
+        openRegistry() // Use openRegistry instead of openTemplates
+        break
+      case "Factory":
+        openFactory()
+        break
+      case "Hosting":
+        openHostingDashboard()
+        break
+      case "Apps":
+        openApps() // Use openApps instead of openTemplates
+        break
+      case "MooseStack":
+        openMooseStack()
+        break
+      case "Pricing":
+        openPricingPage()
+        break
+      case "Enterprise":
+        openEnterprise()
+        break
+      case "My Computer":
+        openMyComputer()
+        break
+      case "Recycle Bin":
+        openRecycleBin()
+        break
+      case "Dark Mode":
+        console.log("[v0] Dark mode toggle clicked current state:" isDarkMode)
+        setIsDarkMode(!isDarkMode)
+        break
+      case "Company":
+        openCompany()
+        break
+      case "SignUp":
+        openSignupForm()
+        break
+      case "Getting Started":
+        // Could open a getting started guide window if needed
+        console.log("Getting Started clicked")
+        break
+      case "Internet Explorer":
+        openInternetExplorer()
+        break
+      case "Notepad":
+        const notepadWindows = openWindows.filter((w) => w.type === "notepad")
+        const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024
+        const screenHeight = typeof window !== "undefined" ? window.innerHeight : 768
+        const notepadWidth = 200
+        const notepadHeight = 210
+
+        const offset = notepadWindows.length * 20 // Offset for multiple notepad windows
+
+        // Calculate notepad icon position using the same logic as desktop icons
+        const notepadIconX = Math.max(20 screenWidth - 240 - 20) // Same as desktop icon calculation
+
+        // Position window relative to its icon position maintaining the same offset relationship
+        const bottomRightPosition = {
+          x: Math.max(20 notepadIconX - 80 - offset) // Align with icon position minus offset
+          y: Math.max(20 screenHeight - notepadHeight - 60 - offset) // 60 accounts for taskbar
+          width: notepadWidth          height: notepadHeight        }
+        openWindow("notepad" "Untitled - Notepad" bottomRightPosition)
+        break
+      default:
+        console.log("Unknown menu item:" item)
+    }
+  }
+
+  const openHostingDashboard = () => {
+    const existingWindow = findExistingWindow("hosting-dashboard")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `hosting-${Date.now()}`      type: "hosting-dashboard"      title: "Hosting Dashboard"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/hosting-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const minimizeWindow = (id: string) => {
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w isMinimized: true } : w)))
+  }
+
+  const restoreWindow = (id: string) => {
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w isMinimized: false } : w)))
+    bringToFront(id)
+  }
+
+  const resizeWindow = (id: string size: { width: number; height: number }) => {
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w size } : w)))
+  }
+
+  const openInternetExplorer = () => {
+    const existingWindow = findExistingWindow("internet-explorer")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `ie-${Date.now()}`      type: "internet-explorer"      title: "Internet Explorer"      position: getWindowPosition(500 390)      zIndex: nextZIndex      size: { width: 500 height: 390 }      icon: "/icons/msie1-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openInternetExplorerWithUrl = (url: string title: string) => {
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `ie-${url}-${Date.now()}`      type: "internet-explorer"      title: title      position: getWindowPosition(500 390)      zIndex: nextZIndex      size: { width: 500 height: 390 }      initialTab: url      initialUrl: url      initialTitle: title    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openMySpace = () => {
+    const existingWindow = findExistingWindow("internet-explorer")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `ie-myspace-${Date.now()}`      type: "internet-explorer"      title: "Internet Explorer - MySpace"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 600 height: 500 }      initialTab: "myspace"      icon: "/icons/msie1-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openMooseStack = () => {
+    const existingWindow = findExistingWindow("moosestack")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `moosestack-${Date.now()}`      type: "moosestack"      title: "MooseStack Modules"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openTemplateViewer = (initialTemplate = "analytics") => {
+    const existingWindow = findExistingWindow("template-viewer")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `template-viewer-${Date.now()}`      type: "template-viewer"      title: "Template Viewer"      position: getWindowPosition()      size: { width: 600 height: 450 }      zIndex: getNextZIndex()      isMinimized: false      content: { initialTemplate }      icon: "/icons/notepad-icon.png" // Added icon
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openDemoRequest = () => {
+    const existingWindow = findExistingWindow("demo-request")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `demo-${Date.now()}`      type: "demo-request"      title: "Request a Demo"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/fax-machine.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openCursorEditor = (templateName: string) => {
+    const existingWindow = findExistingWindow("cursor-editor" { templateName })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `cursor-${templateName}-${Date.now()}`      type: "cursor-editor"      title: `Cursor - ${templateName} Template`      content: { templateName }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 700 height: 400 }      icon: "/icons/mouse_speed.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openGettingStarted = () => {
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `video-player-${Date.now()}`      type: "video-player"      title: "Getting Started - MooseStack Demo"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 480 height: 400 }      icon: "/icons/video_mg-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openSignupForm = () => {
+    const existingWindow = findExistingWindow("signup-form")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `signup-${Date.now()}`      type: "signup-form"      title: "Sign Up"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openCursorWithData = () => {
+    const existingWindow = findExistingWindow("cursor-editor" { templateName: "data-json" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `cursor-data-${Date.now()}`      type: "cursor-editor"      title: "Cursor - Data.json"      content: { templateName: "data-json" }      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openSloanAI = () => {
+    const existingWindow = findExistingWindow("sloan-ai")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `sloan-${Date.now()}`      type: "sloan-ai"      title: "Sloan AI"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/color-profile-icon.png" // Fixed icon for Sloan AI
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openEnterprise = () => {
+    const existingWindow = findExistingWindow("enterprise")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `enterprise-${Date.now()}`      type: "enterprise"      title: "Enterprise Solutions"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/pricing-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openNotepad = (title?: string content?: string) => {
+    const existingWindow = findExistingWindow("notepad")
+    if (existingWindow) {
+      // Focus existing window
+      setOpenWindowsState((windows) =>
+        windows.map((window) => (window.id === existingWindow.id ? { ...window zIndex: nextZIndex } : window))      )
+      return
+    }
+
+    const notepadWidth = 200
+    const notepadHeight = 210
+
+    createAnimatedWindow({
+      id: "notepad"      type: "notepad"      title: title || "why-514.txt"      icon: "/icons/notepad-icon.png"      content: { title initialContent: content }      position: {
+        x: Math.max(20 width - notepadWidth - 20) // Changed margin from 5px to 20px
+        y: Math.max(20 height - notepadHeight - 60) // Same as resize handler
+      }      size: { width: notepadWidth height: notepadHeight }      zIndex: nextZIndex    })
+  }
+
+  const openAIM = () => {
+    const windowWidth = 450
+    const windowHeight = 320
+    const position = getWindowPosition(windowWidth windowHeight)
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `aol-aim-${Date.now()}`      type: "aol-aim"      title: "AIM"      position      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      icon: "/icons/aim-running-man.svg"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openDocs = () => {
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `docs-${Date.now()}`      type: "docs"      title: "Documentation"      position: getWindowPosition(600 500)      size: { width: 600 height: 500 }      zIndex: nextZIndex      isMinimized: false      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const handlePublishToRegistry = (item: {
+    name: string
+    type: string
+    githubHandle: string
+    version: string
+  }) => {
+    const newItem = {
+      ...item      publishedAt: new Date()    }
+    setPublishedItems((prev) => [newItem ...prev])
+  }
+
+  const handleIconSelect = (iconId: string) => {
+    setSelectedIcon(iconId)
+  }
+
+  const handleDesktopClick = (e: React.MouseEvent) => {
+    // Only clear selection if clicking directly on the desktop background
+    if (e.target === e.currentTarget) {
+      setSelectedIcon(null)
+      setIsStartMenuOpen(false) // Close start menu when clicking desktop
+    }
+  }
+
+  const handleSwipeLeft = (currentWindowId: string) => {
+    const visibleWindows = openWindowsState.filter((w) => !w.isMinimized)
+    const currentIndex = visibleWindows.findIndex((w) => w.id === currentWindowId)
+    if (currentIndex < visibleWindows.length - 1) {
+      const nextWindow = visibleWindows[currentIndex + 1]
+      bringToFront(nextWindow.id)
+    }
+  }
+
+  const handleSwipeRight = (currentWindowId: string) => {
+    const visibleWindows = openWindowsState.filter((w) => !w.isMinimized)
+    const currentIndex = visibleWindows.findIndex((w) => w.id === currentWindowId)
+    if (currentIndex > 0) {
+      const prevWindow = visibleWindows[currentIndex - 1]
+      bringToFront(prevWindow.id)
+    }
+  }
+
+  const maximizeWindow = (id: string) => {
+    console.log("[v0] maximizeWindow called with id:" id)
+    setOpenWindowsState((windows) => {
+      const updatedWindows = windows.map((w) => {
+        if (w.id === id) {
+          const newMaximized = !w.isMaximized
+          console.log("[v0] Toggling window" id "from isMaximized:" w.isMaximized "to:" newMaximized)
+          return { ...w isMaximized: newMaximized }
+        }
+        return w
+      })
+      console.log("[v0] Updated windows state:" updatedWindows)
+      return updatedWindows
+    })
+  }
+
+  const openSchemaWindow = (item: any activeTab = "schema") => {
+    const existingWindow = openWindowsState.find((w) => w.type === "schema-window" && w.item?.name === item.name)
+
+    if (existingWindow) {
+      bringToFront(existingWindow.id)
+      return
+    }
+
+    const windowWidth = 400
+    const windowHeight = 350
+    const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024
+    const screenHeight = typeof window !== "undefined" ? window.innerHeight : 768
+
+    const offset = openWindowsState.filter((w) => w.type === "schema-window").length * 5
+
+    const centerX = Math.round((screenWidth - windowWidth) / 2 + offset)
+    const centerY = Math.round((screenHeight - windowHeight) / 2 + offset)
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `schema-${item.name}-${Date.now()}`      type: "schema-window"      title: `${item.name} - Schema`      position: { x: centerX y: centerY }      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      item      activeTab      icon: "/icons/cable_2-0.png"    }
+
+    console.log("[v0] Creating schema window with data:" JSON.stringify(windowData null 2))
+    console.log("[v0] Current nextZIndex:" nextZIndex)
+    console.log("[v0] Current activeWindowId:" activeWindowId)
+    createAnimatedWindow(windowData)
+    setTimeout(() => {
+      console.log("[v0] Schema window created - activeWindowId should now be:" windowData.id)
+      console.log("[v0] Actual activeWindowId after creation:" activeWindowId)
+    } 50)
+  }
+
+  const openAddProject = () => {
+    const existingWindow = findExistingWindow("add-project")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `add-project-${Date.now()}`      type: "add-project"      title: "Add New Project"      position: getWindowPosition(400 200)      zIndex: nextZIndex      size: { width: 400 height: 200 }      icon: "/icons/diskettes-icon.png" // Fixed icon for add project
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openFigma = () => {
+    const existingWindow = findExistingWindow("figma")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `figma-${Date.now()}`      type: "figma"      title: "Figma"      position: getWindowPosition(900 500)      zIndex: nextZIndex      size: { width: 900 height: 500 }      icon: "/icons/figma-icon-sm.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openUFADownloadWindow = () => {
+    const existingWindow = findExistingWindow("ufa-download-window")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `ufa-download-${Date.now()}`      type: "ufa-download-window"      title: "User Facing Analytics - Download"      position: getWindowPosition(600 500)      zIndex: nextZIndex      size: { width: 600 height: 500 }      icon: "/icons/analytics.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openODWDownloadWindow = () => {
+    const existingWindow = findExistingWindow("odw-download-window")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `odw-download-${Date.now()}`      type: "odw-download-window"      title: "Operational Data Warehouse - Download"      position: getWindowPosition(600 500)      zIndex: nextZIndex      size: { width: 600 height: 500 }      icon: "/icons/bar-graph.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === "addSampleMooseApp") {
+        openFactory("moose-sample-app")
+      }
+      if (event.data.type === "openAddProject") {
+        openAddProject()
+      }
+      if (event.data.type === "openInternetExplorer") {
+        const { url title } = event.data
+        openInternetExplorerWithUrl(url title)
+      }
+      if (event.data.type === "openUFAWindow") {
+        openUFADownloadWindow()
+      }
+      if (event.data.type === "openODWWindow") {
+        openODWDownloadWindow()
+      }
+    }
+
+    window.addEventListener("message" handleMessage)
+    return () => window.removeEventListener("message" handleMessage)
+  } [])
+
+  const openAOLIM = () => {
+    const existingWindow = findExistingWindow("aol-aim")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowWidth = 450
+    const windowHeight = 320
+    const position = getWindowPosition(windowWidth windowHeight)
+
+    const newWindow: OpenWindow = {
+      id: `aol-im-${Date.now()}`      type: "aol-aim"      title: "AOL Instant Messenger"      position      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      icon: "/icons/aim-running-man.svg"    }
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+  }
+
+  const openPricingPage = () => {
+    const existingWindow = openWindowsState.find((w) => w.type === "pricing-page")
+    if (existingWindow) {
+      restoreWindow(existingWindow.id)
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `pricing-${Date.now()}`      type: "pricing-page"      title: "Pricing - Boreal"      position: getWindowPosition(500 400)      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/pricing-icon.png"    }
+
+    setActiveWindowId(windowData.id)
+    setOpenWindowsState((prev) => [...prev { ...windowData isAnimating: true }])
+    setNextZIndex((prev) => prev + 1)
+
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === windowData.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openCompany = () => {
+    const existingWindow = findExistingWindow("internet-explorer")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `ie-company-${Date.now()}`      type: "internet-explorer"      title: "Internet Explorer - Company"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 600 height: 500 }      initialTab: "company"      icon: "/icons/msie1-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const focusWindow = (id: string) => {
+    const newZIndex = nextZIndex
+    setOpenWindowsState((windows) => windows.map((w) => (w.id === id ? { ...w zIndex: newZIndex } : w)))
+    setNextZIndex((prev) => prev + 1)
+    setActiveWindowId(id)
+  }
+
+  const openDataman = () => {
+    const existingWindow = openWindowsState.find((w) => w.type === "dataman")
+    if (existingWindow) {
+      bringToFront(existingWindow.id)
+      return
+    }
+
+    const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024
+    const screenHeight = typeof window !== "undefined" ? window.innerHeight : 768
+    const isMobile = screenWidth < 768
+
+    const windowWidth = isMobile ? screenWidth - 40 : 400
+    const windowHeight = isMobile ? screenHeight - 100 : 500
+
+    const newWindow: OpenWindow = {
+      id: `dataman-${Date.now()}`      type: "dataman"      title: "Data-Man"      position: {
+        x: isMobile ? 20 : Math.max(50 (screenWidth - windowWidth) / 2)        y: isMobile ? 20 : Math.max(50 (screenHeight - windowHeight) / 2)      }      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      icon: "/icons/color-profile-icon.png" // Fixed icon for dataman game
+    }
+
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+  }
+
+  const openGTAGame = () => {
+    const position = getWindowPosition(640 440)
+    const newWindow: OpenWindow = {
+      id: `gta-game-${Date.now()}`      type: "gta-game"      title: "Grand Theft Auto"      position      size: { width: 640 height: 440 }      zIndex: getNextZIndex()      isAnimating: true      isMinimized: false      content: {}      icon: "/icons/gta-icon.png"    }
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === newWindow.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openSimCityGame = () => {
+    const position = getWindowPosition(640 440)
+    const newWindow: OpenWindow = {
+      id: `simcity-game-${Date.now()}`      type: "simcity-game"      title: "SimCity"      position      size: { width: 640 height: 440 }      zIndex: getNextZIndex()      isAnimating: true      isMinimized: false      content: {}      icon: "/icons/simcity.png"    }
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === newWindow.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openDoomGame = () => {
+    const position = getWindowPosition(480 360)
+    const newWindow: OpenWindow = {
+      id: `doom-game-${Date.now()}`      type:       title: "DOOM"      position      size: { width: 480 height: 360 }      zIndex: getNextZIndex()      isAnimating: true      isMinimized: false      content: {}      icon: "/icons/notepad-icon.png"    }
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === newWindow.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const handleIconDoubleClick = (iconId: string) => {
+    console.log("[v0] Icon double-clicked:" iconId)
+    switch (iconId) {
+      case "my-computer":
+        openFolder("my-computer" "My Computer")
+        break
+      case "recycle-bin":
+        openFolder("recycle-bin" "Recycle Bin")
+        break
+      case "internet-explorer":
+        openInternetExplorer()
+        break
+      case "cursor":
+        openCursorEditor("data-warehouse")
+        break
+      case "clients":
+        openFolder("clients" "Clients")
+        break
+      case "factory":
+        openFactory()
+        break
+      case "registry":
+        openRegistry()
+        break
+      case "sloan-ai":
+        openSloanAI()
+        break
+      case "hosting":
+        openHostingDashboard()
+        break
+      case "blog":
+        openFolder("blog-posts" "Blog Posts")
+        break
+      case "aol-aim":
+        openAOLIM()
+        break
+      case "docs":
+        openDocs()
+        break
+      case "white-papers":
+        openWhitePapers()
+        break
+      case "pricing":
+        openPricingPage()
+        break
+      case "getting-started-video":
+        openVideoPlayer()
+        break
+      case "dataman":
+        openDataman()
+        break
+      case :
+        openAfterDark()
+        break
+      case "napster":
+        openNapster()
+        break
+      case "data-warehouse":
+        openODW()
+        break
+      case "user-facing-analytics":
+        openUFA()
+        break
+      case "notepad":
+        openNotepad()
+        break
+      case "cursor-ide":
+        openCodeEditor()
+        break
+      // Added GTA game handler
+      case "gta-game":
+        openGTAGame()
+        break
+      case :
+        openDoomGame()
+        break
+      case "simcity-game": // Replaced sonic-game case
+        openSimCityGame()
+        break
+      // case :
+      //   openDukeNukem()
+      //   break
+      default:
+        break
+    }
+  }
+
+  const openMyComputer = () => {
+    openFolder("my-computer" "My Computer")
+  }
+
+  const openRecycleBin = () => {
+    openFolder("recycle-bin" "Recycle Bin")
+  }
+
+  const openConsole = () => {
+    openCodeEditor()
+  }
+
+  const openSignup = () => {
+    openSignupForm()
+  }
+
+  const openBlog = () => {
+    openFolder("blog-posts" "Blog Posts")
+  }
+
+  const openWhitePapers = () => {
+    openFolder("white-papers" "White Papers")
+  }
+
+  const openPricing = () => {
+    openPricingPage()
+  }
+
+  const openAfterDark = () => {
+    setScreensaverActive(true)
+  }
+
+  const windows = [...openWindowsState]
+  const getNextZIndex = () => {
+    setNextZIndex(nextZIndex + 1)
+    return nextZIndex
+  }
+  const openWindows = [...windows]
+
+  const renderWindowContent = (window: OpenWindow) => {
+    const isActive = window.id === activeWindowId
+    switch (window.type) {
+      case "ufa-download-window":
+        return (
+          <UFADownloadWindow
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "odw-download-window":
+        return (
+          <ODWDownloadWindow
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "folder":
+        return (
+          <FolderWindow
+            key={window.id}
+            id={window.id}
+            title={window.title}
+            iconType={window.content.iconType}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onOpenDocument={openDocument}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "blog-post-viewer":
+        return (
+          <BlogPostViewer
+            key={window.id}
+            initialPost={window.content.initialPost}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "apps":
+        console.log("[v0] Rendering FolderWindow for apps")
+        return (
+          <FolderWindow
+            key={window.id}
+            id={window.id}
+            title="Apps"
+            iconType="apps"
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onOpenDocument={openDocument}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "registry":
+        console.log("[v0] Rendering TemplatesApp for registry window")
+        return (
+          <TemplatesApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            publishedItems={publishedItems}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            onOpenFactory={openFactory}
+            onOpenSchemaWindow={openSchemaWindow}
+            defaultTab={window.defaultTab}
+          />
+        )
+      case "template-viewer":
+        return (
+          <TemplateViewer
+            key={window.id}
+            id={window.id}
+            initialTemplate={window.content.initialTemplate}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "factory":
+        return (
+          <FactoryApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            sampleData={window.content?.sampleData}
+            selectedConnector={window.connectorName}
+            autoStartChat={window.autoStartChat} // Pass auto-start flag
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            onPublishToTemplates={(item) =>
+              setPublishedItems((prev) => [...prev { ...item publishedAt: new Date() }])
+            }
+            onOpenHostingDashboard={openHostingDashboard}
+          />
+        )
+      case "hosting-dashboard":
+        return (
+          <HostingDashboard
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "editor":
+        return (
+          <NotepadApp
+            key={window.id}
+            id={window.id}
+            title={window.title}
+            content={window.content.text}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "internet-explorer":
+        return (
+          <InternetExplorerApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            initialTab={window.initialTab}
+            initialUrl={window.initialUrl}
+            initialTitle={window.initialTitle}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(position) => moveWindow(window.id position)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "moosestack":
+        return (
+          <MooseStackApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "demo-request":
+        return (
+          <DemoRequestForm
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "cursor-editor":
+        return (
+          <CursorEditor
+            key={window.id}
+            id={window.id}
+            templateName={window.content.templateName}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "signup-form":
+        return (
+          <SignupForm
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "sloan-ai":
+        return (
+          <SloanAIApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "enterprise":
+        return (
+          <EnterpriseApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "figma":
+        return (
+          <FigmaApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            icon={window.icon}
+          />
+        )
+      //       isAnimating={window.isAnimating}
+      //       isMinimized={window.isMinimized}
+      //       isMaximized={window.isMaximized}
+      //       size={window.size}
+      //       onClose={() => closeWindow(window.id)}
+      //       onFocus={() => bringToFront(window.id)}
+      //       onMove={(pos) => moveWindow(window.id pos)}
+      //       onMinimize={() => minimizeWindow(window.id)}
+      //       onMaximize={() => maximizeWindow(window.id)}
+      //       onResize={(size) => resizeWindow(window.id size)}
+      //     />
+      //   )
+      case "video-player":
+        return (
+          <VideoPlayer
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "notepad":
+        return (
+          <Notepad
+            key={window.id}
+            id={window.id}
+            title={window.content?.title}
+            initialContent={window.content?.initialContent}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "aol-aim":
+        return (
+          <AOLAIMApp
+            key={window.id}
+            id={window.id}
+            showBuddyList={window.showBuddyList}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            onOpenUrl={openInternetExplorerWithUrl}
+          />
+        )
+      case "docs":
+        return (
+          <DocsApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "terminal":
+        return (
+          <Terminal
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "schema-window":
+        console.log(
+          "[v0] Rendering schema window:"          window.id          "isActive:"          isActive          "activeWindowId:"          activeWindowId        )
+        return (
+          <SchemaWindow
+            key={window.id}
+            id={window.id}
+            item={window.item}
+            activeTab={window.activeTab || "connectors"}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => {
+              console.log("[v0] Schema window onFocus called for:" window.id)
+              bringToFront(window.id)
+            }}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "pricing-page":
+        return (
+          <PricingPage
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            onOpenRequestDemo={openDemoRequest}
+          />
+        )
+      case "case-study-viewer":
+        return (
+          <CaseStudyViewer
+            key={window.id}
+            id={window.id}
+            caseStudyId={window.content.caseStudyId}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            // onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "testimonial-viewer":
+        return (
+          <TestimonialViewer
+            key={window.id}
+            id={window.id}
+            testimonialId={window.content.testimonialId}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "white-paper-viewer":
+        return (
+          <WhitePaperViewer
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            content={window.content?.content || ""}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => focusWindow(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "napster":
+        return (
+          <NapsterApp
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => focusWindow(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      // Added GTA game window rendering
+      case "gta-game":
+        return (
+          <GTAGame
+            key={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "simcity-game": // Replaced sonic-game rendering
+        return (
+          <SimCityGame
+            key={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+            gameUrl="https://archive.org/embed/msdos_SimCity_1989"
+          />
+        )
+      case : // Replaced simcity-game rendering
+        return (
+          <DoomGame
+            key={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      // Added render logic for UFA and ODW download windows
+      case "ufa-download-window":
+        return (
+          <UFADownloadWindow
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "odw-download-window":
+        return (
+          <ODWDownloadWindow
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "word-editor":
+        return (
+          <CodeEditor // Assuming WordEditor is a placeholder for CodeEditor for now
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      case "add-project":
+        return (
+          <AddProjectWindow
+            key={window.id}
+            id={window.id}
+            position={window.position}
+            zIndex={window.zIndex}
+            isActive={isActive}
+            isAnimating={window.isAnimating}
+            isMinimized={window.isMinimized}
+            isMaximized={window.isMaximized}
+            size={window.size}
+            onClose={() => closeWindow(window.id)}
+            onFocus={() => bringToFront(window.id)}
+            onMove={(pos) => moveWindow(window.id pos)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
+            onResize={(size) => resizeWindow(window.id size)}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  const openApp = (appName: string) => {
+    switch (appName) {
+      case "internet-explorer":
+        openInternetExplorer()
+        break
+      case "notepad":
+        openNotepad()
+        break
+      case "cursor-ide":
+        openCodeEditor()
+        break
+      default:
+        break
+    }
+  }
+
+  const openVideoPlayer = () => {
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `video-player-${Date.now()}`      type: "video-player"      title: "Getting Started - MooseStack Demo"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 480 height: 400 }      icon: "/icons/video_mg-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openDatamanGame = () => {
+    const existingWindow = openWindowsState.find((w) => w.type === "dataman")
+    if (existingWindow) {
+      bringToFront(existingWindow.id)
+      return
+    }
+
+    const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1024
+    const screenHeight = typeof window !== "undefined" ? window.innerHeight : 768
+    const isMobile = screenWidth < 768
+
+    const windowWidth = isMobile ? screenWidth - 40 : 400
+    const windowHeight = isMobile ? screenHeight - 100 : 500
+
+    const newWindow: OpenWindow = {
+      id: `dataman-${Date.now()}`      type: "dataman"      title: "Data-Man"      position: {
+        x: isMobile ? 20 : Math.max(50 (screenWidth - windowWidth) / 2)        y: isMobile ? 20 : Math.max(50 (screenHeight - windowHeight) / 2)      }      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      icon: "/icons/color-profile-icon.png" // Fixed icon
+    }
+
+    setActiveWindowId(newWindow.id)
+    setOpenWindowsState((prev) => [...prev newWindow])
+  }
+
+  const openNapster = () => {
+    const windowWidth = 640
+    const windowHeight = 380
+    const newWindow: OpenWindow = {
+      id: `napster-${Date.now()}`      type: "napster"      title: "Napster"      position: getWindowPosition(windowWidth windowHeight)      zIndex: nextZIndex      size: { width: windowWidth height: windowHeight }      icon: "/icons/napster-icon.png"    }
+    createAnimatedWindow(newWindow)
+  }
+
+  // Helper function to open windows with offset positioning
+  const openWindow = (
+    type: OpenWindowType    title: string    position: { x: number; y: number }    content?: any    size?: { width: number; height: number }    initialTab?: string    defaultTab?: string    connectorName?: string    autoStartChat?: boolean    caseStudyId?: string    testimonialId?: string    initialUrl?: string    initialTitle?: string    gameUrl?: string  ) => {
+    const existingWindow = findExistingWindow(type content)
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `${type}-${Date.now()}`      type      title      position      zIndex: nextZIndex      size: size || getWindowPosition(400 320) // Default size if not provided
+      content      initialTab      defaultTab      connectorName      autoStartChat      caseStudyId      testimonialId      initialUrl      initialTitle      gameUrl    }
+    createAnimatedWindow(windowData)
+  }
+
+  // Helper functions for opening specific windows
+  const openCursorEditorWindow = (templateName: string) => {
+    const existingWindow = findExistingWindow("cursor-editor" { templateName })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `cursor-${templateName}-${Date.now()}`      type: "cursor-editor"      title: `Cursor - ${templateName} Template`      content: { templateName }      position: getWindowPosition(700 400)      zIndex: nextZIndex      size: { width: 700 height: 400 }    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openAddressBook = () => {
+    const existingWindow = findExistingWindow("folder" { iconType: "address-book" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `address-book-${Date.now()}`      type: "folder"      title: "Address Book"      content: { iconType: "address-book" }      position: getWindowPosition(500 400)      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/address-book-icon.png" // Fixed icon
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openAddressBookUsers = () => {
+    const existingWindow = findExistingWindow("folder" { iconType: "address-book-users" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `address-book-users-${Date.now()}`      type: "folder"      title: "Address Book Users"      content: { iconType: "address-book-users" }      position: getWindowPosition(500 400)      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/address-book-icon.png" // Fixed icon
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openBlogPostViewer = () => {
+    const existingWindow = findExistingWindow("blog-post-viewer")
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `blog-post-viewer-${Date.now()}`      type: "blog-post-viewer"      title: "Blog Post Viewer"      content: {}      position: getWindowPosition(500 400)      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/blog-icon.png" // Fixed icon
+    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openFileSet = () => {
+    const existingWindow = findExistingWindow("folder" { iconType: "file-set" })
+    if (existingWindow) {
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+      } else {
+        bringToFront(existingWindow.id)
+      }
+      return
+    }
+
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `file-set-${Date.now()}`      type: "folder"      title: "File Set"      content: { iconType: "file-set" }      position: getWindowPosition(500 400)      zIndex: nextZIndex      size: { width: 500 height: 400 }      icon: "/icons/notepad-icon.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  const openPacman = () => {
+    const position = getWindowPosition(400 400)
+    const newWindow: OpenWindow = {
+      id: `pacman-${Date.now()}`      type: "folder" // Assuming pacman is a folder for now adjust if it's a specific game type
+      title: "Pac-Man"      position      size: { width: 400 height: 400 }      zIndex: getNextZIndex()      isAnimating: true      isMinimized: false      content: { iconType: "pacman" } // Use iconType to identify pacman folder
+      icon: "/icons/notepad-icon.png"    }
+    setOpenWindowsState((prev) => [...prev newWindow])
+    setTimeout(() => {
+      setOpenWindowsState((prev) => prev.map((w) => (w.id === newWindow.id ? { ...w isAnimating: false } : w)))
+    } 300)
+  }
+
+  const openGettingStartedVideo = () => {
+    const windowData: Omit<OpenWindow "isAnimating"> = {
+      id: `video-player-${Date.now()}`      type: "video-player"      title: "Getting Started Video"      position: getWindowPosition()      zIndex: nextZIndex      size: { width: 480 height: 400 }      icon: "/icons/video_mg-2.png"    }
+    createAnimatedWindow(windowData)
+  }
+
+  return (
+    <div
+      className={`relative w-full min-h-dvh overflow-hidden select-none ${isDarkMode ? "dark" : ""}`}
+      style={{ backgroundColor: isDarkMode ? "#000000" : "rgb(0 128 128)" }}
+      onClick={handleDesktopClick}
+    >
+      <DesktopIcon
+        id="my-computer"
+        icon="/icons/computer_explorer-5.png"
+        label="My Computer"
+        position={iconPositions["my-computer"]}
+        isSelected={selectedIcon === "my-computer"}
+        onSelect={handleIconSelect}
+        onDoubleClick={() => openFolder("my-computer" "My Computer")}
+        onMove={(pos) => updateIconPosition("my-computer" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="recycle-bin"
+        icon="/icons/recycle_bin_full-4.png"
+        label="Recycle Bin"
+        position={iconPositions["recycle-bin"]}
+        isSelected={selectedIcon === "recycle-bin"}
+        onSelect={handleIconSelect}
+        onDoubleClick={() => openFolder("recycle-bin" "Recycle Bin")}
+        onMove={(pos) => updateIconPosition("recycle-bin" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="internet-explorer"
+        icon="/icons/msie1-2.png"
+        label="Internet Explorer"
+        position={iconPositions["internet-explorer"]}
+        isSelected={selectedIcon === "internet-explorer"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openInternetExplorer}
+        onMove={(pos) => updateIconPosition("internet-explorer" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="aol-aim"
+        icon="/icons/aim-running-man.svg"
+        label="AIM"
+        position={iconPositions["aol-aim"]}
+        isSelected={selectedIcon === "aol-aim"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openAOLIM}
+        onMove={(pos) => updateIconPosition("aol-aim" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="napster"
+        icon="/icons/napster-icon.png"
+        label="Napster"
+        position={iconPositions["napster"]}
+        isSelected={selectedIcon === "napster"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openNapster}
+        onMove={(pos) => updateIconPosition("napster" pos)}
+        isDarkMode={isDarkMode}
+      />
+      {!isMobile && (
+        <DesktopIcon
+          id="gta-game"
+          icon="/icons/gta-icon.png"
+          label="GTA"
+          position={iconPositions["gta-game"]}
+          isSelected={selectedIcon === "gta-game"}
+          onSelect={handleIconSelect}
+          onDoubleClick={() => handleIconDoubleClick("gta-game")}
+          onMove={(pos) => updateIconPosition("gta-game" pos)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
+      <DesktopIcon
+        id="blog"
+        icon="/icons/blog-icon.png"
+        label="Blog"
+        position={iconPositions["blog"]}
+        isSelected={selectedIcon === "blog"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openBlogPostViewer}
+        onMove={(pos) => updateIconPosition("blog" pos)}
+        isDarkMode={isDarkMode}
+      />
+
+      <DesktopIcon
+        id="figma"
+        icon="/icons/figma-icon-sm.png"
+        label="Figma"
+        position={iconPositions["figma"]}
+        isSelected={selectedIcon === "figma"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openFigma}
+        onMove={(pos) => updateIconPosition("figma" pos)}
+        isDarkMode={isDarkMode}
+      />
+
+
+      <DesktopIcon
+        id="resources"
+        label="Saved" // Changed label from Resources to Saved
+        icon="/icons/directory_closed-4.png"
+        position={iconPositions.resources}
+        onMove={(pos) => updateIconPosition("resources" pos)}
+        onDoubleClick={() => openFolder("resources" "Saved")} // Updated to call with "Saved" title
+        isSelected={selectedIcon === "resources"}
+        onSelect={() => setSelectedIcon("resources")}
+        isDarkMode={isDarkMode}
+      />
+
+      {!isMobile && (
+        <>
+          <DesktopIcon
+            id=            icon="/icons/doom.png"
+            label="DOOM"
+            position={iconPositions[]}
+            isSelected={selectedIcon === }
+            onSelect={handleIconSelect}
+            onDoubleClick={() => handleIconDoubleClick()}
+            onMove={(pos) => updateIconPosition( pos)}
+          />
+          <DesktopIcon
+            id="simcity-game"
+            icon="/icons/simcity.png"
+            label="SimCity"
+            position={iconPositions["simcity-game"]}
+            isSelected={selectedIcon === "simcity-game"}
+            onSelect={handleIconSelect}
+            onDoubleClick={() => handleIconDoubleClick("simcity-game")}
+            onMove={(pos) => updateIconPosition("simcity-game" pos)}
+          />
+        </>
+      )}
+      <DesktopIcon
+        id="docs"
+        icon="/icons/notepad-icon.png"
+        label="Docs"
+        position={iconPositions["docs"]}
+        isSelected={selectedIcon === "docs"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openDocs}
+        onMove={(pos) => updateIconPosition("docs" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="cursor"
+        icon="/icons/mouse_speed.png"
+        label="Cursor"
+        position={iconPositions["cursor"]}
+        isSelected={selectedIcon === "cursor"}
+        onSelect={handleIconSelect}
+        onDoubleClick={() => openCursorEditorWindow("cursor-editor")}
+        onMove={(pos) => updateIconPosition("cursor" pos)}
+        isDarkMode={isDarkMode}
+      />
+
+      <DesktopIcon
+        id="notepad"
+        icon="/icons/notepad-icon.png"
+        label="why-514.txt"
+        position={iconPositions["notepad"]}
+        isSelected={selectedIcon === "notepad"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openNotepad}
+        onMove={(pos) => updateIconPosition("notepad" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="factory"
+        icon="/icons/factory-icon.png"
+        label="Factory"
+        position={iconPositions["factory"]}
+        isSelected={selectedIcon === "factory"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openFactory}
+        onMove={(pos) => updateIconPosition("factory" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="moosestack"
+        icon="/icons/diskettes-icon.png"
+        label="Moose Stack"
+        position={iconPositions["moosestack"]}
+        isSelected={selectedIcon === "moosestack"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openMooseStack}
+        onMove={(pos) => updateIconPosition("moosestack" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="request-demo"
+        icon="/icons/fax-machine.png"
+        label="Request a Demo"
+        position={iconPositions["request-demo"]}
+        isSelected={selectedIcon === "request-demo"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openDemoRequest} // Corrected function name
+        onMove={(pos) => updateIconPosition("request-demo" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="registry"
+        icon="/icons/cable_2-0.png"
+        label="Registry"
+        position={iconPositions["registry"]}
+        isSelected={selectedIcon === "registry"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openRegistry}
+        onMove={(pos) => updateIconPosition("registry" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="hosting"
+        icon="/icons/hosting-icon.png"
+        label="Hosting"
+        position={iconPositions["hosting"]}
+        isSelected={selectedIcon === "hosting"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openHostingDashboard}
+        onMove={(pos) => updateIconPosition("hosting" pos)}
+        isDarkMode={isDarkMode}
+      />
+      <DesktopIcon
+        id="sloan-ai"
+        icon="/icons/color-profile-icon.png"
+        label="Sloan AI"
+        position={iconPositions["sloan-ai"]}
+        isSelected={selectedIcon === "sloan-ai"}
+        onSelect={handleIconSelect}
+        onDoubleClick={openSloanAI}
+        onMove={(pos) => updateIconPosition("sloan-ai" pos)}
+        isDarkMode={isDarkMode}
+      />
+
+
+      {openWindows.map((window) => {
+        return renderWindowContent(window)
+      })}
+
+      <Taskbar
+        openWindows={openWindows}
+        onWindowClick={(id) => {
+          const window = openWindows.find((w) => w.id === id)
+          if (window?.isMinimized) {
+            restoreWindow(id)
+          } else {
+            bringToFront(id)
+          }
+        }}
+        onStartMenuClick={handleStartMenuClick}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        activeWindowId={activeWindowId}
+      />
+
+      {isScreensaverActive && (
+        <AfterDarkScreensaver isActive={isScreensaverActive} onDeactivate={deactivateScreensaver} />
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,901 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Adding Windows 95 font imports */
+@font-face {
+  font-family: "W95Font";
+  src: url("/fonts/w95font.woff2") format("woff2"), url("/fonts/w95font.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "W95Font";
+  src: url("/fonts/w95font-bold.woff2") format("woff2"), url("/fonts/w95font-bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Setting background to Windows 95 teal desktop color */
+  --background: #008080;
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Windows 95 specific colors */
+  --win95-555: #c0c0c0;
+  --win95-light-555: #dfdfdf;
+  --win95-dark-555: #555;
+  --win95-black: #000000;
+  --win95-white: #ffffff;
+  --win95-blue: #000080;
+  --win95-light-blue: #0000ff;
+  --win95-red: #ff0000;
+  --win95-desktop: #008080;
+
+  /* Adding proper white color and shadow variables */
+  --color-white: #ffffff;
+  --shadow-inner-4: inset -1px -1px #ffffff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #000000;
+  /* Adding spacing variable for consistent padding */
+  --spacing-6: 1.5rem;
+  /* Adding titlebar color variable for icon selection */
+  --color-win95-titlebar: #000080;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* Fix mobile Safari viewport height issues */
+  html,
+  body {
+    @apply bg-background text-foreground;
+    height: 100%;
+    min-height: 100%;
+    /* Use dvh (dynamic viewport height) for better mobile support */
+    min-height: 100dvh;
+    overflow: auto; /* Updated to allow scrolling */
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+    font-size: 12px !important;
+    /* Prevent mobile Safari from adding extra space */
+    -webkit-text-size-adjust: 100%;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Force Windows 95 font globally with !important */
+  * {
+    font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+    font-size: 12px !important;
+  }
+
+  /* Override any button, input, and text styling */
+  button,
+  input,
+  textarea,
+  select,
+  div,
+  span,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Remove text shadows globally */
+* {
+  text-shadow: none !important;
+  font-weight: 400 !important;
+}
+
+textarea.w-full,
+input,
+input.flex-1 {
+  background-color: white !important;
+  margin: 0 !important;
+  box-shadow: -2px -2px 0 #808080 !important;
+  border: none !important;
+}
+
+div.h-full.overflow-y-auto,
+.flex-1.overflow-y-auto {
+  background-color: white !important;
+  margin: 2px !important;
+  box-shadow: -2px -2px 0 #808080 !important;
+  border: none !important;
+}
+
+.volume {
+  border: 0 !important;
+}
+
+/* Windows 95 utility classes */
+.bg-win95-titlebar {
+  background-color: var(--win95-blue) !important;
+}
+
+.bg-win95-window {
+  background-color: #c0c0c0 !important;
+}
+
+.bg-win95-button {
+  background-color: #c0c0c0 !important;
+}
+
+.bg-win95-hover {
+  background-color: #d4d0c8 !important;
+}
+
+.bg-win95-pressed {
+  background-color: #b0b0b0 !important;
+}
+
+.border-win95-border-raised {
+  border-color: #dfdfdf !important;
+}
+
+.border-win95-border-inset {
+  border-color: #555 !important;
+}
+
+/* Windows 95 3D border effects */
+.win95-raised {
+  border: 2px solid;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #555;
+  border-bottom-color: #555;
+}
+
+.win95-inset {
+  border: 2px solid;
+  border: 2px solid;
+  border-top-color: #555;
+  border-left-color: #555;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.win95-titlebar {
+  background-color: var(--win95-blue);
+  color: white;
+  font-weight: bold;
+}
+
+/* Windows 95 Button - Main class with all states */
+.win95-button {
+  background-color: #c0c0c0 !important;
+  border: 2px solid !important;
+  border-top-color: #ffffff !important;
+  border-left-color: #ffffff !important;
+  border-right-color: #555 !important;
+  border-bottom-color: #555 !important;
+  color: #000000 !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  cursor: pointer !important;
+  transition: none !important;
+}
+
+.win95-button:hover:not(:disabled):not(.active) {
+  background-color: #d4d0c8 !important;
+}
+
+.win95-button:focus:not(:disabled) {
+  outline: 1px dotted #000000 !important;
+  outline-offset: -4px !important;
+}
+
+.win95-button:active:not(:disabled),
+.win95-button.active {
+  background-color: #c0c0c0 !important;
+  border-top-color: #555 !important;
+  border-left-color: #555 !important;
+  border-right-color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+  padding: 2px 8px 1px 8px !important;
+}
+
+.win95-button:disabled {
+  background-color: #c0c0c0 !important;
+  color: #555 !important;
+  cursor: not-allowed !important;
+  text-shadow: 1px 1px 0px #ffffff !important;
+}
+
+/* Taskbar button specific styling */
+.win95-taskbar-button {
+  background-color: #c0c0c0 !important;
+  border: 2px solid !important;
+  border-top-color: #ffffff !important;
+  border-left-color: #ffffff !important;
+  border-right-color: #555 !important;
+  border-bottom-color: #555 !important;
+  color: #000000 !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-size: 11px !important;
+  min-width: 120px !important;
+  text-align: left !important;
+  padding: 2px 6px !important;
+  cursor: pointer !important;
+  transition: none !important;
+}
+
+.win95-taskbar-button:hover:not(.active) {
+  background-color: #d4d0c8 !important;
+}
+
+.win95-taskbar-button.active {
+  background-color: #c0c0c0 !important;
+  background-color: #d4d0c8 !important;
+  border-top-color: #555 !important;
+  border-left-color: #555 !important;
+  border-right-color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+  padding: 3px 3px 1px 7px !important;
+  padding: 3px 6px 3px 6px !important;
+}
+
+.win95-taskbar-button,
+button {
+  color: #000 !important;
+  cursor: pointer !important;
+  background-color: silver !important;
+  border-color: #fff #555 #555 #fff !important;
+  border-style: solid !important;
+  border-width: 2px !important;
+  padding: 2px 8px !important;
+  font-family: W95Font, MS Sans Serif, Microsoft Sans Serif, sans-serif !important;
+  font-size: 11px !important;
+  transition: none !important;
+  padding: 3px 6px 3px 6px !important;
+}
+
+.win95-taskbar-button:active,
+button:active {
+  background-color: silver !important;
+  border-color: #555 #fff #fff #555 !important;
+  padding: 3px 6px 3px 6px !important;
+  outline-offset: -4px !important;
+  outline: 1px dotted #000 !important;
+}
+
+.absolute.px-0 .flex.items-center button,
+.absolute.px-0 .flex.px-0 button {
+  border: none !important;
+}
+
+/* Window control button specific styling */
+.win95-window-control {
+  background-color: #c0c0c0 !important;
+  border: 2px solid !important;
+  border-top-color: #ffffff !important;
+  border-left-color: #ffffff !important;
+  border-right-color: #555 !important;
+  border-bottom-color: #555 !important;
+  color: #000000 !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-size: 10px !important;
+  width: 16px !important;
+  height: 14px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: none !important;
+}
+
+button.px-3.py-1.text-sm.text-black {
+  border: none !important;
+  padding-top: 6px !important;
+}
+
+.win95-window-control:hover {
+  background-color: #d4d0c8 !important;
+}
+
+.win95-window-control:active {
+  background-color: #c0c0c0 !important;
+  border-top-color: #555 !important;
+  border-left-color: #555 !important;
+  border-right-color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+}
+
+.absolute.px-0 .flex.items-center.border-b.border-neutral-400 button,
+.absolute.px-0 .border-555-400 button,
+.absolute.px-0 .window-title button {
+  border: 0 !important;
+}
+
+/* Windows 95 input styling */
+.win95-input {
+  background-color: #ffffff !important;
+  border: 2px solid !important;
+  border-top-color: #555 !important;
+  border-left-color: #555 !important;
+  border-right-color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-size: 11px !important;
+}
+
+/* Windows 95 tab underline for selected tabs */
+.win95-tab-active {
+  text-decoration: underline !important;
+}
+
+/* Windows 95 table header styling */
+.win95-table-header {
+  background-color: #c0c0c0 !important;
+  border: 1px solid #555 !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+/* Adding inner content styling class for consistent white backgrounds with inset shadow */
+.win95-inner-content,
+div.win95-inner-content,
+.win95-inner-content > div {
+  /* Updated to use CSS variables instead of hardcoded values */
+  background-color: var(--color-white) !important;
+  box-shadow: var(--shadow-inner-4) !important;
+  padding: var(--spacing-6) !important;
+  gap: var(--spacing-6) !important;
+}
+
+/* Ensure the inset shadow is visible on all inner content areas */
+.win95-inner-content * {
+  position: relative;
+}
+
+/* Override any conflicting background colors in dark mode */
+.dark .win95-inner-content {
+  background-color: #000000 !important;
+  color: #000000 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.dark .win95-inner-content * {
+  color: #000000 !important;
+}
+
+.dark .win95-inner-content div {
+  box-shadow: none !important;
+}
+
+/* Allow textarea to override the color in dark mode */
+.dark .win95-inner-content textarea {
+  color: #ffffff !important;
+}
+
+/* Allow text elements to override the color in dark mode */
+.dark .win95-inner-content h1,
+.dark .win95-inner-content h2,
+.dark .win95-inner-content h3,
+.dark .win95-inner-content p,
+.dark .win95-inner-content li,
+.dark .win95-inner-content span,
+.dark .win95-inner-content div {
+  color: #ffffff !important;
+}
+
+/* Windows 95 Scrollbar Styling with base64 images */
+::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+::-webkit-scrollbar-track {
+  image-rendering: pixelated !important;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVQIW2M4fPz0////GYAYyAIASnoKpV3w4kgAAAAASUVORK5CYII=") !important;
+}
+
+::-webkit-scrollbar-track:active {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVQIW2No6+pjgAAgCwAWogM9VKrgGQAAAABJRU5ErkJggg==") !important;
+}
+
+::-webkit-scrollbar-thumb {
+  z-index: 1 !important;
+  border-color: silver #000 #000 silver !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  width: 16px !important;
+  height: 16px !important;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #555 !important;
+  background-color: silver !important;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: silver !important;
+}
+
+::-webkit-resizer {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAN0lEQVR4Ae3MgQUAMBRDwU5fFF05lb/CARTBw2Ulof0DxPtcwp3hNuEYnjbcEW4TjuFpwx3h9gMWGgZ2Y/PT2gAAAABJRU5ErkJggg==") !important;
+  background-position: 100% 100% !important;
+  width: 16px !important;
+  height: 16px !important;
+  image-rendering: pixelated !important;
+  background-color: silver !important;
+  background-repeat: no-repeat !important;
+}
+
+::-webkit-scrollbar-button {
+  background-position: 50% !important;
+  border-color: silver #000 #000 silver !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  display: block !important;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #555 !important;
+  width: 16px !important;
+  height: 16px !important;
+  image-rendering: pixelated !important;
+  background-color: silver !important;
+  background-repeat: no-repeat !important;
+}
+
+::-webkit-scrollbar-button:active {
+  box-shadow: none !important;
+  background-position: 2px 2px !important;
+  border: 1px solid #555 !important;
+}
+
+::-webkit-scrollbar-button:horizontal:decrement {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAHklEQVQIW2M4fPz0////GYAYyAIASnoKpV3w4kgAAAAASUVORK5CYII=") !important;
+}
+
+::-webkit-scrollbar-button:horizontal:increment {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAHUlEQVQY02NgIB/8xy3xH7fEf9wS/0nUQZqrKAYAK44P8ZRmzLQAAAAASUVORK5CYII=") !important;
+}
+
+::-webkit-scrollbar-button:vertical:decrement {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAGklEQVR4AWMYxuA/SYphmETFhDX9x4mHGQAAcL4P8dQiMq8AAAAASUVORK5CYII=") !important;
+}
+
+::-webkit-scrollbar-button:vertical:increment {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAF0lEQVQY02NgoBf4jwJxSOHQhcNAOgMAWWAP8Rv2U3UAAAAASUVORK5CYII=") !important;
+}
+
+::-webkit-scrollbar-button:horizontal:increment:start {
+  display: none !important;
+}
+
+::-webkit-scrollbar-button:horizontal:decrement:end {
+  display: none !important;
+}
+
+::-webkit-scrollbar-button:vertical:increment:start {
+  display: none !important;
+}
+
+::-webkit-scrollbar-button:vertical:decrement:end {
+  display: none !important;
+}
+
+/* Adding registry link class for blue text links without button styling */
+.registry-link {
+  background: none !important;
+  border: none !important;
+  color: var(--win95-light-blue) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  font-family: "W95Font", "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  box-shadow: none !important;
+}
+
+.registry-link:hover {
+  text-decoration: underline !important;
+}
+
+.registry-link:active {
+  color: var(--win95-red) !important;
+}
+
+/* Windows 95 blue text links */
+.win95-blue-link {
+  color: var(--win95-light-blue) !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+}
+
+.win95-blue-link:hover {
+  color: var(--win95-blue) !important;
+}
+
+.win95-blue-link:active {
+  color: var(--win95-red) !important;
+}
+
+/* Adding hosting option button class with pronounced 3D effect */
+button.hosting-option-button {
+  background-color: transparent !important;
+  cursor: pointer !important;
+  text-align: center !important;
+}
+
+.hosting-option-button:hover {
+  background-color: #aaa !important;
+}
+
+.hosting-option-button:active {
+  background-color: #999 !important;
+}
+
+/* Adding exception for product icon buttons to remove 3D styling */
+button.text-left.cursor-pointer.p-2.flex.flex-col.items-center {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem !important;
+}
+
+button.text-left.cursor-pointer.p-2.flex.flex-col.items-center:hover {
+  background-color: transparent !important;
+}
+
+button.text-left.cursor-pointer.p-2.flex.flex-col.items-center:active {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* === PURE BLACK + WHITE DARK MODE OVERRIDE === */
+.dark, .dark * {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  outline-color: #fff !important;
+}
+
+/* Catch elements with inline white backgrounds */
+.dark [style*="background-color: white"],
+.dark [style*="background: white"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background: #fff"],
+.dark [style*="background-color: rgb(255, 255, 255)"],
+.dark [style*="background: rgb(255, 255, 255)"] {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+/* Interactive elements */
+.dark button,
+.dark input,
+.dark textarea,
+.dark select {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #fff !important;
+}
+
+/* Links */
+.dark a {
+  color: #fff !important;
+  text-decoration: underline !important;
+  outline: none !important;
+
+}
+
+.dark, .dark * {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  outline-color: #fff !important;
+}
+
+/* Catch elements with inline white backgrounds */
+.dark [style*="background-color: white"],
+.dark [style*="background: white"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background: #fff"],
+.dark [style*="background-color: rgb(255, 255, 255)"],
+.dark [style*="background: rgb(255, 255, 255)"] {
+  background: #000 !important;
+  background-color: #000 !important;
+  color: #fff !important;
+  outline: none !important;
+
+}
+
+
+.dark button,
+.dark button#active,
+.dark button:hover,
+.dark button:active,
+.dark span,
+.dark .transition-colors,
+.dark .flex-1.overflow-hidden.bg-white,
+.dark .win95-button,
+.dark .win95-button:hover:not(:disabled):not(.active) {
+  background-color: black !important;
+  background: black !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.dark .font-mono {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+
+/* Structural elements */
+.dark div.h-full.overflow-y-auto:not(.win95-inner-content) {
+  background-color: #000 !important;
+  background: #000 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.dark div.h-full.overflow-y-auto.win95-inner-content {
+  background-color: #000 !important;
+  background: #000 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  border: 1px solid #fff !important;
+}
+
+.dark .win95-inner-content {
+  background-color: #000 !important;
+  background: #000 !important;
+  outline: none !important;
+  margin: 0 !important;
+  border: 0px solid #fff !important;
+}
+
+.dark .win95-inner-content div {
+  background-color: #000 !important;
+  background: #000 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+
+.dark .absolute.left-0,
+.dark .transform,
+.dark .notepad,
+.dark div.h-full.overflow-y-auto:not(.win95-inner-content),
+.dark .flex-1.overflow-y-auto:not(.win95-inner-content) {
+  border: 1px solid #fff !important;
+}
+
+/* Progress bars in dark mode */
+.dark .win95-progress-bar {
+  background-color: #ffffff !important;
+}
+
+/* Media */
+.dark img,
+.dark svg,
+.dark video {
+  background: black !important;
+  background-color: black !important;
+}
+
+/* Scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 12px !important;
+  background: #000 !important;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #fff !important;
+  border: 1px solid #000 !important;
+}
+
+.dark div.absolute.mx-0 {
+ border: 2px solid #fff !important;
+}
+
+.dark textarea  {
+ box-shadow: none !important;
+    background: #000 !important;
+    border: none !important;
+    outline: none !important;
+}
+
+
+/* Focus states */
+.dark :focus,
+.dark :hover,
+.dark :active {
+  background-color: black !important;
+  background: black !important;
+}
+
+
+/* === FINAL DARK MODE SCROLLBAR OVERRIDE === */
+.dark::-webkit-scrollbar,
+.dark *::-webkit-scrollbar {
+  width: 12px !important;
+  background: #000 !important;
+}
+
+.dark::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb {
+  background: #fff !important;
+  border: 2px solid #000 !important;
+  box-shadow: none !important;
+}
+
+.dark::-webkit-scrollbar-track,
+.dark *::-webkit-scrollbar-track {
+  background: #000 !important;
+}
+
+.dark::-webkit-scrollbar-corner,
+.dark *::-webkit-scrollbar-corner {
+  background: #000 !important;
+}
+
+.dark::-webkit-scrollbar-button,
+.dark *::-webkit-scrollbar-button {
+  background: #000 !important;
+  border: none !important;
+  background-image: none !important;
+}
+
+/* Figma Accordion Button Override */
+.figma-accordion-button {
+  color: #000 !important;
+  cursor: pointer !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  font-family: MS Sans Serif, sans-serif !important;
+  font-size: 12px !important;
+  transition: none !important;
+  padding: 2px 8px !important;
+}
+
+/* Figma Color Button Override */
+.figma-color-button {
+  background-color: var(--color) !important;
+  border: 1px solid #808080 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
