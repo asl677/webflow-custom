@@ -2876,6 +2876,9 @@ console.log('📺 Test toggle with: window.testToggle()');
       console.log(`📺 Processing element ${i}: ${targetElement.tagName}.${targetElement.className}`);
       
       if (isFullscreen) {
+        // Add fullscreen class to body for CSS-based styling
+        document.body.classList.add('fullscreen-scroll-mode');
+        
         // Make container fullscreen
         targetElement.style.setProperty('width', '100vw', 'important');
         targetElement.style.setProperty('height', '100vh', 'important');
@@ -2884,17 +2887,26 @@ console.log('📺 Test toggle with: window.testToggle()');
         targetElement.style.setProperty('max-width', 'none', 'important');
         targetElement.style.setProperty('max-height', 'none', 'important');
         
-        // Scale mask-wrap containers first
+        // For mask-wrap containers, be more careful to preserve animations
         const maskWraps = targetElement.querySelectorAll('.mask-wrap');
         console.log(`📺 Found ${maskWraps.length} mask-wrap containers`);
         
         maskWraps.forEach((maskWrap, maskIndex) => {
-          console.log(`📺 Scaling mask-wrap ${maskIndex}:`, maskWrap.className);
-          maskWrap.style.setProperty('width', '100%', 'important');
+          console.log(`📺 Processing mask-wrap ${maskIndex}:`, maskWrap.className);
+          
+          // Only set height and max constraints, let width be controlled by mask animation
           maskWrap.style.setProperty('height', '100%', 'important');
-          maskWrap.style.setProperty('max-width', 'none', 'important');
           maskWrap.style.setProperty('max-height', 'none', 'important');
           maskWrap.style.setProperty('overflow', 'hidden', 'important');
+          
+          // Only set width to 100% if the mask animation is complete
+          if (maskWrap.dataset.maskComplete === 'true') {
+            maskWrap.style.setProperty('width', '100%', 'important');
+            maskWrap.style.setProperty('max-width', 'none', 'important');
+            console.log(`📺 Mask animation complete, setting full width for mask-wrap ${maskIndex}`);
+          } else {
+            console.log(`📺 Preserving mask width animation for mask-wrap ${maskIndex}`);
+          }
         });
         
         // Make inner image fill the container - with detailed debugging
@@ -2936,12 +2948,18 @@ console.log('📺 Test toggle with: window.testToggle()');
         targetElement.style.removeProperty('max-width');
         targetElement.style.removeProperty('max-height');
         
-        // Restore mask-wrap containers
+        // Remove fullscreen class from body
+        document.body.classList.remove('fullscreen-scroll-mode');
+        
+        // Restore mask-wrap containers carefully
         const maskWraps = targetElement.querySelectorAll('.mask-wrap');
         maskWraps.forEach(maskWrap => {
-          maskWrap.style.removeProperty('width');
+          // Only remove width if mask animation is complete, otherwise preserve it
+          if (maskWrap.dataset.maskComplete === 'true') {
+            maskWrap.style.removeProperty('width');
+            maskWrap.style.removeProperty('max-width');
+          }
           maskWrap.style.removeProperty('height');
-          maskWrap.style.removeProperty('max-width');
           maskWrap.style.removeProperty('max-height');
           maskWrap.style.removeProperty('overflow');
         });
