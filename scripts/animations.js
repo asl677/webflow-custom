@@ -1731,7 +1731,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 4000);
     }
   }); // End of Promise.all - wait for image dimensions
-  }
+}
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
