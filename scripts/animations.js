@@ -2948,6 +2948,26 @@ console.log('📺 Test toggle with: window.testToggle()');
     // Get the original text
     const originalText = '514 LINKEDIN GOOGLE UENO JOURNEYS ZIPPO';
     
+    // Apply base styles from .heading.small.link.muted.disabled
+    const baseElement = document.querySelector('.heading.small.link.muted.disabled');
+    if (baseElement) {
+      const computedStyles = window.getComputedStyle(baseElement);
+      fixCenter.style.cssText = `
+        font-family: ${computedStyles.fontFamily};
+        font-size: ${computedStyles.fontSize};
+        font-weight: ${computedStyles.fontWeight};
+        line-height: ${computedStyles.lineHeight};
+        letter-spacing: ${computedStyles.letterSpacing};
+        text-transform: ${computedStyles.textTransform};
+        color: ${computedStyles.color};
+        opacity: ${computedStyles.opacity};
+        text-decoration: ${computedStyles.textDecoration};
+      `;
+      console.log('✅ Applied base styles from .heading.small.link.muted.disabled');
+    } else {
+      console.log('⚠️ Could not find .heading.small.link.muted.disabled element');
+    }
+    
     // Clear any existing content
     fixCenter.textContent = '';
     
