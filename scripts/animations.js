@@ -2878,13 +2878,20 @@ console.log('📺 Test toggle with: window.testToggle()');
   // Wait for elements to be available AND for scrambling to complete
   // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
   setTimeout(() => {
+    console.log('💧 Attempting to find Blotter target elements...');
     const distortionText = document.getElementById("distortion-text");
     const subtitleElem = document.getElementById("subtitle");
     
+    console.log('💧 distortion-text element:', distortionText);
+    console.log('💧 subtitle element:', subtitleElem);
+    
     if (!distortionText || !subtitleElem) {
       console.warn('⚠️ Blotter target elements not found (#distortion-text or #subtitle)');
+      console.log('💧 Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
       return;
     }
+    
+    console.log('💧 Creating Blotter text objects...');
     
     // Main text
     var text = new Blotter.Text("Designer+Developer", {
