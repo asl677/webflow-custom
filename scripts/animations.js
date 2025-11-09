@@ -2808,22 +2808,17 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.removeProperty('max-height');
       });
       
-      // For mask-wraps, only remove if animation is complete
-      // Otherwise GSAP might not have set the width yet
+      // For mask-wraps, set to target width then remove important flag
       maskWraps.forEach(el => {
-        const img = el.querySelector('img');
-        if (img && img.dataset.maskComplete) {
-          // Animation done, safe to remove
-          el.style.removeProperty('width');
-          el.style.removeProperty('height');
-          el.style.removeProperty('max-width');
-          el.style.removeProperty('max-height');
-        } else {
-          // Animation not done yet, just remove height properties
-          // Leave width alone so it doesn't go back to 0
-          el.style.removeProperty('height');
-          el.style.removeProperty('max-height');
+        // Get the target width that GSAP should animate to
+        const targetWidth = el.dataset.targetWidth;
+        if (targetWidth) {
+          // Set to target width without important
+          el.style.width = targetWidth + 'px';
         }
+        el.style.removeProperty('height');
+        el.style.removeProperty('max-width');
+        el.style.removeProperty('max-height');
       });
       
       images.forEach(el => {
