@@ -1524,6 +1524,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
     
+    // Prevent mobile fade from running more than once
+    if (isMobile && window.mobileFadeComplete) {
+      console.log('📱 Mobile fade already complete - skipping');
+      return;
+    }
+    
     // Only register ScrollTrigger on desktop to prevent mobile flickering
     if (!isMobile && typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
@@ -1825,9 +1831,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
       }, 4000);
+      
+      // Mark mobile fade as complete on mobile
+      if (isMobile) {
+        window.mobileFadeComplete = true;
+        console.log('📱 Mobile fade complete - will not re-run');
+      }
     }
   }); // End of Promise.all - wait for image dimensions
-  }
+}
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
