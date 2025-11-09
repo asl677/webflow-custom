@@ -1587,7 +1587,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // Process both original and cloned images the same way
+        // MOBILE: No mask-wrap, just show images directly
+        if (isMobile) {
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.dataset.maskSetup = 'true';
+          console.log(`📱 Mobile: Image ${index} visible (no mask)`);
+          return;
+        }
+        
+        // DESKTOP ONLY: Process with mask-wrap
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
@@ -1691,10 +1700,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           
           if (inViewport && index === 0) {
             // First image reveals immediately
-            window.gsap.set(maskContainer, { width: '0px' });
+          window.gsap.set(maskContainer, { width: '0px' });
             console.log(`🎭 First image in viewport - revealing immediately`);
-            window.gsap.to(maskContainer, { 
-              width: maskContainer.dataset.targetWidth + 'px', 
+          window.gsap.to(maskContainer, { 
+            width: maskContainer.dataset.targetWidth + 'px', 
               duration: 1.2,
               ease: "power2.out",
               onComplete: () => {
