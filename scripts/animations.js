@@ -2864,9 +2864,8 @@ console.log('📺 Test toggle with: window.testToggle()');
     console.log(`📺 Found ${containers.length} parent containers`);
     
     if (isBig) {
-      // ONLY set width/height, don't touch anything else
-      [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
-        // Cache ONLY width/height properties
+      // Cache and set img-parallax and reveals
+      [...imgParallax, ...reveals].forEach(el => {
         if (!dimensionCache.has(el)) {
           dimensionCache.set(el, {
             width: el.style.width,
@@ -2875,11 +2874,24 @@ console.log('📺 Test toggle with: window.testToggle()');
             maxHeight: el.style.maxHeight
           });
         }
-        // Set ONLY dimensions
         el.style.setProperty('width', '100vw', 'important');
         el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('max-width', '100vw', 'important');
         el.style.setProperty('max-height', '100vh', 'important');
+      });
+      
+      // DON'T override mask-wrap widths - GSAP needs to control them
+      // Just set height to 100vh so they fill vertically
+      maskWraps.forEach(el => {
+        if (!dimensionCache.has(el)) {
+          dimensionCache.set(el, {
+            height: el.style.height,
+            maxHeight: el.style.maxHeight
+          });
+        }
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+        // DON'T touch width - let GSAP animate it
       });
       
       images.forEach(el => {
@@ -2901,14 +2913,24 @@ console.log('📺 Test toggle with: window.testToggle()');
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
-      // RESTORE ONLY width/height properties we cached
-      [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
+      // RESTORE ONLY what we cached for each element type
+      [...imgParallax, ...reveals].forEach(el => {
         const cached = dimensionCache.get(el);
         if (cached) {
           el.style.width = cached.width || '';
           el.style.height = cached.height || '';
           el.style.maxWidth = cached.maxWidth || '';
           el.style.maxHeight = cached.maxHeight || '';
+        }
+      });
+      
+      // Restore mask-wrap heights (not widths - GSAP controls those)
+      maskWraps.forEach(el => {
+        const cached = dimensionCache.get(el);
+        if (cached) {
+          el.style.height = cached.height || '';
+          el.style.maxHeight = cached.maxHeight || '';
+          // DON'T restore width - GSAP has set it
         }
       });
       
