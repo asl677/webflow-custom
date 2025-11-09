@@ -1,10 +1,10 @@
-// Version 3.1: Sequential Mobile Fade Stagger Fix - CACHE REFRESH REQUIRED
+// Version 3.3: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
 // IMMEDIATE SCRIPT LOAD TEST
-console.log('🚀 SCRIPT LOADED: Portfolio animations v2.8 starting...');
+console.log('🚀 SCRIPT LOADED: Portfolio animations v3.3 - Mobile mask fix');
 console.log('🚀 URL:', window.location.href);
 console.log('🚀 MOBILE DETECTION:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
 window.scriptLoadTest = function() {
