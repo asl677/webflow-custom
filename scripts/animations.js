@@ -1665,16 +1665,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             // Mobile stagger for initial images in view
           window.gsap.set(maskContainer, { width: '0px' });
             const staggerDelay = index * 0.15; // 150ms between each image
-            console.log(`📱 Mobile stagger for image ${index} - delay: ${staggerDelay}s`);
+            console.log(`📱 Mobile stagger for image ${index} - delay: ${staggerDelay}s, targetWidth: ${maskContainer.dataset.targetWidth}px`);
+            console.log(`📱 Image ${index} element:`, element.src || element.tagName, 'visible:', element.offsetWidth > 0);
             
             setTimeout(() => {
+              console.log(`📱 Animating image ${index} NOW`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
                 duration: 0.8,
                 ease: "power2.out",
+                onStart: () => {
+                  console.log(`📱 Animation started for image ${index}`);
+                },
                 onComplete: () => {
                   element.dataset.gsapAnimated = 'mask-revealed';
                   element.dataset.maskComplete = 'true';
+                  console.log(`📱 Animation complete for image ${index}, maskContainer width:`, maskContainer.style.width);
                 }
               });
             }, staggerDelay * 1000);
