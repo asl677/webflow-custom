@@ -2840,9 +2840,18 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SUPER SIMPLE toggle setup...');
   
-  // Add one simple CSS rule - just make wrapper full width and stack properly
+  // Add one simple CSS rule - target parent containers and reveal elements
   const style = document.createElement('style');
   style.textContent = `
+    .big-images .main-wrapper,
+    .big-images .container,
+    .big-images .page-wrapper,
+    .big-images .w-layout-grid {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
     .big-images .reveal,
     .big-images .reveal-full,
     .big-images .mask-wrap {
