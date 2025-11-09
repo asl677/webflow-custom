@@ -2851,13 +2851,17 @@ console.log('📺 Test toggle with: window.testToggle()');
     window.isFullscreenMode = isBig;
     console.log(`📺 ${isBig ? 'FULLSCREEN ON' : 'FULLSCREEN OFF'}`);
     
-    // Get EVERY element
+    // Get EVERY element including clones
     const imgParallax = document.querySelectorAll('.img-parallax');
     const reveals = document.querySelectorAll('.reveal');
     const maskWraps = document.querySelectorAll('.mask-wrap');
     const images = document.querySelectorAll('.mask-wrap img, .reveal img');
     
     console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps, ${images.length} images`);
+    
+    // Also get all parent containers that might need resetting
+    const containers = document.querySelectorAll('.main-wrapper, .page-wrapper, .w-layout-grid');
+    console.log(`📺 Found ${containers.length} parent containers`);
     
     if (isBig) {
       // ONLY set width/height, don't touch anything else
@@ -2920,11 +2924,15 @@ console.log('📺 Test toggle with: window.testToggle()');
       
       console.log('📺 Restored original dimensions');
       
+      // Force a complete layout recalculation
+      // This helps fix spacing issues with infinite scroll clones
+      document.body.offsetHeight; // Force reflow
+      
       // Refresh ScrollTrigger after a small delay to let styles settle
       if (window.ScrollTrigger) {
         setTimeout(() => {
-          console.log('📺 Refreshing ScrollTrigger...');
-          window.ScrollTrigger.refresh();
+          console.log('📺 Refreshing ScrollTrigger and recalculating layout...');
+          window.ScrollTrigger.refresh(true); // true = force full recalculation
         }, 100);
       }
     }
