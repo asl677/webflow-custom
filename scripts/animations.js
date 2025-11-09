@@ -2874,13 +2874,14 @@ console.log('📺 Test toggle with: window.testToggle()');
           });
         }
         
-        // Scale image to viewport size without changing position
-        img.style.setProperty('width', '100vw', 'important');
-        img.style.setProperty('height', '100vh', 'important');
+        // Scale image to viewport size with slight zoom to avoid scaling artifacts
+        img.style.setProperty('width', '105vw', 'important');
+        img.style.setProperty('height', '105vh', 'important');
         img.style.setProperty('object-fit', 'cover', 'important');
         img.style.setProperty('object-position', 'center', 'important');
         img.style.setProperty('max-width', 'none', 'important');
         img.style.setProperty('max-height', 'none', 'important');
+        img.style.setProperty('transform', 'scale(0.95)', 'important');
         
         // Scale the parent container to accommodate the large image
         const parentContainer = img.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || img.parentElement;
