@@ -2841,23 +2841,19 @@ console.log('📺 Test toggle with: window.testToggle()');
   console.log('📺 SUPER SIMPLE toggle setup...');
   
   let isBig = false;
-  const originalStyles = new WeakMap(); // Use WeakMap to prevent memory leaks
+  const originalStyles = new WeakMap();
   
-  function toggleBigImages() {
-    isBig = !isBig;
-    
-    // Get ALL elements that need resizing
+  // Apply styles to all current elements
+  function applyStylesToAll() {
     const imgParallax = document.querySelectorAll('.img-parallax');
     const reveals = document.querySelectorAll('.reveal');
     const maskWraps = document.querySelectorAll('.mask-wrap');
     const images = document.querySelectorAll('.mask-wrap img');
     
-    console.log(`📺 Found ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps`);
+    console.log(`📺 Applying to ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
     if (isBig) {
-      console.log('📺 Fullscreen mode ON - applying inline styles');
-      
-      // Store and apply fullscreen to img-parallax
+      // Apply fullscreen to img-parallax
       imgParallax.forEach(el => {
         if (!originalStyles.has(el)) {
           originalStyles.set(el, {
@@ -2873,7 +2869,7 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('max-height', '100vh', 'important');
       });
       
-      // Store and apply fullscreen to reveals
+      // Apply fullscreen to reveals
       reveals.forEach(el => {
         if (!originalStyles.has(el)) {
           originalStyles.set(el, {
@@ -2889,7 +2885,7 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('max-height', '100vh', 'important');
       });
       
-      // Store and apply fullscreen to mask-wraps
+      // Apply fullscreen to mask-wraps
       maskWraps.forEach(el => {
         if (!originalStyles.has(el)) {
           originalStyles.set(el, {
@@ -2921,11 +2917,8 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('max-height', '105vh', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
       });
-      
     } else {
-      console.log('📺 Fullscreen mode OFF - restoring original styles');
-      
-      // Restore img-parallax
+      // Restore all elements
       imgParallax.forEach(el => {
         const original = originalStyles.get(el);
         if (original) {
@@ -2936,7 +2929,6 @@ console.log('📺 Test toggle with: window.testToggle()');
         }
       });
       
-      // Restore reveals
       reveals.forEach(el => {
         const original = originalStyles.get(el);
         if (original) {
@@ -2947,7 +2939,6 @@ console.log('📺 Test toggle with: window.testToggle()');
         }
       });
       
-      // Restore mask-wraps
       maskWraps.forEach(el => {
         const original = originalStyles.get(el);
         if (original) {
@@ -2958,7 +2949,6 @@ console.log('📺 Test toggle with: window.testToggle()');
         }
       });
       
-      // Restore images
       images.forEach(el => {
         const original = originalStyles.get(el);
         if (original) {
@@ -2969,6 +2959,45 @@ console.log('📺 Test toggle with: window.testToggle()');
           if (original.objectFit) el.style.objectFit = original.objectFit;
         }
       });
+    }
+  }
+  
+  function toggleBigImages() {
+    isBig = !isBig;
+    console.log(`📺 Fullscreen mode ${isBig ? 'ON' : 'OFF'}`);
+    
+    // Apply immediately
+    applyStylesToAll();
+    
+    // If turning on fullscreen, keep reapplying as elements come into view
+    if (isBig) {
+      // Watch for scroll and keep applying
+      const scrollHandler = () => {
+        if (isBig) {
+          applyStylesToAll();
+        }
+      };
+      
+      // Apply on scroll
+      window.addEventListener('scroll', scrollHandler, { passive: true });
+      
+      // Store handler so we can remove it
+      window._fullscreenScrollHandler = scrollHandler;
+      
+      // Also apply periodically for safety
+      const interval = setInterval(() => {
+        if (!isBig) {
+          clearInterval(interval);
+          return;
+        }
+        applyStylesToAll();
+      }, 100);
+    } else {
+      // Remove scroll handler when turning off
+      if (window._fullscreenScrollHandler) {
+        window.removeEventListener('scroll', window._fullscreenScrollHandler);
+        window._fullscreenScrollHandler = null;
+      }
     }
   }
   
