@@ -2836,4 +2836,40 @@ window.testToggle = function() {
 
 console.log('📺 Test toggle with: window.testToggle()');
 
-// Toggle functionality removed to prevent issues
+// SUPER SIMPLE toggle - just make images bigger
+(function() {
+  console.log('📺 SUPER SIMPLE toggle setup...');
+  
+  // Add one simple CSS rule
+  const style = document.createElement('style');
+  style.textContent = `
+    .big-images img {
+      transform: scale(3) !important;
+      z-index: 1000 !important;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  let isBig = false;
+  
+  function toggleBigImages() {
+    isBig = !isBig;
+    if (isBig) {
+      document.body.classList.add('big-images');
+      console.log('📺 Made images bigger');
+    } else {
+      document.body.classList.remove('big-images');
+      console.log('📺 Made images normal');
+    }
+  }
+  
+  // Find toggle button
+  setTimeout(() => {
+    const toggle = document.querySelector('.toggle');
+    if (toggle) {
+      toggle.addEventListener('click', toggleBigImages);
+      console.log('📺 Toggle ready - click to make images 3x bigger');
+    }
+    window.toggleBigImages = toggleBigImages;
+  }, 1000);
+})();
