@@ -2836,43 +2836,54 @@ window.testToggle = function() {
 
 console.log('📺 Test toggle with: window.testToggle()');
 
-// NUCLEAR OPTION - Force everything fullscreen, no subtlety
+// BRUTAL FORCE - inline styles on every element
 (function() {
-  console.log('📺 NUCLEAR toggle setup...');
+  console.log('📺 BRUTAL FORCE toggle setup...');
   
   let isBig = false;
-  
-  // Just add/remove a body class and let CSS handle it
-  const style = document.createElement('style');
-  style.textContent = `
-    /* NUCLEAR fullscreen mode - override EVERYTHING */
-    body.fullscreen-mode .img-parallax,
-    body.fullscreen-mode .img-parallax *,
-    body.fullscreen-mode .reveal,
-    body.fullscreen-mode .reveal *,
-    body.fullscreen-mode .mask-wrap,
-    body.fullscreen-mode .mask-wrap * {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-    }
-    
-    body.fullscreen-mode img {
-      object-fit: cover !important;
-    }
-  `;
-  document.head.appendChild(style);
+  const styleCache = new WeakMap();
   
   function toggleBigImages() {
     isBig = !isBig;
+    console.log(`📺 ${isBig ? 'FULLSCREEN ON' : 'FULLSCREEN OFF'}`);
+    
+    // Get EVERY element
+    const imgParallax = document.querySelectorAll('.img-parallax');
+    const reveals = document.querySelectorAll('.reveal');
+    const maskWraps = document.querySelectorAll('.mask-wrap');
+    const images = document.querySelectorAll('.mask-wrap img, .reveal img');
+    
+    console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
     if (isBig) {
-      document.body.classList.add('fullscreen-mode');
-      console.log('📺 FULLSCREEN ON - everything is 100vw/vh');
+      // FORCE EVERYTHING TO FULLSCREEN
+      [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
+        // Cache original inline styles
+        if (!styleCache.has(el)) {
+          styleCache.set(el, el.style.cssText);
+        }
+        // BRUTAL override
+        el.style.cssText += '; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; max-height: 100vh !important;';
+      });
+      
+      images.forEach(el => {
+        if (!styleCache.has(el)) {
+          styleCache.set(el, el.style.cssText);
+        }
+        el.style.cssText += '; width: 100% !important; height: 100% !important; object-fit: cover !important;';
+      });
+      
+      console.log('📺 Applied fullscreen styles to all elements');
     } else {
-      document.body.classList.remove('fullscreen-mode');
-      console.log('📺 FULLSCREEN OFF - back to normal');
+      // RESTORE EVERYTHING
+      [...imgParallax, ...reveals, ...maskWraps, ...images].forEach(el => {
+        const original = styleCache.get(el);
+        if (original !== undefined) {
+          el.style.cssText = original;
+        }
+      });
+      
+      console.log('📺 Restored original styles to all elements');
     }
   }
   
@@ -2881,7 +2892,8 @@ console.log('📺 Test toggle with: window.testToggle()');
     const toggle = document.querySelector('.toggle');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('📺 Toggle ready - NUCLEAR mode');
+      console.log('📺 Toggle ready - BRUTAL FORCE mode');
+      console.log('📺 Test with: window.toggleBigImages()');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
