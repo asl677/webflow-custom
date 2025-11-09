@@ -2868,42 +2868,47 @@ console.log('📺 Test toggle with: window.testToggle()');
     const reveals = document.querySelectorAll('.reveal');
     const maskWraps = document.querySelectorAll('.mask-wrap');
     
+    console.log(`📺 Found ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps`);
+    
     if (isBig) {
-      console.log('📺 Making images bigger with direct style override');
+      console.log('📺 Making images bigger with AGGRESSIVE override');
       
-      // Force styles directly on elements
-      imgParallax.forEach(el => {
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
+      // AGGRESSIVE override - use cssText to completely override
+      imgParallax.forEach((el, i) => {
+        console.log(`📺 Before img-parallax ${i}:`, el.style.cssText);
+        const currentStyles = el.style.cssText;
+        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 After img-parallax ${i}:`, el.style.cssText);
       });
       
-      reveals.forEach(el => {
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
+      reveals.forEach((el, i) => {
+        console.log(`📺 Before reveal ${i}:`, el.style.cssText);
+        const currentStyles = el.style.cssText;
+        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 After reveal ${i}:`, el.style.cssText);
       });
       
-      maskWraps.forEach(el => {
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
+      maskWraps.forEach((el, i) => {
+        console.log(`📺 Before mask-wrap ${i}:`, el.style.cssText);
+        const currentStyles = el.style.cssText;
+        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 After mask-wrap ${i}:`, el.style.cssText);
       });
       
     } else {
       console.log('📺 Removing big image styles');
       
-      // Remove the forced styles
+      // Remove the forced styles by removing from cssText
       imgParallax.forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
+        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
       });
       
       reveals.forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
+        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
       });
       
       maskWraps.forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
+        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
       });
     }
   }
