@@ -2836,108 +2836,43 @@ window.testToggle = function() {
 
 console.log('📺 Test toggle with: window.testToggle()');
 
-// SUPER SIMPLE toggle - just make images bigger
+// NUCLEAR OPTION - Force everything fullscreen, no subtlety
 (function() {
-  console.log('📺 SUPER SIMPLE toggle setup...');
+  console.log('📺 NUCLEAR toggle setup...');
   
   let isBig = false;
-  const originalStyles = new WeakMap();
   
-  // Apply styles ONLY to img-parallax containers
-  // Leave reveal and mask-wrap alone so GSAP animations work
-  function applyStylesToAll() {
-    const imgParallax = document.querySelectorAll('.img-parallax');
-    
-    console.log(`📺 Applying to ${imgParallax.length} img-parallax containers only`);
-    
-    if (isBig) {
-      // Apply fullscreen ONLY to img-parallax containers
-      imgParallax.forEach(el => {
-        if (!originalStyles.has(el)) {
-          originalStyles.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            maxWidth: el.style.maxWidth,
-            maxHeight: el.style.maxHeight
-          });
-        }
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
-        el.style.setProperty('max-height', '100vh', 'important');
-        
-        // Also make the reveal child fill the container
-        const reveal = el.querySelector('.reveal');
-        if (reveal && !originalStyles.has(reveal)) {
-          originalStyles.set(reveal, {
-            width: reveal.style.width,
-            height: reveal.style.height
-          });
-          reveal.style.setProperty('width', '100%', 'important');
-          reveal.style.setProperty('height', '100%', 'important');
-        }
-      });
-      
-    } else {
-      // Restore img-parallax containers
-      imgParallax.forEach(el => {
-        const original = originalStyles.get(el);
-        if (original) {
-          el.style.width = original.width;
-          el.style.height = original.height;
-          el.style.maxWidth = original.maxWidth;
-          el.style.maxHeight = original.maxHeight;
-        }
-        
-        // Restore reveal child
-        const reveal = el.querySelector('.reveal');
-        if (reveal) {
-          const revealOriginal = originalStyles.get(reveal);
-          if (revealOriginal) {
-            reveal.style.width = revealOriginal.width;
-            reveal.style.height = revealOriginal.height;
-          }
-        }
-      });
+  // Just add/remove a body class and let CSS handle it
+  const style = document.createElement('style');
+  style.textContent = `
+    /* NUCLEAR fullscreen mode - override EVERYTHING */
+    body.fullscreen-mode .img-parallax,
+    body.fullscreen-mode .img-parallax *,
+    body.fullscreen-mode .reveal,
+    body.fullscreen-mode .reveal *,
+    body.fullscreen-mode .mask-wrap,
+    body.fullscreen-mode .mask-wrap * {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
     }
-  }
+    
+    body.fullscreen-mode img {
+      object-fit: cover !important;
+    }
+  `;
+  document.head.appendChild(style);
   
   function toggleBigImages() {
     isBig = !isBig;
-    console.log(`📺 Fullscreen mode ${isBig ? 'ON' : 'OFF'}`);
     
-    // Apply immediately
-    applyStylesToAll();
-    
-    // If turning on fullscreen, keep reapplying as elements come into view
     if (isBig) {
-      // Watch for scroll and keep applying
-      const scrollHandler = () => {
-        if (isBig) {
-          applyStylesToAll();
-        }
-      };
-      
-      // Apply on scroll
-      window.addEventListener('scroll', scrollHandler, { passive: true });
-      
-      // Store handler so we can remove it
-      window._fullscreenScrollHandler = scrollHandler;
-      
-      // Also apply periodically for safety
-      const interval = setInterval(() => {
-        if (!isBig) {
-          clearInterval(interval);
-          return;
-        }
-        applyStylesToAll();
-      }, 100);
+      document.body.classList.add('fullscreen-mode');
+      console.log('📺 FULLSCREEN ON - everything is 100vw/vh');
     } else {
-      // Remove scroll handler when turning off
-      if (window._fullscreenScrollHandler) {
-        window.removeEventListener('scroll', window._fullscreenScrollHandler);
-        window._fullscreenScrollHandler = null;
-      }
+      document.body.classList.remove('fullscreen-mode');
+      console.log('📺 FULLSCREEN OFF - back to normal');
     }
   }
   
@@ -2946,7 +2881,7 @@ console.log('📺 Test toggle with: window.testToggle()');
     const toggle = document.querySelector('.toggle');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('📺 Toggle ready - click to toggle fullscreen');
+      console.log('📺 Toggle ready - NUCLEAR mode');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
