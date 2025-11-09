@@ -1523,10 +1523,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Masked image animations - unified for all devices
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
+    console.log('📱 isMobile:', isMobile, 'mobileFadeComplete:', window.mobileFadeComplete);
     
     // Prevent mobile fade from running more than once
     if (isMobile && window.mobileFadeComplete) {
-      console.log('📱 Mobile fade already complete - skipping');
+      console.log('📱 Mobile fade already complete - EXITING FUNCTION');
       return;
     }
     
@@ -1834,12 +1835,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Mark mobile fade as complete on mobile
       if (isMobile) {
-        window.mobileFadeComplete = true;
-        console.log('📱 Mobile fade complete - will not re-run');
+        setTimeout(() => {
+          window.mobileFadeComplete = true;
+          console.log('📱 SETTING mobileFadeComplete = true - fade animation done');
+        }, imagesToProcess.length * 150 + 600); // Wait for all staggers + fade duration
       }
     }
   }); // End of Promise.all - wait for image dimensions
-}
+  }
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
