@@ -2840,32 +2840,20 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SUPER SIMPLE toggle setup...');
   
-  // Add one simple CSS rule - target parent containers and reveal elements
+  // DEAD SIMPLE - just change width/height of specific elements
   const style = document.createElement('style');
   style.textContent = `
-    .big-images .main-wrapper,
-    .big-images .container,
-    .big-images .page-wrapper,
-    .big-images .w-layout-grid {
+    .big-images .img-parallax {
       width: 100vw !important;
-      max-width: 100vw !important;
-      margin: 0 !important;
-      padding: 0 !important;
+      height: 100vh !important;
     }
-    .big-images .reveal,
-    .big-images .reveal-full,
+    .big-images .reveal {
+      width: 100vw !important;
+      height: 100vh !important;
+    }
     .big-images .mask-wrap {
       width: 100vw !important;
       height: 100vh !important;
-      display: block !important;
-      position: relative !important;
-      margin: 0 !important;
-    }
-    .big-images img {
-      width: 100vw !important;
-      height: 100vh !important;
-      object-fit: cover !important;
-      object-position: center !important;
     }
   `;
   document.head.appendChild(style);
