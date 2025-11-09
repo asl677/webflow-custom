@@ -2783,36 +2783,12 @@ console.log('📺 Test toggle with: window.testToggle()');
     console.log(`📺 Found ${containers.length} parent containers`);
     
     if (isBig) {
-      // Cache and set img-parallax, reveals, and reveal-fulls
-      [...imgParallax, ...reveals, ...revealFulls].forEach(el => {
-        if (!dimensionCache.has(el)) {
-          dimensionCache.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            maxWidth: el.style.maxWidth,
-            maxHeight: el.style.maxHeight
-          });
-        }
+      // FORCE EVERYTHING TO 100VW/100VH - BRUTALLY SIMPLE
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
         el.style.setProperty('width', '100vw', 'important');
         el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('max-width', '100vw', 'important');
         el.style.setProperty('max-height', '100vh', 'important');
-      });
-      
-      // Force mask-wraps to 100vw in fullscreen
-      // Set via cssText to override any GSAP inline styles
-      maskWraps.forEach(el => {
-        if (!dimensionCache.has(el)) {
-          // Cache the GSAP-animated width
-          dimensionCache.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            maxHeight: el.style.maxHeight
-          });
-        }
-        // Use cssText to forcefully override
-        const currentCssText = el.style.cssText;
-        el.style.cssText = currentCssText + ';width:100vw!important;height:100vh!important;max-height:100vh!important;';
       });
       
       images.forEach(el => {
@@ -2843,26 +2819,12 @@ console.log('📺 Test toggle with: window.testToggle()');
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
-      // RESTORE ONLY what we cached for each element type
-      [...imgParallax, ...reveals, ...revealFulls].forEach(el => {
-        const cached = dimensionCache.get(el);
-        if (cached) {
-          el.style.width = cached.width || '';
-          el.style.height = cached.height || '';
-          el.style.maxWidth = cached.maxWidth || '';
-          el.style.maxHeight = cached.maxHeight || '';
-        }
-      });
-      
-      // Restore mask-wrap dimensions to cached GSAP values
-      maskWraps.forEach(el => {
-        const cached = dimensionCache.get(el);
-        if (cached) {
-          // Restore the exact cssText that GSAP had set
-          el.style.width = cached.width || '';
-          el.style.height = cached.height || '';
-          el.style.maxHeight = cached.maxHeight || '';
-        }
+      // REMOVE THE IMPORTANT FLAGS - LET GSAP CONTROL AGAIN
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('max-width');
+        el.style.removeProperty('max-height');
       });
       
       images.forEach(el => {
