@@ -2862,12 +2862,49 @@ console.log('📺 Test toggle with: window.testToggle()');
   
   function toggleBigImages() {
     isBig = !isBig;
+    
+    // Get all the elements we need to change
+    const imgParallax = document.querySelectorAll('.img-parallax');
+    const reveals = document.querySelectorAll('.reveal');
+    const maskWraps = document.querySelectorAll('.mask-wrap');
+    
     if (isBig) {
-      document.body.classList.add('big-images');
-      console.log('📺 Made images bigger');
+      console.log('📺 Making images bigger with direct style override');
+      
+      // Force styles directly on elements
+      imgParallax.forEach(el => {
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+      });
+      
+      reveals.forEach(el => {
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+      });
+      
+      maskWraps.forEach(el => {
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+      });
+      
     } else {
-      document.body.classList.remove('big-images');
-      console.log('📺 Made images normal');
+      console.log('📺 Removing big image styles');
+      
+      // Remove the forced styles
+      imgParallax.forEach(el => {
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+      });
+      
+      reveals.forEach(el => {
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+      });
+      
+      maskWraps.forEach(el => {
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+      });
     }
   }
   
