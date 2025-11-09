@@ -2799,19 +2799,18 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('max-height', '100vh', 'important');
       });
       
-      // Force mask-wraps to 100vw/100vh as well
+      // Force mask-wraps to 100vw/100vh in fullscreen
+      // But DON'T cache width - GSAP controls it and we won't restore it
       maskWraps.forEach(el => {
         if (!dimensionCache.has(el)) {
           dimensionCache.set(el, {
-            width: el.style.width,
+            // DON'T cache width - GSAP has set it, we won't restore it
             height: el.style.height,
-            maxWidth: el.style.maxWidth,
             maxHeight: el.style.maxHeight
           });
         }
         el.style.setProperty('width', '100vw', 'important');
         el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
         el.style.setProperty('max-height', '100vh', 'important');
       });
       
@@ -2854,13 +2853,13 @@ console.log('📺 Test toggle with: window.testToggle()');
         }
       });
       
-      // Restore mask-wrap dimensions fully
+      // Restore mask-wrap heights only (DON'T touch width - GSAP controls it)
       maskWraps.forEach(el => {
         const cached = dimensionCache.get(el);
         if (cached) {
-          el.style.width = cached.width || '';
+          // Remove the important flags we added
+          el.style.removeProperty('width');
           el.style.height = cached.height || '';
-          el.style.maxWidth = cached.maxWidth || '';
           el.style.maxHeight = cached.maxHeight || '';
         }
       });
