@@ -1658,13 +1658,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         } else {
           // USE SCROLLTRIGGER FOR EVERYONE (mobile and desktop)
           window.gsap.set(maskContainer, { width: '0px' });
+          
+          // Check if element is already in viewport on load
+          const rect = element.getBoundingClientRect();
+          const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+          
+          if (inViewport && index === 0) {
+            // First image and already visible - reveal immediately without ScrollTrigger
+            console.log(`🎭 First image in viewport - revealing immediately`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2,
+              duration: 1.2,
+              ease: "power2.out",
+              onComplete: () => {
+                element.dataset.gsapAnimated = 'mask-revealed';
+                element.dataset.maskComplete = 'true';
+              }
+            });
+          } else {
+            // Use ScrollTrigger for other images
+            window.gsap.to(maskContainer, { 
+              width: maskContainer.dataset.targetWidth + 'px', 
+              duration: 1.2,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%",
+                start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1674,6 +1693,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          }
           
           // Only add parallax when NOT in fullscreen mode
           if (hasParallax && !window.isFullscreenMode) {
