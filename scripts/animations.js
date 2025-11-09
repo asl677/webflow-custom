@@ -2847,11 +2847,9 @@ console.log('📺 Test toggle with: window.testToggle()');
     .big-images .reveal-full,
     .big-images .mask-wrap {
       transform: scale(3) !important;
-      z-index: 1000 !important;
     }
     .big-images img {
       transform: scale(3) !important;
-      z-index: 1000 !important;
     }
   `;
   document.head.appendChild(style);
