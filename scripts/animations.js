@@ -1689,7 +1689,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
         }
-        
+          
         // Only add parallax when NOT in fullscreen mode
         if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
@@ -1701,14 +1701,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 start: "top bottom", 
                 end: "top center", 
                 once: true 
-              },
-              onComplete: () => {
-                // Ensure object-fit is preserved after ScrollTrigger scaling animation
-                element.style.setProperty('object-fit', objectFit, 'important');
-                console.log('🎭 Preserved object-fit after ScrollTrigger scaling:', objectFit);
+            },
+            onComplete: () => {
+              // Ensure object-fit is preserved after ScrollTrigger scaling animation
+              element.style.setProperty('object-fit', objectFit, 'important');
+              console.log('🎭 Preserved object-fit after ScrollTrigger scaling:', objectFit);
               }
             });
-          }
         }
       });
       
@@ -1731,7 +1730,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }, 4000);
     }
   }); // End of Promise.all - wait for image dimensions
-}
+  }
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
