@@ -2848,11 +2848,12 @@ console.log('📺 Test toggle with: window.testToggle()');
     .fullscreen-scroll-mode [class*="reveal"] {
       width: 100vw !important;
       height: 100vh !important;
-      margin: 0 !important;
+      margin: 0 auto !important;
       padding: 0 !important;
       position: relative !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
     
     .fullscreen-scroll-mode .mask-wrap {
