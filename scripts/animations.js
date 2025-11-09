@@ -2758,7 +2758,6 @@ console.log('📺 Test toggle with: window.testToggle()');
   console.log('📺 SURGICAL toggle setup...');
   
   let isBig = false;
-  const dimensionCache = new WeakMap();
   
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
@@ -2792,34 +2791,16 @@ console.log('📺 Test toggle with: window.testToggle()');
       });
       
       images.forEach(el => {
-        if (!dimensionCache.has(el)) {
-          // Get the COMPUTED opacity, not inline style which might be from emergency hide
-          const computedOpacity = window.getComputedStyle(el).opacity;
-          dimensionCache.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            objectFit: el.style.objectFit,
-            scale: el.style.scale || '',
-            // Only cache opacity if it's 1, otherwise cache as 1
-            // This prevents caching 0 from emergency hide or mid-fade states
-            opacity: (computedOpacity === '1' || el.dataset.mobileLocked) ? '1' : '1'
-          });
-        }
-        
         el.style.setProperty('width', '100%', 'important');
         el.style.setProperty('height', '100%', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
-        // Force scale to 1 to disable zoom effect
         el.style.setProperty('scale', '1', 'important');
-        // Ensure images stay visible (prevent fade animations from re-triggering)
-        if (el.dataset.mobileLocked || el.dataset.gsapAnimated) {
-          el.style.setProperty('opacity', '1', 'important');
-        }
+        el.style.setProperty('opacity', '1', 'important');
       });
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
-      // REMOVE THE IMPORTANT FLAGS - LET GSAP CONTROL AGAIN
+      // REMOVE THE IMPORTANT FLAGS - LET GSAP/WEBFLOW CONTROL AGAIN
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
         el.style.removeProperty('width');
         el.style.removeProperty('height');
@@ -2828,25 +2809,12 @@ console.log('📺 Test toggle with: window.testToggle()');
       });
       
       images.forEach(el => {
-        const cached = dimensionCache.get(el);
-        if (cached) {
-          el.style.width = cached.width || '';
-          el.style.height = cached.height || '';
-          el.style.objectFit = cached.objectFit || '';
-          el.style.scale = cached.scale || '';
-          // NEVER restore opacity to 0 - always keep at 1 if already animated
-          // This prevents fade re-triggering on mobile
-          if (el.dataset.mobileLocked || el.dataset.gsapAnimated || el.dataset.infiniteClone) {
-            el.style.opacity = '1';
-          } else if (cached.opacity && cached.opacity !== '0') {
-            el.style.opacity = cached.opacity;
-          } else {
-            el.style.opacity = '1'; // Default to visible
-          }
-        } else {
-          // If no cache, ensure visible
-          el.style.opacity = '1';
-        }
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('object-fit');
+        el.style.removeProperty('scale');
+        // Keep opacity at 1 always
+        el.style.setProperty('opacity', '1', 'important');
       });
       
       console.log('📺 Restored original dimensions');
