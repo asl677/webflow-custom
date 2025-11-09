@@ -2878,58 +2878,64 @@ console.log('📺 Test toggle with: window.testToggle()');
   // Wait for elements to be available AND for scrambling to complete
   // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
   setTimeout(() => {
-    console.log('💧 Attempting to find Blotter target elements...');
-    const distortionText = document.getElementById("distortion-text");
-    const subtitleElem = document.getElementById("subtitle");
+    console.log('💧 Attempting to find text elements in .fix-center...');
     
-    console.log('💧 distortion-text element:', distortionText);
-    console.log('💧 subtitle element:', subtitleElem);
-    
-    if (!distortionText || !subtitleElem) {
-      console.warn('⚠️ Blotter target elements not found (#distortion-text or #subtitle)');
-      console.log('💧 Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+    // Find all text elements with specific classes inside .fix-center
+    const fixCenter = document.querySelector('.fix-center');
+    if (!fixCenter) {
+      console.warn('⚠️ .fix-center element not found');
       return;
     }
     
-    console.log('💧 Creating Blotter text objects...');
+    const textElements = fixCenter.querySelectorAll('.heading, .small, .link, .muted, .disabled, .lg');
+    console.log('💧 Found text elements:', textElements.length);
     
-    // Main text
-    var text = new Blotter.Text("Designer+Developer", {
-      family: "'Archivo', sans-serif",
-      size: 47,
-      fill: "#171717",
-      paddingLeft: 10,
-      paddingRight: 10
-    });
+    if (textElements.length === 0) {
+      console.warn('⚠️ No text elements found with classes: heading, small, link, muted, disabled, lg');
+      return;
+    }
     
-    // Subtitle text
-    var subtitle = new Blotter.Text("Jack of all trades", {
-      family: "'Archivo', sans-serif",
-      size: 27,
-      fill: "#171717",
-      paddingLeft: 10,
-      paddingRight: 10
-    });
-    
-    // Create liquid distortion material
+    // Create liquid distortion material (shared for all)
     var material = new Blotter.LiquidDistortMaterial();
     material.uniforms.uSpeed.value = 0.25;
     material.uniforms.uVolatility.value = 0.02;
     
-    // Apply to main text
-    var blotter = new Blotter(material, {
-      texts: text
-    });
-    var scope = blotter.forText(text);
-    scope.appendTo(distortionText);
+    console.log('💧 Applying Blotter effect to', textElements.length, 'elements...');
     
-    // Apply to subtitle
-    var blotter2 = new Blotter(material, {
-      texts: subtitle
+    // Apply Blotter to each text element
+    textElements.forEach((element, index) => {
+      const textContent = element.textContent || element.innerText;
+      if (!textContent.trim()) {
+        console.log('💧 Skipping empty element', index);
+        return;
+      }
+      
+      // Get computed styles for size and color
+      const computedStyle = getComputedStyle(element);
+      const fontSize = parseInt(computedStyle.fontSize);
+      const color = computedStyle.color;
+      
+      console.log(`💧 Element ${index}: "${textContent.substring(0, 30)}..." - ${fontSize}px, ${color}`);
+      
+      // Create Blotter text with element's actual styles
+      var text = new Blotter.Text(textContent, {
+        family: computedStyle.fontFamily,
+        size: fontSize,
+        fill: color,
+        paddingLeft: 10,
+        paddingRight: 10
+      });
+      
+      var blotter = new Blotter(material, {
+        texts: text
+      });
+      
+      // Clear the original element and append Blotter canvas
+      element.innerHTML = '';
+      var scope = blotter.forText(text);
+      scope.appendTo(element);
     });
-    var scope2 = blotter2.forText(subtitle);
-    scope2.appendTo(subtitleElem);
     
-    console.log('✅ Blotter liquid distortion effect applied');
+    console.log('✅ Blotter liquid distortion effect applied to', textElements.length, 'elements');
   }, 4000); // Wait 4 seconds for scrambling to complete
 })();
