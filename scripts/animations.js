@@ -2858,23 +2858,43 @@ console.log('📺 Test toggle with: window.testToggle()');
       console.log(`📺 Element ${i}: Using ${revealContainer ? 'reveal container' : 'img-parallax element'} as target`);
       
       if (isFullscreen) {
-        // Make fullscreen
+        // Make container fullscreen
         targetElement.style.setProperty('width', '100vw', 'important');
         targetElement.style.setProperty('height', '100vh', 'important');
         targetElement.style.setProperty('position', 'relative', 'important');
         targetElement.style.setProperty('margin', '0', 'important');
         targetElement.style.setProperty('max-width', 'none', 'important');
         targetElement.style.setProperty('max-height', 'none', 'important');
-        console.log(`📺 Made element ${i} fullscreen`);
+        
+        // Make inner image fill the container
+        const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
+        innerImages.forEach(img => {
+          img.style.setProperty('width', '100%', 'important');
+          img.style.setProperty('height', '100%', 'important');
+          img.style.setProperty('object-fit', 'cover', 'important');
+          img.style.setProperty('object-position', 'center', 'important');
+        });
+        
+        console.log(`📺 Made element ${i} fullscreen with ${innerImages.length} inner images scaled`);
       } else {
-        // Remove fullscreen
+        // Remove fullscreen from container
         targetElement.style.removeProperty('width');
         targetElement.style.removeProperty('height');
         targetElement.style.removeProperty('position');
         targetElement.style.removeProperty('margin');
         targetElement.style.removeProperty('max-width');
         targetElement.style.removeProperty('max-height');
-        console.log(`📺 Restored element ${i} to normal`);
+        
+        // Restore inner images
+        const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
+        innerImages.forEach(img => {
+          img.style.removeProperty('width');
+          img.style.removeProperty('height');
+          img.style.removeProperty('object-fit');
+          img.style.removeProperty('object-position');
+        });
+        
+        console.log(`📺 Restored element ${i} to normal with ${innerImages.length} inner images restored`);
       }
     });
     
