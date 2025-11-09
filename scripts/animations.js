@@ -1549,7 +1549,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
   
   // Process ALL images the same way (mobile and desktop)
-  const imagesToProcess = allImages;
+  const imagesToProcess = Array.from(allImages);
+  
+  // Ensure all images have loaded or at least have dimensions
+  console.log('⏳ Ensuring all images have dimensions...');
+  
+  const ensureImageDimensions = (img) => {
+    return new Promise((resolve) => {
+      if (img.offsetWidth > 0 && img.offsetHeight > 0) {
+        resolve();
+      } else if (img.complete) {
+        // Image is loaded but might not have dimensions yet (force reflow)
+        img.style.display = img.style.display || 'block';
+        setTimeout(() => resolve(), 0);
+      } else {
+        // Wait for image to load
+        img.addEventListener('load', () => resolve(), { once: true });
+        img.addEventListener('error', () => resolve(), { once: true });
+        // Timeout fallback
+        setTimeout(() => resolve(), 100);
+      }
+    });
+  };
+  
+  // Wait for all images to have dimensions
+  Promise.all(imagesToProcess.map(ensureImageDimensions)).then(() => {
+    console.log('✅ All images ready for mask setup');
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
@@ -1567,7 +1592,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
-        if (originalWidth === 0 || originalHeight === 0) return;
+        if (originalWidth === 0 || originalHeight === 0) {
+          console.warn(`⚠️ Skipping image ${index} - no dimensions yet (${originalWidth}x${originalHeight})`, element.src || element.tagName);
+          return;
+        }
+        
+        console.log(`✅ Setting up mask for image ${index} (${originalWidth}x${originalHeight})`, element.src || element.tagName);
         
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
@@ -1765,6 +1795,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
       }, 4000);
     }
+  }); // End of Promise.all - wait for image dimensions
   }
 
   // Natural infinite scroll setup
