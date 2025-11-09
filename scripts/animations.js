@@ -2900,7 +2900,8 @@ console.log('📺 Test toggle with: window.testToggle()');
             width: el.style.width,
             height: el.style.height,
             objectFit: el.style.objectFit,
-            scale: el.style.scale || ''
+            scale: el.style.scale || '',
+            opacity: el.style.opacity || '1' // Cache opacity to prevent fade issues
           });
         }
         
@@ -2909,6 +2910,10 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('object-fit', 'cover', 'important');
         // Force scale to 1 to disable zoom effect
         el.style.setProperty('scale', '1', 'important');
+        // Ensure images stay visible (prevent fade animations from re-triggering)
+        if (el.dataset.mobileLocked || el.dataset.gsapAnimated) {
+          el.style.setProperty('opacity', '1', 'important');
+        }
       });
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
@@ -2941,6 +2946,12 @@ console.log('📺 Test toggle with: window.testToggle()');
           el.style.height = cached.height || '';
           el.style.objectFit = cached.objectFit || '';
           el.style.scale = cached.scale || '';
+          // Restore opacity but ensure it's at least 1 if animation already ran
+          if (el.dataset.mobileLocked || el.dataset.gsapAnimated) {
+            el.style.opacity = '1';
+          } else {
+            el.style.opacity = cached.opacity || '';
+          }
         }
       });
       
