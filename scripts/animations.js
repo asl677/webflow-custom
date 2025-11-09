@@ -2772,7 +2772,8 @@ console.log('📺 Test toggle with: window.testToggle()');
     const imgParallax = document.querySelectorAll('.img-parallax');
     const reveals = document.querySelectorAll('.reveal');
     const maskWraps = document.querySelectorAll('.mask-wrap');
-    const images = document.querySelectorAll('.mask-wrap img, .reveal img');
+    // Select images both with and without mask-wrap (for mobile)
+    const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
     
     console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
