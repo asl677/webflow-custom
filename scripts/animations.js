@@ -1589,12 +1589,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // MOBILE: Skip mask-wrap entirely, just show images
+        // MOBILE: Skip mask-wrap entirely, use fade stagger instead
         if (isMobile) {
-          element.style.setProperty('opacity', '1', 'important');
           element.style.setProperty('visibility', 'visible', 'important');
-          element.dataset.maskSetup = 'true';
-          console.log(`📱 Mobile: Showing image ${index} directly (no mask)`);
+          element.style.setProperty('opacity', '0', 'important');
+          
+          const staggerDelay = index * 0.15; // 150ms between each image
+          console.log(`📱 Mobile: Fade stagger for image ${index} - delay: ${staggerDelay}s`);
+          
+          window.gsap.to(element, {
+            opacity: 1,
+            duration: 0.6,
+            delay: staggerDelay,
+            ease: "power2.out",
+            onComplete: () => {
+              element.dataset.maskSetup = 'true';
+              element.dataset.mobileFaded = 'true';
+            }
+          });
           return;
         }
         
