@@ -2855,6 +2855,14 @@ console.log('📺 Test toggle with: window.testToggle()');
       width: 100vw !important;
       height: 100vh !important;
     }
+    
+    /* Disable image scaling on smaller screens when in fullscreen */
+    @media (max-width: 1024px) {
+      .big-images img {
+        transform: none !important;
+        scale: none !important;
+      }
+    }
   `;
   document.head.appendChild(style);
   
