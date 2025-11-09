@@ -2845,17 +2845,58 @@ console.log('📺 Test toggle with: window.testToggle()');
   function simpleToggle() {
     console.log('📺 SIMPLE TOGGLE TRIGGERED!');
     
-    const parallaxElements = document.querySelectorAll('.img-parallax');
-    console.log(`📺 Found ${parallaxElements.length} .img-parallax elements`);
+    // Try multiple selectors to catch all possible image containers
+    const selectors = [
+      '.img-parallax',
+      '[class*="img-parallax"]',
+      '.reveal img',
+      '.reveal-full img', 
+      '[class*="reveal"] img',
+      'img[class*="parallax"]',
+      '.mask-wrap img'
+    ];
+    
+    let allTargetElements = new Set();
+    
+    selectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      console.log(`📺 Selector "${selector}" found ${elements.length} elements`);
+      
+      elements.forEach(el => {
+        // For img elements, find their container
+        if (el.tagName === 'IMG') {
+          const container = el.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || el.parentElement;
+          if (container) {
+            allTargetElements.add(container);
+            console.log(`📺 Added container for img: ${container.className}`);
+          }
+      } else {
+          // For container elements, add directly
+          allTargetElements.add(el);
+          console.log(`📺 Added element: ${el.className}`);
+        }
+      });
+    });
+    
+    // Fallback: also check for any images that might have been missed
+    const allImages = document.querySelectorAll('img:not(#preloader img)');
+    console.log(`📺 Fallback check: Found ${allImages.length} total images on page`);
+    
+    allImages.forEach(img => {
+      const container = img.closest('.reveal, .reveal-full, [class*="reveal"]');
+      if (container && !allTargetElements.has(container)) {
+        allTargetElements.add(container);
+        console.log(`📺 Fallback added missed container: ${container.className}`);
+      }
+    });
+    
+    const uniqueElements = Array.from(allTargetElements);
+    console.log(`📺 Total unique elements to process (after fallback): ${uniqueElements.length}`);
     
     isFullscreen = !isFullscreen;
     
-    parallaxElements.forEach((el, i) => {
-      // Find the parent reveal container
-      const revealContainer = el.closest('.reveal, .reveal-full, [class*="reveal"]');
-      const targetElement = revealContainer || el; // Use reveal container if found, otherwise the element itself
-      
-      console.log(`📺 Element ${i}: Using ${revealContainer ? 'reveal container' : 'img-parallax element'} as target`);
+    uniqueElements.forEach((targetElement, i) => {
+      console.log(`📺 Processing element ${i}: ${targetElement.tagName}.${targetElement.className}`);
       
       if (isFullscreen) {
         // Make container fullscreen
@@ -2901,7 +2942,7 @@ console.log('📺 Test toggle with: window.testToggle()');
           img.style.setProperty('min-height', '100%', 'important');
           img.style.setProperty('max-width', 'none', 'important');
           img.style.setProperty('max-height', 'none', 'important');
-          img.style.setProperty('object-fit', 'cover', 'important');
+        img.style.setProperty('object-fit', 'cover', 'important');
           img.style.setProperty('object-position', 'center', 'important');
           img.style.setProperty('transform', 'none', 'important');
           
