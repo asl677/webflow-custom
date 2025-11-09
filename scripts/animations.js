@@ -2874,16 +2874,29 @@ console.log('📺 Test toggle with: window.testToggle()');
           });
         }
         
-        // Make image fullscreen while keeping it in its container
+        // Scale image to viewport size without changing position
         img.style.setProperty('width', '100vw', 'important');
         img.style.setProperty('height', '100vh', 'important');
-        img.style.setProperty('position', 'fixed', 'important');
-        img.style.setProperty('top', '0', 'important');
-        img.style.setProperty('left', '0', 'important');
-        img.style.setProperty('z-index', '1000', 'important');
         img.style.setProperty('object-fit', 'cover', 'important');
         img.style.setProperty('object-position', 'center', 'important');
-        img.style.setProperty('transform', 'none', 'important');
+        img.style.setProperty('max-width', 'none', 'important');
+        img.style.setProperty('max-height', 'none', 'important');
+        
+        // Scale the parent container to accommodate the large image
+        const parentContainer = img.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || img.parentElement;
+        if (parentContainer && !parentContainer.dataset.originalContainerStyles) {
+          const containerStyle = getComputedStyle(parentContainer);
+          parentContainer.dataset.originalContainerStyles = JSON.stringify({
+            width: parentContainer.style.width || containerStyle.width,
+            height: parentContainer.style.height || containerStyle.height,
+            overflow: parentContainer.style.overflow || containerStyle.overflow
+          });
+          
+          // Make container accommodate the fullscreen image
+          parentContainer.style.setProperty('width', '100vw', 'important');
+          parentContainer.style.setProperty('height', '100vh', 'important');
+          parentContainer.style.setProperty('overflow', 'hidden', 'important');
+        }
       });
       
     } else {
@@ -2893,7 +2906,7 @@ console.log('📺 Test toggle with: window.testToggle()');
       allImages.forEach((img, i) => {
         console.log(`📺 Restoring image ${i} to normal:`, img.src?.substring(0, 50) + '...');
         
-        // Restore original styles
+        // Restore original image styles
         if (img.dataset.originalImageStyles) {
           const originalStyles = JSON.parse(img.dataset.originalImageStyles);
           
@@ -2905,7 +2918,27 @@ console.log('📺 Test toggle with: window.testToggle()');
             }
           });
           
+          // Also remove the new properties we added
+          img.style.removeProperty('max-width');
+          img.style.removeProperty('max-height');
+          
           delete img.dataset.originalImageStyles;
+        }
+        
+        // Restore parent container styles
+        const parentContainer = img.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || img.parentElement;
+        if (parentContainer && parentContainer.dataset.originalContainerStyles) {
+          const originalContainerStyles = JSON.parse(parentContainer.dataset.originalContainerStyles);
+          
+          Object.keys(originalContainerStyles).forEach(property => {
+            if (originalContainerStyles[property] && originalContainerStyles[property] !== 'auto') {
+              parentContainer.style.setProperty(property, originalContainerStyles[property]);
+            } else {
+              parentContainer.style.removeProperty(property);
+            }
+          });
+          
+          delete parentContainer.dataset.originalContainerStyles;
         }
       });
     }
