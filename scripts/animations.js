@@ -2845,53 +2845,30 @@ console.log('📺 Test toggle with: window.testToggle()');
   function simpleToggle() {
     console.log('📺 SIMPLE TOGGLE TRIGGERED!');
     
-    // Try multiple selectors to catch all possible image containers
-    const selectors = [
+    // Target ALL containers directly, regardless of content or visibility
+    const containerSelectors = [
+      '.reveal',
+      '.reveal-full', 
+      '[class*="reveal"]',
+      '.mask-wrap',
       '.img-parallax',
-      '[class*="img-parallax"]',
-      '.reveal img',
-      '.reveal-full img', 
-      '[class*="reveal"] img',
-      'img[class*="parallax"]',
-      '.mask-wrap img'
+      '[class*="img-parallax"]'
     ];
     
     let allTargetElements = new Set();
     
-    selectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      console.log(`📺 Selector "${selector}" found ${elements.length} elements`);
+    containerSelectors.forEach(selector => {
+      const containers = document.querySelectorAll(selector);
+      console.log(`📺 Container selector "${selector}" found ${containers.length} elements`);
       
-      elements.forEach(el => {
-        // For img elements, find their container
-        if (el.tagName === 'IMG') {
-          const container = el.closest('.reveal, .reveal-full, [class*="reveal"], .mask-wrap') || el.parentElement;
-          if (container) {
-            allTargetElements.add(container);
-            console.log(`📺 Added container for img: ${container.className}`);
-          }
-      } else {
-          // For container elements, add directly
-          allTargetElements.add(el);
-          console.log(`📺 Added element: ${el.className}`);
-        }
+      containers.forEach(container => {
+        allTargetElements.add(container);
+        console.log(`📺 Added container: ${container.tagName}.${container.className}`);
       });
     });
     
-    // Fallback: also check for any images that might have been missed
-    const allImages = document.querySelectorAll('img:not(#preloader img)');
-    console.log(`📺 Fallback check: Found ${allImages.length} total images on page`);
-    
-    allImages.forEach(img => {
-      const container = img.closest('.reveal, .reveal-full, [class*="reveal"]');
-      if (container && !allTargetElements.has(container)) {
-        allTargetElements.add(container);
-        console.log(`📺 Fallback added missed container: ${container.className}`);
-      }
-    });
-    
     const uniqueElements = Array.from(allTargetElements);
-    console.log(`📺 Total unique elements to process (after fallback): ${uniqueElements.length}`);
+    console.log(`📺 Total unique containers to process: ${uniqueElements.length}`);
     
     isFullscreen = !isFullscreen;
     
