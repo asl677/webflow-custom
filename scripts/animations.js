@@ -2801,11 +2801,29 @@ console.log('📺 Test toggle with: window.testToggle()');
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
       // REMOVE THE IMPORTANT FLAGS - LET GSAP/WEBFLOW CONTROL AGAIN
-      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+      [...imgParallax, ...reveals, ...revealFulls].forEach(el => {
         el.style.removeProperty('width');
         el.style.removeProperty('height');
         el.style.removeProperty('max-width');
         el.style.removeProperty('max-height');
+      });
+      
+      // For mask-wraps, only remove if animation is complete
+      // Otherwise GSAP might not have set the width yet
+      maskWraps.forEach(el => {
+        const img = el.querySelector('img');
+        if (img && img.dataset.maskComplete) {
+          // Animation done, safe to remove
+          el.style.removeProperty('width');
+          el.style.removeProperty('height');
+          el.style.removeProperty('max-width');
+          el.style.removeProperty('max-height');
+        } else {
+          // Animation not done yet, just remove height properties
+          // Leave width alone so it doesn't go back to 0
+          el.style.removeProperty('height');
+          el.style.removeProperty('max-height');
+        }
       });
       
       images.forEach(el => {
