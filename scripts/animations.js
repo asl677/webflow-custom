@@ -2875,7 +2875,8 @@ console.log('📺 Test toggle with: window.testToggle()');
   
   console.log('💧 Initializing Blotter liquid distortion effect...');
   
-  // Wait for elements to be available
+  // Wait for elements to be available AND for scrambling to complete
+  // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
   setTimeout(() => {
     const distortionText = document.getElementById("distortion-text");
     const subtitleElem = document.getElementById("subtitle");
@@ -2923,5 +2924,5 @@ console.log('📺 Test toggle with: window.testToggle()');
     scope2.appendTo(subtitleElem);
     
     console.log('✅ Blotter liquid distortion effect applied');
-  }, 1500); // Wait a bit longer to ensure DOM is ready
+  }, 4000); // Wait 4 seconds for scrambling to complete
 })();
