@@ -2859,6 +2859,7 @@ console.log('📺 Test toggle with: window.testToggle()');
   document.head.appendChild(style);
   
   let isBig = false;
+  const originalStyles = new Map(); // Store original styles
   
   function toggleBigImages() {
     isBig = !isBig;
@@ -2871,45 +2872,44 @@ console.log('📺 Test toggle with: window.testToggle()');
     console.log(`📺 Found ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps`);
     
     if (isBig) {
-      console.log('📺 Making images bigger with AGGRESSIVE override');
+      console.log('📺 Making images bigger - storing original styles');
       
-      // AGGRESSIVE override - use cssText to completely override
+      // Store original styles before changing
+      [...imgParallax, ...reveals, ...maskWraps].forEach((el, i) => {
+        originalStyles.set(el, el.style.cssText);
+        console.log(`📺 Stored original style ${i}:`, el.style.cssText);
+      });
+      
+      // Apply fullscreen styles
       imgParallax.forEach((el, i) => {
-        console.log(`📺 Before img-parallax ${i}:`, el.style.cssText);
-        const currentStyles = el.style.cssText;
-        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 After img-parallax ${i}:`, el.style.cssText);
+        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 Applied to img-parallax ${i}:`, el.style.cssText);
       });
       
       reveals.forEach((el, i) => {
-        console.log(`📺 Before reveal ${i}:`, el.style.cssText);
-        const currentStyles = el.style.cssText;
-        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 After reveal ${i}:`, el.style.cssText);
+        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 Applied to reveal ${i}:`, el.style.cssText);
       });
       
       maskWraps.forEach((el, i) => {
-        console.log(`📺 Before mask-wrap ${i}:`, el.style.cssText);
-        const currentStyles = el.style.cssText;
-        el.style.cssText = currentStyles + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 After mask-wrap ${i}:`, el.style.cssText);
+        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
+        console.log(`📺 Applied to mask-wrap ${i}:`, el.style.cssText);
       });
       
     } else {
-      console.log('📺 Removing big image styles');
+      console.log('📺 Restoring original styles');
       
-      // Remove the forced styles by removing from cssText
-      imgParallax.forEach(el => {
-        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
+      // Restore original styles exactly
+      [...imgParallax, ...reveals, ...maskWraps].forEach((el, i) => {
+        const originalStyle = originalStyles.get(el);
+        if (originalStyle !== undefined) {
+          el.style.cssText = originalStyle;
+          console.log(`📺 Restored original style ${i}:`, el.style.cssText);
+        }
       });
       
-      reveals.forEach(el => {
-        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
-      });
-      
-      maskWraps.forEach(el => {
-        el.style.cssText = el.style.cssText.replace(/;\s*width:\s*100vw\s*!important/gi, '').replace(/;\s*height:\s*100vh\s*!important/gi, '');
-      });
+      // Clear stored styles
+      originalStyles.clear();
     }
   }
   
