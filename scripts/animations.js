@@ -1591,6 +1591,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // MOBILE: Skip mask-wrap entirely, use fade stagger instead
         if (isMobile) {
+          // Skip if already faded or is a clone
+          if (element.dataset.mobileFaded || element.dataset.infiniteClone) {
+            element.style.setProperty('opacity', '1', 'important');
+            element.style.setProperty('visibility', 'visible', 'important');
+            element.dataset.maskSetup = 'true';
+            console.log(`📱 Mobile: Skipping already animated image ${index}`);
+            return;
+          }
+          
           element.style.setProperty('visibility', 'visible', 'important');
           element.style.setProperty('opacity', '0', 'important');
           
