@@ -2843,6 +2843,12 @@ console.log('📺 Test toggle with: window.testToggle()');
   // Add one simple CSS rule
   const style = document.createElement('style');
   style.textContent = `
+    .big-images .reveal,
+    .big-images .reveal-full,
+    .big-images .mask-wrap {
+      transform: scale(3) !important;
+      z-index: 1000 !important;
+    }
     .big-images img {
       transform: scale(3) !important;
       z-index: 1000 !important;
