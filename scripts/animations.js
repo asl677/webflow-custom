@@ -1,4 +1,4 @@
-// Version 3.5: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.6: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1656,71 +1656,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const rect = element.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
-        if (inViewport && index < maxInitialImages) {
-          // Animate images in viewport immediately with proper top-to-bottom order
-          const staggerDelay = index * 0.4; // More noticeable stagger for mobile
-          const duration = 1.2; // Same duration across all devices
-          
-          // Consistent easing for stability
-          const easing = "power2.out";
-          
-          console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
+        if (inViewport && index === 0) {
+          // First image reveals immediately
+          window.gsap.set(maskContainer, { width: '0px' });
+          console.log(`🎭 First image in viewport - revealing immediately`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: duration, 
-            ease: easing, 
-            delay: staggerDelay,
-            onStart: () => {
-              console.log(`🎭 Mask animation started for image ${index}`);
-            },
+            duration: 1.2,
+            ease: "power2.out",
             onComplete: () => {
-              console.log(`🎭 Mask animation completed for image ${index}`);
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
           });
-          
-          if (hasParallax && !isMobile) { // Disable parallax on mobile for performance
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: duration + 0.5, 
-              ease: easing, 
-              delay: staggerDelay,
-              onComplete: () => {
-                // Ensure object-fit is preserved after scaling animation
-                element.style.setProperty('object-fit', objectFit, 'important');
-                console.log('🎭 Preserved object-fit after parallax scaling:', objectFit);
-              }
-            });
-          }
         } else {
-          // Check if element is already in viewport on load
-          const rect = element.getBoundingClientRect();
-          const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
-          
-          if (inViewport && index === 0) {
-            // First image reveals immediately
+          // Use ScrollTrigger for other images
           window.gsap.set(maskContainer, { width: '0px' });
-            console.log(`🎭 First image in viewport - revealing immediately`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-              duration: 1.2,
-              ease: "power2.out",
-              onComplete: () => {
-                element.dataset.gsapAnimated = 'mask-revealed';
-                element.dataset.maskComplete = 'true';
-              }
-            });
-          } else {
-            // Use ScrollTrigger for other images
-            window.gsap.set(maskContainer, { width: '0px' });
-            window.gsap.to(maskContainer, { 
-              width: maskContainer.dataset.targetWidth + 'px', 
-              duration: 1.2,
+            duration: 1.2,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-                start: "top 90%",
+              start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1730,10 +1688,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
-          }
-          
-          // Only add parallax when NOT in fullscreen mode
-          if (hasParallax && !window.isFullscreenMode) {
+        }
+        
+        // Only add parallax when NOT in fullscreen mode
+        if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.2, 
