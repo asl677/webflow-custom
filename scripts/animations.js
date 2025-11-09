@@ -1,4 +1,4 @@
-// Version 3.3: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.4: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1607,6 +1607,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             return;
           }
           
+          // Mark IMMEDIATELY to prevent re-processing
+          element.dataset.maskSetup = 'true';
+          element.dataset.mobileFaded = 'true';
+          
           element.style.setProperty('visibility', 'visible', 'important');
           element.style.setProperty('opacity', '0', 'important');
           
@@ -1617,11 +1621,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             opacity: 1,
             duration: 0.6,
             delay: staggerDelay,
-            ease: "power2.out",
-            onComplete: () => {
-              element.dataset.maskSetup = 'true';
-              element.dataset.mobileFaded = 'true';
-            }
+            ease: "power2.out"
           });
           return;
         }
