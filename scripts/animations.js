@@ -2932,89 +2932,53 @@ console.log('📺 Test toggle with: window.testToggle()');
   }, 1000);
 })();
 
-// Infinite scroll for .fix-center text with subtle parallax
+// Simple infinite repeating text for .fix-center with subtle parallax
 (function() {
-  console.log('📜 Setting up .fix-center infinite scroll with parallax...');
+  console.log('📜 Setting up .fix-center repeating text...');
   
-  const fixCenter = document.querySelector('.fix-center');
-  if (!fixCenter) {
-    console.log('❌ No .fix-center element found');
-    return;
-  }
-  
-  console.log('✅ Found .fix-center element:', fixCenter.textContent?.substring(0, 50));
-  
-  // Create container to hold original + clones
-  const scrollContainer = document.createElement('div');
-  scrollContainer.style.cssText = 'position: relative; overflow: visible;';
-  
-  // Wrap the original element
-  const parent = fixCenter.parentNode;
-  parent.insertBefore(scrollContainer, fixCenter);
-  scrollContainer.appendChild(fixCenter);
-  
-  // Store original position for parallax calculation
-  let lastScrollY = window.scrollY;
-  let parallaxOffset = 0;
-  const PARALLAX_SPEED = 0.02; // 2% of scroll = subtle 10-20px movement
-  
-  // Apply parallax to container
-  function updateParallax() {
-    const currentScrollY = window.scrollY;
-    const scrollDelta = currentScrollY - lastScrollY;
-    parallaxOffset += scrollDelta * PARALLAX_SPEED;
-    
-    scrollContainer.style.transform = `translateY(${parallaxOffset}px)`;
-    lastScrollY = currentScrollY;
-  }
-  
-  // Clone the text infinitely as user scrolls
-  let cloneCount = 0;
-  const MAX_CLONES = 50; // Limit total clones
-  
-  function cloneFixCenter() {
-    if (cloneCount >= MAX_CLONES) return;
-    
-    const clone = fixCenter.cloneNode(true);
-    clone.dataset.fixCenterClone = 'true';
-    clone.style.cssText = fixCenter.style.cssText; // Copy all styles
-    scrollContainer.appendChild(clone);
-    cloneCount++;
-    
-    console.log(`📜 Cloned .fix-center (${cloneCount} total clones)`);
-  }
-  
-  // Check if we need more clones based on scroll position
-  function checkScrollPosition() {
-    const containerBottom = scrollContainer.getBoundingClientRect().bottom;
-    const viewportBottom = window.innerHeight;
-    
-    // If we're within 2 viewports of the bottom, add more clones
-    if (containerBottom < viewportBottom * 3) {
-      cloneFixCenter();
+  setTimeout(() => {
+    const fixCenter = document.querySelector('.fix-center');
+    if (!fixCenter) {
+      console.log('❌ No .fix-center element found');
+      return;
     }
-  }
-  
-  // Throttled scroll handler
-  let scrollTicking = false;
-  function handleScroll() {
-    if (!scrollTicking) {
-      requestAnimationFrame(() => {
-        updateParallax();
-        checkScrollPosition();
-        scrollTicking = false;
-      });
-      scrollTicking = true;
+    
+    console.log('✅ Found .fix-center element');
+    
+    // Get the original text
+    const originalText = '514 LINKEDIN GOOGLE UENO JOURNEYS ZIPPO';
+    
+    // Clear any existing content
+    fixCenter.textContent = '';
+    
+    // Create repeating text (50 times for infinite scroll effect)
+    const repeatedText = (originalText + ' ').repeat(50);
+    fixCenter.textContent = repeatedText;
+    
+    console.log('✅ Repeated text 50 times');
+    
+    // Add subtle parallax (opposite direction = scroll up when page scrolls down)
+    let lastScrollY = window.scrollY;
+    
+    function updateParallax() {
+      const currentScrollY = window.scrollY;
+      const offset = currentScrollY * -0.015; // Negative = opposite direction, 1.5% = subtle
+      fixCenter.style.transform = `translateY(${offset}px)`;
+      lastScrollY = currentScrollY;
     }
-  }
-  
-  // Start with a few clones
-  for (let i = 0; i < 3; i++) {
-    cloneFixCenter();
-  }
-  
-  // Listen to scroll
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  
-  console.log('✅ .fix-center infinite scroll with parallax initialized');
+    
+    // Throttled scroll handler
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateParallax();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+    
+    console.log('✅ .fix-center parallax initialized');
+  }, 2000); // Wait for page to be fully ready
 })();
