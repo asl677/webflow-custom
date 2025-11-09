@@ -2850,6 +2850,9 @@ console.log('📺 Test toggle with: window.testToggle()');
       height: 100vh !important;
       margin: 0 !important;
       padding: 0 !important;
+      position: relative !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
     }
     
     .fullscreen-scroll-mode .mask-wrap {
