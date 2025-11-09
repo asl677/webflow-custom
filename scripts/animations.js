@@ -2662,12 +2662,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Main initialization function with error protection
   function init() {
-    if (isInit) return;
+    console.log('🚀 MAIN INIT CALLED - isInit:', isInit);
+    if (isInit) {
+      console.log('🚀 INIT ALREADY COMPLETED - SKIPPING');
+      return;
+    }
+    
+    console.log('🚀 STARTING MAIN INITIALIZATION...');
     
     // Initialize fullscreen scroll toggle
     try {
+      console.log('📺 About to initialize fullscreen scroll toggle...');
       const fullscreenScrollToggle = initFullscreenScrollToggle();
       window.fullscreenScrollToggle = fullscreenScrollToggle; // Make available globally
+      console.log('📺 Fullscreen scroll toggle initialization completed');
     } catch (error) {
       console.error('❌ Fullscreen scroll toggle initialization error:', error);
     }
@@ -2820,10 +2828,61 @@ window.testToggle = function() {
     if (window.fullscreenScrollToggle && window.fullscreenScrollToggle.toggle) {
       console.log('Calling toggle function directly...');
       window.fullscreenScrollToggle.toggle();
-    } else {
+      } else {
       console.log('No fullscreen toggle function available');
     }
   }
 };
 
 console.log('📺 Test toggle with: window.testToggle()');
+
+// SIMPLE DIRECT TOGGLE - No complex initialization needed
+(function() {
+  console.log('📺 SIMPLE: Setting up direct toggle...');
+  
+  let isFullscreen = false;
+  
+  function simpleToggle() {
+    console.log('📺 SIMPLE TOGGLE TRIGGERED!');
+    
+    const parallaxElements = document.querySelectorAll('.img-parallax');
+    console.log(`📺 Found ${parallaxElements.length} .img-parallax elements`);
+    
+    isFullscreen = !isFullscreen;
+    
+    parallaxElements.forEach((el, i) => {
+      if (isFullscreen) {
+        // Make fullscreen
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('position', 'relative', 'important');
+        el.style.setProperty('margin', '0', 'important');
+        console.log(`📺 Made element ${i} fullscreen`);
+      } else {
+        // Remove fullscreen
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('position');
+        el.style.removeProperty('margin');
+        console.log(`📺 Restored element ${i} to normal`);
+      }
+    });
+    
+    console.log(`📺 Toggle complete - Fullscreen: ${isFullscreen}`);
+  }
+  
+  // Try to find toggle element and attach listener
+        setTimeout(() => {
+    const toggleEl = document.querySelector('.toggle');
+    if (toggleEl) {
+      console.log('📺 SIMPLE: Found .toggle element, attaching listener');
+      toggleEl.addEventListener('click', simpleToggle);
+    } else {
+      console.log('📺 SIMPLE: No .toggle found, creating manual function');
+    }
+    
+    // Always create global function for manual testing
+    window.simpleToggle = simpleToggle;
+    console.log('📺 SIMPLE: Use window.simpleToggle() to test');
+  }, 1000);
+})();
