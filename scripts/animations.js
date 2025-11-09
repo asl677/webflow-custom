@@ -1588,7 +1588,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
-        // Process both original and cloned images the same way
+        
+        // MOBILE: Skip mask-wrap entirely, just show images
+        if (isMobile) {
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.dataset.maskSetup = 'true';
+          console.log(`📱 Mobile: Showing image ${index} directly (no mask)`);
+          return;
+        }
+        
+        // DESKTOP: Process with mask-wrap as before
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
