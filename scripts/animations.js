@@ -2866,13 +2866,33 @@ console.log('📺 Test toggle with: window.testToggle()');
         targetElement.style.setProperty('max-width', 'none', 'important');
         targetElement.style.setProperty('max-height', 'none', 'important');
         
-        // Make inner image fill the container
+        // Make inner image fill the container - with detailed debugging
         const innerImages = targetElement.querySelectorAll('img, video, .img-parallax');
-        innerImages.forEach(img => {
+        console.log(`📺 Found ${innerImages.length} inner images in container:`, [...innerImages].map(img => ({
+          tagName: img.tagName,
+          className: img.className,
+          src: img.src?.substring(0, 50) + '...',
+          currentWidth: img.style.width,
+          currentHeight: img.style.height,
+          computedWidth: getComputedStyle(img).width,
+          computedHeight: getComputedStyle(img).height
+        })));
+        
+        innerImages.forEach((img, imgIndex) => {
+          console.log(`📺 Scaling inner image ${imgIndex}:`, img.tagName, img.className);
+          
+          // Force all possible size properties
           img.style.setProperty('width', '100%', 'important');
           img.style.setProperty('height', '100%', 'important');
+          img.style.setProperty('min-width', '100%', 'important');
+          img.style.setProperty('min-height', '100%', 'important');
+          img.style.setProperty('max-width', 'none', 'important');
+          img.style.setProperty('max-height', 'none', 'important');
           img.style.setProperty('object-fit', 'cover', 'important');
           img.style.setProperty('object-position', 'center', 'important');
+          img.style.setProperty('transform', 'none', 'important');
+          
+          console.log(`📺 After scaling - Width: ${img.style.width}, Height: ${img.style.height}`);
         });
         
         console.log(`📺 Made element ${i} fullscreen with ${innerImages.length} inner images scaled`);
@@ -2890,8 +2910,13 @@ console.log('📺 Test toggle with: window.testToggle()');
         innerImages.forEach(img => {
           img.style.removeProperty('width');
           img.style.removeProperty('height');
+          img.style.removeProperty('min-width');
+          img.style.removeProperty('min-height');
+          img.style.removeProperty('max-width');
+          img.style.removeProperty('max-height');
           img.style.removeProperty('object-fit');
           img.style.removeProperty('object-position');
+          img.style.removeProperty('transform');
         });
         
         console.log(`📺 Restored element ${i} to normal with ${innerImages.length} inner images restored`);
