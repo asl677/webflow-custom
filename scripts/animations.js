@@ -2799,7 +2799,7 @@ console.log('📺 Test toggle with: window.testToggle()');
       });
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
-    } else {
+      } else {
       // REMOVE THE IMPORTANT FLAGS - LET GSAP/WEBFLOW CONTROL AGAIN
       [...imgParallax, ...reveals, ...revealFulls].forEach(el => {
         el.style.removeProperty('width');
@@ -2863,4 +2863,65 @@ console.log('📺 Test toggle with: window.testToggle()');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
+})();
+
+// BLOTTER EFFECT - Apply to .fix-center text content
+(function() {
+  // Wait for Blotter library to load
+  if (typeof Blotter === 'undefined') {
+    console.warn('⚠️ Blotter library not loaded - skipping liquid distortion effect');
+    return;
+  }
+  
+  console.log('💧 Initializing Blotter liquid distortion effect...');
+  
+  // Wait for elements to be available
+  setTimeout(() => {
+    const distortionText = document.getElementById("distortion-text");
+    const subtitleElem = document.getElementById("subtitle");
+    
+    if (!distortionText || !subtitleElem) {
+      console.warn('⚠️ Blotter target elements not found (#distortion-text or #subtitle)');
+      return;
+    }
+    
+    // Main text
+    var text = new Blotter.Text("Designer+Developer", {
+      family: "'Archivo', sans-serif",
+      size: 47,
+      fill: "#171717",
+      paddingLeft: 10,
+      paddingRight: 10
+    });
+    
+    // Subtitle text
+    var subtitle = new Blotter.Text("Jack of all trades", {
+      family: "'Archivo', sans-serif",
+      size: 27,
+      fill: "#171717",
+      paddingLeft: 10,
+      paddingRight: 10
+    });
+    
+    // Create liquid distortion material
+    var material = new Blotter.LiquidDistortMaterial();
+    material.uniforms.uSpeed.value = 0.25;
+    material.uniforms.uVolatility.value = 0.02;
+    
+    // Apply to main text
+    var blotter = new Blotter(material, {
+      texts: text
+    });
+    var scope = blotter.forText(text);
+    scope.appendTo(distortionText);
+    
+    // Apply to subtitle
+    var blotter2 = new Blotter(material, {
+      texts: subtitle
+    });
+    var scope2 = blotter2.forText(subtitle);
+    scope2.appendTo(subtitleElem);
+    
+    console.log('✅ Blotter liquid distortion effect applied');
+  }, 1500); // Wait a bit longer to ensure DOM is ready
 })();
