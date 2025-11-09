@@ -40,16 +40,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     let isFullscreenMode = false;
     
     // Find existing .toggle element
-    const toggleButton = document.querySelector('.toggle');
+    let toggleButton = document.querySelector('.toggle');
     
     if (!toggleButton) {
-      console.warn('📺 No .toggle element found - fullscreen scroll toggle disabled');
+      console.warn('📺 No .toggle element found initially - trying alternatives...');
+      
       // Try to find any element with toggle in the class name
       const anyToggle = document.querySelector('[class*="toggle"]');
       if (anyToggle) {
         console.log('📺 Found element with toggle in class name:', anyToggle.className);
+        toggleButton = anyToggle;
+      } else {
+        // List all elements to help debug
+        console.log('📺 All elements with classes containing common toggle names:');
+        const possibleToggles = document.querySelectorAll('[class*="toggle"], [class*="btn"], [class*="button"], [id*="toggle"]');
+        possibleToggles.forEach((el, i) => {
+          console.log(`  ${i}: ${el.tagName}.${el.className} #${el.id}`);
+        });
+        
+        console.warn('📺 No toggle element found - fullscreen scroll toggle disabled');
+        return null;
       }
-      return null;
     }
     
     console.log('📺 Found .toggle element:', toggleButton);
@@ -178,11 +189,33 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }
     
-    // Add click listener to existing .toggle element
+    // Add click listener to existing .toggle element with debugging
     toggleButton.addEventListener('click', (e) => {
+      console.log('📺 TOGGLE CLICKED! Event triggered');
       e.preventDefault();
       e.stopPropagation();
       toggleFullscreenMode();
+    });
+    
+    // Add additional event listeners for debugging
+    toggleButton.addEventListener('mousedown', () => {
+      console.log('📺 Toggle mousedown detected');
+    });
+    
+    toggleButton.addEventListener('mouseup', () => {
+      console.log('📺 Toggle mouseup detected');
+    });
+    
+    // Test if element is clickable
+    console.log('📺 Toggle element details:', {
+      tagName: toggleButton.tagName,
+      className: toggleButton.className,
+      id: toggleButton.id,
+      style: toggleButton.style.cssText,
+      pointerEvents: getComputedStyle(toggleButton).pointerEvents,
+      display: getComputedStyle(toggleButton).display,
+      visibility: getComputedStyle(toggleButton).visibility,
+      zIndex: getComputedStyle(toggleButton).zIndex
     });
     
     console.log('📺 Fullscreen scroll toggle initialized - Click .toggle element to activate');
@@ -2763,3 +2796,34 @@ window.testFullscreen = function() {
 };
 
 console.log('🖼️ Test fullscreen with: window.testFullscreen()');
+
+// Add global test function for debugging fullscreen scroll toggle
+window.testToggle = function() {
+  console.log('📺 Testing toggle functionality...');
+  
+  const toggleEl = document.querySelector('.toggle');
+  console.log('Toggle element found:', !!toggleEl);
+  
+  if (toggleEl) {
+    console.log('Toggle element details:', {
+      tagName: toggleEl.tagName,
+      className: toggleEl.className,
+      id: toggleEl.id
+    });
+    
+    console.log('Simulating click...');
+    toggleEl.click();
+  } else {
+    console.log('No .toggle element found');
+    
+    // Try to find the fullscreen toggle function directly
+    if (window.fullscreenScrollToggle && window.fullscreenScrollToggle.toggle) {
+      console.log('Calling toggle function directly...');
+      window.fullscreenScrollToggle.toggle();
+    } else {
+      console.log('No fullscreen toggle function available');
+    }
+  }
+};
+
+console.log('📺 Test toggle with: window.testToggle()');
