@@ -2884,24 +2884,23 @@ console.log('📺 Test toggle with: window.testToggle()');
             width: el.style.width,
             height: el.style.height,
             objectFit: el.style.objectFit,
-            transform: el.style.transform
+            scale: el.style.scale || ''
           });
         }
+        
         el.style.setProperty('width', '100%', 'important');
         el.style.setProperty('height', '100%', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
-        // Disable scale/transform in fullscreen
-        el.style.setProperty('transform', 'none', 'important');
-        el.style.setProperty('scale', 'none', 'important');
+        // Force scale to 1 to disable zoom effect
+        el.style.setProperty('scale', '1', 'important');
       });
       
       console.log('📺 Applied fullscreen dimensions - scaling disabled');
     } else {
-      // RESTORE ONLY width/height, leave transform/opacity/etc alone
+      // RESTORE ONLY width/height properties we cached
       [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
         const cached = dimensionCache.get(el);
         if (cached) {
-          // Remove the important flag and restore original
           el.style.width = cached.width || '';
           el.style.height = cached.height || '';
           el.style.maxWidth = cached.maxWidth || '';
@@ -2915,17 +2914,18 @@ console.log('📺 Test toggle with: window.testToggle()');
           el.style.width = cached.width || '';
           el.style.height = cached.height || '';
           el.style.objectFit = cached.objectFit || '';
-          el.style.transform = cached.transform || '';
-          el.style.scale = '';
+          el.style.scale = cached.scale || '';
         }
       });
       
-      console.log('📺 Restored original dimensions - GSAP untouched');
+      console.log('📺 Restored original dimensions');
       
-      // Refresh ScrollTrigger to recalculate positions
+      // Refresh ScrollTrigger after a small delay to let styles settle
       if (window.ScrollTrigger) {
-        console.log('📺 Refreshing ScrollTrigger...');
-        window.ScrollTrigger.refresh();
+        setTimeout(() => {
+          console.log('📺 Refreshing ScrollTrigger...');
+          window.ScrollTrigger.refresh();
+        }, 100);
       }
     }
   }
