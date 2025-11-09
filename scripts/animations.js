@@ -2840,64 +2840,135 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SUPER SIMPLE toggle setup...');
   
-  // DEAD SIMPLE - just change width/height of specific elements with CSS class
-  const style = document.createElement('style');
-  style.textContent = `
-    /* SUPER high specificity to override everything */
-    body.big-images .img-parallax,
-    body.big-images .img-parallax.img-parallax {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-    }
-    body.big-images .reveal,
-    body.big-images .reveal.reveal {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-    }
-    body.big-images .mask-wrap,
-    body.big-images .mask-wrap.mask-wrap {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-    }
-    
-    /* Make images fill the container */
-    body.big-images .mask-wrap img {
-      width: 105vw !important;
-      height: 105vh !important;
-      max-width: 105vw !important;
-      max-height: 105vh !important;
-      object-fit: cover !important;
-    }
-    
-    /* Disable image scaling on smaller screens when in fullscreen */
-    @media (max-width: 1024px) {
-      body.big-images img {
-        transform: none !important;
-        scale: none !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-  
   let isBig = false;
+  const originalStyles = new WeakMap(); // Use WeakMap to prevent memory leaks
   
   function toggleBigImages() {
     isBig = !isBig;
     
+    // Get ALL elements that need resizing
+    const imgParallax = document.querySelectorAll('.img-parallax');
+    const reveals = document.querySelectorAll('.reveal');
+    const maskWraps = document.querySelectorAll('.mask-wrap');
+    const images = document.querySelectorAll('.mask-wrap img');
+    
+    console.log(`📺 Found ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps`);
+    
     if (isBig) {
-      document.body.classList.add('big-images');
-      console.log('📺 Added big-images class to body');
-      console.log('📺 Fullscreen mode ON');
+      console.log('📺 Fullscreen mode ON - applying inline styles');
+      
+      // Store and apply fullscreen to img-parallax
+      imgParallax.forEach(el => {
+        if (!originalStyles.has(el)) {
+          originalStyles.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
+        }
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      });
+      
+      // Store and apply fullscreen to reveals
+      reveals.forEach(el => {
+        if (!originalStyles.has(el)) {
+          originalStyles.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
+        }
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      });
+      
+      // Store and apply fullscreen to mask-wraps
+      maskWraps.forEach(el => {
+        if (!originalStyles.has(el)) {
+          originalStyles.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
+        }
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      });
+      
+      // Apply to images
+      images.forEach(el => {
+        if (!originalStyles.has(el)) {
+          originalStyles.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
+        }
+        el.style.setProperty('width', '105vw', 'important');
+        el.style.setProperty('height', '105vh', 'important');
+        el.style.setProperty('max-width', '105vw', 'important');
+        el.style.setProperty('max-height', '105vh', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+      });
+      
     } else {
-      document.body.classList.remove('big-images');
-      console.log('📺 Removed big-images class from body');
-      console.log('📺 Fullscreen mode OFF');
+      console.log('📺 Fullscreen mode OFF - restoring original styles');
+      
+      // Restore img-parallax
+      imgParallax.forEach(el => {
+        const original = originalStyles.get(el);
+        if (original) {
+          el.style.width = original.width;
+          el.style.height = original.height;
+          el.style.maxWidth = original.maxWidth;
+          el.style.maxHeight = original.maxHeight;
+        }
+      });
+      
+      // Restore reveals
+      reveals.forEach(el => {
+        const original = originalStyles.get(el);
+        if (original) {
+          el.style.width = original.width;
+          el.style.height = original.height;
+          el.style.maxWidth = original.maxWidth;
+          el.style.maxHeight = original.maxHeight;
+        }
+      });
+      
+      // Restore mask-wraps
+      maskWraps.forEach(el => {
+        const original = originalStyles.get(el);
+        if (original) {
+          el.style.width = original.width;
+          el.style.height = original.height;
+          el.style.maxWidth = original.maxWidth;
+          el.style.maxHeight = original.maxHeight;
+        }
+      });
+      
+      // Restore images
+      images.forEach(el => {
+        const original = originalStyles.get(el);
+        if (original) {
+          el.style.width = original.width;
+          el.style.height = original.height;
+          el.style.maxWidth = original.maxWidth;
+          el.style.maxHeight = original.maxHeight;
+          if (original.objectFit) el.style.objectFit = original.objectFit;
+        }
+      });
     }
   }
   
