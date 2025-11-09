@@ -2840,25 +2840,25 @@ console.log('📺 Test toggle with: window.testToggle()');
 (function() {
   console.log('📺 SUPER SIMPLE toggle setup...');
   
-  // DEAD SIMPLE - just change width/height of specific elements
+  // DEAD SIMPLE - just change width/height of specific elements with CSS class
   const style = document.createElement('style');
   style.textContent = `
-    .big-images .img-parallax {
+    body.big-images .img-parallax {
       width: 100vw !important;
       height: 100vh !important;
     }
-    .big-images .reveal {
+    body.big-images .reveal {
       width: 100vw !important;
       height: 100vh !important;
     }
-    .big-images .mask-wrap {
+    body.big-images .mask-wrap {
       width: 100vw !important;
       height: 100vh !important;
     }
     
     /* Disable image scaling on smaller screens when in fullscreen */
     @media (max-width: 1024px) {
-      .big-images img {
+      body.big-images img {
         transform: none !important;
         scale: none !important;
       }
@@ -2867,66 +2867,25 @@ console.log('📺 Test toggle with: window.testToggle()');
   document.head.appendChild(style);
   
   let isBig = false;
-  const originalStyles = new Map(); // Store original styles
   
   function toggleBigImages() {
     isBig = !isBig;
     
-    // Get all the elements we need to change
-    const imgParallax = document.querySelectorAll('.img-parallax');
-    const reveals = document.querySelectorAll('.reveal');
-    const maskWraps = document.querySelectorAll('.mask-wrap');
-    
-    console.log(`📺 Found ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps`);
-    
     if (isBig) {
-      console.log('📺 Making images bigger - storing original styles');
-      
-      // Store original styles before changing
-      [...imgParallax, ...reveals, ...maskWraps].forEach((el, i) => {
-        originalStyles.set(el, el.style.cssText);
-        console.log(`📺 Stored original style ${i}:`, el.style.cssText);
-      });
-      
-      // Apply fullscreen styles
-      imgParallax.forEach((el, i) => {
-        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 Applied to img-parallax ${i}:`, el.style.cssText);
-      });
-      
-      reveals.forEach((el, i) => {
-        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 Applied to reveal ${i}:`, el.style.cssText);
-      });
-      
-      maskWraps.forEach((el, i) => {
-        el.style.cssText = el.style.cssText + '; width: 100vw !important; height: 100vh !important;';
-        console.log(`📺 Applied to mask-wrap ${i}:`, el.style.cssText);
-      });
-      
+      document.body.classList.add('big-images');
+      console.log('📺 Added big-images class to body');
     } else {
-      console.log('📺 Restoring original styles');
-      
-      // Restore original styles exactly
-      [...imgParallax, ...reveals, ...maskWraps].forEach((el, i) => {
-        const originalStyle = originalStyles.get(el);
-        if (originalStyle !== undefined) {
-          el.style.cssText = originalStyle;
-          console.log(`📺 Restored original style ${i}:`, el.style.cssText);
-        }
-      });
-      
-      // Clear stored styles
-      originalStyles.clear();
+      document.body.classList.remove('big-images');
+      console.log('📺 Removed big-images class from body');
     }
   }
   
   // Find toggle button
-  setTimeout(() => {
+        setTimeout(() => {
     const toggle = document.querySelector('.toggle');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('📺 Toggle ready - click to make images 3x bigger');
+      console.log('📺 Toggle ready - click to toggle fullscreen');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
