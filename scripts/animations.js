@@ -1,4 +1,4 @@
-// Version 3.0: Sequential Mobile Fade Stagger Fix - CACHE REFRESH REQUIRED
+// Version 3.1: Sequential Mobile Fade Stagger Fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -2851,19 +2851,29 @@ console.log('📺 Test toggle with: window.testToggle()');
     isFullscreen = !isFullscreen;
     
     parallaxElements.forEach((el, i) => {
+      // Find the parent reveal container
+      const revealContainer = el.closest('.reveal, .reveal-full, [class*="reveal"]');
+      const targetElement = revealContainer || el; // Use reveal container if found, otherwise the element itself
+      
+      console.log(`📺 Element ${i}: Using ${revealContainer ? 'reveal container' : 'img-parallax element'} as target`);
+      
       if (isFullscreen) {
         // Make fullscreen
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('position', 'relative', 'important');
-        el.style.setProperty('margin', '0', 'important');
+        targetElement.style.setProperty('width', '100vw', 'important');
+        targetElement.style.setProperty('height', '100vh', 'important');
+        targetElement.style.setProperty('position', 'relative', 'important');
+        targetElement.style.setProperty('margin', '0', 'important');
+        targetElement.style.setProperty('max-width', 'none', 'important');
+        targetElement.style.setProperty('max-height', 'none', 'important');
         console.log(`📺 Made element ${i} fullscreen`);
       } else {
         // Remove fullscreen
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
-        el.style.removeProperty('position');
-        el.style.removeProperty('margin');
+        targetElement.style.removeProperty('width');
+        targetElement.style.removeProperty('height');
+        targetElement.style.removeProperty('position');
+        targetElement.style.removeProperty('margin');
+        targetElement.style.removeProperty('max-width');
+        targetElement.style.removeProperty('max-height');
         console.log(`📺 Restored element ${i} to normal`);
       }
     });
