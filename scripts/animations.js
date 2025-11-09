@@ -2836,12 +2836,12 @@ window.testToggle = function() {
 
 console.log('📺 Test toggle with: window.testToggle()');
 
-// BRUTAL FORCE - inline styles on every element
+// SURGICAL - only touch width/height, leave GSAP alone
 (function() {
-  console.log('📺 BRUTAL FORCE toggle setup...');
+  console.log('📺 SURGICAL toggle setup...');
   
   let isBig = false;
-  const styleCache = new WeakMap();
+  const dimensionCache = new WeakMap();
   
   function toggleBigImages() {
     isBig = !isBig;
@@ -2856,34 +2856,67 @@ console.log('📺 Test toggle with: window.testToggle()');
     console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
     if (isBig) {
-      // FORCE EVERYTHING TO FULLSCREEN
+      // ONLY set width/height, don't touch anything else
       [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
-        // Cache original inline styles
-        if (!styleCache.has(el)) {
-          styleCache.set(el, el.style.cssText);
+        // Cache ONLY width/height properties
+        if (!dimensionCache.has(el)) {
+          dimensionCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
         }
-        // BRUTAL override
-        el.style.cssText += '; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; max-height: 100vh !important;';
+        // Set ONLY dimensions
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
       });
       
       images.forEach(el => {
-        if (!styleCache.has(el)) {
-          styleCache.set(el, el.style.cssText);
+        if (!dimensionCache.has(el)) {
+          dimensionCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            objectFit: el.style.objectFit
+          });
         }
-        el.style.cssText += '; width: 100% !important; height: 100% !important; object-fit: cover !important;';
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('height', '100%', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
       });
       
-      console.log('📺 Applied fullscreen styles to all elements');
+      console.log('📺 Applied fullscreen dimensions');
     } else {
-      // RESTORE EVERYTHING
-      [...imgParallax, ...reveals, ...maskWraps, ...images].forEach(el => {
-        const original = styleCache.get(el);
-        if (original !== undefined) {
-          el.style.cssText = original;
+      // RESTORE ONLY width/height, leave transform/opacity/etc alone
+      [...imgParallax, ...reveals, ...maskWraps].forEach(el => {
+        const cached = dimensionCache.get(el);
+        if (cached) {
+          // Remove the important flag and restore original
+          el.style.width = cached.width || '';
+          el.style.height = cached.height || '';
+          el.style.maxWidth = cached.maxWidth || '';
+          el.style.maxHeight = cached.maxHeight || '';
         }
       });
       
-      console.log('📺 Restored original styles to all elements');
+      images.forEach(el => {
+        const cached = dimensionCache.get(el);
+        if (cached) {
+          el.style.width = cached.width || '';
+          el.style.height = cached.height || '';
+          el.style.objectFit = cached.objectFit || '';
+        }
+      });
+      
+      console.log('📺 Restored original dimensions - GSAP untouched');
+      
+      // Refresh ScrollTrigger to recalculate positions
+      if (window.ScrollTrigger) {
+        console.log('📺 Refreshing ScrollTrigger...');
+        window.ScrollTrigger.refresh();
+      }
     }
   }
   
@@ -2892,7 +2925,7 @@ console.log('📺 Test toggle with: window.testToggle()');
     const toggle = document.querySelector('.toggle');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('📺 Toggle ready - BRUTAL FORCE mode');
+      console.log('📺 Toggle ready - SURGICAL mode (GSAP-safe)');
       console.log('📺 Test with: window.toggleBigImages()');
     }
     window.toggleBigImages = toggleBigImages;
