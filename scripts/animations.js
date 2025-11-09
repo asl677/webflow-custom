@@ -1523,13 +1523,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Masked image animations - unified for all devices
   function startMaskedImageAnimations() {
     console.log('🎭 Starting mask animations (unified for all devices)');
-    console.log('📱 isMobile:', isMobile, 'mobileFadeComplete:', window.mobileFadeComplete);
-    
-    // Prevent mobile fade from running more than once
-    if (isMobile && window.mobileFadeComplete) {
-      console.log('📱 Mobile fade already complete - EXITING FUNCTION');
-      return;
-    }
     
     // Only register ScrollTrigger on desktop to prevent mobile flickering
     if (!isMobile && typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
@@ -1596,37 +1589,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // MOBILE: Skip mask-wrap entirely, use fade stagger instead
-        if (isMobile) {
-          // Skip if already faded or is a clone
-          if (element.dataset.mobileFaded || element.dataset.infiniteClone) {
-            element.style.setProperty('opacity', '1', 'important');
-            element.style.setProperty('visibility', 'visible', 'important');
-            element.dataset.maskSetup = 'true';
-            console.log(`📱 Mobile: Skipping already animated image ${index}`);
-            return;
-          }
-          
-          // Mark IMMEDIATELY to prevent re-processing
-          element.dataset.maskSetup = 'true';
-          element.dataset.mobileFaded = 'true';
-          
-          element.style.setProperty('visibility', 'visible', 'important');
-          element.style.setProperty('opacity', '0', 'important');
-          
-          const staggerDelay = index * 0.15; // 150ms between each image
-          console.log(`📱 Mobile: Fade stagger for image ${index} - delay: ${staggerDelay}s`);
-          
-          window.gsap.to(element, {
-            opacity: 1,
-            duration: 0.6,
-            delay: staggerDelay,
-            ease: "power2.out"
-          });
-          return;
-        }
-        
-        // DESKTOP: Process with mask-wrap as before
+        // Process both original and cloned images the same way
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
@@ -1728,32 +1691,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const rect = element.getBoundingClientRect();
           const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
           
-          // On mobile, stagger the first few images in viewport
-          if (isMobile && inViewport && index < 5) {
-            // Mobile stagger for initial images in view
-          window.gsap.set(maskContainer, { width: '0px' });
-            const staggerDelay = index * 0.15; // 150ms between each image
-            console.log(`📱 Mobile stagger for image ${index} - delay: ${staggerDelay}s, targetWidth: ${maskContainer.dataset.targetWidth}px`);
-            console.log(`📱 Image ${index} element:`, element.src || element.tagName, 'visible:', element.offsetWidth > 0);
-            
-            setTimeout(() => {
-              console.log(`📱 Animating image ${index} NOW`);
-          window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
-                duration: 0.8,
-                ease: "power2.out",
-                onStart: () => {
-                  console.log(`📱 Animation started for image ${index}`);
-                },
-                onComplete: () => {
-                  element.dataset.gsapAnimated = 'mask-revealed';
-                  element.dataset.maskComplete = 'true';
-                  console.log(`📱 Animation complete for image ${index}, maskContainer width:`, maskContainer.style.width);
-                }
-              });
-            }, staggerDelay * 1000);
-          } else if (!isMobile && inViewport && index === 0) {
-            // Desktop: first image reveals immediately
+          if (inViewport && index === 0) {
+            // First image reveals immediately
             window.gsap.set(maskContainer, { width: '0px' });
             console.log(`🎭 First image in viewport - revealing immediately`);
             window.gsap.to(maskContainer, { 
@@ -1765,13 +1704,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 element.dataset.maskComplete = 'true';
               }
             });
-          } else if (isMobile && !inViewport) {
-            // Mobile: preload images not in view (instant reveal for performance)
-            // DON'T set to 0 - just set to full width immediately
-            console.log(`📱 Mobile preload for image ${index} below fold`);
-            window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
-            element.dataset.gsapAnimated = 'mask-revealed-preload';
-            element.dataset.maskComplete = 'true';
           } else {
             // Use ScrollTrigger for other images
             window.gsap.set(maskContainer, { width: '0px' });
@@ -1793,8 +1725,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
           }
           
-          // Only add parallax when NOT in fullscreen mode and NOT on mobile
-          if (hasParallax && !window.isFullscreenMode && !isMobile) {
+          // Only add parallax when NOT in fullscreen mode
+          if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.2, 
@@ -1832,14 +1764,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
       }, 4000);
-      
-      // Mark mobile fade as complete on mobile
-      if (isMobile) {
-        setTimeout(() => {
-          window.mobileFadeComplete = true;
-          console.log('📱 SETTING mobileFadeComplete = true - fade animation done');
-        }, imagesToProcess.length * 150 + 600); // Wait for all staggers + fade duration
-      }
     }
   }); // End of Promise.all - wait for image dimensions
   }
