@@ -2907,12 +2907,16 @@ console.log('📺 Test toggle with: window.testToggle()');
       
       images.forEach(el => {
         if (!dimensionCache.has(el)) {
+          // Get the COMPUTED opacity, not inline style which might be from emergency hide
+          const computedOpacity = window.getComputedStyle(el).opacity;
           dimensionCache.set(el, {
             width: el.style.width,
             height: el.style.height,
             objectFit: el.style.objectFit,
             scale: el.style.scale || '',
-            opacity: el.style.opacity || '1' // Cache opacity to prevent fade issues
+            // Only cache opacity if it's 1, otherwise cache as 1
+            // This prevents caching 0 from emergency hide or mid-fade states
+            opacity: (computedOpacity === '1' || el.dataset.mobileLocked) ? '1' : '1'
           });
         }
         
