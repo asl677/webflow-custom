@@ -1537,115 +1537,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
     console.log(`📱 Mobile device detected: ${isMobile}`);
   
-  // ULTRA SIMPLE mobile stagger - just setTimeout + CSS transition
-  // ONLY RUN ONCE - prevent re-triggering on ScrollTrigger refresh
-  if (isMobile && !window.mobileStaggerComplete) {
-    console.log('🚨 ULTRA SIMPLE MOBILE STAGGER 🚨');
-    window.mobileStaggerComplete = true; // Set flag immediately
-    
-    // Remove emergency hide immediately
+  // MOBILE ANIMATIONS DISABLED - treat mobile same as desktop
+  // Just remove emergency hide and use desktop animations for everyone
+  console.log(`📱 Mobile detected: ${isMobile} - using desktop animations for all devices`);
+  
+  // Remove emergency hide for everyone
     const emergencyHide = document.getElementById('emergency-image-hide');
     if (emergencyHide) {
       emergencyHide.remove();
-      console.log('🔧 Removed emergency hide for mobile');
-    }
-    
-    // Separate original images from cloned/infinite images
-    const originalImages = Array.from(allImages).filter(img => !img.dataset.infiniteClone);
-    const clonedImages = Array.from(allImages).filter(img => img.dataset.infiniteClone);
-    
-    console.log(`📱 Found ${originalImages.length} original images, ${clonedImages.length} cloned images`);
-    
-    // Set original images to stagger fade
-    originalImages.forEach((img, index) => {
-      img.style.opacity = '0';
-      img.style.visibility = 'visible';
-      img.style.display = 'block';
-      img.style.transition = 'opacity 1.6s ease-out';
-      
-      // Simple setTimeout stagger - much more reliable
-      const delay = index * 1000; // 1000ms between each image
-      
-      setTimeout(() => {
-        console.log(`📱 Fading in original image ${index} at ${Date.now()}`);
-          img.style.opacity = '1';
-        img.dataset.mobileLocked = 'true';
-      }, delay);
-    });
-    
-    // Cloned/infinite images appear immediately without animation
-    clonedImages.forEach((img, index) => {
-      img.style.opacity = '1';
-      img.style.visibility = 'visible';
-      img.style.display = 'block';
-      img.style.transition = 'none'; // No transition for clones
-      img.dataset.mobileLocked = 'true';
-      console.log(`📱 Cloned image ${index} shown immediately (no fade)`);
-    });
-    
-    console.log(`📱 Stagger: ${originalImages.length} original images, instant: ${clonedImages.length} clones`);
-  } else if (isMobile && window.mobileStaggerComplete) {
-    console.log('📱 Mobile stagger already complete - skipping');
-    // Make sure all images are visible
-    allImages.forEach(img => {
-      if (img.dataset.mobileLocked) {
-        img.style.opacity = '1';
-        img.style.visibility = 'visible';
-      }
-    });
-  } else {
-    // Remove emergency hide for desktop
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-      console.log('🔧 Removed emergency image hiding for mask animations');
-    }
+    console.log('🔧 Removed emergency hide');
   }
   
-  // Process images for mask setup
-  // On mobile: skip mask system entirely, only use fade stagger
-  // On desktop: use full mask system
-  const imagesToProcess = isMobile ? [] : allImages;
-  
-  if (isMobile) {
-    console.log('📱 Mobile: Skipping ALL mask processing, using fade stagger only');
-    
-    // Add aggressive mobile image protection against scroll interference
-    const protectMobileImages = () => {
-      // Skip protection if stagger animation is running
-      if (window.mobileProtectionPaused) {
-      return;
-    }
-    
-      document.querySelectorAll('img[data-mobile-locked="true"]').forEach(img => {
-        const currentOpacity = getComputedStyle(img).opacity;
-        const currentVisibility = getComputedStyle(img).visibility;
-        
-        if (currentOpacity !== '1' || currentVisibility === 'hidden') {
-          console.log('📱 PROTECTING mobile image from scroll interference:', img.src || img.tagName);
-          
-          // Kill any GSAP animations on this image
-          if (window.gsap) {
-            window.gsap.killTweensOf(img);
-          }
-          
-          // Force visibility with !important
-          img.style.setProperty('opacity', '1', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.style.setProperty('display', 'block', 'important');
-          img.style.setProperty('transform', 'none', 'important');
-        }
-      });
-    };
-    
-    // RE-ENABLE protection to prevent scroll fadeout AFTER stagger completes
-    setTimeout(() => {
-      setInterval(protectMobileImages, 100);
-      console.log('📱 Mobile image protection RE-ENABLED after stagger');
-    }, 5000); // Wait for stagger to complete
-  } else {
-    console.log('🖥️ Desktop: Processing', imagesToProcess.length, 'images for mask animations');
-  }
+  // Process ALL images the same way (mobile and desktop)
+  const imagesToProcess = allImages;
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
@@ -1655,17 +1559,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🔍 Found ${hiddenImages.length} initially hidden images that need mask setup`);
     
     if (imagesToProcess.length) {
-      // On mobile, only animate first 2 images immediately to reduce load even more
-      const maxInitialImages = isMobile ? 2 : imagesToProcess.length;
+      // Process all images the same way
       
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
-        
-        // Skip mask setup for mobile images that are handled by fade stagger
-        if (isMobile && element.dataset.mobileFadeProcessed) {
-          console.log(`📱 Skipping mask setup for mobile fade processed image ${index}`);
-          return;
-        }
         // Process both original and cloned images the same way
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
@@ -1758,14 +1655,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             });
           }
-        } else if (isMobile) {
-          // Mobile: show mask immediately, no ScrollTrigger
-          console.log(`📱 Mobile: Showing mask immediately for image ${index}`);
-          window.gsap.set(maskContainer, { width: maskContainer.dataset.targetWidth + 'px' });
-          element.dataset.gsapAnimated = 'mask-revealed-mobile';
-          element.dataset.maskComplete = 'true';
         } else {
-          // Desktop: use ScrollTrigger for mask reveal
+          // USE SCROLLTRIGGER FOR EVERYONE (mobile and desktop)
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
@@ -1784,8 +1675,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          // Only add parallax on desktop and when NOT in fullscreen mode
-          if (hasParallax && !isMobile && !window.isFullscreenMode) {
+          // Only add parallax when NOT in fullscreen mode
+          if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
               duration: 1.2, 
