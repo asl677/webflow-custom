@@ -763,9 +763,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 800; // Same delay for all devices
+    const imageDelay = 2500; // Delay images so text scramble nearly completes first
     setTimeout(() => {
-      console.log('🎭 Starting masked image animations after text completion');
+      console.log('🎭 Starting masked image animations after text scramble nearly complete');
       startMaskedImageAnimations();
       
     }, imageDelay);
