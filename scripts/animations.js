@@ -2889,7 +2889,7 @@ console.log('📺 Test toggle with: window.testToggle()');
       return;
     }
     
-    const textElements = fixCenter.querySelectorAll('.heading.small.link.muted.disabled.lg, .heading, .small, .link, .muted, .disabled, .lg');
+    const textElements = fixCenter.querySelectorAll('p');
     console.log('💧 Found text elements:', textElements.length);
     
     if (textElements.length === 0) {
