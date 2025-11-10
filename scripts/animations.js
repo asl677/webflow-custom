@@ -2881,8 +2881,8 @@ console.log('📺 Test toggle with: window.testToggle()');
   }
   
   // Load Blotter and material in sequence
-  loadScript('https://cdn.jsdelivr.net/npm/blotterjs-fork@0.1.3/build/blotter.min.js')
-    .then(() => loadScript('https://cdn.jsdelivr.net/npm/blotterjs-fork@0.1.3/build/materials/liquidDistortMaterial.min.js'))
+  loadScript('https://unpkg.com/blotterjs-fork@0.1.0/build/blotter.min.js')
+    .then(() => loadScript('https://unpkg.com/blotterjs-fork@0.1.0/build/materials/liquidDistortMaterial.min.js'))
     .then(() => {
       console.log('✅ Blotter library loaded successfully');
       applyBlotterEffect();
