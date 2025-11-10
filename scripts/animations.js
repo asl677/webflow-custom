@@ -2889,11 +2889,12 @@ console.log('📺 Test toggle with: window.testToggle()');
       return;
     }
     
-    const textElements = fixCenter.querySelectorAll('.heading.small.link.muted.disabled.lg');
+    const textElements = fixCenter.querySelectorAll('.heading.small.link.muted.disabled.lg, .heading, .small, .link, .muted, .disabled, .lg');
     console.log('💧 Found text elements:', textElements.length);
     
     if (textElements.length === 0) {
-      console.warn('⚠️ No text elements found with classes: heading, small, link, muted, disabled, lg');
+      console.warn('⚠️ No text elements found in .fix-center');
+      console.log('💧 Fix-center HTML:', fixCenter.innerHTML.substring(0, 200));
       return;
     }
     
