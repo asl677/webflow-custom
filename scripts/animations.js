@@ -2867,38 +2867,15 @@ console.log('📺 Test toggle with: window.testToggle()');
 
 // BLOTTER EFFECT - Apply to .fix-center text content
 (function() {
-  console.log('💧 Loading Blotter library dynamically...');
-  
-  // Load Blotter scripts dynamically
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+  // Wait for Blotter library to load (from external script tags)
+  if (typeof Blotter === 'undefined') {
+    console.warn('⚠️ Blotter library not loaded - add script tags to Webflow:');
+    console.warn('   <script src="https://unpkg.com/blotterjs@latest/build/blotter.min.js"></script>');
+    console.warn('   <script src="https://unpkg.com/blotterjs@latest/build/materials/liquidDistortMaterial.min.js"></script>');
+    return;
   }
   
-  // Load Blotter and material in sequence
-  loadScript('https://unpkg.com/blotterjs-fork@0.1.0/build/blotter.min.js')
-    .then(() => loadScript('https://unpkg.com/blotterjs-fork@0.1.0/build/materials/liquidDistortMaterial.min.js'))
-    .then(() => {
-      console.log('✅ Blotter library loaded successfully');
-      applyBlotterEffect();
-    })
-    .catch((error) => {
-      console.error('❌ Failed to load Blotter library:', error);
-    });
-  
-  function applyBlotterEffect() {
-    // Wait for Blotter library to load
-    if (typeof Blotter === 'undefined') {
-      console.warn('⚠️ Blotter library not loaded - skipping liquid distortion effect');
-      return;
-    }
-    
-    console.log('💧 Initializing Blotter liquid distortion effect...');
+  console.log('💧 Initializing Blotter liquid distortion effect...');
   
   // Wait for elements to be available AND for scrambling to complete
   // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
@@ -2963,5 +2940,4 @@ console.log('📺 Test toggle with: window.testToggle()');
     
     console.log('✅ Blotter liquid distortion effect applied to', textElements.length, 'elements');
   }, 4000); // Wait 4 seconds for scrambling to complete
-  }
 })();
