@@ -2867,13 +2867,38 @@ console.log('📺 Test toggle with: window.testToggle()');
 
 // BLOTTER EFFECT - Apply to .fix-center text content
 (function() {
-  // Wait for Blotter library to load
-  if (typeof Blotter === 'undefined') {
-    console.warn('⚠️ Blotter library not loaded - skipping liquid distortion effect');
-    return;
+  console.log('💧 Loading Blotter library dynamically...');
+  
+  // Load Blotter scripts dynamically
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
   }
   
-  console.log('💧 Initializing Blotter liquid distortion effect...');
+  // Load Blotter and material in sequence
+  loadScript('https://cdn.jsdelivr.net/npm/blotterjs-fork@0.1.3/build/blotter.min.js')
+    .then(() => loadScript('https://cdn.jsdelivr.net/npm/blotterjs-fork@0.1.3/build/materials/liquidDistortMaterial.min.js'))
+    .then(() => {
+      console.log('✅ Blotter library loaded successfully');
+      applyBlotterEffect();
+    })
+    .catch((error) => {
+      console.error('❌ Failed to load Blotter library:', error);
+    });
+  
+  function applyBlotterEffect() {
+    // Wait for Blotter library to load
+    if (typeof Blotter === 'undefined') {
+      console.warn('⚠️ Blotter library not loaded - skipping liquid distortion effect');
+      return;
+    }
+    
+    console.log('💧 Initializing Blotter liquid distortion effect...');
   
   // Wait for elements to be available AND for scrambling to complete
   // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
@@ -2887,7 +2912,7 @@ console.log('📺 Test toggle with: window.testToggle()');
       return;
     }
     
-    const textElements = fixCenter.querySelectorAll('.heading, .small, .link, .muted, .disabled, .lg');
+    const textElements = fixCenter.querySelectorAll('.heading.small.link.muted.disabled.lg');
     console.log('💧 Found text elements:', textElements.length);
     
     if (textElements.length === 0) {
@@ -2938,4 +2963,5 @@ console.log('📺 Test toggle with: window.testToggle()');
     
     console.log('✅ Blotter liquid distortion effect applied to', textElements.length, 'elements');
   }, 4000); // Wait 4 seconds for scrambling to complete
+  }
 })();
