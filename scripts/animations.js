@@ -1589,9 +1589,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // MOBILE: Simple fade stagger, no mask-wrap
         if (isMobile) {
+          // Skip if already faded in
+          if (element.dataset.mobileFaded === 'true') {
+            console.log(`📱 Mobile: Image ${index} already faded, skipping`);
+            return;
+          }
+          
           element.style.setProperty('opacity', '0', 'important');
           element.style.setProperty('visibility', 'visible', 'important');
           element.dataset.maskSetup = 'true';
+          element.dataset.mobileFaded = 'true'; // Mark immediately to prevent re-animation
           
           const staggerDelay = index * 0.15; // 150ms between each image
           console.log(`📱 Mobile: Image ${index} fading in with ${staggerDelay}s delay`);
