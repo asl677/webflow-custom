@@ -18,7 +18,7 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
+    img:not(#preloader img):not([data-infinite-clone]):not([data-mobile-faded]), video:not([data-infinite-clone]):not([data-mobile-faded]) { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -1599,6 +1599,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           element.style.setProperty('visibility', 'visible', 'important');
           element.dataset.maskSetup = 'true';
           element.dataset.mobileFaded = 'true'; // Mark immediately to prevent re-animation
+          element.dataset.gsapAnimated = 'mobile-fade'; // Prevent infinite scroll from re-animating
+          element.dataset.mobileLocked = 'true'; // Lock the opacity
           
           const staggerDelay = index * 0.15; // 150ms between each image
           console.log(`📱 Mobile: Image ${index} fading in with ${staggerDelay}s delay`);
@@ -2157,7 +2159,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
-      if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
+      // Skip images that already have mobile fade animation or are already animated
+      if (img.dataset.mobileFaded || img.dataset.gsapAnimated || img.dataset.mobileLocked) {
+        return;
+      }
+      
+      if (typeof window.gsap !== 'undefined' && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
         if (isMobile) {
           // CSS transition fade for infinite scroll images
           img.style.setProperty('opacity', '0', 'important');
