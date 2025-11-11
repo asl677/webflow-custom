@@ -763,7 +763,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 3000; // Delay images so text scramble completes first
+    const imageDelay = 2800; // Delay images so text scramble completes first
     setTimeout(() => {
       console.log('🎭 Starting masked image animations after text scramble nearly complete');
       startMaskedImageAnimations();
@@ -1656,13 +1656,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const rect = element.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
-        if (inViewport && index === 0) {
-          // First image reveals immediately
+        if (inViewport) {
+          // Images in viewport on load - stagger them
+          const staggerDelay = index * 0.3; // 300ms between each image
           window.gsap.set(maskContainer, { width: '0px' });
-          console.log(`🎭 First image in viewport - revealing immediately`);
+          console.log(`🎭 Image ${index} in viewport - revealing with ${staggerDelay}s delay`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.8,
+            duration: 1.5,
+            delay: staggerDelay,
             ease: "power2.out",
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -1674,7 +1676,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.8,
+            duration: 1.5,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -1694,7 +1696,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.8, 
+              duration: 1.5, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
