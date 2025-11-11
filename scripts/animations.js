@@ -1587,12 +1587,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // MOBILE: No mask-wrap, just show images directly
+        // MOBILE: Simple fade stagger, no mask-wrap
         if (isMobile) {
-          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('opacity', '0', 'important');
           element.style.setProperty('visibility', 'visible', 'important');
           element.dataset.maskSetup = 'true';
-          console.log(`📱 Mobile: Image ${index} visible (no mask)`);
+          
+          const staggerDelay = index * 0.15; // 150ms between each image
+          console.log(`📱 Mobile: Image ${index} fading in with ${staggerDelay}s delay`);
+          
+          window.gsap.to(element, {
+            opacity: 1,
+            duration: 0.6,
+            delay: staggerDelay,
+            ease: "power2.out"
+          });
           return;
         }
         
