@@ -39,8 +39,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     let isFullscreenMode = false;
     
-    // Find existing .toggle element
-    let toggleButton = document.querySelector('.toggle');
+    // Find existing .toggle.top element
+    let toggleButton = document.querySelector('.toggle.top');
     
     if (!toggleButton) {
       console.warn('📺 No .toggle element found initially - trying alternatives...');
@@ -2728,7 +2728,7 @@ console.log('🖼️ Test fullscreen with: window.testFullscreen()');
 window.testToggle = function() {
   console.log('📺 Testing toggle functionality...');
   
-  const toggleEl = document.querySelector('.toggle');
+  const toggleEl = document.querySelector('.toggle.top');
   console.log('Toggle element found:', !!toggleEl);
   
   if (toggleEl) {
@@ -2857,7 +2857,7 @@ console.log('📺 Test toggle with: window.testToggle()');
   
   // Find toggle button
   setTimeout(() => {
-    const toggle = document.querySelector('.toggle');
+    const toggle = document.querySelector('.toggle.top');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
       console.log('📺 Toggle ready - SURGICAL mode (GSAP-safe)');
