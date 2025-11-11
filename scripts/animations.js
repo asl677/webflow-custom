@@ -903,7 +903,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
   
   // Simple, reliable text scrambling
-  function simpleScrambleText(element, duration = 1200) {
+  function simpleScrambleText(element, duration = 1500) {
     const spans = element.querySelectorAll('.letter');
     if (spans.length === 0) return;
     
@@ -913,7 +913,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🎬 Starting scramble for ${originalLetters.length} letters`);
     
     let frame = 0;
-    const totalFrames = duration / 60; // 60ms intervals
+    const totalFrames = duration / 80; // 80ms intervals (slower)
       
       const interval = setInterval(() => {
       spans.forEach((span, i) => {
@@ -940,7 +940,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         });
         console.log(`✅ Completed scrambling`);
       }
-    }, 60);
+    }, 80);
   }
   
   // Letter hover effects + whole-word link scrambling
