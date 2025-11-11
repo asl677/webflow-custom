@@ -536,7 +536,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       #preloader.counting .digit{animation:none}
       @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
-      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
+      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *):not([data-mobile-faded]):not([data-mobile-locked]){opacity:0!important;visibility:hidden!important}
       
       /* REMOVE animations-ready hiding to prevent slide-up effects */
       
@@ -740,6 +740,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader with mobile optimization
   function startPageAnimations() {
+    
+    // MOBILE: Pre-hide images before body.loading is removed to prevent flash
+    if (isMobile) {
+      const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
+      allImages.forEach(img => {
+        if (!img.dataset.mobileFaded && !img.dataset.mobileLocked) {
+          img.style.setProperty('opacity', '0', 'important');
+          img.style.setProperty('visibility', 'visible', 'important');
+          console.log('📱 Pre-hiding mobile image before loading class removal');
+        }
+      });
+    }
     
     // Animate nav elements (excluding fake, middle, and bottom nav)
     const allNavElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"])');
