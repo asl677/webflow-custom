@@ -2040,7 +2040,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
       
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.85;
+      const nearBottom = scrollPercent >= 0.6; // Trigger earlier for smoother mobile experience
       
       // Reduced logging for performance
       if (nearBottom && !isLoading) {
