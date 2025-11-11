@@ -763,7 +763,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 3500; // Delay images so text scramble completes first
+    const imageDelay = 3000; // Delay images so text scramble completes first
     setTimeout(() => {
       console.log('🎭 Starting masked image animations after text scramble nearly complete');
       startMaskedImageAnimations();
@@ -1662,7 +1662,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           console.log(`🎭 First image in viewport - revealing immediately`);
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2,
+            duration: 1.8,
             ease: "power2.out",
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -1674,7 +1674,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.2,
+            duration: 1.8,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
@@ -1694,7 +1694,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (hasParallax && !window.isFullscreenMode) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.2, 
+              duration: 1.8, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
