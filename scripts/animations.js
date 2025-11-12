@@ -1,4 +1,4 @@
-// Version 3.6: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.7: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -8,7 +8,6 @@ console.log('🚀 SCRIPT LOADED: Portfolio animations v3.3 - Mobile mask fix');
 console.log('🚀 URL:', window.location.href);
 console.log('🚀 MOBILE DETECTION:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
 window.scriptLoadTest = function() {
-  console.log('✅ SCRIPT IS DEFINITELY LOADED');
   return 'SUCCESS: Script loaded and working';
 };
 console.log('🚀 Try: window.scriptLoadTest()');
@@ -35,7 +34,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Fullscreen scrolling toggle system
   function initFullscreenScrollToggle() {
-    console.log('📺 Initializing fullscreen scroll toggle...');
     
     let isFullscreenMode = false;
     
@@ -48,11 +46,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Try to find any element with toggle in the class name
       const anyToggle = document.querySelector('[class*="toggle"]');
       if (anyToggle) {
-        console.log('📺 Found element with toggle in class name:', anyToggle.className);
         toggleButton = anyToggle;
       } else {
         // List all elements to help debug
-        console.log('📺 All elements with classes containing common toggle names:');
         const possibleToggles = document.querySelectorAll('[class*="toggle"], [class*="btn"], [class*="button"], [id*="toggle"]');
         possibleToggles.forEach((el, i) => {
           console.log(`  ${i}: ${el.tagName}.${el.className} #${el.id}`);
@@ -63,20 +59,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     }
     
-    console.log('📺 Found .toggle element:', toggleButton);
     
     // Also check for .img-parallax elements immediately
     const testParallaxElements = document.querySelectorAll('.img-parallax');
-    console.log(`📺 Initial check: Found ${testParallaxElements.length} .img-parallax elements`);
     
     // Function to toggle fullscreen mode
     function toggleFullscreenMode() {
       isFullscreenMode = !isFullscreenMode;
-      console.log(`📺 Toggling fullscreen mode: ${isFullscreenMode ? 'ON' : 'OFF'}`);
       
       // Get all img-parallax elements
       const parallaxElements = document.querySelectorAll('.img-parallax');
-      console.log(`📺 Found ${parallaxElements.length} .img-parallax elements to modify`);
       
       if (isFullscreenMode) {
         // Enter fullscreen mode
@@ -132,7 +124,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             img.style.setProperty('object-position', 'center', 'important');
           });
           
-          console.log(`📺 Applied fullscreen styles to .img-parallax element ${index}`);
         });
         
         // Add body class for additional styling
@@ -172,7 +163,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             });
             
-            console.log(`📺 Restored original styles to .img-parallax element ${index}`);
           }
         });
         
@@ -184,14 +174,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
         setTimeout(() => {
           window.gsap.ScrollTrigger.refresh();
-          console.log('📺 ScrollTrigger refreshed after fullscreen toggle');
         }, 100);
       }
     }
     
     // Add click listener to existing .toggle element with debugging
     toggleButton.addEventListener('click', (e) => {
-      console.log('📺 TOGGLE CLICKED! Event triggered');
       e.preventDefault();
       e.stopPropagation();
       toggleFullscreenMode();
@@ -199,11 +187,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Add additional event listeners for debugging
     toggleButton.addEventListener('mousedown', () => {
-      console.log('📺 Toggle mousedown detected');
     });
     
     toggleButton.addEventListener('mouseup', () => {
-      console.log('📺 Toggle mouseup detected');
     });
     
     // Test if element is clickable
@@ -218,7 +204,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       zIndex: getComputedStyle(toggleButton).zIndex
     });
     
-    console.log('📺 Fullscreen scroll toggle initialized - Click .toggle element to activate');
     
     return {
       toggle: toggleFullscreenMode,
@@ -228,7 +213,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Full-screen image viewer system
   function initFullscreenImageViewer() {
-    console.log('🖼️ Initializing fullscreen image viewer...');
     
     // Create fullscreen overlay (hidden by default)
     const overlay = document.createElement('div');
@@ -269,7 +253,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Function to enter fullscreen
     function enterFullscreen(originalImage) {
-      console.log('🖼️ Entering fullscreen mode');
       
       // Set the source
       fullscreenImage.src = originalImage.src;
@@ -307,7 +290,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Function to exit fullscreen
     function exitFullscreen() {
-      console.log('🖼️ Exiting fullscreen mode');
       
       if (window.gsap) {
         window.gsap.to(overlay, {
@@ -341,7 +323,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function addFullscreenToImages() {
       // Target all images except preloader and already processed ones
       const images = document.querySelectorAll('img:not(#preloader img):not([data-fullscreen-enabled])');
-      console.log(`🖼️ Found ${images.length} images to process for fullscreen`);
       
       images.forEach((img, index) => {
         // Debug image properties
@@ -362,7 +343,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                                   (!img.offsetWidth && !img.offsetHeight); // Not loaded yet
         
         if (!hasValidDimensions) {
-          console.log(`🖼️ Skipping small image ${index}: ${img.offsetWidth}x${img.offsetHeight}`);
           return;
         }
         
@@ -374,7 +354,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Add click listener with more debugging
         img.addEventListener('click', (e) => {
-          console.log('🖼️ Image clicked!', img.src?.substring(0, 50) + '...');
           
           // Don't interfere with existing interactions
           e.stopPropagation();
@@ -385,7 +364,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const parentOnClick = img.closest('[onclick]');
           
           if (parentLink || parentButton || parentOnClick) {
-            console.log('🖼️ Skipping - image is inside interactive element:', {
               parentLink: !!parentLink,
               parentButton: !!parentButton,
               parentOnClick: !!parentOnClick
@@ -393,14 +371,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             return;
           }
           
-          console.log('🖼️ Entering fullscreen for image');
           enterFullscreen(img);
         });
         
-        console.log('🖼️ Added fullscreen functionality to image:', img.src?.substring(0, 50) + '...');
       });
       
-      console.log(`🖼️ Successfully added fullscreen to ${images.length} images`);
     }
     
     // Initialize for existing images
@@ -408,7 +383,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Add delayed initialization for images that might load later
     setTimeout(() => {
-      console.log('🖼️ Running delayed fullscreen initialization...');
       addFullscreenToImages();
     }, 2000);
     
@@ -416,7 +390,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
-          console.log('🖼️ Running DOMContentLoaded fullscreen initialization...');
           addFullscreenToImages();
         }, 1000);
       });
@@ -465,22 +438,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function loadGSAP() {
     // Check if GSAP is already available from Webflow
     if (typeof window.gsap !== 'undefined') {
-      console.log('✅ Using Webflow\'s built-in GSAP');
       gsapLoaded = true;
       
       // Check for ScrollTrigger
       if (window.gsap.ScrollTrigger) {
-        console.log('✅ Using Webflow\'s built-in ScrollTrigger');
         scrollTriggerLoaded = true;
       } else {
         // Load ScrollTrigger if not available
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
-          console.log('✅ ScrollTrigger loaded externally');
           if (window.gsap && window.gsap.registerPlugin) {
             try {
               window.gsap.registerPlugin(ScrollTrigger);
-              console.log('✅ ScrollTrigger registered');
             } catch (e) {
               console.error('❌ ScrollTrigger registration failed:', e);
             }
@@ -491,25 +460,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Load Observer plugin
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
         observerLoaded = true;
-        console.log('✅ Observer loaded');
       });
       
       return;
     }
     
     // Fallback: Load GSAP externally if not provided by Webflow
-    console.log('ℹ️ Webflow GSAP not found, loading externally...');
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
-      console.log('✅ GSAP loaded externally');
               loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
-        console.log('✅ ScrollTrigger loaded externally');
           setTimeout(() => {
             if (window.gsap && window.gsap.registerPlugin) {
               try {
               window.gsap.registerPlugin(ScrollTrigger);
-              console.log('✅ ScrollTrigger registered');
               } catch (e) {
                 console.error('❌ ScrollTrigger registration failed:', e);
               }
@@ -517,7 +481,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }, 100);
           loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
             observerLoaded = true;
-            console.log('✅ Observer loaded');
           });
         });
     });
@@ -554,7 +517,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.body.classList.add('loading');
     
     // Show immediately, no delay
-    console.log('🎬 Preloader visible immediately with pulsing digits');
     return preloader;
   }
 
@@ -565,9 +527,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Wait for GSAP to load before starting preloader
     function waitForGSAPThenStart() {
       if (typeof window.gsap !== 'undefined') {
-        console.log('✅ GSAP ready, starting preloader');
-        console.log('📊 GSAP version:', window.gsap.version);
-        console.log('📊 ScrollTrigger available:', !!window.gsap.ScrollTrigger);
         startActualPreloader();
       } else {
         console.log('⏳ Still waiting for GSAP...', {
@@ -613,10 +572,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const totalImages = images.length;
     let loadedCount = 0;
     
-    console.log(`🖼️ Preloader starting: Found ${totalImages} images to preload`);
     
     if (totalImages === 0) {
-      console.log(`🖼️ No images found, completing preloader after brief delay`);
       preloader.className = 'counting';
       updateCounter(100);
       setTimeout(completePreloader, 1000); // Slight delay even with no images
@@ -631,20 +588,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Switch from pulsing to counting mode when images start loading
       if (loadedCount === 1) {
         preloader.className = 'counting';
-        console.log('🎬 Images loading detected - switching to counting mode');
       }
       
-      console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
       // Wait for at least 10 images AND 80% of total before completing
       const minImagesLoaded = loadedCount >= 10;
       const majorityLoaded = loadedCount >= Math.ceil(totalImages * 0.8);
       const minThreshold = Math.ceil(totalImages * 0.8);
       
-      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 10 (${minImagesLoaded}) and ${minThreshold} for 80% (${majorityLoaded})`);
       
       if (minImagesLoaded && majorityLoaded) {
-        console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded (min 10 ✓, 80% ✓)`);
         setTimeout(completePreloader, 200);
       }
     }
@@ -724,12 +677,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             console.log('🚀 Starting animations after preloader');
             startPageAnimations();
-            console.log('🚀 startPageAnimations completed');
             
             console.log('🚀 About to call initImageToggle...');
             try {
               initImageToggle();
-              console.log('🚀 initImageToggle call completed successfully');
             } catch (error) {
               console.error('🚀 ERROR calling initImageToggle:', error);
             }
@@ -753,11 +704,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     });
     
     // Start text animations immediately
-    console.log('🎬 Starting text animations');
-    console.log('🎬 About to call initTextAndOtherAnimations()');
     try {
       initTextAndOtherAnimations();
-      console.log('✅ initTextAndOtherAnimations() completed');
     } catch (error) {
       console.error('❌ initTextAndOtherAnimations() failed:', error);
     }
@@ -765,7 +713,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Wait for text animations to mostly complete before starting images
     const imageDelay = 2800; // Delay images so text scramble completes first
     setTimeout(() => {
-      console.log('🎭 Starting masked image animations after text scramble nearly complete');
       startMaskedImageAnimations();
       
     }, imageDelay);
@@ -834,11 +781,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Simple working scrambling for all visible text elements
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
-      console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
-    console.log('🎭 Starting SIMPLE working scrambling...');
     
     // Find all text elements - cast wide net
     const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
@@ -852,7 +797,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return text && text.length > 2 && text.length < 150 && hasChildren && isVisible && inViewport;
     });
     
-    console.log(`🔍 Found ${validElements.length} text elements for scrambling`);
     
     // Apply line-by-line stagger reveal with scrambling (no fading)
     validElements.forEach((element, index) => {
@@ -860,7 +804,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (element.closest('.label-wrap')) return;
       
       element.dataset.animationInit = 'true';
-      console.log(`🎯 [${index}] LINE-BY-LINE:`, element.textContent.substring(0, 40));
       
       // Start invisible for line-by-line reveal
       element.style.visibility = 'hidden';
@@ -910,7 +853,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const originalLetters = Array.from(spans).map(span => span.textContent);
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     
-    console.log(`🎬 Starting scramble for ${originalLetters.length} letters`);
     
     let frame = 0;
     const totalFrames = duration / 80; // 80ms intervals (slower)
@@ -938,7 +880,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         spans.forEach((span, i) => {
           span.textContent = originalLetters[i];
         });
-        console.log(`✅ Completed scrambling`);
       }
     }, 80);
   }
@@ -948,12 +889,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Note: Keeping hover effects disabled on mobile since touch devices don't need hover
     if (isMobile) {
-      console.log('📱 Mobile detected - skipping hover effects for touch devices');
       return; // Exit early, no hover effects on mobile (touch doesn't need hover)
     }
     
     const letterElements = document.querySelectorAll('.letter');
-    console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
     
     // Regular letter bouncing for non-links
     letterElements.forEach((letter, i) => {
@@ -1096,7 +1035,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       startTime: Date.now()
     });
     
-    console.log(`🎬 Started line scrambling ${lineIndex}: "${lineText}" for ${duration}ms`);
     
     // Start the update loop if not already running
     if (!state.updateInterval) {
@@ -1140,7 +1078,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Remove completed scrambles
         completedScrambles.forEach(index => {
-          console.log(`✅ Completed line scrambling ${index}`);
           state.activeScrambles.delete(index);
         });
         
@@ -1161,7 +1098,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               startRotatingText(element);
           }
           
-          console.log(`🎉 All line scrambles completed for: ${element.textContent.substring(0, 30)}`);
         }
       }, 80); // 80ms update interval for smooth effect
     }
@@ -1172,7 +1108,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const originalText = element.textContent.trim();
     if (!originalText) return;
     
-    console.log(`🎬 SCRAMBLING "${originalText}" for ${duration}ms`);
     
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let frame = 0;
@@ -1200,7 +1135,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (frame >= totalFrames) {
         clearInterval(interval);
         element.textContent = originalText;
-        console.log(`✅ COMPLETED scrambling "${originalText}"`);
         
         // Handle special elements
         if (element.classList.contains('counter')) {
@@ -1289,7 +1223,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       startTime: Date.now()
     });
     
-    console.log(`🎬 Started scrambling line ${lineIndex}: "${lineText.substring(0, 20)}" for ${duration}ms`);
     
     // Start the update loop if not already running
     if (!state.updateInterval) {
@@ -1333,7 +1266,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Remove completed scrambles
         completedScrambles.forEach(index => {
-          console.log(`✅ Completed scrambling line ${index}`);
           state.activeScrambles.delete(index);
         });
         
@@ -1354,7 +1286,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startRotatingText(element);
           }
           
-          console.log(`🎉 All lines completed for element: ${element.textContent.substring(0, 30)}`);
         }
       }, 50); // 50ms update interval
     }
@@ -1363,7 +1294,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Wrap text lines for animation (simplified for hover effects only)
   function wrapLines(el) {
     // DISABLED: This function was creating text duplication by modifying innerHTML
-    console.log('🚫 wrapLines disabled to prevent text duplication');
     el.dataset.splitDone = 'true';
     return [el]; // Return the original element, no DOM manipulation
   }
@@ -1443,11 +1373,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Text and other animations (non-masked content) - SIMPLIFIED TO PREVENT DUPLICATION
   function initTextAndOtherAnimations() {
     isInit = true;
-    console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
     if (isMobile) {
-      console.log('📱 Mobile detected - using text scrambling (keeping desktop parity)');
-      console.log('📱 Mobile will get: text scrambling, line-by-line reveals, link scrambling');
       // Continue with normal text animations on mobile for parity
     }
     
@@ -1455,13 +1382,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.body.classList.remove('animations-ready');
     
     // DO NOT reset all element visibility - this was causing issues
-    console.log('🚫 Skipping global visibility reset to prevent conflicts');
     // SUPER SIMPLE: Just start heading animations, nothing else
     console.log('✨ SIMPLIFIED: Only doing heading scrambling to prevent duplication');
     
     // Start heading animations immediately
     setTimeout(() => {
-      console.log('🎯 Starting initHeadingAnimations...');
       initHeadingAnimations();
     }, 100);
     
@@ -1500,21 +1425,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     const rotatingText = document.getElementById('rotating-text');
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      console.log('🔄 Scrambling rotating text');
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
-    console.log('✅ Text animations complete - now setting up infinite scroll');
     
     // Fix container responsiveness
     fixContainerResponsiveness();
     
     // Setup infinite scroll after text animations
     
-    console.log('🔄 About to call setupInfiniteScroll()');
     try {
       setupInfiniteScroll();
-      console.log('✅ setupInfiniteScroll() completed successfully');
         } catch (error) {
       console.error('❌ setupInfiniteScroll() failed:', error);
     }
@@ -1522,35 +1443,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Masked image animations - unified for all devices
   function startMaskedImageAnimations() {
-    console.log('🎭 Starting mask animations (unified for all devices)');
     
     // Register ScrollTrigger for all devices
     if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
-      console.log('✅ ScrollTrigger registered for all devices');
     }
     
     // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
-    console.log(`🎭 Found ${allImages.length} images to process for mask animations`);
-    console.log(`📱 Mobile device detected: ${isMobile}`);
   
   // MOBILE ANIMATIONS DISABLED - treat mobile same as desktop
   // Just remove emergency hide and use desktop animations for everyone
-  console.log(`📱 Mobile detected: ${isMobile} - using desktop animations for all devices`);
   
   // Remove emergency hide for everyone
     const emergencyHide = document.getElementById('emergency-image-hide');
     if (emergencyHide) {
       emergencyHide.remove();
-    console.log('🔧 Removed emergency hide');
   }
   
   // Process ALL images the same way (mobile and desktop)
   const imagesToProcess = Array.from(allImages);
   
   // Ensure all images have loaded or at least have dimensions
-  console.log('⏳ Ensuring all images have dimensions...');
   
   const ensureImageDimensions = (img) => {
     return new Promise((resolve) => {
@@ -1572,14 +1486,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Wait for all images to have dimensions
   Promise.all(imagesToProcess.map(ensureImageDimensions)).then(() => {
-    console.log('✅ All images ready for mask setup');
     
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
       const computed = getComputedStyle(img);
       return computed.visibility === 'hidden' || computed.opacity === '0';
     });
-    console.log(`🔍 Found ${hiddenImages.length} initially hidden images that need mask setup`);
     
     if (imagesToProcess.length) {
       // Count how many images are initially in viewport for stagger
@@ -1588,7 +1500,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const rect = img.getBoundingClientRect();
         return rect.top < window.innerHeight && rect.bottom > 0;
       });
-      console.log(`📊 Found ${viewportImages.length} images initially in viewport`);
       
       // Process all images the same way
       imagesToProcess.forEach((element, index) => {
@@ -1603,7 +1514,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
-        console.log(`✅ Setting up mask for image ${index} (${originalWidth}x${originalHeight})`, element.src || element.tagName);
         
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
@@ -1634,7 +1544,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
         element.style.setProperty('opacity', '1', 'important');
         element.style.setProperty('visibility', 'visible', 'important');
-        console.log('🔧 Set mask image opacity to 1:', element);
         
         // Store the target width for animation
         maskContainer.dataset.targetWidth = originalWidth;
@@ -1659,7 +1568,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (isInViewport) {
           staggerDelay = inViewportCount * 0.15; // 150ms between visible images
           inViewportCount++;
-          console.log(`🎭 Image ${index} in viewport - stagger delay: ${staggerDelay}s`);
         }
         
         // Always use ScrollTrigger - it handles viewport detection automatically
@@ -1681,7 +1589,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
-        console.log(`🎭 Image ${index} set up with ScrollTrigger`);
           
         // Only add parallax when NOT in fullscreen mode
         if (hasParallax && !window.isFullscreenMode) {
@@ -1698,7 +1605,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             onComplete: () => {
               // Ensure object-fit is preserved after ScrollTrigger scaling animation
               element.style.setProperty('object-fit', objectFit, 'important');
-              console.log('🎭 Preserved object-fit after ScrollTrigger scaling:', objectFit);
               }
             });
         }
@@ -1716,7 +1622,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
-              console.log('🔧 Forced reveal completion for stuck element');
             }
           }
         });
@@ -1727,27 +1632,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
-    console.log('🔄 STARTING INFINITE SCROLL SETUP - DEBUG MODE');
-    console.log('🔄 Document ready state:', document.readyState);
-    console.log('🔄 Body exists:', !!document.body);
     
     // Back to simpler working selectors
     const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
-    console.log('🔍 Searching for infinite scroll container...');
     for (const selector of selectors) {
       const found = document.querySelector(selector);
-      console.log(`🔍 Checking ${selector}:`, found ? `Found with ${found.children.length} children` : 'Not found');
       if (found && found.children.length > 1) { 
         container = found; 
-        console.log(`✅ SELECTED container: ${selector} with ${found.children.length} items`); 
         break; 
       }
     }
     
     if (!container) { 
-      console.log('❌ NO CONTAINER FOUND for infinite scroll');
       console.log('🔍 Available elements with classes:', 
         [...document.querySelectorAll('[class]')].slice(0, 10).map(el => el.className)
       );
@@ -1764,7 +1662,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // MOBILE: Preload all images immediately for smooth scrolling
     if (isMobile) {
-      console.log('📱 Preloading all images for mobile...');
       const allImages = originalItems.flatMap(item => 
         Array.from(item.querySelectorAll('img'))
       );
@@ -1786,7 +1683,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       });
       
       Promise.all(imagePromises).then(() => {
-        console.log(`📱 Preloaded ${allImages.length} images for smooth mobile scrolling`);
       });
     }
     
@@ -1794,7 +1690,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     function loadMoreItems() {
       if (isLoading) return;
       isLoading = true;
-      console.log('🔄 Loading more items...');
       
       // Use DocumentFragment for better performance
       const fragment = document.createDocumentFragment();
@@ -1802,13 +1697,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       originalItems.forEach(item => {
         // Exclude items that contain .reveal-full.new-fixed elements from cloning
         if (item.classList.contains('reveal-full') && item.classList.contains('new-fixed')) {
-          console.log('🚫 Skipping cloning of .reveal-full.new-fixed element:', item.className);
           return;
         }
         
         // Also check if the item contains any .reveal-full.new-fixed descendants
         if (item.querySelector('.reveal-full.new-fixed')) {
-          console.log('🚫 Skipping cloning of item containing .reveal-full.new-fixed descendant:', item.className);
           return;
         }
         
@@ -1869,7 +1762,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
             el.style.setProperty('transform', 'none', 'important');
-            console.log(`Clone image ${imgIndex} instantly visible`);
         });
         
         // Add slight delay for mask system processing
@@ -1888,7 +1780,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               maskContainer.remove();
             }
             
-            console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
         
@@ -1917,7 +1808,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   ix.init();
                 }
               } catch (e) {
-                console.log('⚠️ Method 1 failed for Webflow interactions');
               }
             }
             
@@ -1929,7 +1819,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   ix2.init();
                 }
               } catch (e) {
-                console.log('⚠️ Method 2 failed for Webflow interactions');
               }
             }
             
@@ -1938,11 +1827,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               try {
                 window.Webflow.ready();
               } catch (e) {
-                console.log('⚠️ Method 3 failed for Webflow interactions');
               }
             }
             
-            console.log(`✅ Attempted to reinitialize Webflow interactions for ${interactiveElements.length} elements (.reveal and .label-wrap)`);
           }, 100);
         }
         
@@ -1952,7 +1839,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         clone.style.visibility = 'visible';
         
         fragment.appendChild(clone);
-        console.log('✅ Clone added to fragment');
         
         // Mobile: skip additional processing - images already set to visible above for performance
         
@@ -1968,13 +1854,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Skip heavy mask processing on mobile for performance during infinite scroll
         if (!isMobile) {
           setTimeout(() => {
-            console.log('🎭 Triggering mask animations for any unprocessed images...');
             if (typeof window.gsap !== 'undefined') {
               const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
-              console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
               
               unprocessedImages.forEach((img, i) => {
-                console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
               });
               
               // Call the main mask animation function to process any new images
@@ -1984,7 +1867,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           }, 500);
         } else {
-          console.log('📱 Mobile: Skipping mask animation processing for performance during infinite scroll');
         }
         
         // Add fullscreen functionality to new images in clone
@@ -1997,7 +1879,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // PERFORMANCE: Append all clones at once using DocumentFragment
       container.appendChild(fragment);
-      console.log(`✅ Added ${originalItems.length} more items with protected visibility (batched append)`);
       
       // OPTIMIZED ScrollTrigger refresh with nav protection (desktop only) - batched
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
@@ -2022,7 +1903,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
             
             window.scrollTriggerRefreshPending = false;
-            console.log('🔧 Batched ScrollTrigger refresh completed');
           }, 200); // Debounce by 200ms
         }
       }
@@ -2065,7 +1945,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       // Reduced logging for performance
       if (nearBottom && !isLoading) {
-        console.log('🎯 Infinite scroll triggered!');
         loadMoreItems();
         // Update cached height after adding content
         setTimeout(updateCachedDimensions, 100);
@@ -2092,11 +1971,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Attach scroll listener for infinite scroll (mobile gets simpler handling)
     window.addEventListener('scroll', scrollListener, { passive: true });
-    console.log('🔄 Infinite scroll event listener attached to window');
     
     // Test scroll immediately
     setTimeout(() => {
-      console.log('🔄 Testing initial scroll state...');
       handleScroll();
     }, 1000);
     
@@ -2112,7 +1989,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
         // Store nav element styles before refresh - exclude middle/bottom nav
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav, .nav-left, .left-nav');
-        console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
           navStyles[index] = {
@@ -2135,7 +2011,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
               nav.style.setProperty('display', 'block', 'important');
-              console.log('🔧 Restored resize nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
           
@@ -2153,12 +2028,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          console.log('🔧 Protected nav elements during ScrollTrigger refresh');
         }, 100);
       }
       }, 150); // Debounce resize events by 150ms
     }, { passive: true });
-    console.log('🎯 Infinite scroll listeners attached');
     
     // Set visibility for infinite scroll images - unified for all devices
     container.querySelectorAll('img, video').forEach(img => {
@@ -2186,13 +2059,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 2000); // Longer delay to ensure page is fully loaded
     
     // Clean infinite scroll setup completed
-    console.log('✅ Infinite scroll fully initialized');
     
-    console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     
     // Add manual test function
     window.testInfiniteScroll = function() {
-      console.log('🔄 Manual infinite scroll test triggered');
       loadMoreItems();
       return 'Infinite scroll test completed';
     };
@@ -2206,18 +2076,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       };
     };
     
-    console.log('🔄 Added window.testInfiniteScroll() and window.getInfiniteScrollStatus() for debugging');
     
     // Add function to fix hidden cloned images
     window.fixHiddenClonedImages = function() {
-      console.log('🔧 Checking for hidden cloned images...');
       const clonedImages = document.querySelectorAll('img[data-infinite-clone="true"], video[data-infinite-clone="true"]');
       let fixedCount = 0;
       
       clonedImages.forEach((img, index) => {
         const computedStyle = getComputedStyle(img);
         if (computedStyle.visibility === 'hidden' || computedStyle.opacity === '0') {
-          console.log(`🔧 Fixing hidden cloned image ${index}:`, img.src?.substring(0, 50) + '...');
           img.style.setProperty('opacity', '1', 'important');
           img.style.setProperty('visibility', 'visible', 'important');
           img.style.setProperty('display', 'block', 'important');
@@ -2225,15 +2092,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      console.log(`✅ Fixed ${fixedCount} hidden cloned images out of ${clonedImages.length} total`);
       return `Fixed ${fixedCount}/${clonedImages.length} hidden cloned images`;
     };
     
-    console.log('🔧 Added window.fixHiddenClonedImages() for manual debugging');
     
     // Add mobile image debugging function
     window.fixMobileImages = function() {
-      console.log('📱 Checking and fixing mobile image visibility...');
       const allImages = document.querySelectorAll('img:not(#preloader img), video');
       let fixedCount = 0;
       
@@ -2244,7 +2108,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                         computedStyle.display === 'none';
         
         if (isHidden) {
-          console.log(`📱 Fixing hidden mobile image ${index}:`, img.src?.substring(0, 50) + '...');
           img.style.setProperty('opacity', '1', 'important');
           img.style.setProperty('visibility', 'visible', 'important');
           img.style.setProperty('display', 'block', 'important');
@@ -2252,18 +2115,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      console.log(`✅ Fixed ${fixedCount} hidden images out of ${allImages.length} total on mobile`);
       return `Fixed ${fixedCount}/${allImages.length} mobile images`;
     };
     
-    console.log('📱 Added window.fixMobileImages() for mobile debugging');
     
     // Final ScrollTrigger refresh with nav protection (desktop only)
     if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
       setTimeout(() => {
         // Store nav element styles before refresh (exclude middle/bottom nav)
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
-        console.log(`🔍 Found ${navElements.length} nav elements for final protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
           navStyles[index] = {
@@ -2284,10 +2144,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               nav.style.setProperty('opacity', '1', 'important');
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
-              console.log('🔧 Restored final nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
-          console.log('🔧 Protected nav elements during infinite scroll final refresh');
         }, 50);
       }, 100);
     }
@@ -2573,7 +2431,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Enhanced fallback text visibility (excluding clones)
   setTimeout(() => {
-    console.log('🔧 Fallback check: ensuring all text is visible');
     document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone])').forEach(el => {
       // Skip elements inside .label-wrap to preserve Webflow hover interactions
       if (el.closest('.label-wrap')) return;
@@ -2581,7 +2438,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         el.style.opacity = '1'; 
         el.style.transform = 'none'; 
         el.classList.remove('initial-hidden');
-        console.log('🔧 Made visible:', el);
       }
     });
   }, 2000);
@@ -2600,10 +2456,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Initialize fullscreen scroll toggle
     try {
-      console.log('📺 About to initialize fullscreen scroll toggle...');
       const fullscreenScrollToggle = initFullscreenScrollToggle();
       window.fullscreenScrollToggle = fullscreenScrollToggle; // Make available globally
-      console.log('📺 Fullscreen scroll toggle initialization completed');
     } catch (error) {
       console.error('❌ Fullscreen scroll toggle initialization error:', error);
     }
@@ -2623,7 +2477,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           try {
-            console.log('✅ GSAP loaded, starting text animations');
             initTextAndOtherAnimations();
           } catch (error) {
             console.error('❌ Animation initialization error:', error);
@@ -2631,7 +2484,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }); 
       } else {
-        console.log('⏳ Waiting for GSAP...');
         setTimeout(waitForGSAP, 100); 
       }
     }
@@ -2688,7 +2540,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       element.textContent = texts[currentIndex];
     }, 2000);
     
-    console.log('🔄 Rotating text started after scramble');
   }
   
   // Toggle functionality removed - was causing issues with cloned images
@@ -2696,27 +2547,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
   
-  console.log('🚀 SCRIPT END: Animation system initialization completed');
 })(window.portfolioAnimations);
 
 console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading - VERSION 2.3 with fullscreen debug');
 
 // Add global test function for debugging fullscreen
 window.testFullscreen = function() {
-  console.log('🖼️ Testing fullscreen functionality...');
   const images = document.querySelectorAll('img:not(#preloader img)');
-  console.log(`🖼️ Found ${images.length} total images on page`);
   
   const enabledImages = document.querySelectorAll('img[data-fullscreen-enabled="true"]');
-  console.log(`🖼️ Found ${enabledImages.length} images with fullscreen enabled`);
   
   if (enabledImages.length > 0) {
-    console.log('🖼️ Testing first enabled image...');
     const firstImage = enabledImages[0];
-    console.log('🖼️ Simulating click on:', firstImage.src?.substring(0, 50) + '...');
     firstImage.click();
   } else {
-    console.log('🖼️ No images have fullscreen enabled - checking why...');
     images.forEach((img, i) => {
       if (i < 5) { // Check first 5 images
         console.log(`Image ${i}:`, {
@@ -2731,11 +2575,9 @@ window.testFullscreen = function() {
   }
 };
 
-console.log('🖼️ Test fullscreen with: window.testFullscreen()');
 
 // Add global test function for debugging fullscreen scroll toggle
 window.testToggle = function() {
-  console.log('📺 Testing toggle functionality...');
   
   const toggleEl = document.querySelector('.toggle.top');
   console.log('Toggle element found:', !!toggleEl);
@@ -2762,11 +2604,9 @@ window.testToggle = function() {
   }
 };
 
-console.log('📺 Test toggle with: window.testToggle()');
 
 // SIMPLE CLASS-BASED TOGGLE - Cache original styles once
 (function() {
-  console.log('📺 Simple class-based toggle setup...');
   
   let isBig = false;
   const styleCache = new WeakMap();
@@ -2777,7 +2617,6 @@ console.log('📺 Test toggle with: window.testToggle()');
   function toggleBigImages() {
     isBig = !isBig;
     window.isFullscreenMode = isBig;
-    console.log(`📺 ${isBig ? 'FULLSCREEN ON' : 'FULLSCREEN OFF'}`);
     
     // Get EVERY element including clones
     const imgParallax = document.querySelectorAll('.img-parallax');
@@ -2786,7 +2625,6 @@ console.log('📺 Test toggle with: window.testToggle()');
     const maskWraps = document.querySelectorAll('.mask-wrap');
     const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
     
-    console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${revealFulls.length} reveal-fulls, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
     if (isBig) {
       // CACHE ORIGINAL STYLES FIRST TIME
@@ -2822,7 +2660,6 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('opacity', '1', 'important');
       });
       
-      console.log('📺 Applied fullscreen dimensions');
       } else {
       // RESTORE EXACT CACHED STYLES
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
@@ -2857,7 +2694,6 @@ console.log('📺 Test toggle with: window.testToggle()');
         }
       });
       
-      console.log('📺 Restored exact original styles from cache');
       
       // Force layout recalculation
       document.body.offsetHeight;
@@ -2865,7 +2701,6 @@ console.log('📺 Test toggle with: window.testToggle()');
       // Refresh ScrollTrigger
       if (window.ScrollTrigger) {
         setTimeout(() => {
-          console.log('📺 Refreshing ScrollTrigger...');
           window.ScrollTrigger.refresh(true);
         }, 100);
       }
@@ -2877,8 +2712,6 @@ console.log('📺 Test toggle with: window.testToggle()');
     const toggle = document.querySelector('.toggle.top');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('📺 Toggle ready - SURGICAL mode (GSAP-safe)');
-      console.log('📺 Test with: window.toggleBigImages()');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
@@ -2928,7 +2761,6 @@ console.log('📺 Test toggle with: window.testToggle()');
     textElements.forEach((element, index) => {
       const textContent = element.textContent || element.innerText;
       if (!textContent.trim()) {
-        console.log('💧 Skipping empty element', index);
         return;
       }
       
@@ -2958,6 +2790,5 @@ console.log('📺 Test toggle with: window.testToggle()');
       scope.appendTo(element);
     });
     
-    console.log('✅ Blotter liquid distortion effect applied to', textElements.length, 'elements');
   }, 4000); // Wait 4 seconds for scrambling to complete
 })();
