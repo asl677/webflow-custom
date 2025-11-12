@@ -2777,24 +2777,22 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.removeProperty('max-height');
       });
       
-      // For mask-wraps, restore based on animation state
+      // For mask-wraps, just remove all forced styles and let GSAP handle it
       maskWraps.forEach(el => {
-        const img = el.querySelector('img');
-        const targetWidth = el.dataset.targetWidth;
-        
-        if (img && img.dataset.maskComplete) {
-          // Animation already complete - set to full width
-          if (targetWidth) {
-            el.style.width = targetWidth + 'px';
-          }
-        } else {
-          // Animation not complete - reset to 0 for GSAP to animate
-          el.style.width = '0px';
-        }
-        
+        el.style.removeProperty('width');
         el.style.removeProperty('height');
         el.style.removeProperty('max-width');
         el.style.removeProperty('max-height');
+        
+        // If animation was complete, ensure it stays complete
+        const img = el.querySelector('img');
+        const targetWidth = el.dataset.targetWidth;
+        if (img && img.dataset.maskComplete && targetWidth) {
+          // Use GSAP to set the width so it doesn't conflict
+          if (window.gsap) {
+            window.gsap.set(el, { width: targetWidth + 'px' });
+          }
+        }
       });
       
       images.forEach(el => {
@@ -2802,17 +2800,31 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.removeProperty('height');
         el.style.removeProperty('object-fit');
         el.style.removeProperty('scale');
-        // Keep opacity at 1 always
-        el.style.setProperty('opacity', '1', 'important');
+        el.style.removeProperty('opacity');
+        
+        // Only ensure visibility for revealed images
+        if (el.dataset.gsapAnimated || el.dataset.maskComplete) {
+          if (window.gsap) {
+            window.gsap.set(el, { opacity: 1 });
+          }
+        }
       });
       
       console.log('📺 Restored original dimensions');
       
       // Force a complete layout recalculation
-      // This helps fix spacing issues with infinite scroll clones
       document.body.offsetHeight; // Force reflow
       
-      // Refresh ScrollTrigger after a small delay to let styles settle
+      // Kill any active tweens that might be stuck
+      if (window.gsap) {
+        window.gsap.globalTimeline.getChildren().forEach(tween => {
+          if (tween.vars && tween.vars.scrollTrigger) {
+            // Don't kill ScrollTrigger animations, just refresh them
+          }
+        });
+      }
+      
+      // Refresh ScrollTrigger to recalculate all positions
       if (window.ScrollTrigger) {
         setTimeout(() => {
           console.log('📺 Refreshing ScrollTrigger and recalculating layout...');
