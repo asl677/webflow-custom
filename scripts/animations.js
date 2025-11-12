@@ -1582,8 +1582,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     console.log(`🔍 Found ${hiddenImages.length} initially hidden images that need mask setup`);
     
     if (imagesToProcess.length) {
-      // Process all images the same way
+      // Count how many images are initially in viewport for stagger
+      let inViewportCount = 0;
+      const viewportImages = imagesToProcess.filter(img => {
+        const rect = img.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+      });
+      console.log(`📊 Found ${viewportImages.length} images initially in viewport`);
       
+      // Process all images the same way
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
@@ -1643,35 +1650,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         }
         
-        // Check if image is in viewport for immediate animation
+        // Check if this image is in initial viewport
         const rect = element.getBoundingClientRect();
-        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
-        if (inViewport) {
-          // Images in viewport on load - stagger them
-          const staggerDelay = index * 0.3; // 300ms between each image
-          window.gsap.set(maskContainer, { width: '0px' });
-          console.log(`🎭 Image ${index} in viewport - revealing with ${staggerDelay}s delay`);
-          window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.5,
-            delay: staggerDelay,
-            ease: "power2.out",
-            onComplete: () => {
-              element.dataset.gsapAnimated = 'mask-revealed';
-              element.dataset.maskComplete = 'true';
-            }
-          });
-        } else {
-          // Use ScrollTrigger for other images
+        // Add small stagger only for initial viewport images
+        let staggerDelay = 0;
+        if (isInViewport) {
+          staggerDelay = inViewportCount * 0.15; // 150ms between visible images
+          inViewportCount++;
+          console.log(`🎭 Image ${index} in viewport - stagger delay: ${staggerDelay}s`);
+        }
+        
+        // Always use ScrollTrigger - it handles viewport detection automatically
           window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-            duration: 1.5,
+          duration: 1.5,
+          delay: staggerDelay,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%",
+            start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1681,7 +1681,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
-        }
+        console.log(`🎭 Image ${index} set up with ScrollTrigger`);
           
         // Only add parallax when NOT in fullscreen mode
         if (hasParallax && !window.isFullscreenMode) {
