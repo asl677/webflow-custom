@@ -1762,6 +1762,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const itemHeight = originalItems[0] ? originalItems[0].offsetHeight : 100;
     let isLoading = false;
     
+    // MOBILE: Preload all images immediately for smooth scrolling
+    if (isMobile) {
+      console.log('📱 Preloading all images for mobile...');
+      const allImages = originalItems.flatMap(item => 
+        Array.from(item.querySelectorAll('img'))
+      );
+      
+      const imagePromises = allImages.map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Resolve even on error
+            // Force load if not started
+            if (!img.src) {
+              const dataSrc = img.getAttribute('data-src');
+              if (dataSrc) img.src = dataSrc;
+            }
+          }
+        });
+      });
+      
+      Promise.all(imagePromises).then(() => {
+        console.log(`📱 Preloaded ${allImages.length} images for smooth mobile scrolling`);
+      });
+    }
+    
     // OPTIMIZED load more items function with cached selectors
     function loadMoreItems() {
       if (isLoading) return;
@@ -1822,6 +1850,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Special handling for images and videos in clones - prevent flickering
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
+            
+            // MOBILE: Force immediate load and visibility
+            if (isMobile && el.tagName === 'IMG') {
+              // Ensure image is loaded
+              if (!el.complete && !el.src) {
+                const dataSrc = el.getAttribute('data-src');
+                if (dataSrc) el.src = dataSrc;
+              }
+              // Force decode for instant display
+              if (el.decode && el.complete) {
+                el.decode().catch(() => {});
+              }
+            }
+            
             // Cloned images appear instantly - no animations
             el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
