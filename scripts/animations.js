@@ -2777,21 +2777,29 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.removeProperty('max-height');
       });
       
-      // For mask-wraps, just remove all forced styles and let GSAP handle it
+      // For mask-wraps, restore based on animation state
       maskWraps.forEach(el => {
-        el.style.removeProperty('width');
         el.style.removeProperty('height');
         el.style.removeProperty('max-width');
         el.style.removeProperty('max-height');
         
-        // If animation was complete, ensure it stays complete
         const img = el.querySelector('img');
         const targetWidth = el.dataset.targetWidth;
+        
         if (img && img.dataset.maskComplete && targetWidth) {
-          // Use GSAP to set the width so it doesn't conflict
+          // Animation was complete - set to full width
+          el.style.removeProperty('width');
           if (window.gsap) {
             window.gsap.set(el, { width: targetWidth + 'px' });
           }
+          console.log(`📺 Mask-wrap restored to complete width: ${targetWidth}px`);
+        } else {
+          // Animation NOT complete - reset to 0 for ScrollTrigger to animate
+          el.style.removeProperty('width');
+          if (window.gsap) {
+            window.gsap.set(el, { width: '0px' });
+          }
+          console.log(`📺 Mask-wrap reset to 0px for ScrollTrigger`);
         }
       });
       
