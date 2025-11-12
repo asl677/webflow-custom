@@ -18,7 +18,7 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img):not([data-infinite-clone]):not([data-mobile-faded]), video:not([data-infinite-clone]):not([data-mobile-faded]) { opacity: 0 !important; }
+    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -536,7 +536,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       #preloader.counting .digit{animation:none}
       @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
-      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *):not([data-mobile-faded]):not([data-mobile-locked]){opacity:0!important;visibility:hidden!important}
+      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
       
       /* REMOVE animations-ready hiding to prevent slide-up effects */
       
@@ -740,18 +740,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader with mobile optimization
   function startPageAnimations() {
-    
-    // MOBILE: Pre-hide images before body.loading is removed to prevent flash
-    if (isMobile) {
-      const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
-      allImages.forEach(img => {
-        if (!img.dataset.mobileFaded && !img.dataset.mobileLocked) {
-          img.style.setProperty('opacity', '0', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          console.log('📱 Pre-hiding mobile image before loading class removal');
-        }
-      });
-    }
     
     // Animate nav elements (excluding fake, middle, and bottom nav)
     const allNavElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"])');
@@ -1599,34 +1587,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // MOBILE: Simple fade stagger, no mask-wrap
-        if (isMobile) {
-          // Skip if already faded in
-          if (element.dataset.mobileFaded === 'true') {
-            console.log(`📱 Mobile: Image ${index} already faded, skipping`);
-            return;
-          }
-          
-          element.style.setProperty('opacity', '0', 'important');
-          element.style.setProperty('visibility', 'visible', 'important');
-          element.dataset.maskSetup = 'true';
-          element.dataset.mobileFaded = 'true'; // Mark immediately to prevent re-animation
-          element.dataset.gsapAnimated = 'mobile-fade'; // Prevent infinite scroll from re-animating
-          element.dataset.mobileLocked = 'true'; // Lock the opacity
-          
-          const staggerDelay = index * 0.15; // 150ms between each image
-          console.log(`📱 Mobile: Image ${index} fading in with ${staggerDelay}s delay`);
-          
-          window.gsap.to(element, {
-            opacity: 1,
-            duration: 0.6,
-            delay: staggerDelay,
-            ease: "power2.out"
-          });
-          return;
-        }
-        
-        // DESKTOP ONLY: Process with mask-wrap
+        // Process with mask-wrap for ALL devices
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
@@ -1861,24 +1822,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Special handling for images and videos in clones - prevent flickering
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
-          
-          // MOBILE: instant visibility for performance during infinite scroll
-          if (isMobile) {
-            // Cloned images appear instantly - no animations during scroll for performance
+            // Cloned images appear instantly - no animations
             el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
             el.style.setProperty('transform', 'none', 'important');
-            el.dataset.mobileLocked = 'true';
-            console.log(`📱 Clone image ${imgIndex} instantly visible (performance mode)`);
-            } else {
-            // Desktop: prepare for mask animations but don't show yet
-            console.log(`🖥️ Desktop: Clone image ${imgIndex} prepared for mask animation`);
-          }
+            console.log(`Clone image ${imgIndex} instantly visible`);
         });
         
-        // Add slight delay for mask system processing (desktop only for performance)
-        if (!isMobile) {
+        // Add slight delay for mask system processing
             setTimeout(() => {
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             // Remove any existing mask setup flags so they get fresh animations
@@ -1897,9 +1849,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
         }, 50); // Small delay to ensure layout is complete
-        } else {
-          console.log('📱 Mobile: Skipping mask container processing for performance');
-        }
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
@@ -2169,31 +2118,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, { passive: true });
     console.log('🎯 Infinite scroll listeners attached');
     
-    // Set visibility for infinite scroll images
+    // Set visibility for infinite scroll images - unified for all devices
     container.querySelectorAll('img, video').forEach(img => {
-      // Skip images that already have mobile fade animation or are already animated
-      if (img.dataset.mobileFaded || img.dataset.gsapAnimated || img.dataset.mobileLocked) {
+      if (img.dataset.gsapAnimated) {
         return;
       }
       
       if (typeof window.gsap !== 'undefined' && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
-        if (isMobile) {
-          // CSS transition fade for infinite scroll images
-          img.style.setProperty('opacity', '0', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.style.setProperty('display', 'block', 'important');
-          img.style.setProperty('transform', 'none', 'important');
-          img.style.setProperty('transition', 'opacity 0.6s ease-out', 'important');
-          
-          setTimeout(() => {
-            img.style.setProperty('opacity', '1', 'important');
-            img.dataset.mobileLocked = 'true';
-            console.log('📱 Infinite scroll image faded in at 900ms (CSS transition)');
-          }, 900);
-        } else {
-          // Desktop: normal immediate visibility
         window.gsap.set(img, { opacity: 1 });
-        }
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
     });
