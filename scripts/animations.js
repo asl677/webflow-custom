@@ -2722,11 +2722,12 @@ window.testToggle = function() {
 
 console.log('📺 Test toggle with: window.testToggle()');
 
-// SURGICAL - only touch width/height, leave GSAP alone
+// SIMPLE CLASS-BASED TOGGLE - Cache original styles once
 (function() {
-  console.log('📺 SURGICAL toggle setup...');
+  console.log('📺 Simple class-based toggle setup...');
   
   let isBig = false;
+  const styleCache = new WeakMap();
   
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
@@ -2741,18 +2742,21 @@ console.log('📺 Test toggle with: window.testToggle()');
     const reveals = document.querySelectorAll('.reveal');
     const revealFulls = document.querySelectorAll('.reveal-full');
     const maskWraps = document.querySelectorAll('.mask-wrap');
-    // Select images both with and without mask-wrap (for mobile)
     const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
     
     console.log(`📺 Found: ${imgParallax.length} img-parallax, ${reveals.length} reveals, ${revealFulls.length} reveal-fulls, ${maskWraps.length} mask-wraps, ${images.length} images`);
     
-    // Also get all parent containers that might need resetting
-    const containers = document.querySelectorAll('.main-wrapper, .page-wrapper, .w-layout-grid');
-    console.log(`📺 Found ${containers.length} parent containers`);
-    
     if (isBig) {
-      // FORCE EVERYTHING TO 100VW/100VH - BRUTALLY SIMPLE
+      // CACHE ORIGINAL STYLES FIRST TIME
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+        if (!styleCache.has(el)) {
+          styleCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
+        }
         el.style.setProperty('width', '100vw', 'important');
         el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('max-width', '100vw', 'important');
@@ -2760,6 +2764,15 @@ console.log('📺 Test toggle with: window.testToggle()');
       });
       
       images.forEach(el => {
+        if (!styleCache.has(el)) {
+          styleCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            objectFit: el.style.objectFit,
+            scale: el.style.scale,
+            opacity: el.style.opacity
+          });
+        }
         el.style.setProperty('width', '100%', 'important');
         el.style.setProperty('height', '100%', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
@@ -2767,76 +2780,51 @@ console.log('📺 Test toggle with: window.testToggle()');
         el.style.setProperty('opacity', '1', 'important');
       });
       
-      console.log('📺 Applied fullscreen dimensions - scaling disabled');
+      console.log('📺 Applied fullscreen dimensions');
       } else {
-      // REMOVE THE IMPORTANT FLAGS - LET GSAP/WEBFLOW CONTROL AGAIN
-      [...imgParallax, ...reveals, ...revealFulls].forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
-        el.style.removeProperty('max-width');
-        el.style.removeProperty('max-height');
-      });
-      
-      // For mask-wraps, restore based on animation state
-      maskWraps.forEach(el => {
-        el.style.removeProperty('height');
-        el.style.removeProperty('max-width');
-        el.style.removeProperty('max-height');
-        
-        const img = el.querySelector('img');
-        const targetWidth = el.dataset.targetWidth;
-        
-        if (img && img.dataset.maskComplete && targetWidth) {
-          // Animation was complete - set to full width
-          el.style.removeProperty('width');
-          if (window.gsap) {
-            window.gsap.set(el, { width: targetWidth + 'px' });
-          }
-          console.log(`📺 Mask-wrap restored to complete width: ${targetWidth}px`);
+      // RESTORE EXACT CACHED STYLES
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+        const cached = styleCache.get(el);
+        if (cached) {
+          el.style.width = cached.width;
+          el.style.height = cached.height;
+          el.style.maxWidth = cached.maxWidth;
+          el.style.maxHeight = cached.maxHeight;
         } else {
-          // Animation NOT complete - reset to 0 for ScrollTrigger to animate
           el.style.removeProperty('width');
-          if (window.gsap) {
-            window.gsap.set(el, { width: '0px' });
-          }
-          console.log(`📺 Mask-wrap reset to 0px for ScrollTrigger`);
+          el.style.removeProperty('height');
+          el.style.removeProperty('max-width');
+          el.style.removeProperty('max-height');
         }
       });
       
       images.forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
-        el.style.removeProperty('object-fit');
-        el.style.removeProperty('scale');
-        el.style.removeProperty('opacity');
-        
-        // Only ensure visibility for revealed images
-        if (el.dataset.gsapAnimated || el.dataset.maskComplete) {
-          if (window.gsap) {
-            window.gsap.set(el, { opacity: 1 });
-          }
+        const cached = styleCache.get(el);
+        if (cached) {
+          el.style.width = cached.width;
+          el.style.height = cached.height;
+          el.style.objectFit = cached.objectFit;
+          el.style.scale = cached.scale;
+          el.style.opacity = cached.opacity;
+        } else {
+          el.style.removeProperty('width');
+          el.style.removeProperty('height');
+          el.style.removeProperty('object-fit');
+          el.style.removeProperty('scale');
+          el.style.removeProperty('opacity');
         }
       });
       
-      console.log('📺 Restored original dimensions');
+      console.log('📺 Restored exact original styles from cache');
       
-      // Force a complete layout recalculation
-      document.body.offsetHeight; // Force reflow
+      // Force layout recalculation
+      document.body.offsetHeight;
       
-      // Kill any active tweens that might be stuck
-      if (window.gsap) {
-        window.gsap.globalTimeline.getChildren().forEach(tween => {
-          if (tween.vars && tween.vars.scrollTrigger) {
-            // Don't kill ScrollTrigger animations, just refresh them
-          }
-        });
-      }
-      
-      // Refresh ScrollTrigger to recalculate all positions
+      // Refresh ScrollTrigger
       if (window.ScrollTrigger) {
         setTimeout(() => {
-          console.log('📺 Refreshing ScrollTrigger and recalculating layout...');
-          window.ScrollTrigger.refresh(true); // true = force full recalculation
+          console.log('📺 Refreshing ScrollTrigger...');
+          window.ScrollTrigger.refresh(true);
         }, 100);
       }
     }
