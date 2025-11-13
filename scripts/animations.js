@@ -364,10 +364,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const parentOnClick = img.closest('[onclick]');
           
           if (parentLink || parentButton || parentOnClick) {
-              parentLink: !!parentLink,
-              parentButton: !!parentButton,
-              parentOnClick: !!parentOnClick
-            });
             return;
           }
           
