@@ -2623,8 +2623,10 @@ window.testToggle = function() {
     
     
     if (isBig) {
+      console.log('Applying fullscreen...');
+      
       // CACHE ORIGINAL STYLES FIRST TIME
-      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach((el, i) => {
         if (!styleCache.has(el)) {
           styleCache.set(el, {
             width: el.style.width,
@@ -2633,18 +2635,14 @@ window.testToggle = function() {
             maxHeight: el.style.maxHeight
           });
         }
-        // Clear GSAP inline styles first
-        if (window.gsap) {
-          window.gsap.set(el, { clearProps: "width,height,maxWidth,maxHeight" });
-        }
-        // Then apply fullscreen
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
-        el.style.setProperty('max-height', '100vh', 'important');
+        
+        // Force fullscreen dimensions
+        el.style.cssText = `width: 100vw !important; height: 100vh !important; max-width: 100vw !important; max-height: 100vh !important;`;
+        
+        if (i < 3) console.log('Container', el.className, 'width:', el.style.width);
       });
       
-      images.forEach(el => {
+      images.forEach((el, i) => {
         if (!styleCache.has(el)) {
           styleCache.set(el, {
             width: el.style.width,
@@ -2654,17 +2652,14 @@ window.testToggle = function() {
             opacity: el.style.opacity
           });
         }
-        // Clear GSAP inline styles first
-        if (window.gsap) {
-          window.gsap.set(el, { clearProps: "width,height,scale" });
-        }
-        // Then apply fullscreen
-        el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('height', '100%', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
-        el.style.setProperty('scale', '1', 'important');
-        el.style.setProperty('opacity', '1', 'important');
+        
+        // Force fullscreen on images
+        el.style.cssText = `width: 100% !important; height: 100% !important; object-fit: cover !important; scale: 1 !important; opacity: 1 !important;`;
+        
+        if (i < 3) console.log('Image', i, 'width:', el.style.width);
       });
+      
+      console.log('Fullscreen applied');
       
       } else {
       // RESTORE EXACT CACHED STYLES
