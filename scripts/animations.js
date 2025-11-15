@@ -2607,12 +2607,19 @@ window.testToggle = function() {
   let isBig = false;
   const styleCache = new WeakMap();
   let toggleObserver = null;
+  let applyTimeout = null;
   
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
   
   function applyFullscreenStyles() {
     if (!isBig) return;
+    
+    // Throttle to prevent performance issues
+    if (applyTimeout) return;
+    applyTimeout = setTimeout(() => {
+      applyTimeout = null;
+    }, 100);
     
     // Get ALL elements every time
     const imgParallax = document.querySelectorAll('.img-parallax');
@@ -2687,20 +2694,18 @@ window.testToggle = function() {
         el.style.setProperty('opacity', '1', 'important');
       });
       
-      // Start observer to catch dynamic elements and GSAP changes
+      // Start observer to catch only NEW elements (not style changes)
       if (!toggleObserver) {
         toggleObserver = new MutationObserver(() => {
           applyFullscreenStyles();
         });
         toggleObserver.observe(document.body, {
           childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['style']
+          subtree: true
         });
       }
       
-      // Also apply on scroll to catch lazy-loaded elements
+      // Apply on scroll only (not continuously)
       const scrollHandler = () => applyFullscreenStyles();
       window.addEventListener('scroll', scrollHandler, { passive: true });
       window._fullscreenScrollHandler = scrollHandler;
