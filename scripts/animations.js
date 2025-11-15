@@ -2601,112 +2601,47 @@ window.testToggle = function() {
 };
 
 
-// SIMPLE CLASS-BASED TOGGLE - Cache original styles once
+// DEAD SIMPLE TOGGLE - Just add/remove a class
 (function() {
-  
-  let isBig = false;
-  const styleCache = new WeakMap();
-  
-  // Export state so mask animation can check it
-  window.isFullscreenMode = false;
-  
   function toggleBigImages() {
-    isBig = !isBig;
-    window.isFullscreenMode = isBig;
-    
-    // Get EVERY element including clones
-    const imgParallax = document.querySelectorAll('.img-parallax');
-    const reveals = document.querySelectorAll('.reveal');
-    const revealFulls = document.querySelectorAll('.reveal-full');
-    const maskWraps = document.querySelectorAll('.mask-wrap');
-    const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
-    
-    
-    if (isBig) {
-      console.log('🔵 FULLSCREEN ON');
-      
-      // CACHE ORIGINAL STYLES FIRST TIME
-      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach((el, i) => {
-        if (!styleCache.has(el)) {
-          const computed = window.getComputedStyle(el);
-          styleCache.set(el, {
-            width: el.style.width || computed.width,
-            height: el.style.height || computed.height,
-            maxWidth: el.style.maxWidth || computed.maxWidth,
-            maxHeight: el.style.maxHeight || computed.maxHeight
-          });
-        }
-        
-        // Apply fullscreen
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
-        el.style.setProperty('max-height', '100vh', 'important');
-      });
-      
-      images.forEach((el, i) => {
-        if (!styleCache.has(el)) {
-          styleCache.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            objectFit: el.style.objectFit,
-            scale: el.style.scale,
-            opacity: el.style.opacity
-          });
-        }
-        
-        // Apply fullscreen
-        el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('height', '100%', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
-        el.style.setProperty('scale', '1', 'important');
-        el.style.setProperty('opacity', '1', 'important');
-      });
-      
-      console.log('✅ Fullscreen applied to', imgParallax.length + reveals.length + revealFulls.length + maskWraps.length, 'containers and', images.length, 'images');
-      
-      } else {
-      console.log('🔴 FULLSCREEN OFF - Restoring');
-      
-      // RESTORE - just remove the !important flags, let GSAP/CSS take over
-      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
-        el.style.removeProperty('max-width');
-        el.style.removeProperty('max-height');
-      });
-      
-      images.forEach(el => {
-        el.style.removeProperty('width');
-        el.style.removeProperty('height');
-        el.style.removeProperty('object-fit');
-        el.style.removeProperty('scale');
-        el.style.removeProperty('opacity');
-      });
-      
-      console.log('✅ Styles removed, GSAP/CSS taking over');
-      
-      // Force layout recalculation
-      document.body.offsetHeight;
-      
-      // Refresh ScrollTrigger
-      if (window.ScrollTrigger) {
-        setTimeout(() => {
-          window.ScrollTrigger.refresh(true);
-        }, 100);
-      }
-    }
+    document.body.classList.toggle('fullscreen-mode');
+    console.log('Toggle:', document.body.classList.contains('fullscreen-mode') ? 'ON' : 'OFF');
   }
   
   // Find toggle button
-  setTimeout(() => {
+          setTimeout(() => {
     const toggle = document.querySelector('.toggle.top');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
-      console.log('✅ Fullscreen toggle enabled');
+      console.log('✅ Fullscreen toggle ready');
     }
     window.toggleBigImages = toggleBigImages;
   }, 1000);
+  
+  // Add CSS for fullscreen mode
+  const style = document.createElement('style');
+  style.textContent = `
+    body.fullscreen-mode .img-parallax,
+    body.fullscreen-mode .reveal,
+    body.fullscreen-mode .reveal-full,
+    body.fullscreen-mode .mask-wrap {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+    }
+    
+    body.fullscreen-mode .img-parallax img,
+    body.fullscreen-mode .reveal img,
+    body.fullscreen-mode .mask-wrap img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      scale: 1 !important;
+      opacity: 1 !important;
+    }
+  `;
+  document.head.appendChild(style);
 })();
 
 // BLOTTER EFFECT - Apply to .fix-center text content
