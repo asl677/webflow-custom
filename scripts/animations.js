@@ -2621,23 +2621,30 @@ window.testToggle = function() {
   // Add CSS for fullscreen mode
   const style = document.createElement('style');
   style.textContent = `
+    /* Force all image containers to fullscreen */
     body.fullscreen-mode .img-parallax,
     body.fullscreen-mode .reveal,
     body.fullscreen-mode .reveal-full,
-    body.fullscreen-mode .mask-wrap {
+    body.fullscreen-mode .mask-wrap,
+    body.fullscreen-mode .thumbnail-container,
+    body.fullscreen-mode .video-container {
       width: 100vw !important;
       height: 100vh !important;
       max-width: 100vw !important;
       max-height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
     }
     
-    body.fullscreen-mode .img-parallax img,
-    body.fullscreen-mode .reveal img,
-    body.fullscreen-mode .mask-wrap img {
+    /* Force all images to fill containers */
+    body.fullscreen-mode img,
+    body.fullscreen-mode video {
       width: 100% !important;
       height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
       object-fit: cover !important;
-      scale: 1 !important;
+      transform: scale(1) !important;
       opacity: 1 !important;
     }
   `;
