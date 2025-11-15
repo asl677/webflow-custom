@@ -2703,12 +2703,18 @@ window.testToggle = function() {
     }
   }
   
-  // Find toggle button
+  // Find toggle button - DISABLED temporarily due to performance issues
   setTimeout(() => {
     const toggle = document.querySelector('.toggle.top');
     if (toggle) {
-      toggle.addEventListener('click', toggleBigImages);
+      // Disable toggle for now
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.warn('⚠️ Fullscreen toggle temporarily disabled due to performance issues');
+        return false;
+      });
     }
+    // Still expose for manual testing
     window.toggleBigImages = toggleBigImages;
   }, 1000);
 })();
