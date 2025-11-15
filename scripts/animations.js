@@ -2606,9 +2606,40 @@ window.testToggle = function() {
   
   let isBig = false;
   const styleCache = new WeakMap();
+  let toggleObserver = null;
   
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
+  
+  function applyFullscreenStyles() {
+    if (!isBig) return;
+    
+    // Get ALL elements every time
+    const imgParallax = document.querySelectorAll('.img-parallax');
+    const reveals = document.querySelectorAll('.reveal');
+    const revealFulls = document.querySelectorAll('.reveal-full');
+    const maskWraps = document.querySelectorAll('.mask-wrap');
+    const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
+    
+    [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+      if (el.style.getPropertyValue('width') !== '100vw') {
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      }
+    });
+    
+    images.forEach(el => {
+      if (el.style.getPropertyValue('width') !== '100%') {
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('height', '100%', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+        el.style.setProperty('scale', '1', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+      }
+    });
+  }
   
   function toggleBigImages() {
     isBig = !isBig;
@@ -2656,7 +2687,37 @@ window.testToggle = function() {
         el.style.setProperty('opacity', '1', 'important');
       });
       
+      // Start observer to catch dynamic elements and GSAP changes
+      if (!toggleObserver) {
+        toggleObserver = new MutationObserver(() => {
+          applyFullscreenStyles();
+        });
+        toggleObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['style']
+        });
+      }
+      
+      // Also apply on scroll to catch lazy-loaded elements
+      const scrollHandler = () => applyFullscreenStyles();
+      window.addEventListener('scroll', scrollHandler, { passive: true });
+      window._fullscreenScrollHandler = scrollHandler;
+      
       } else {
+      // Stop observer
+      if (toggleObserver) {
+        toggleObserver.disconnect();
+        toggleObserver = null;
+      }
+      
+      // Remove scroll handler
+      if (window._fullscreenScrollHandler) {
+        window.removeEventListener('scroll', window._fullscreenScrollHandler);
+        delete window._fullscreenScrollHandler;
+      }
+      
       // RESTORE EXACT CACHED STYLES
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
         const cached = styleCache.get(el);
