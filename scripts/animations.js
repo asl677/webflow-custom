@@ -2610,139 +2610,96 @@ window.testToggle = function() {
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
   
-  function applyFullscreenToAll() {
-    // Get ALL elements
+  function toggleBigImages() {
+    isBig = !isBig;
+    window.isFullscreenMode = isBig;
+    
+    // Get EVERY element including clones
     const imgParallax = document.querySelectorAll('.img-parallax');
     const reveals = document.querySelectorAll('.reveal');
     const revealFulls = document.querySelectorAll('.reveal-full');
     const maskWraps = document.querySelectorAll('.mask-wrap');
     const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
     
-    [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-      el.style.setProperty('width', '100vw', 'important');
-      el.style.setProperty('height', '100vh', 'important');
-      el.style.setProperty('max-width', '100vw', 'important');
-      el.style.setProperty('max-height', '100vh', 'important');
-    });
     
-    images.forEach(el => {
-      el.style.setProperty('width', '100%', 'important');
-      el.style.setProperty('height', '100%', 'important');
-      el.style.setProperty('object-fit', 'cover', 'important');
-      el.style.setProperty('scale', '1', 'important');
-      el.style.setProperty('opacity', '1', 'important');
-    });
-  }
-  
-  function toggleBigImages() {
-    isBig = !isBig;
-    window.isFullscreenMode = isBig;
-    
-    console.log('Toggle clicked:', isBig ? 'ON' : 'OFF');
-    
-    try {
-      // Get EVERY element including clones
-      const imgParallax = document.querySelectorAll('.img-parallax');
-      const reveals = document.querySelectorAll('.reveal');
-      const revealFulls = document.querySelectorAll('.reveal-full');
-      const maskWraps = document.querySelectorAll('.mask-wrap');
-      const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
-      
-      console.log('Found elements:', imgParallax.length, reveals.length, revealFulls.length, maskWraps.length, images.length);
-      
-      if (isBig) {
-        // CACHE ORIGINAL STYLES FIRST TIME
-        [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-          if (!styleCache.has(el)) {
-            styleCache.set(el, {
-              width: el.style.width,
-              height: el.style.height,
-              maxWidth: el.style.maxWidth,
-              maxHeight: el.style.maxHeight
-            });
-          }
-        });
-        
-        images.forEach(el => {
-          if (!styleCache.has(el)) {
-            styleCache.set(el, {
-              width: el.style.width,
-              height: el.style.height,
-              objectFit: el.style.objectFit,
-              scale: el.style.scale,
-              opacity: el.style.opacity
-            });
-          }
-        });
-        
-        console.log('Cached styles, applying fullscreen...');
-        
-        // Apply fullscreen styles
-        applyFullscreenToAll();
-        
-        // Reapply after animations settle (for ScrollTrigger elements)
-        setTimeout(() => {
-          console.log('Reapplying at 500ms');
-          applyFullscreenToAll();
-        }, 500);
-        
-        setTimeout(() => {
-          console.log('Reapplying at 1500ms');
-          applyFullscreenToAll();
-        }, 1500);
-        
-      } else {
-        console.log('Restoring original styles...');
-        
-        // RESTORE EXACT CACHED STYLES
-        [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-          const cached = styleCache.get(el);
-          if (cached) {
-            el.style.width = cached.width;
-            el.style.height = cached.height;
-            el.style.maxWidth = cached.maxWidth;
-            el.style.maxHeight = cached.maxHeight;
-          } else {
-            el.style.removeProperty('width');
-            el.style.removeProperty('height');
-            el.style.removeProperty('max-width');
-            el.style.removeProperty('max-height');
-          }
-        });
-        
-        images.forEach(el => {
-          const cached = styleCache.get(el);
-          if (cached) {
-            el.style.width = cached.width;
-            el.style.height = cached.height;
-            el.style.objectFit = cached.objectFit;
-            el.style.scale = cached.scale;
-            el.style.opacity = cached.opacity;
-          } else {
-            el.style.removeProperty('width');
-            el.style.removeProperty('height');
-            el.style.removeProperty('object-fit');
-            el.style.removeProperty('scale');
-            el.style.removeProperty('opacity');
-          }
-        });
-        
-        console.log('Styles restored');
-        
-        // Force layout recalculation
-        document.body.offsetHeight;
-        
-        // Refresh ScrollTrigger
-        if (window.ScrollTrigger) {
-          setTimeout(() => {
-            window.ScrollTrigger.refresh(true);
-          }, 100);
+    if (isBig) {
+      // CACHE ORIGINAL STYLES FIRST TIME
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+        if (!styleCache.has(el)) {
+          styleCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            maxWidth: el.style.maxWidth,
+            maxHeight: el.style.maxHeight
+          });
         }
-      }
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
+      });
       
-      console.log('Toggle complete');
-    } catch (error) {
-      console.error('Toggle error:', error);
+      images.forEach(el => {
+        if (!styleCache.has(el)) {
+          styleCache.set(el, {
+            width: el.style.width,
+            height: el.style.height,
+            objectFit: el.style.objectFit,
+            scale: el.style.scale,
+            opacity: el.style.opacity
+          });
+        }
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('height', '100%', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+        el.style.setProperty('scale', '1', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+      });
+      
+      } else {
+      // RESTORE EXACT CACHED STYLES
+      [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
+        const cached = styleCache.get(el);
+        if (cached) {
+          el.style.width = cached.width;
+          el.style.height = cached.height;
+          el.style.maxWidth = cached.maxWidth;
+          el.style.maxHeight = cached.maxHeight;
+        } else {
+          el.style.removeProperty('width');
+          el.style.removeProperty('height');
+          el.style.removeProperty('max-width');
+          el.style.removeProperty('max-height');
+        }
+      });
+      
+      images.forEach(el => {
+        const cached = styleCache.get(el);
+        if (cached) {
+          el.style.width = cached.width;
+          el.style.height = cached.height;
+          el.style.objectFit = cached.objectFit;
+          el.style.scale = cached.scale;
+          el.style.opacity = cached.opacity;
+        } else {
+          el.style.removeProperty('width');
+          el.style.removeProperty('height');
+          el.style.removeProperty('object-fit');
+          el.style.removeProperty('scale');
+          el.style.removeProperty('opacity');
+        }
+      });
+      
+      
+      // Force layout recalculation
+      document.body.offsetHeight;
+      
+      // Refresh ScrollTrigger
+      if (window.ScrollTrigger) {
+        setTimeout(() => {
+          window.ScrollTrigger.refresh(true);
+        }, 100);
+      }
     }
   }
   
