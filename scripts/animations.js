@@ -2633,6 +2633,11 @@ window.testToggle = function() {
             maxHeight: el.style.maxHeight
           });
         }
+        // Clear GSAP inline styles first
+        if (window.gsap) {
+          window.gsap.set(el, { clearProps: "width,height,maxWidth,maxHeight" });
+        }
+        // Then apply fullscreen
         el.style.setProperty('width', '100vw', 'important');
         el.style.setProperty('height', '100vh', 'important');
         el.style.setProperty('max-width', '100vw', 'important');
@@ -2649,6 +2654,11 @@ window.testToggle = function() {
             opacity: el.style.opacity
           });
         }
+        // Clear GSAP inline styles first
+        if (window.gsap) {
+          window.gsap.set(el, { clearProps: "width,height,scale" });
+        }
+        // Then apply fullscreen
         el.style.setProperty('width', '100%', 'important');
         el.style.setProperty('height', '100%', 'important');
         el.style.setProperty('object-fit', 'cover', 'important');
