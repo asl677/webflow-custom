@@ -2623,23 +2623,25 @@ window.testToggle = function() {
     
     
     if (isBig) {
-      console.log('Applying fullscreen...');
+      console.log('🔵 FULLSCREEN ON');
       
       // CACHE ORIGINAL STYLES FIRST TIME
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach((el, i) => {
         if (!styleCache.has(el)) {
+          const computed = window.getComputedStyle(el);
           styleCache.set(el, {
-            width: el.style.width,
-            height: el.style.height,
-            maxWidth: el.style.maxWidth,
-            maxHeight: el.style.maxHeight
+            width: el.style.width || computed.width,
+            height: el.style.height || computed.height,
+            maxWidth: el.style.maxWidth || computed.maxWidth,
+            maxHeight: el.style.maxHeight || computed.maxHeight
           });
         }
         
-        // Force fullscreen dimensions
-        el.style.cssText = `width: 100vw !important; height: 100vh !important; max-width: 100vw !important; max-height: 100vh !important;`;
-        
-        if (i < 3) console.log('Container', el.className, 'width:', el.style.width);
+        // Apply fullscreen
+        el.style.setProperty('width', '100vw', 'important');
+        el.style.setProperty('height', '100vh', 'important');
+        el.style.setProperty('max-width', '100vw', 'important');
+        el.style.setProperty('max-height', '100vh', 'important');
       });
       
       images.forEach((el, i) => {
@@ -2653,13 +2655,15 @@ window.testToggle = function() {
           });
         }
         
-        // Force fullscreen on images
-        el.style.cssText = `width: 100% !important; height: 100% !important; object-fit: cover !important; scale: 1 !important; opacity: 1 !important;`;
-        
-        if (i < 3) console.log('Image', i, 'width:', el.style.width);
+        // Apply fullscreen
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('height', '100%', 'important');
+        el.style.setProperty('object-fit', 'cover', 'important');
+        el.style.setProperty('scale', '1', 'important');
+        el.style.setProperty('opacity', '1', 'important');
       });
       
-      console.log('Fullscreen applied');
+      console.log('✅ Fullscreen applied to', imgParallax.length + reveals.length + revealFulls.length + maskWraps.length, 'containers and', images.length, 'images');
       
       } else {
       // RESTORE EXACT CACHED STYLES
