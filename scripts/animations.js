@@ -2606,22 +2606,12 @@ window.testToggle = function() {
   
   let isBig = false;
   const styleCache = new WeakMap();
-  let toggleObserver = null;
-  let applyTimeout = null;
   
   // Export state so mask animation can check it
   window.isFullscreenMode = false;
   
-  function applyFullscreenStyles() {
-    if (!isBig) return;
-    
-    // Throttle to prevent performance issues
-    if (applyTimeout) return;
-    applyTimeout = setTimeout(() => {
-      applyTimeout = null;
-    }, 100);
-    
-    // Get ALL elements every time
+  function applyFullscreenToAll() {
+    // Get ALL elements
     const imgParallax = document.querySelectorAll('.img-parallax');
     const reveals = document.querySelectorAll('.reveal');
     const revealFulls = document.querySelectorAll('.reveal-full');
@@ -2629,22 +2619,18 @@ window.testToggle = function() {
     const images = document.querySelectorAll('.mask-wrap img, .reveal img, .img-parallax img');
     
     [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-      if (el.style.getPropertyValue('width') !== '100vw') {
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
-        el.style.setProperty('max-height', '100vh', 'important');
-      }
+      el.style.setProperty('width', '100vw', 'important');
+      el.style.setProperty('height', '100vh', 'important');
+      el.style.setProperty('max-width', '100vw', 'important');
+      el.style.setProperty('max-height', '100vh', 'important');
     });
     
     images.forEach(el => {
-      if (el.style.getPropertyValue('width') !== '100%') {
-        el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('height', '100%', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
-        el.style.setProperty('scale', '1', 'important');
-        el.style.setProperty('opacity', '1', 'important');
-      }
+      el.style.setProperty('width', '100%', 'important');
+      el.style.setProperty('height', '100%', 'important');
+      el.style.setProperty('object-fit', 'cover', 'important');
+      el.style.setProperty('scale', '1', 'important');
+      el.style.setProperty('opacity', '1', 'important');
     });
   }
   
@@ -2671,10 +2657,6 @@ window.testToggle = function() {
             maxHeight: el.style.maxHeight
           });
         }
-        el.style.setProperty('width', '100vw', 'important');
-        el.style.setProperty('height', '100vh', 'important');
-        el.style.setProperty('max-width', '100vw', 'important');
-        el.style.setProperty('max-height', '100vh', 'important');
       });
       
       images.forEach(el => {
@@ -2687,42 +2669,16 @@ window.testToggle = function() {
             opacity: el.style.opacity
           });
         }
-        el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('height', '100%', 'important');
-        el.style.setProperty('object-fit', 'cover', 'important');
-        el.style.setProperty('scale', '1', 'important');
-        el.style.setProperty('opacity', '1', 'important');
       });
       
-      // Start observer to catch only NEW elements (not style changes)
-      if (!toggleObserver) {
-        toggleObserver = new MutationObserver(() => {
-          applyFullscreenStyles();
-        });
-        toggleObserver.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
-      }
+      // Apply fullscreen styles
+      applyFullscreenToAll();
       
-      // Apply on scroll only (not continuously)
-      const scrollHandler = () => applyFullscreenStyles();
-      window.addEventListener('scroll', scrollHandler, { passive: true });
-      window._fullscreenScrollHandler = scrollHandler;
+      // Reapply after animations settle (for ScrollTrigger elements)
+      setTimeout(() => applyFullscreenToAll(), 500);
+      setTimeout(() => applyFullscreenToAll(), 1500);
       
       } else {
-      // Stop observer
-      if (toggleObserver) {
-        toggleObserver.disconnect();
-        toggleObserver = null;
-      }
-      
-      // Remove scroll handler
-      if (window._fullscreenScrollHandler) {
-        window.removeEventListener('scroll', window._fullscreenScrollHandler);
-        delete window._fullscreenScrollHandler;
-      }
-      
       // RESTORE EXACT CACHED STYLES
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
         const cached = styleCache.get(el);
