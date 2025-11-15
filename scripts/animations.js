@@ -2605,11 +2605,20 @@ window.testToggle = function() {
 (function() {
   function toggleBigImages() {
     document.body.classList.toggle('fullscreen-mode');
-    console.log('Toggle:', document.body.classList.contains('fullscreen-mode') ? 'ON' : 'OFF');
+    const isFullscreen = document.body.classList.contains('fullscreen-mode');
+    console.log('Toggle:', isFullscreen ? 'ON' : 'OFF');
+    
+    // Refresh ScrollTrigger after toggle
+    if (window.ScrollTrigger) {
+          setTimeout(() => {
+        window.ScrollTrigger.refresh(true);
+        console.log('ScrollTrigger refreshed');
+          }, 100);
+    }
   }
   
   // Find toggle button
-          setTimeout(() => {
+  setTimeout(() => {
     const toggle = document.querySelector('.toggle.top');
     if (toggle) {
       toggle.addEventListener('click', toggleBigImages);
@@ -2636,9 +2645,9 @@ window.testToggle = function() {
       min-height: 100vh !important;
     }
     
-    /* Force all images to fill containers */
-    body.fullscreen-mode img,
-    body.fullscreen-mode video {
+    /* Force all images to fill containers (except nav and fix-center) */
+    body.fullscreen-mode img:not(.nav img):not(.fix-center img),
+    body.fullscreen-mode video:not(.nav video):not(.fix-center video) {
       width: 100% !important;
       height: 100% !important;
       max-width: 100% !important;
