@@ -2666,39 +2666,25 @@ window.testToggle = function() {
       console.log('✅ Fullscreen applied to', imgParallax.length + reveals.length + revealFulls.length + maskWraps.length, 'containers and', images.length, 'images');
       
       } else {
-      // RESTORE EXACT CACHED STYLES
+      console.log('🔴 FULLSCREEN OFF - Restoring');
+      
+      // RESTORE - just remove the !important flags, let GSAP/CSS take over
       [...imgParallax, ...reveals, ...revealFulls, ...maskWraps].forEach(el => {
-        const cached = styleCache.get(el);
-        if (cached) {
-          el.style.width = cached.width;
-          el.style.height = cached.height;
-          el.style.maxWidth = cached.maxWidth;
-          el.style.maxHeight = cached.maxHeight;
-        } else {
-          el.style.removeProperty('width');
-          el.style.removeProperty('height');
-          el.style.removeProperty('max-width');
-          el.style.removeProperty('max-height');
-        }
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('max-width');
+        el.style.removeProperty('max-height');
       });
       
       images.forEach(el => {
-        const cached = styleCache.get(el);
-        if (cached) {
-          el.style.width = cached.width;
-          el.style.height = cached.height;
-          el.style.objectFit = cached.objectFit;
-          el.style.scale = cached.scale;
-          el.style.opacity = cached.opacity;
-        } else {
-          el.style.removeProperty('width');
-          el.style.removeProperty('height');
-          el.style.removeProperty('object-fit');
-          el.style.removeProperty('scale');
-          el.style.removeProperty('opacity');
-        }
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('object-fit');
+        el.style.removeProperty('scale');
+        el.style.removeProperty('opacity');
       });
       
+      console.log('✅ Styles removed, GSAP/CSS taking over');
       
       // Force layout recalculation
       document.body.offsetHeight;
