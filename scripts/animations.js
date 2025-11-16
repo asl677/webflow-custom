@@ -2703,8 +2703,92 @@ window.testToggle = function() {
       transform: scale(1) !important;
       opacity: 1 !important;
     }
+    
+    /* Liquid distortion hover effect for image containers */
+    .img-parallax,
+    .reveal,
+    .reveal-full,
+    .mask-wrap {
+      position: relative;
+      overflow: hidden;
+      transition: filter 0.3s ease, transform 0.3s ease;
+    }
+    
+    .img-parallax img,
+    .reveal img,
+    .reveal-full img,
+    .mask-wrap img {
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                  filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform, filter;
+    }
+    
+    .img-parallax:hover img,
+    .reveal:hover img,
+    .reveal-full:hover img,
+    .mask-wrap:hover img {
+      transform: scale(1.05) translateZ(0);
+      filter: blur(0.5px) brightness(1.1);
+    }
+    
+    /* Liquid wave effect on hover */
+    .img-parallax::before,
+    .reveal::before,
+    .reveal-full::before,
+    .mask-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+        rgba(255, 255, 255, 0.1) 0%, 
+        transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+    
+    .img-parallax:hover::before,
+    .reveal:hover::before,
+    .reveal-full:hover::before,
+    .mask-wrap:hover::before {
+      opacity: 1;
+    }
   `;
   document.head.appendChild(style);
+  
+  // Track mouse position for liquid effect
+  function addLiquidHover(container) {
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      container.style.setProperty('--mouse-x', x + '%');
+      container.style.setProperty('--mouse-y', y + '%');
+    });
+  }
+  
+  // Add to existing containers
+  document.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(addLiquidHover);
+  
+  // Watch for new containers (from infinite scroll)
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) {
+          if (node.matches && (node.matches('.img-parallax, .reveal, .reveal-full, .mask-wrap'))) {
+            addLiquidHover(node);
+          }
+          node.querySelectorAll && node.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(addLiquidHover);
+        }
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
 
 // BLOTTER EFFECT - Apply to .fix-center text content
