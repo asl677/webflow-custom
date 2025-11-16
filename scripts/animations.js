@@ -2627,10 +2627,10 @@ window.testToggle = function() {
         
         // Refresh ScrollTrigger after everything settles
         if (window.ScrollTrigger) {
-          setTimeout(() => {
+        setTimeout(() => {
             window.ScrollTrigger.refresh(true);
             console.log('ScrollTrigger refreshed');
-          }, 100);
+        }, 100);
         }
       }, 300);
     } else {
@@ -2703,166 +2703,181 @@ window.testToggle = function() {
       transform: scale(1) !important;
       opacity: 1 !important;
     }
-    
-    /* Liquid distortion hover effect for image containers */
-    .img-parallax,
-    .reveal,
-    .reveal-full,
-    .mask-wrap {
-      position: relative;
-      overflow: hidden;
-      transition: filter 0.3s ease, transform 0.3s ease;
-    }
-    
-    .img-parallax img,
-    .reveal img,
-    .reveal-full img,
-    .mask-wrap img {
-      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                  filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-      will-change: transform, filter;
-    }
-    
-    .img-parallax:hover img,
-    .reveal:hover img,
-    .reveal-full:hover img,
-    .mask-wrap:hover img {
-      transform: scale(1.05) translateZ(0);
-      filter: blur(0.5px) brightness(1.1);
-    }
-    
-    /* Liquid wave effect on hover */
-    .img-parallax::before,
-    .reveal::before,
-    .reveal-full::before,
-    .mask-wrap::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-        rgba(255, 255, 255, 0.1) 0%, 
-        transparent 50%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: overlay;
-    }
-    
-    .img-parallax:hover::before,
-    .reveal:hover::before,
-    .reveal-full:hover::before,
-    .mask-wrap:hover::before {
-      opacity: 1;
-    }
   `;
   document.head.appendChild(style);
-  
-  // Track mouse position for liquid effect
-  function addLiquidHover(container) {
-    container.addEventListener('mousemove', (e) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      container.style.setProperty('--mouse-x', x + '%');
-      container.style.setProperty('--mouse-y', y + '%');
-    });
-  }
-  
-  // Add to existing containers
-  document.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(addLiquidHover);
-  
-  // Watch for new containers (from infinite scroll)
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1) {
-          if (node.matches && (node.matches('.img-parallax, .reveal, .reveal-full, .mask-wrap'))) {
-            addLiquidHover(node);
-          }
-          node.querySelectorAll && node.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(addLiquidHover);
-        }
-      });
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
 })();
 
-// BLOTTER EFFECT - Apply to .fix-center text content
+// WebGL Liquid Distortion Effect for Image Containers
 (function() {
-  // Wait for Blotter library to load (from external script tags)
-  if (typeof Blotter === 'undefined') {
-    console.warn('⚠️ Blotter library not loaded - add script tags to Webflow:');
-    console.warn('   <script src="https://unpkg.com/blotterjs@latest/build/blotter.min.js"></script>');
-    console.warn('   <script src="https://unpkg.com/blotterjs@latest/build/materials/liquidDistortMaterial.min.js"></script>');
+  if (!window.WebGLRenderingContext) {
+    console.warn('WebGL not supported');
     return;
   }
   
-  console.log('💧 Initializing Blotter liquid distortion effect...');
+  const liquidInstances = new WeakMap();
   
-  // Wait for elements to be available AND for scrambling to complete
-  // Scrambling takes about 1s duration, so wait ~3-4s total to be safe
-  setTimeout(() => {
-    console.log('💧 Attempting to find text elements in .fix-center...');
+  function initLiquidDistortion(container) {
+    if (liquidInstances.has(container)) return;
     
-    // Find all text elements with specific classes inside .fix-center
-    const fixCenter = document.querySelector('.fix-center');
-    if (!fixCenter) {
-      console.warn('⚠️ .fix-center element not found');
-      return;
+    const img = container.querySelector('img');
+    if (!img || !img.complete) return;
+    
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) return;
+    
+    canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;';
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    
+    container.style.position = 'relative';
+    container.appendChild(canvas);
+    
+    // Simple fragment shader for liquid distortion
+    const fragmentShaderSource = `
+      precision highp float;
+      uniform sampler2D u_texture;
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouse;
+      uniform float u_time;
+      varying vec2 v_texCoord;
+      
+      void main() {
+        vec2 uv = v_texCoord;
+        vec2 mouse = u_mouse / u_resolution;
+        float dist = distance(uv, mouse);
+        float wave = sin(dist * 10.0 - u_time * 2.0) * 0.02;
+        vec2 offset = normalize(uv - mouse) * wave;
+        gl_FragColor = texture2D(u_texture, uv + offset);
+      }
+    `;
+    
+    const vertexShaderSource = `
+      attribute vec2 a_position;
+      varying vec2 v_texCoord;
+      void main() {
+        gl_Position = vec4(a_position, 0.0, 1.0);
+        v_texCoord = (a_position + 1.0) * 0.5;
+      }
+    `;
+    
+    function createShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
     }
     
-    const textElements = fixCenter.querySelectorAll('p');
-    console.log('💧 Found text elements:', textElements.length);
-    
-    if (textElements.length === 0) {
-      console.warn('⚠️ No text elements found in .fix-center');
-      console.log('💧 Fix-center HTML:', fixCenter.innerHTML.substring(0, 200));
-      return;
+    function createProgram(gl, vertexShader, fragmentShader) {
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
+        return null;
+      }
+      return program;
     }
     
-    // Create liquid distortion material (shared for all)
-    var material = new Blotter.LiquidDistortMaterial();
-    material.uniforms.uSpeed.value = 0.25;
-    material.uniforms.uVolatility.value = 0.02;
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    if (!vertexShader || !fragmentShader) return;
     
-    console.log('💧 Applying Blotter effect to', textElements.length, 'elements...');
+    const program = createProgram(gl, vertexShader, fragmentShader);
+    if (!program) return;
     
-    // Apply Blotter to each text element
-    textElements.forEach((element, index) => {
-      const textContent = element.textContent || element.innerText;
-      if (!textContent.trim()) {
+    const positionLocation = gl.getAttribLocation(program, 'a_position');
+    const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+    const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+    const timeLocation = gl.getUniformLocation(program, 'u_time');
+    const textureLocation = gl.getUniformLocation(program, 'u_texture');
+    
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+      -1, -1, 1, -1, -1, 1,
+      -1, 1, 1, -1, 1, 1
+    ]), gl.STATIC_DRAW);
+    
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    
+    let mouseX = 0.5, mouseY = 0.5;
+    let time = 0;
+    let isHovering = false;
+    
+    container.addEventListener('mouseenter', () => {
+      isHovering = true;
+      canvas.style.opacity = '1';
+    });
+    
+    container.addEventListener('mouseleave', () => {
+      isHovering = false;
+      canvas.style.opacity = '0';
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    });
+    
+    function render() {
+      if (!isHovering) {
+        requestAnimationFrame(render);
         return;
       }
       
-      // Get computed styles for size and color
-      const computedStyle = getComputedStyle(element);
-      const fontSize = parseInt(computedStyle.fontSize);
-      const color = computedStyle.color;
+      canvas.width = container.offsetWidth;
+      canvas.height = container.offsetHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
       
-      console.log(`💧 Element ${index}: "${textContent.substring(0, 30)}..." - ${fontSize}px, ${color}`);
+      gl.useProgram(program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
       
-      // Create Blotter text with element's actual styles
-      var text = new Blotter.Text(textContent, {
-        family: computedStyle.fontFamily,
-        size: fontSize,
-        fill: color,
-        paddingLeft: 10,
-        paddingRight: 10
-      });
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
       
-      var blotter = new Blotter(material, {
-        texts: text
-      });
+      gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+      gl.uniform2f(mouseLocation, mouseX, canvas.height - mouseY);
+      gl.uniform1f(timeLocation, time);
+      gl.uniform1i(textureLocation, 0);
       
-      // Clear the original element and append Blotter canvas
-      element.innerHTML = '';
-      var scope = blotter.forText(text);
-      scope.appendTo(element);
-    });
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      
+      time += 0.016;
+      requestAnimationFrame(render);
+    }
     
-  }, 4000); // Wait 4 seconds for scrambling to complete
+    canvas.style.opacity = '0';
+    canvas.style.transition = 'opacity 0.3s';
+    render();
+    
+    liquidInstances.set(container, { canvas, gl, program });
+  }
+  
+  // Initialize on existing containers
+  setTimeout(() => {
+    document.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(initLiquidDistortion);
+    
+    // Watch for new containers
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('.img-parallax, .reveal, .reveal-full, .mask-wrap').forEach(initLiquidDistortion);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }, 2000);
 })();
