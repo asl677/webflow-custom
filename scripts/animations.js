@@ -2656,15 +2656,21 @@ window.testToggle = function() {
   // Add CSS for fullscreen mode
   const style = document.createElement('style');
   style.textContent = `
-    /* Hide toggle buttons on page load */
-    .toggle.top {
+    /* Hide ALL toggle buttons on page load */
+    .toggle,
+    .toggle.top,
+    .toggle.bottom,
+    [class*="toggle"] {
       opacity: 0 !important;
       visibility: hidden !important;
       pointer-events: none !important;
     }
     
     /* Show toggle buttons after page loads */
-    body.animations-ready .toggle.top {
+    body.animations-ready .toggle,
+    body.animations-ready .toggle.top,
+    body.animations-ready .toggle.bottom,
+    body.animations-ready [class*="toggle"] {
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
