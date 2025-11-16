@@ -2708,45 +2708,137 @@ window.testToggle = function() {
     
     .reveal.reveal-full img,
     .reveal.reveal-full video {
-      transition: filter 0.3s cubic-bezier(0.23, 1, 0.32, 1),
-                  transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-      will-change: filter, transform;
+      transition: opacity 0.3s ease;
     }
     
-    .reveal.reveal-full:hover img,
-    .reveal.reveal-full:hover video {
-      filter: blur(2px) brightness(1.1);
-      transform: scale(1.02);
-    }
-    
-    /* Liquid wave overlay */
-    .reveal.reveal-full::before {
-      content: '';
+    .reveal.reveal-full canvas.liquid-distortion {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-        rgba(255, 255, 255, 0.2) 0%, 
-        rgba(255, 255, 255, 0.05) 40%,
-        transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
       pointer-events: none;
       z-index: 1;
-      mix-blend-mode: overlay;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     
-    .reveal.reveal-full:hover::before {
+    .reveal.reveal-full:hover canvas.liquid-distortion {
       opacity: 1;
+    }
+    
+    .reveal.reveal-full:hover img,
+    .reveal.reveal-full:hover video {
+      opacity: 0;
     }
   `;
   document.head.appendChild(style);
   
-  // Liquid distortion effect with canvas wave overlay
+  // WebGL Liquid Distortion Effect - distorts the actual image
   (function() {
+    if (!window.WebGLRenderingContext) return;
+    
     const distortionInstances = new WeakMap();
+    
+    function createShaderProgram(gl) {
+      const vertexShaderSource = `
+        attribute vec2 a_position;
+        varying vec2 v_texCoord;
+        void main() {
+          gl_Position = vec4(a_position, 0.0, 1.0);
+          v_texCoord = (a_position + 1.0) * 0.5;
+        }
+      `;
+      
+      const fragmentShaderSource = `
+        precision highp float;
+        uniform sampler2D u_texture;
+        uniform vec2 u_resolution;
+        uniform vec2 u_mouse;
+        uniform float u_time;
+        uniform float u_intensity;
+        varying vec2 v_texCoord;
+        
+        void main() {
+          vec2 uv = v_texCoord;
+          vec2 mouse = u_mouse / u_resolution;
+          
+          // Calculate distance from mouse
+          float dist = distance(uv, mouse);
+          
+          // Create liquid wave distortion
+          float wave1 = sin(dist * 20.0 - u_time * 4.0) * u_intensity;
+          float wave2 = sin(dist * 15.0 - u_time * 3.0) * u_intensity * 0.7;
+          float wave3 = sin(dist * 10.0 - u_time * 2.0) * u_intensity * 0.5;
+          
+          // Combine waves
+          float wave = (wave1 + wave2 + wave3) / 3.0;
+          
+          // Create radial distortion direction
+          vec2 dir = normalize(uv - mouse);
+          
+          // Apply distortion offset
+          vec2 offset = dir * wave * 0.05;
+          
+          // Sample texture with distortion
+          vec4 color = texture2D(u_texture, uv + offset);
+          
+          // Add slight brightness near mouse
+          float brightness = 1.0 + (1.0 - smoothstep(0.0, 0.4, dist)) * 0.15;
+          color.rgb *= brightness;
+          
+          gl_FragColor = color;
+        }
+      `;
+      
+      function createShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error('Shader error:', gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+      
+      const vs = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+      const fs = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+      if (!vs || !fs) return null;
+      
+      const program = gl.createProgram();
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
+      
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program error:', gl.getProgramInfoLog(program));
+        return null;
+      }
+      
+      return program;
+    }
+    
+    function loadImageTexture(gl, img, texture) {
+      return new Promise((resolve) => {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        
+        // Use 2D canvas to handle CORS
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.naturalWidth || img.videoWidth || img.width;
+        tempCanvas.height = img.naturalHeight || img.videoHeight || img.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
+        resolve();
+      });
+    }
     
     function initLiquidDistortion(container) {
       if (distortionInstances.has(container)) return;
@@ -2754,96 +2846,134 @@ window.testToggle = function() {
       const img = container.querySelector('img, video');
       if (!img) return;
       
-      // Wait for image to load
-      if (!img.complete && img.tagName === 'IMG') {
+      // Wait for image/video to load
+      if (img.tagName === 'IMG' && !img.complete) {
         img.addEventListener('load', () => initLiquidDistortion(container), { once: true });
+        return;
+      }
+      if (img.tagName === 'VIDEO' && img.readyState < 2) {
+        img.addEventListener('loadeddata', () => initLiquidDistortion(container), { once: true });
         return;
       }
       
       const canvas = document.createElement('canvas');
-      canvas.className = 'liquid-wave';
-      canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0;transition:opacity 0.3s ease;mix-blend-mode:overlay;';
+      canvas.className = 'liquid-distortion';
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+      
+      const program = createShaderProgram(gl);
+      if (!program) return;
+      
       container.appendChild(canvas);
       
-      const ctx = canvas.getContext('2d');
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1, 1, -1, -1, 1,
+        -1, 1, 1, -1, 1, 1
+      ]), gl.STATIC_DRAW);
+      
+      const texture = gl.createTexture();
+      const positionLoc = gl.getAttribLocation(program, 'a_position');
+      const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+      const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+      const timeLoc = gl.getUniformLocation(program, 'u_time');
+      const intensityLoc = gl.getUniformLocation(program, 'u_intensity');
+      const textureLoc = gl.getUniformLocation(program, 'u_texture');
+      
       let mouseX = 0.5, mouseY = 0.5;
       let time = 0;
       let isHovering = false;
-      let animationId = null;
+      let intensity = 0;
+      let textureLoaded = false;
       
       function updateSize() {
         const rect = container.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        gl.viewport(0, 0, canvas.width, canvas.height);
       }
       
-      function drawWave() {
-        if (!isHovering && canvas.style.opacity === '0') {
-          animationId = requestAnimationFrame(drawWave);
-          return;
-        }
-        
+      // Load texture initially
+      loadImageTexture(gl, img, texture).then(() => {
+        textureLoaded = true;
         updateSize();
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        if (isHovering) {
-          const centerX = mouseX * canvas.width;
-          const centerY = mouseY * canvas.height;
-          
-          // Create animated wave rings
-          for (let i = 0; i < 3; i++) {
-            const radius = 50 + (time * 20 + i * 40) % 200;
-            const alpha = Math.max(0, 1 - radius / 200) * 0.3;
-            
-            const gradient = ctx.createRadialGradient(centerX, centerY, radius - 20, centerX, centerY, radius + 20);
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
-            gradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.5})`);
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius + 20, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        
-        time += 0.016;
-        animationId = requestAnimationFrame(drawWave);
-      }
+      });
       
       container.addEventListener('mouseenter', () => {
         isHovering = true;
-        canvas.style.opacity = '1';
         updateSize();
-        if (!animationId) {
-          drawWave();
-        }
       });
       
       container.addEventListener('mouseleave', () => {
         isHovering = false;
-        canvas.style.opacity = '0';
+        intensity = 0;
       });
       
       container.addEventListener('mousemove', (e) => {
         const rect = container.getBoundingClientRect();
-        mouseX = (e.clientX - rect.left) / rect.width;
-        mouseY = (e.clientY - rect.top) / rect.height;
-        container.style.setProperty('--mouse-x', (mouseX * 100) + '%');
-        container.style.setProperty('--mouse-y', (mouseY * 100) + '%');
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        intensity = Math.min(intensity + 0.15, 1.0);
       });
       
-      distortionInstances.set(container, { canvas, ctx });
+      function render() {
+        if (!textureLoaded) {
+          requestAnimationFrame(render);
+          return;
+        }
+        
+        if (!isHovering) {
+          intensity = Math.max(intensity - 0.08, 0);
+        }
+        
+        updateSize();
+        
+        // Update texture periodically for videos
+        if (img.tagName === 'VIDEO' && img.readyState >= 2) {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = img.videoWidth || img.width;
+          tempCanvas.height = img.videoHeight || img.height;
+          const ctx = tempCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
+        }
+        
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        
+        gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+        gl.uniform2f(mouseLoc, mouseX, canvas.height - mouseY);
+        gl.uniform1f(timeLoc, time);
+        gl.uniform1f(intensityLoc, intensity);
+        gl.uniform1i(textureLoc, 0);
+        
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        
+        time += 0.016;
+        requestAnimationFrame(render);
+      }
+      
+      render();
+      distortionInstances.set(container, { canvas, gl, program, texture });
     }
     
-        setTimeout(() => {
+    setTimeout(() => {
       document.querySelectorAll('.reveal.reveal-full').forEach(initLiquidDistortion);
       
       const observer = new MutationObserver(() => {
         document.querySelectorAll('.reveal.reveal-full').forEach(initLiquidDistortion);
       });
       observer.observe(document.body, { childList: true, subtree: true });
-  }, 2000);
+    }, 2000);
   })();
 })();
   
