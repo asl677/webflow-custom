@@ -2656,6 +2656,21 @@ window.testToggle = function() {
   // Add CSS for fullscreen mode
   const style = document.createElement('style');
   style.textContent = `
+    /* Hide toggle buttons on page load */
+    .toggle.top {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    
+    /* Show toggle buttons after page loads */
+    body.animations-ready .toggle.top {
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transition: opacity 0.3s ease-in-out;
+    }
+    
     /* Force all image containers to fullscreen */
     body.fullscreen-mode .img-parallax,
     body.fullscreen-mode .reveal,
