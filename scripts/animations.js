@@ -2606,7 +2606,7 @@ window.testToggle = function() {
     
     if (!isFullscreen) {
       // Toggling OFF - wait for CSS to settle, then restore mask widths
-      setTimeout(() => {
+          setTimeout(() => {
         const maskWraps = document.querySelectorAll('.mask-wrap');
         maskWraps.forEach(maskWrap => {
           const img = maskWrap.querySelector('img');
@@ -2626,10 +2626,10 @@ window.testToggle = function() {
         setTimeout(() => {
             window.ScrollTrigger.refresh(true);
             console.log('ScrollTrigger refreshed');
-        }, 100);
+          }, 100);
         }
       }, 300);
-    } else {
+      } else {
       // Toggling ON - just refresh after CSS applies
       if (window.ScrollTrigger) {
         setTimeout(() => {
@@ -2700,73 +2700,249 @@ window.testToggle = function() {
       opacity: 1 !important;
     }
     
-    /* Hover distortion effect for reveal-full elements */
+    /* WebGL liquid distortion container */
     .reveal.reveal-full {
       position: relative;
       overflow: hidden;
-      transition: filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     }
     
-    .reveal.reveal-full img,
-    .reveal.reveal-full video {
-      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                  filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-      will-change: transform, filter;
-    }
-    
-    .reveal.reveal-full:hover img,
-    .reveal.reveal-full:hover video {
-      transform: scale(1.05);
-      filter: blur(1px) brightness(1.1);
-    }
-    
-    /* Liquid wave overlay effect */
-    .reveal.reveal-full::before {
-      content: '';
+    .reveal.reveal-full canvas.liquid-distortion {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-        rgba(255, 255, 255, 0.15) 0%, 
-        transparent 60%);
+      pointer-events: none;
+      z-index: 2;
       opacity: 0;
       transition: opacity 0.3s ease;
-      pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: overlay;
     }
     
-    .reveal.reveal-full:hover::before {
+    .reveal.reveal-full:hover canvas.liquid-distortion {
       opacity: 1;
     }
   `;
   document.head.appendChild(style);
   
-  // Add mouse tracking for liquid effect on reveal-full
-  function addRevealFullHover(container) {
-    if (container.dataset.hoverSetup) return;
-    container.dataset.hoverSetup = 'true';
+  // WebGL Liquid Distortion Effect
+  (function() {
+    if (!window.WebGLRenderingContext) return;
     
-    container.addEventListener('mousemove', (e) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      container.style.setProperty('--mouse-x', x + '%');
-      container.style.setProperty('--mouse-y', y + '%');
-    });
-  }
-  
-  // Initialize on existing elements
-  setTimeout(() => {
-    document.querySelectorAll('.reveal.reveal-full').forEach(addRevealFullHover);
+    const distortionInstances = new WeakMap();
+    let sharedGL = null;
+    let sharedProgram = null;
     
-    // Watch for new elements
-    const observer = new MutationObserver(() => {
-      document.querySelectorAll('.reveal.reveal-full').forEach(addRevealFullHover);
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    function createShaderProgram() {
+      if (sharedProgram) return sharedProgram;
+      
+      const canvas = document.createElement('canvas');
+      sharedGL = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!sharedGL) return null;
+      
+      const vertexShaderSource = `
+        attribute vec2 a_position;
+        varying vec2 v_texCoord;
+        void main() {
+          gl_Position = vec4(a_position, 0.0, 1.0);
+          v_texCoord = (a_position + 1.0) * 0.5;
+        }
+      `;
+      
+      const fragmentShaderSource = `
+        precision highp float;
+        uniform sampler2D u_texture;
+        uniform vec2 u_resolution;
+        uniform vec2 u_mouse;
+        uniform float u_time;
+        uniform float u_intensity;
+        varying vec2 v_texCoord;
+        
+        void main() {
+          vec2 uv = v_texCoord;
+          vec2 mouse = u_mouse / u_resolution;
+          float dist = distance(uv, mouse);
+          
+          // Create wave distortion
+          float wave = sin(dist * 15.0 - u_time * 3.0) * u_intensity;
+          float wave2 = sin(dist * 8.0 - u_time * 2.0) * u_intensity * 0.5;
+          
+          // Radial distortion
+          vec2 dir = normalize(uv - mouse);
+          vec2 offset = dir * (wave + wave2) * 0.02;
+          
+          // Sample texture with distortion
+          vec4 color = texture2D(u_texture, uv + offset);
+          
+          // Add slight brightness near mouse
+          float brightness = 1.0 + (1.0 - smoothstep(0.0, 0.3, dist)) * 0.2;
+          color.rgb *= brightness;
+          
+          gl_FragColor = color;
+        }
+      `;
+      
+      function createShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error('Shader error:', gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+      
+      const vs = createShader(sharedGL, sharedGL.VERTEX_SHADER, vertexShaderSource);
+      const fs = createShader(sharedGL, sharedGL.FRAGMENT_SHADER, fragmentShaderSource);
+      if (!vs || !fs) return null;
+      
+      const program = sharedGL.createProgram();
+      sharedGL.attachShader(program, vs);
+      sharedGL.attachShader(program, fs);
+      sharedGL.linkProgram(program);
+      
+      if (!sharedGL.getProgramParameter(program, sharedGL.LINK_STATUS)) {
+        console.error('Program error:', sharedGL.getProgramInfoLog(program));
+        return null;
+      }
+      
+      sharedProgram = program;
+      return program;
+    }
+    
+    function initLiquidDistortion(container) {
+      if (distortionInstances.has(container)) return;
+      
+      const img = container.querySelector('img, video');
+      if (!img) return;
+      
+      // Wait for image to load
+      if (!img.complete) {
+        img.addEventListener('load', () => initLiquidDistortion(container), { once: true });
+        return;
+      }
+      
+      const program = createShaderProgram();
+      if (!program) return;
+      
+      const canvas = document.createElement('canvas');
+      canvas.className = 'liquid-distortion';
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+      
+      container.appendChild(canvas);
+      
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1, 1, -1, -1, 1,
+        -1, 1, 1, -1, 1, 1
+      ]), gl.STATIC_DRAW);
+      
+      const texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      
+      const positionLoc = gl.getAttribLocation(program, 'a_position');
+      const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+      const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+      const timeLoc = gl.getUniformLocation(program, 'u_time');
+      const intensityLoc = gl.getUniformLocation(program, 'u_intensity');
+      const textureLoc = gl.getUniformLocation(program, 'u_texture');
+      
+      let mouseX = 0.5, mouseY = 0.5;
+      let time = 0;
+      let isHovering = false;
+      let intensity = 0;
+      
+      function updateSize() {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      
+      container.addEventListener('mouseenter', () => {
+        isHovering = true;
+        updateSize();
+      });
+      
+      container.addEventListener('mouseleave', () => {
+        isHovering = false;
+        intensity = 0;
+      });
+      
+      container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        intensity = Math.min(intensity + 0.1, 1.0);
+      });
+      
+      function render() {
+        if (!isHovering) {
+          intensity = Math.max(intensity - 0.05, 0);
+          if (intensity <= 0) {
+            requestAnimationFrame(render);
+            return;
+          }
+        }
+        
+        updateSize();
+        
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        
+        // Handle CORS - try to load image as crossOrigin
+        try {
+          if (img.crossOrigin === '') {
+            img.crossOrigin = 'anonymous';
+          }
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        } catch (e) {
+          // CORS issue - use 2D canvas as intermediary
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = img.naturalWidth || img.width;
+          tempCanvas.height = img.naturalHeight || img.height;
+          const ctx = tempCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
+        }
+        
+        gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+        gl.uniform2f(mouseLoc, mouseX, canvas.height - mouseY);
+        gl.uniform1f(timeLoc, time);
+        gl.uniform1f(intensityLoc, intensity);
+        gl.uniform1i(textureLoc, 0);
+        
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        
+        time += 0.016;
+        requestAnimationFrame(render);
+      }
+      
+      render();
+      distortionInstances.set(container, { canvas, gl, program });
+    }
+    
+        setTimeout(() => {
+      document.querySelectorAll('.reveal.reveal-full').forEach(initLiquidDistortion);
+      
+      const observer = new MutationObserver(() => {
+        document.querySelectorAll('.reveal.reveal-full').forEach(initLiquidDistortion);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
   }, 2000);
+  })();
 })();
-
+  
+  
