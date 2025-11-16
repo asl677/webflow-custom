@@ -2608,12 +2608,38 @@ window.testToggle = function() {
     const isFullscreen = document.body.classList.contains('fullscreen-mode');
     console.log('Toggle:', isFullscreen ? 'ON' : 'OFF');
     
-    // Refresh ScrollTrigger after toggle
-    if (window.ScrollTrigger) {
+    if (!isFullscreen) {
+      // Toggling OFF - wait for CSS to settle, then restore mask widths
+      setTimeout(() => {
+        const maskWraps = document.querySelectorAll('.mask-wrap');
+        maskWraps.forEach(maskWrap => {
+          const img = maskWrap.querySelector('img');
+          const targetWidth = maskWrap.dataset.targetWidth;
+          
+          if (img && img.dataset.maskComplete && targetWidth) {
+            // Was complete - restore full width
+            maskWrap.style.width = targetWidth + 'px';
+          } else {
+            // Wasn't complete - reset to 0 for ScrollTrigger
+            maskWrap.style.width = '0px';
+          }
+        });
+        
+        // Refresh ScrollTrigger after everything settles
+        if (window.ScrollTrigger) {
           setTimeout(() => {
-        window.ScrollTrigger.refresh(true);
-        console.log('ScrollTrigger refreshed');
+            window.ScrollTrigger.refresh(true);
+            console.log('ScrollTrigger refreshed');
           }, 100);
+        }
+      }, 300);
+    } else {
+      // Toggling ON - just refresh after CSS applies
+      if (window.ScrollTrigger) {
+        setTimeout(() => {
+          window.ScrollTrigger.refresh(true);
+        }, 100);
+      }
     }
   }
   
