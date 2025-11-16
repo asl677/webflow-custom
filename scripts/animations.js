@@ -2699,7 +2699,74 @@ window.testToggle = function() {
       transform: scale(1) !important;
       opacity: 1 !important;
     }
+    
+    /* Hover distortion effect for reveal-full elements */
+    .reveal.reveal-full {
+      position: relative;
+      overflow: hidden;
+      transition: filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    
+    .reveal.reveal-full img,
+    .reveal.reveal-full video {
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                  filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform, filter;
+    }
+    
+    .reveal.reveal-full:hover img,
+    .reveal.reveal-full:hover video {
+      transform: scale(1.05);
+      filter: blur(1px) brightness(1.1);
+    }
+    
+    /* Liquid wave overlay effect */
+    .reveal.reveal-full::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+        rgba(255, 255, 255, 0.15) 0%, 
+        transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+    
+    .reveal.reveal-full:hover::before {
+      opacity: 1;
+    }
   `;
   document.head.appendChild(style);
+  
+  // Add mouse tracking for liquid effect on reveal-full
+  function addRevealFullHover(container) {
+    if (container.dataset.hoverSetup) return;
+    container.dataset.hoverSetup = 'true';
+    
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      container.style.setProperty('--mouse-x', x + '%');
+      container.style.setProperty('--mouse-y', y + '%');
+    });
+  }
+  
+  // Initialize on existing elements
+  setTimeout(() => {
+    document.querySelectorAll('.reveal.reveal-full').forEach(addRevealFullHover);
+    
+    // Watch for new elements
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('.reveal.reveal-full').forEach(addRevealFullHover);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }, 2000);
 })();
 
