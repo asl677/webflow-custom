@@ -2739,6 +2739,8 @@ window.testToggle = function() {
     if (!window.WebGLRenderingContext) return;
     
     const distortionInstances = new WeakMap();
+    const MAX_CONTEXTS = 3; // Limit active contexts
+    let activeContexts = 0;
     
     function createShaderProgram(gl) {
       const vertexShaderSource = `
@@ -2840,9 +2842,20 @@ window.testToggle = function() {
       });
     }
     
+    function cleanupContext(instance) {
+      if (instance && instance.gl) {
+        const ext = instance.gl.getExtension('WEBGL_lose_context');
+        if (ext) {
+          ext.loseContext();
+        }
+        activeContexts--;
+      }
+      if (instance && instance.canvas && instance.canvas.parentNode) {
+        instance.canvas.parentNode.removeChild(instance.canvas);
+      }
+    }
+    
     function initLiquidDistortion(container) {
-      if (distortionInstances.has(container)) return;
-      
       const img = container.querySelector('img, video');
       if (!img) return;
       
@@ -2856,114 +2869,146 @@ window.testToggle = function() {
         return;
       }
       
-      const canvas = document.createElement('canvas');
-      canvas.className = 'liquid-distortion';
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) return;
-      
-      const program = createShaderProgram(gl);
-      if (!program) return;
-      
-      container.appendChild(canvas);
-      
-      const positionBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1, -1, 1, -1, -1, 1,
-        -1, 1, 1, -1, 1, 1
-      ]), gl.STATIC_DRAW);
-      
-      const texture = gl.createTexture();
-      const positionLoc = gl.getAttribLocation(program, 'a_position');
-      const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
-      const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
-      const timeLoc = gl.getUniformLocation(program, 'u_time');
-      const intensityLoc = gl.getUniformLocation(program, 'u_intensity');
-      const textureLoc = gl.getUniformLocation(program, 'u_texture');
-      
-      let mouseX = 0.5, mouseY = 0.5;
-      let time = 0;
-      let isHovering = false;
-      let intensity = 0;
-      let textureLoaded = false;
-      
-      function updateSize() {
-        const rect = container.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        gl.viewport(0, 0, canvas.width, canvas.height);
-      }
-      
-      // Load texture initially
-      loadImageTexture(gl, img, texture).then(() => {
-        textureLoaded = true;
-        updateSize();
-      });
-      
-      container.addEventListener('mouseenter', () => {
-        isHovering = true;
-        updateSize();
-      });
-      
-      container.addEventListener('mouseleave', () => {
-        isHovering = false;
-        intensity = 0;
-      });
-      
-      container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
-        intensity = Math.min(intensity + 0.15, 1.0);
-      });
-      
-      function render() {
-        if (!textureLoaded) {
-          requestAnimationFrame(render);
+      // Only create WebGL context on hover to limit contexts
+      container.addEventListener('mouseenter', function onHover() {
+        if (distortionInstances.has(container)) return;
+        
+        // Limit active contexts
+        if (activeContexts >= MAX_CONTEXTS) {
+          // Find and cleanup oldest inactive context
+          const allInstances = Array.from(document.querySelectorAll('.reveal.reveal-full'))
+            .map(c => distortionInstances.get(c))
+            .filter(i => i && i.canvas);
+          if (allInstances.length > 0) {
+            cleanupContext(allInstances[0]);
+          }
+        }
+        
+        const canvas = document.createElement('canvas');
+        canvas.className = 'liquid-distortion';
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return;
+        
+        activeContexts++;
+        
+        const program = createShaderProgram(gl);
+        if (!program) {
+          activeContexts--;
           return;
         }
         
-        if (!isHovering) {
-          intensity = Math.max(intensity - 0.08, 0);
-        }
+        container.appendChild(canvas);
         
-        updateSize();
-        
-        // Update texture periodically for videos
-        if (img.tagName === 'VIDEO' && img.readyState >= 2) {
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = img.videoWidth || img.width;
-          tempCanvas.height = img.videoHeight || img.height;
-          const ctx = tempCanvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
-        }
-        
-        gl.useProgram(program);
+        const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.enableVertexAttribArray(positionLoc);
-        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          -1, -1, 1, -1, -1, 1,
+          -1, 1, 1, -1, 1, 1
+        ]), gl.STATIC_DRAW);
         
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        const texture = gl.createTexture();
+        const positionLoc = gl.getAttribLocation(program, 'a_position');
+        const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+        const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+        const timeLoc = gl.getUniformLocation(program, 'u_time');
+        const intensityLoc = gl.getUniformLocation(program, 'u_intensity');
+        const textureLoc = gl.getUniformLocation(program, 'u_texture');
         
-        gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
-        gl.uniform2f(mouseLoc, mouseX, canvas.height - mouseY);
-        gl.uniform1f(timeLoc, time);
-        gl.uniform1f(intensityLoc, intensity);
-        gl.uniform1i(textureLoc, 0);
+        let mouseX = 0.5, mouseY = 0.5;
+        let time = 0;
+        let intensity = 0;
+        let textureLoaded = false;
+        let animationId = null;
         
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        function updateSize() {
+          const rect = container.getBoundingClientRect();
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+          canvas.style.width = rect.width + 'px';
+          canvas.style.height = rect.height + 'px';
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
         
-        time += 0.016;
-        requestAnimationFrame(render);
-      }
-      
-      render();
-      distortionInstances.set(container, { canvas, gl, program, texture });
+        // Load texture initially
+        loadImageTexture(gl, img, texture).then(() => {
+          textureLoaded = true;
+          updateSize();
+        });
+        
+        let isHovering = true;
+        
+        container.addEventListener('mousemove', function onMove(e) {
+          const rect = container.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+          intensity = Math.min(intensity + 0.15, 1.0);
+        });
+        
+        function render() {
+          if (!textureLoaded) {
+            animationId = requestAnimationFrame(render);
+            return;
+          }
+          
+          if (!isHovering) {
+            intensity = Math.max(intensity - 0.08, 0);
+            if (intensity <= 0) {
+              return; // Stop rendering when intensity reaches 0
+            }
+          }
+          
+          updateSize();
+          
+          // Update texture periodically for videos
+          if (img.tagName === 'VIDEO' && img.readyState >= 2) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = img.videoWidth || img.width;
+            tempCanvas.height = img.videoHeight || img.height;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
+          }
+          
+          gl.useProgram(program);
+          gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+          gl.enableVertexAttribArray(positionLoc);
+          gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+          
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          
+          gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+          gl.uniform2f(mouseLoc, mouseX, canvas.height - mouseY);
+          gl.uniform1f(timeLoc, time);
+          gl.uniform1f(intensityLoc, intensity);
+          gl.uniform1i(textureLoc, 0);
+          
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+          
+          time += 0.016;
+          animationId = requestAnimationFrame(render);
+        }
+        
+        render();
+        
+        const instance = { canvas, gl, program, texture, container };
+        distortionInstances.set(container, instance);
+        
+        // Cleanup on mouseleave
+        container.addEventListener('mouseleave', function onLeave() {
+          isHovering = false;
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          // Delay cleanup to allow fade out
+        setTimeout(() => {
+            cleanupContext(instance);
+            distortionInstances.delete(container);
+          }, 500);
+        }, { once: false });
+      }, { once: false });
     }
     
     setTimeout(() => {
@@ -2973,7 +3018,7 @@ window.testToggle = function() {
         document.querySelectorAll('.reveal.reveal-full').forEach(initLiquidDistortion);
       });
       observer.observe(document.body, { childList: true, subtree: true });
-    }, 2000);
+  }, 2000);
   })();
 })();
   
