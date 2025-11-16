@@ -1448,20 +1448,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
     const allImages = document.querySelectorAll('img:not(#preloader img), video');
   
-  // MOBILE ANIMATIONS DISABLED - treat mobile same as desktop
-  // Just remove emergency hide and use desktop animations for everyone
-  
-  // Remove emergency hide for everyone
-    const emergencyHide = document.getElementById('emergency-image-hide');
-    if (emergencyHide) {
-      emergencyHide.remove();
-  }
-  
   // Process ALL images the same way (mobile and desktop)
   const imagesToProcess = Array.from(allImages);
   
   // Ensure all images have loaded or at least have dimensions
-  
   const ensureImageDimensions = (img) => {
     return new Promise((resolve) => {
       if (img.offsetWidth > 0 && img.offsetHeight > 0) {
@@ -1470,7 +1460,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Image is loaded but might not have dimensions yet (force reflow)
         img.style.display = img.style.display || 'block';
         setTimeout(() => resolve(), 0);
-      } else {
+        } else {
         // Wait for image to load
         img.addEventListener('load', () => resolve(), { once: true });
         img.addEventListener('error', () => resolve(), { once: true });
@@ -1482,7 +1472,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   
   // Wait for all images to have dimensions
   Promise.all(imagesToProcess.map(ensureImageDimensions)).then(() => {
-    
     // Debug: Check if any images are already hidden
     const hiddenImages = Array.from(imagesToProcess).filter(img => {
       const computed = getComputedStyle(img);
@@ -1516,6 +1505,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         maskContainer.className = 'mask-wrap';
         maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         
+        // Ensure image stays hidden until mask is ready
+        element.style.setProperty('opacity', '0', 'important');
+        element.style.setProperty('visibility', 'hidden', 'important');
+        
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
         // Store original Webflow dimensions and styles before applying mask styles
@@ -1529,31 +1522,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important;object-fit:${objectFit}!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
         
-        // Force immediate opacity and visibility and clear any existing GSAP animations
-        if (typeof window.gsap !== 'undefined') {
-          window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
-        }
-        element.style.setProperty('opacity', '1', 'important');
-        element.style.setProperty('visibility', 'visible', 'important');
-        
         // Store the target width for animation
         maskContainer.dataset.targetWidth = originalWidth;
-        
-        const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) {
-          window.gsap.set(element, { 
-            scale: 1.2,
-            onComplete: () => {
-              // Ensure object-fit is preserved after scaling
-              element.style.setProperty('object-fit', objectFit, 'important');
-            }
-          });
-        }
         
         // Check if this image is in initial viewport
         const rect = element.getBoundingClientRect();
@@ -1568,6 +1543,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Always use ScrollTrigger - it handles viewport detection automatically
           window.gsap.set(maskContainer, { width: '0px' });
+        
+        // Set image visible when animation starts
+        window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+        
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
           duration: 1.5,
@@ -1585,6 +1564,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          
+        const hasParallax = element.classList.contains('img-parallax');
+        if (hasParallax) {
+          window.gsap.set(element, { 
+            scale: 1.2,
+            onComplete: () => {
+              // Ensure object-fit is preserved after scaling
+              element.style.setProperty('object-fit', objectFit, 'important');
+            }
+          });
+        }
           
         // Only add parallax when NOT in fullscreen mode
         if (hasParallax && !window.isFullscreenMode) {
@@ -1605,6 +1595,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
         }
       });
+      
+      // Remove emergency hide AFTER all mask-wraps are created to prevent flicker
+      const emergencyHide = document.getElementById('emergency-image-hide');
+      if (emergencyHide) {
+        emergencyHide.remove();
+      }
       
       // Safety fallback: force completion of any stuck reveals after 5 seconds
       setTimeout(() => {
