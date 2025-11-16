@@ -2729,16 +2729,8 @@ window.testToggle = function() {
     if (!window.WebGLRenderingContext) return;
     
     const distortionInstances = new WeakMap();
-    let sharedGL = null;
-    let sharedProgram = null;
     
-    function createShaderProgram() {
-      if (sharedProgram) return sharedProgram;
-      
-      const canvas = document.createElement('canvas');
-      sharedGL = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!sharedGL) return null;
-      
+    function createShaderProgram(gl) {
       const vertexShaderSource = `
         attribute vec2 a_position;
         varying vec2 v_texCoord;
@@ -2793,21 +2785,20 @@ window.testToggle = function() {
         return shader;
       }
       
-      const vs = createShader(sharedGL, sharedGL.VERTEX_SHADER, vertexShaderSource);
-      const fs = createShader(sharedGL, sharedGL.FRAGMENT_SHADER, fragmentShaderSource);
+      const vs = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+      const fs = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
       if (!vs || !fs) return null;
       
-      const program = sharedGL.createProgram();
-      sharedGL.attachShader(program, vs);
-      sharedGL.attachShader(program, fs);
-      sharedGL.linkProgram(program);
+      const program = gl.createProgram();
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
       
-      if (!sharedGL.getProgramParameter(program, sharedGL.LINK_STATUS)) {
-        console.error('Program error:', sharedGL.getProgramInfoLog(program));
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program error:', gl.getProgramInfoLog(program));
         return null;
       }
       
-      sharedProgram = program;
       return program;
     }
     
@@ -2823,13 +2814,13 @@ window.testToggle = function() {
         return;
       }
       
-      const program = createShaderProgram();
-      if (!program) return;
-      
       const canvas = document.createElement('canvas');
       canvas.className = 'liquid-distortion';
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       if (!gl) return;
+      
+      const program = createShaderProgram(gl);
+      if (!program) return;
       
       container.appendChild(canvas);
       
