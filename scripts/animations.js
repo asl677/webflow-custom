@@ -2732,7 +2732,7 @@ window.testToggle = function() {
       opacity: 0;
     }
     
-    /* Dither background pattern for moosestack hero - React Bits style */
+    /* Dither background container */
     [class*="moosestack"] [class*="hero"],
     [class*="hero"][class*="moosestack"],
     .moosestack-hero,
@@ -2740,28 +2740,241 @@ window.testToggle = function() {
       position: relative;
     }
     
-    [class*="moosestack"] [class*="hero"]::before,
-    [class*="hero"][class*="moosestack"]::before,
-    .moosestack-hero::before,
-    .hero-moosestack::before {
-      content: '';
+    .dither-canvas {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: 
-        radial-gradient(circle at 0px 0px, rgba(255,255,255,0.15) 1px, transparent 0),
-        radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0),
-        radial-gradient(circle at 0px 2px, rgba(0,0,0,0.1) 1px, transparent 0),
-        radial-gradient(circle at 2px 0px, rgba(0,0,0,0.1) 1px, transparent 0);
-      background-size: 4px 4px;
       pointer-events: none;
       z-index: 0;
-      mix-blend-mode: overlay;
     }
   `;
   document.head.appendChild(style);
+  
+  // Three.js Dither Effect - React Bits style
+  (function() {
+    function loadThreeJS() {
+      return new Promise((resolve, reject) => {
+        if (typeof THREE !== 'undefined') {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load Three.js'));
+        document.head.appendChild(script);
+      });
+    }
+    
+    loadThreeJS().then(() => {
+      if (typeof THREE === 'undefined') {
+        console.warn('Three.js not loaded - dither effect disabled');
+        return;
+      }
+    
+    function initDitherEffect(container) {
+      if (container.dataset.ditherInit) return;
+      container.dataset.ditherInit = 'true';
+      
+      const canvas = document.createElement('canvas');
+      canvas.className = 'dither-canvas';
+      container.insertBefore(canvas, container.firstChild);
+      
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer({ 
+        canvas: canvas,
+        antialias: true,
+        alpha: true
+      });
+      
+      const waveVertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `;
+      
+      const waveFragmentShader = `
+        precision highp float;
+        uniform vec2 resolution;
+        uniform float time;
+        uniform float waveSpeed;
+        uniform float waveFrequency;
+        uniform float waveAmplitude;
+        uniform vec3 waveColor;
+        uniform vec2 mousePos;
+        uniform int enableMouseInteraction;
+        uniform float mouseRadius;
+        varying vec2 vUv;
+        
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+        vec2 fade(vec2 t) { return t*t*t*(t*(t*6.0-15.0)+10.0); }
+        
+        float cnoise(vec2 P) {
+          vec4 Pi = floor(P.xyxy) + vec4(0.0,0.0,1.0,1.0);
+          vec4 Pf = fract(P.xyxy) - vec4(0.0,0.0,1.0,1.0);
+          Pi = mod289(Pi);
+          vec4 ix = Pi.xzxz;
+          vec4 iy = Pi.yyww;
+          vec4 fx = Pf.xzxz;
+          vec4 fy = Pf.yyww;
+          vec4 i = permute(permute(ix) + iy);
+          vec4 gx = fract(i * (1.0/41.0)) * 2.0 - 1.0;
+          vec4 gy = abs(gx) - 0.5;
+          vec4 tx = floor(gx + 0.5);
+          gx = gx - tx;
+          vec2 g00 = vec2(gx.x, gy.x);
+          vec2 g10 = vec2(gx.y, gy.y);
+          vec2 g01 = vec2(gx.z, gy.z);
+          vec2 g11 = vec2(gx.w, gy.w);
+          vec4 norm = taylorInvSqrt(vec4(dot(g00,g00), dot(g01,g01), dot(g10,g10), dot(g11,g11)));
+          g00 *= norm.x; g01 *= norm.y; g10 *= norm.z; g11 *= norm.w;
+          float n00 = dot(g00, vec2(fx.x, fy.x));
+          float n10 = dot(g10, vec2(fx.y, fy.y));
+          float n01 = dot(g01, vec2(fx.z, fy.z));
+          float n11 = dot(g11, vec2(fx.w, fy.w));
+          vec2 fade_xy = fade(Pf.xy);
+          vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+          return 2.3 * mix(n_x.x, n_x.y, fade_xy.y);
+        }
+        
+        const int OCTAVES = 4;
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amp = 1.0;
+          float freq = waveFrequency;
+          for (int i = 0; i < OCTAVES; i++) {
+            value += amp * abs(cnoise(p));
+            p *= freq;
+            amp *= waveAmplitude;
+          }
+          return value;
+        }
+        
+        float pattern(vec2 p) {
+          vec2 p2 = p - time * waveSpeed;
+          return fbm(p + fbm(p2)); 
+        }
+        
+        void main() {
+          vec2 uv = vUv;
+          uv -= 0.5;
+          uv.x *= resolution.x / resolution.y;
+          float f = pattern(uv);
+          
+          if (enableMouseInteraction == 1) {
+            vec2 mouseNDC = (mousePos / resolution - 0.5) * vec2(1.0, -1.0);
+            mouseNDC.x *= resolution.x / resolution.y;
+            float dist = length(uv - mouseNDC);
+            float effect = 1.0 - smoothstep(0.0, mouseRadius, dist);
+            f -= 0.5 * effect;
+          }
+          
+          vec3 col = mix(vec3(0.0), waveColor, f);
+          
+          // Apply dither effect
+          const float bayerMatrix8x8[64] = float[64](
+            0.0/64.0, 48.0/64.0, 12.0/64.0, 60.0/64.0,  3.0/64.0, 51.0/64.0, 15.0/64.0, 63.0/64.0,
+            32.0/64.0,16.0/64.0, 44.0/64.0, 28.0/64.0, 35.0/64.0,19.0/64.0, 47.0/64.0, 31.0/64.0,
+            8.0/64.0, 56.0/64.0,  4.0/64.0, 52.0/64.0, 11.0/64.0,59.0/64.0,  7.0/64.0, 55.0/64.0,
+            40.0/64.0,24.0/64.0, 36.0/64.0, 20.0/64.0, 43.0/64.0,27.0/64.0, 39.0/64.0, 23.0/64.0,
+            2.0/64.0, 50.0/64.0, 14.0/64.0, 62.0/64.0,  1.0/64.0,49.0/64.0, 13.0/64.0, 61.0/64.0,
+            34.0/64.0,18.0/64.0, 46.0/64.0, 30.0/64.0, 33.0/64.0,17.0/64.0, 45.0/64.0, 29.0/64.0,
+            10.0/64.0,58.0/64.0,  6.0/64.0, 54.0/64.0,  9.0/64.0,57.0/64.0,  5.0/64.0, 53.0/64.0,
+            42.0/64.0,26.0/64.0, 38.0/64.0, 22.0/64.0, 41.0/64.0,25.0/64.0, 37.0/64.0, 21.0/64.0
+          );
+          
+          vec2 pixelCoord = floor(gl_FragCoord.xy / 2.0);
+          int x = int(mod(pixelCoord.x, 8.0));
+          int y = int(mod(pixelCoord.y, 8.0));
+          float threshold = bayerMatrix8x8[y * 8 + x] - 0.25;
+          float colorNum = 4.0;
+          float step = 1.0 / (colorNum - 1.0);
+          col += threshold * step;
+          float bias = 0.2;
+          col = clamp(col - bias, 0.0, 1.0);
+          col = floor(col * (colorNum - 1.0) + 0.5) / (colorNum - 1.0);
+          
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+      
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const uniforms = {
+        resolution: { value: new THREE.Vector2() },
+        time: { value: 0 },
+        waveSpeed: { value: 0.05 },
+        waveFrequency: { value: 3 },
+        waveAmplitude: { value: 0.3 },
+        waveColor: { value: new THREE.Color(0.5, 0.5, 0.5) },
+        mousePos: { value: new THREE.Vector2() },
+        enableMouseInteraction: { value: 1 },
+        mouseRadius: { value: 0.3 }
+      };
+      
+      const material = new THREE.ShaderMaterial({
+        vertexShader: waveVertexShader,
+        fragmentShader: waveFragmentShader,
+        uniforms: uniforms
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+      
+      function updateSize() {
+        const rect = container.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        renderer.setSize(width, height);
+        uniforms.resolution.value.set(width, height);
+      }
+      
+      updateSize();
+      
+      let mouseX = 0, mouseY = 0;
+      container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        const rectHeight = rect.height;
+        uniforms.mousePos.value.set(mouseX, rectHeight - mouseY);
+      });
+      
+      let time = 0;
+      function animate() {
+        requestAnimationFrame(animate);
+        time += 0.016;
+        uniforms.time.value = time;
+        renderer.render(scene, camera);
+      }
+      animate();
+      
+      window.addEventListener('resize', updateSize);
+    }
+    
+    setTimeout(() => {
+      const containers = document.querySelectorAll('[class*="moosestack"] [class*="hero"], [class*="hero"][class*="moosestack"], .moosestack-hero, .hero-moosestack');
+      containers.forEach(initDitherEffect);
+      
+      const observer = new MutationObserver(() => {
+        document.querySelectorAll('[class*="moosestack"] [class*="hero"], [class*="hero"][class*="moosestack"], .moosestack-hero, .hero-moosestack').forEach(initDitherEffect);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }, 2000);
+    }).catch(err => {
+      console.error('Failed to initialize dither effect:', err);
+    });
+  })();
   
   // WebGL Liquid Distortion Effect - distorts the actual image
   (function() {
