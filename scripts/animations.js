@@ -2741,13 +2741,15 @@ window.testToggle = function() {
     }
     
     .dither-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+      opacity: 1 !important;
+      display: block !important;
     }
   `;
   document.head.appendChild(style);
@@ -2920,8 +2922,8 @@ window.testToggle = function() {
           time: { value: 0 },
           waveSpeed: { value: 0.05 },
           waveFrequency: { value: 3 },
-          waveAmplitude: { value: 0.3 },
-          waveColor: { value: new THREE.Color(0.8, 0.8, 0.9) }, // Brighter, more visible
+          waveAmplitude: { value: 0.5 }, // Increased for more visible waves
+          waveColor: { value: new THREE.Color(1.0, 1.0, 1.0) }, // Pure white for maximum visibility
           mousePos: { value: new THREE.Vector2() },
           enableMouseInteraction: { value: 1 },
           mouseRadius: { value: 0.3 }
@@ -2969,66 +2971,82 @@ window.testToggle = function() {
         }
         animate();
         
-        window.addEventListener('resize', updateSize);
+        // Test render immediately
+        renderer.render(scene, camera);
         console.log('Dither effect initialized successfully on:', container);
+        console.log('Canvas size:', canvas.width, 'x', canvas.height);
+        console.log('Canvas style:', canvas.style.cssText);
+        
+        window.addEventListener('resize', updateSize);
       } catch (error) {
         console.error('Error initializing dither effect:', error, container);
       }
     }
     
     setTimeout(() => {
-      // Try multiple selectors to find moosestack hero section
-      const selectors = [
-        '[class*="moosestack"] [class*="hero"]',
-        '[class*="hero"][class*="moosestack"]',
-        '.moosestack-hero',
-        '.hero-moosestack',
-        '[class*="moosestack"]',
-        'section[class*="hero"]',
-        '.hero-section'
-      ];
+      // Find any element containing "MooseStack" text
+      const allElements = document.querySelectorAll('*');
+      let targetContainer = null;
       
-      let containers = [];
-      selectors.forEach(sel => {
-        const found = document.querySelectorAll(sel);
-        found.forEach(el => {
-          // Check if it contains "MooseStack" text
-          if (el.textContent && el.textContent.toLowerCase().includes('moosestack')) {
-            containers.push(el);
-          }
-        });
-      });
-      
-      // Also try to find parent of heading containing "MooseStack"
-      const headings = Array.from(document.querySelectorAll('h1, h2, h3, .heading'));
-      headings.forEach(heading => {
-        if (heading.textContent && heading.textContent.toLowerCase().includes('moosestack')) {
-          let parent = heading.parentElement;
-          // Go up a few levels to find a suitable container
-          for (let i = 0; i < 3 && parent; i++) {
-            if (parent.offsetHeight > 200) { // Reasonable hero height
-              containers.push(parent);
+      for (const el of allElements) {
+        if (el.textContent && el.textContent.includes('MooseStack') && el.textContent.includes('composable framework')) {
+          // Found the container - go up to find a suitable parent
+          let parent = el;
+          for (let i = 0; i < 5 && parent; i++) {
+            const rect = parent.getBoundingClientRect();
+            if (rect.height > 300 && rect.width > 200) {
+              targetContainer = parent;
               break;
             }
             parent = parent.parentElement;
+            if (!parent || parent === document.body) break;
           }
+          if (targetContainer) break;
         }
-      });
+      }
       
-      // Remove duplicates
-      containers = [...new Set(containers)];
+      // Fallback: try selectors
+      if (!targetContainer) {
+        const selectors = [
+          '[class*="moosestack"]',
+          '[class*="hero"]',
+          'section',
+          'div[class*="container"]'
+        ];
+        
+        for (const sel of selectors) {
+          const found = Array.from(document.querySelectorAll(sel));
+          for (const el of found) {
+            if (el.textContent && el.textContent.includes('MooseStack')) {
+              const rect = el.getBoundingClientRect();
+              if (rect.height > 200) {
+                targetContainer = el;
+                break;
+              }
+            }
+          }
+          if (targetContainer) break;
+        }
+      }
       
-      console.log('Found dither containers:', containers.length, containers);
-      containers.forEach(initDitherEffect);
+      if (targetContainer) {
+        console.log('✅ Found MooseStack container:', targetContainer, targetContainer.className);
+        initDitherEffect(targetContainer);
+      } else {
+        console.warn('❌ Could not find MooseStack container');
+      }
       
       const observer = new MutationObserver(() => {
-        selectors.forEach(sel => {
-          document.querySelectorAll(sel).forEach(el => {
-            if (el.textContent && el.textContent.toLowerCase().includes('moosestack')) {
+        // Re-check for MooseStack containers
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+          if (el.textContent && el.textContent.includes('MooseStack') && !el.dataset.ditherInit) {
+            const rect = el.getBoundingClientRect();
+            if (rect.height > 200) {
               initDitherEffect(el);
             }
-          });
-        });
+          }
+        }
       });
       observer.observe(document.body, { childList: true, subtree: true });
     }, 2000);
