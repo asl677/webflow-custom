@@ -2963,11 +2963,58 @@ window.testToggle = function() {
     }
     
     setTimeout(() => {
-      const containers = document.querySelectorAll('[class*="moosestack"] [class*="hero"], [class*="hero"][class*="moosestack"], .moosestack-hero, .hero-moosestack');
+      // Try multiple selectors to find moosestack hero section
+      const selectors = [
+        '[class*="moosestack"] [class*="hero"]',
+        '[class*="hero"][class*="moosestack"]',
+        '.moosestack-hero',
+        '.hero-moosestack',
+        '[class*="moosestack"]',
+        'section[class*="hero"]',
+        '.hero-section'
+      ];
+      
+      let containers = [];
+      selectors.forEach(sel => {
+        const found = document.querySelectorAll(sel);
+        found.forEach(el => {
+          // Check if it contains "MooseStack" text
+          if (el.textContent && el.textContent.toLowerCase().includes('moosestack')) {
+            containers.push(el);
+          }
+        });
+      });
+      
+      // Also try to find parent of heading containing "MooseStack"
+      const headings = Array.from(document.querySelectorAll('h1, h2, h3, .heading'));
+      headings.forEach(heading => {
+        if (heading.textContent && heading.textContent.toLowerCase().includes('moosestack')) {
+          let parent = heading.parentElement;
+          // Go up a few levels to find a suitable container
+          for (let i = 0; i < 3 && parent; i++) {
+            if (parent.offsetHeight > 200) { // Reasonable hero height
+              containers.push(parent);
+              break;
+            }
+            parent = parent.parentElement;
+          }
+        }
+      });
+      
+      // Remove duplicates
+      containers = [...new Set(containers)];
+      
+      console.log('Found dither containers:', containers.length, containers);
       containers.forEach(initDitherEffect);
       
       const observer = new MutationObserver(() => {
-        document.querySelectorAll('[class*="moosestack"] [class*="hero"], [class*="hero"][class*="moosestack"], .moosestack-hero, .hero-moosestack').forEach(initDitherEffect);
+        selectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => {
+            if (el.textContent && el.textContent.toLowerCase().includes('moosestack')) {
+              initDitherEffect(el);
+            }
+          });
+        });
       });
       observer.observe(document.body, { childList: true, subtree: true });
     }, 2000);
