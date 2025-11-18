@@ -2732,7 +2732,7 @@ window.testToggle = function() {
       opacity: 0;
     }
     
-    /* Dither background pattern for moosestack hero */
+    /* Dither background pattern for moosestack hero - React Bits style */
     [class*="moosestack"] [class*="hero"],
     [class*="hero"][class*="moosestack"],
     .moosestack-hero,
@@ -2751,32 +2751,15 @@ window.testToggle = function() {
       width: 100%;
       height: 100%;
       background-image: 
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.03) 2px,
-          rgba(0, 0, 0, 0.03) 4px
-        ),
-        repeating-linear-gradient(
-          90deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.03) 2px,
-          rgba(0, 0, 0, 0.03) 4px
-        ),
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 1px,
-          rgba(0, 0, 0, 0.02) 1px,
-          rgba(0, 0, 0, 0.02) 2px
-        );
-      background-size: 4px 4px, 4px 4px, 2px 2px;
+        radial-gradient(circle at 0px 0px, rgba(255,255,255,0.15) 1px, transparent 0),
+        radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0),
+        radial-gradient(circle at 0px 2px, rgba(0,0,0,0.1) 1px, transparent 0),
+        radial-gradient(circle at 2px 0px, rgba(0,0,0,0.1) 1px, transparent 0);
+      background-size: 4px 4px;
       pointer-events: none;
       z-index: 1;
       mix-blend-mode: overlay;
-      opacity: 0.6;
+      opacity: 1;
     }
   `;
   document.head.appendChild(style);
