@@ -2731,6 +2731,53 @@ window.testToggle = function() {
     .reveal.reveal-full:hover video {
       opacity: 0;
     }
+    
+    /* Dither background pattern for moosestack hero */
+    [class*="moosestack"] [class*="hero"],
+    [class*="hero"][class*="moosestack"],
+    .moosestack-hero,
+    .hero-moosestack {
+      position: relative;
+    }
+    
+    [class*="moosestack"] [class*="hero"]::before,
+    [class*="hero"][class*="moosestack"]::before,
+    .moosestack-hero::before,
+    .hero-moosestack::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px
+        ),
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 1px,
+          rgba(0, 0, 0, 0.02) 1px,
+          rgba(0, 0, 0, 0.02) 2px
+        );
+      background-size: 4px 4px, 4px 4px, 2px 2px;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+      opacity: 0.6;
+    }
   `;
   document.head.appendChild(style);
   
