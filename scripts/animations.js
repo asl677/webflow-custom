@@ -2738,22 +2738,27 @@ window.testToggle = function() {
     .moosestack-hero,
     .hero-moosestack {
       position: relative;
+    }
+    
+    [class*="moosestack"] [class*="hero"]::before,
+    [class*="hero"][class*="moosestack"]::before,
+    .moosestack-hero::before,
+    .hero-moosestack::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background-image: 
         radial-gradient(circle at 0px 0px, rgba(255,255,255,0.15) 1px, transparent 0),
         radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0),
         radial-gradient(circle at 0px 2px, rgba(0,0,0,0.1) 1px, transparent 0),
         radial-gradient(circle at 2px 0px, rgba(0,0,0,0.1) 1px, transparent 0);
       background-size: 4px 4px;
-      background-position: 0 0;
-    }
-    
-    /* Ensure text/content is above the dither pattern */
-    [class*="moosestack"] [class*="hero"] > *,
-    [class*="hero"][class*="moosestack"] > *,
-    .moosestack-hero > *,
-    .hero-moosestack > * {
-      position: relative;
-      z-index: 1;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: overlay;
     }
   `;
   document.head.appendChild(style);
