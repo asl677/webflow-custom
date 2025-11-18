@@ -2776,21 +2776,30 @@ window.testToggle = function() {
     
     function initDitherEffect(container) {
       if (container.dataset.ditherInit) return;
-      container.dataset.ditherInit = 'true';
+      if (!container || !container.offsetHeight || container.offsetHeight < 100) return;
       
-      const canvas = document.createElement('canvas');
-      canvas.className = 'dither-canvas';
-      container.insertBefore(canvas, container.firstChild);
-      
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      const renderer = new THREE.WebGLRenderer({ 
-        canvas: canvas,
-        antialias: true,
-        alpha: true
-      });
-      
-      const waveVertexShader = `
+      try {
+        container.dataset.ditherInit = 'true';
+        console.log('Initializing dither effect on:', container);
+        
+        const canvas = document.createElement('canvas');
+        canvas.className = 'dither-canvas';
+        container.insertBefore(canvas, container.firstChild);
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new THREE.WebGLRenderer({ 
+          canvas: canvas,
+          antialias: true,
+          alpha: true
+        });
+        
+        if (!renderer) {
+          console.error('Failed to create WebGL renderer');
+          return;
+        }
+        
+        const waveVertexShader = `
         varying vec2 vUv;
         void main() {
           vUv = uv;
@@ -2905,61 +2914,66 @@ window.testToggle = function() {
         }
       `;
       
-      const geometry = new THREE.PlaneGeometry(2, 2);
-      const uniforms = {
-        resolution: { value: new THREE.Vector2() },
-        time: { value: 0 },
-        waveSpeed: { value: 0.05 },
-        waveFrequency: { value: 3 },
-        waveAmplitude: { value: 0.3 },
-        waveColor: { value: new THREE.Color(0.5, 0.5, 0.5) },
-        mousePos: { value: new THREE.Vector2() },
-        enableMouseInteraction: { value: 1 },
-        mouseRadius: { value: 0.3 }
-      };
-      
-      const material = new THREE.ShaderMaterial({
-        vertexShader: waveVertexShader,
-        fragmentShader: waveFragmentShader,
-        uniforms: uniforms
-      });
-      
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-      
-      function updateSize() {
-        const rect = container.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        canvas.width = width;
-        canvas.height = height;
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
-        renderer.setSize(width, height);
-        uniforms.resolution.value.set(width, height);
+        const geometry = new THREE.PlaneGeometry(2, 2);
+        const uniforms = {
+          resolution: { value: new THREE.Vector2() },
+          time: { value: 0 },
+          waveSpeed: { value: 0.05 },
+          waveFrequency: { value: 3 },
+          waveAmplitude: { value: 0.3 },
+          waveColor: { value: new THREE.Color(0.8, 0.8, 0.9) }, // Brighter, more visible
+          mousePos: { value: new THREE.Vector2() },
+          enableMouseInteraction: { value: 1 },
+          mouseRadius: { value: 0.3 }
+        };
+        
+        const material = new THREE.ShaderMaterial({
+          vertexShader: waveVertexShader,
+          fragmentShader: waveFragmentShader,
+          uniforms: uniforms
+        });
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        
+        function updateSize() {
+          const rect = container.getBoundingClientRect();
+          const width = rect.width;
+          const height = rect.height;
+          if (width === 0 || height === 0) return;
+          canvas.width = width;
+          canvas.height = height;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          renderer.setSize(width, height);
+          uniforms.resolution.value.set(width, height);
+        }
+        
+        updateSize();
+        
+        let mouseX = 0, mouseY = 0;
+        container.addEventListener('mousemove', (e) => {
+          const rect = container.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+          const rectHeight = rect.height;
+          uniforms.mousePos.value.set(mouseX, rectHeight - mouseY);
+        });
+        
+        let time = 0;
+        function animate() {
+          requestAnimationFrame(animate);
+          time += 0.016;
+          uniforms.time.value = time;
+          renderer.render(scene, camera);
+        }
+        animate();
+        
+        window.addEventListener('resize', updateSize);
+        console.log('Dither effect initialized successfully on:', container);
+      } catch (error) {
+        console.error('Error initializing dither effect:', error, container);
       }
-      
-      updateSize();
-      
-      let mouseX = 0, mouseY = 0;
-      container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
-        const rectHeight = rect.height;
-        uniforms.mousePos.value.set(mouseX, rectHeight - mouseY);
-      });
-      
-      let time = 0;
-      function animate() {
-        requestAnimationFrame(animate);
-        time += 0.016;
-        uniforms.time.value = time;
-        renderer.render(scene, camera);
-      }
-      animate();
-      
-      window.addEventListener('resize', updateSize);
     }
     
     setTimeout(() => {
