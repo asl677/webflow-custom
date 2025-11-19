@@ -1749,11 +1749,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             }
             
-            // Cloned images appear instantly - no animations
-            el.style.setProperty('opacity', '1', 'important');
-            el.style.setProperty('visibility', 'visible', 'important');
+            // Reset inline styles to allow mask reveal system to control visibility
+            el.style.removeProperty('opacity');
+            el.style.removeProperty('visibility');
             el.style.setProperty('display', 'block', 'important');
-            el.style.setProperty('transform', 'none', 'important');
+            el.style.removeProperty('transform');
         });
         
         // Add slight delay for mask system processing
@@ -1762,6 +1762,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             // Remove any existing mask setup flags so they get fresh animations
             delete el.dataset.maskSetup;
             delete el.dataset.gsapAnimated;
+            delete el.dataset.maskComplete;
             
             // Remove mask container so clones get fresh setup like original images
             const maskContainer = el.closest('.mask-wrap');
@@ -1842,24 +1843,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Let the main mask animation system handle cloned images naturally (desktop only)
-        // Skip heavy mask processing on mobile for performance during infinite scroll
-        if (!isMobile) {
-          setTimeout(() => {
-            if (typeof window.gsap !== 'undefined') {
-              const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
-              
-              unprocessedImages.forEach((img, i) => {
-              });
-              
-              // Call the main mask animation function to process any new images
-              if (unprocessedImages.length > 0) {
-                startMaskedImageAnimations();
-              }
+        // Let the main mask animation system handle cloned images naturally
+        // Process on ALL devices for mobile-desktop parity (V4)
+        setTimeout(() => {
+          if (typeof window.gsap !== 'undefined') {
+            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            
+            // Call the main mask animation function to process any new images
+            if (unprocessedImages.length > 0) {
+              console.log(`🔄 Processing ${unprocessedImages.length} cloned images for mask reveal`);
+              startMaskedImageAnimations();
             }
-          }, 500);
-        } else {
-        }
+          }
+        }, 500);
         
         // Add fullscreen functionality to new images in clone
         if (window.addFullscreenToNewImages) {
