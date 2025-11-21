@@ -1490,7 +1490,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // Process with mask-wrap for ALL devices
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
@@ -1499,7 +1498,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
+        // Check if this image is in initial viewport
+        const rect = element.getBoundingClientRect();
+        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
+        // MOBILE: Only mask reveal initial viewport images, skip others for performance
+        if (isMobile && !isInViewport) {
+          // Just mark as setup and show immediately without mask animation
+          element.dataset.maskSetup = 'true';
+          element.dataset.maskComplete = 'true';
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.style.setProperty('display', 'block', 'important');
+          console.log(`📱 Mobile: Skipping mask for out-of-viewport image ${index}`);
+          return;
+        }
+        
+        // Process with mask-wrap (desktop always, mobile only for initial viewport)
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
@@ -1530,10 +1545,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Store the target width for animation
         maskContainer.dataset.targetWidth = originalWidth;
         
-        // Check if this image is in initial viewport
-        const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        
         // Add small stagger only for initial viewport images
         let staggerDelay = 0;
         if (isInViewport) {
@@ -1541,20 +1552,35 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           inViewportCount++;
         }
         
-        // Always use ScrollTrigger - it handles viewport detection automatically
-          window.gsap.set(maskContainer, { width: '0px' });
+        window.gsap.set(maskContainer, { width: '0px' });
         
         // Set image visible when animation starts
         window.gsap.set(element, { opacity: 1, visibility: 'visible' });
         
+        // MOBILE: Only animate initial viewport images (no ScrollTrigger for scroll-in)
+        // DESKTOP: Animate all images with ScrollTrigger
+        if (isMobile && isInViewport) {
+          // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
           window.gsap.to(maskContainer, { 
             width: maskContainer.dataset.targetWidth + 'px', 
-          duration: 1.5,
-          delay: staggerDelay,
+            duration: 1.5,
+            delay: staggerDelay,
+            ease: "power2.out",
+            onComplete: () => {
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
+            }
+          });
+        } else if (!isMobile) {
+          // Desktop: use ScrollTrigger for all images
+          window.gsap.to(maskContainer, { 
+            width: maskContainer.dataset.targetWidth + 'px', 
+            duration: 1.5,
+            delay: staggerDelay,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-            start: "top 90%",
+              start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1564,9 +1590,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+        }
           
         const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) {
+        
+        // Only add parallax on desktop (skip on mobile for performance)
+        if (hasParallax && !isMobile && !window.isFullscreenMode) {
           window.gsap.set(element, { 
             scale: 1.2,
             onComplete: () => {
@@ -1574,25 +1603,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.style.setProperty('object-fit', objectFit, 'important');
             }
           });
-        }
           
-        // Only add parallax when NOT in fullscreen mode
-        if (hasParallax && !window.isFullscreenMode) {
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: 1.5, 
-              ease: "power2.out",
-              scrollTrigger: { 
-                trigger: element, 
-                start: "top bottom", 
-                end: "top center", 
-                once: true 
+          window.gsap.to(element, { 
+            scale: 1.0, 
+            duration: 1.5, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top bottom", 
+              end: "top center", 
+              once: true 
             },
             onComplete: () => {
               // Ensure object-fit is preserved after ScrollTrigger scaling animation
               element.style.setProperty('object-fit', objectFit, 'important');
-              }
-            });
+            }
+          });
         }
       });
       
@@ -1749,11 +1775,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             }
             
-            // Reset inline styles to allow mask reveal system to control visibility
-            el.style.removeProperty('opacity');
-            el.style.removeProperty('visibility');
-            el.style.setProperty('display', 'block', 'important');
-            el.style.removeProperty('transform');
+            // MOBILE: Show cloned images immediately
+            // DESKTOP: Reset styles to allow mask reveal system to control
+            if (isMobile) {
+              el.style.setProperty('opacity', '1', 'important');
+              el.style.setProperty('visibility', 'visible', 'important');
+              el.style.setProperty('display', 'block', 'important');
+              el.style.removeProperty('transform');
+            } else {
+              el.style.removeProperty('opacity');
+              el.style.removeProperty('visibility');
+              el.style.setProperty('display', 'block', 'important');
+              el.style.removeProperty('transform');
+            }
         });
         
         // Add slight delay for mask system processing
@@ -1843,19 +1877,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Let the main mask animation system handle cloned images naturally
-        // Process on ALL devices for mobile-desktop parity (V4)
-        setTimeout(() => {
-          if (typeof window.gsap !== 'undefined') {
-            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
-            
-            // Call the main mask animation function to process any new images
-            if (unprocessedImages.length > 0) {
-              console.log(`🔄 Processing ${unprocessedImages.length} cloned images for mask reveal`);
-              startMaskedImageAnimations();
+        // Let the main mask animation system handle cloned images
+        // MOBILE: Skip mask processing - cloned images already visible
+        // DESKTOP: Process with mask reveals
+        if (!isMobile) {
+          setTimeout(() => {
+            if (typeof window.gsap !== 'undefined') {
+              const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+              
+              // Call the main mask animation function to process any new images
+              if (unprocessedImages.length > 0) {
+                console.log(`🖥️ Desktop: Processing ${unprocessedImages.length} cloned images for mask reveal`);
+                startMaskedImageAnimations();
+              }
             }
-          }
-        }, 500);
+          }, 500);
+        } else {
+          // Mobile: mark cloned images as setup so they don't get processed
+          setTimeout(() => {
+            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            unprocessedImages.forEach(img => {
+              img.dataset.maskSetup = 'true';
+              img.dataset.maskComplete = 'true';
+            });
+            console.log(`📱 Mobile: Marked ${unprocessedImages.length} cloned images as complete (no animation)`);
+          }, 100);
+        }
         
         // Add fullscreen functionality to new images in clone
         if (window.addFullscreenToNewImages) {
