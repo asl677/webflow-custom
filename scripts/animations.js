@@ -1595,14 +1595,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
               
-              // For vertical masks (videos), restore original Webflow responsive styles
+              // For vertical masks (videos), unwrap from mask container to restore full responsiveness
               if (isVerticalMask) {
-                maskContainer.style.width = '100%';
-                maskContainer.style.height = '100%';
-                element.style.width = element.dataset.webflowWidth || '100%';
-                element.style.height = element.dataset.webflowHeight || '100%';
-                element.style.removeProperty('width');
-                element.style.removeProperty('height');
+                const parentEl = maskContainer.parentNode;
+                const objectFit = element.dataset.webflowObjectFit || 'cover';
+                
+                // Remove fixed dimensions and restore full responsive styles
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                
+                // Move element back to original parent and remove mask wrapper
+                if (parentEl) {
+                  parentEl.insertBefore(element, maskContainer);
+                  maskContainer.remove();
+                }
               }
             }
           });
@@ -1632,14 +1637,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
               
-              // For vertical masks (videos), restore original Webflow responsive styles
+              // For vertical masks (videos), unwrap from mask container to restore full responsiveness
               if (isVerticalMask) {
-                maskContainer.style.width = '100%';
-                maskContainer.style.height = '100%';
-                element.style.width = element.dataset.webflowWidth || '100%';
-                element.style.height = element.dataset.webflowHeight || '100%';
-                element.style.removeProperty('width');
-                element.style.removeProperty('height');
+                const parentEl = maskContainer.parentNode;
+                const objectFit = element.dataset.webflowObjectFit || 'cover';
+                
+                // Remove fixed dimensions and restore full responsive styles
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                
+                // Move element back to original parent and remove mask wrapper
+                if (parentEl) {
+                  parentEl.insertBefore(element, maskContainer);
+                  maskContainer.remove();
+                }
               }
             }
           });
@@ -1692,11 +1702,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               if (isVertical) {
                 const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
                 window.gsap.set(maskContainer, { height: targetHeight + 'px' });
-                // Restore responsive styles for vertical masks
-                maskContainer.style.width = '100%';
-                maskContainer.style.height = '100%';
-                element.style.removeProperty('width');
-                element.style.removeProperty('height');
+                // Unwrap vertical masks to restore responsiveness
+                const parentEl = maskContainer.parentNode;
+                const objectFit = element.dataset.webflowObjectFit || 'cover';
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                if (parentEl) {
+                  parentEl.insertBefore(element, maskContainer);
+                  maskContainer.remove();
+                }
               } else {
                 const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
                 window.gsap.set(maskContainer, { width: targetWidth + 'px' });
