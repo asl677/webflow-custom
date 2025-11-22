@@ -1600,24 +1600,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
+                // Ensure parent container is properly sized and positioned
+                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.setProperty('position', 'relative', 'important');
+                  }
+                  // Force parent to be full width/height
+                  parentEl.style.setProperty('width', '100%', 'important');
+                  parentEl.style.setProperty('height', '100%', 'important');
+                  parentEl.style.setProperty('margin', '0', 'important');
+                  parentEl.style.setProperty('padding', '0', 'important');
+                }
+                
                 // Completely override mask container styles with setAttribute for maximum specificity
                 maskContainer.removeAttribute('style');
                 maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                 
                 // Completely override video styles
                 element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
-                
-                // Ensure parent has relative positioning
-                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
-                  const parentStyles = window.getComputedStyle(parentEl);
-                  if (parentStyles.position === 'static') {
-                    parentEl.style.setProperty('position', 'relative', 'important');
-                  }
-                  // Ensure parent doesn't have fixed dimensions
-                  parentEl.style.removeProperty('width');
-                  parentEl.style.removeProperty('height');
-                }
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
               }
             }
           });
@@ -1652,24 +1654,26 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
+                // Ensure parent container is properly sized and positioned
+                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.setProperty('position', 'relative', 'important');
+                  }
+                  // Force parent to be full width/height
+                  parentEl.style.setProperty('width', '100%', 'important');
+                  parentEl.style.setProperty('height', '100%', 'important');
+                  parentEl.style.setProperty('margin', '0', 'important');
+                  parentEl.style.setProperty('padding', '0', 'important');
+                }
+                
                 // Completely override mask container styles with setAttribute for maximum specificity
                 maskContainer.removeAttribute('style');
                 maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                 
                 // Completely override video styles
                 element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
-                
-                // Ensure parent has relative positioning
-                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
-                  const parentStyles = window.getComputedStyle(parentEl);
-                  if (parentStyles.position === 'static') {
-                    parentEl.style.setProperty('position', 'relative', 'important');
-                  }
-                  // Ensure parent doesn't have fixed dimensions
-                  parentEl.style.removeProperty('width');
-                  parentEl.style.removeProperty('height');
-                }
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
               }
             }
           });
@@ -1727,20 +1731,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                maskContainer.removeAttribute('style');
-                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
-                
-                element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
-                
+                // Ensure parent is properly sized first
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  parentEl.style.removeProperty('width');
-                  parentEl.style.removeProperty('height');
+                  parentEl.style.setProperty('width', '100%', 'important');
+                  parentEl.style.setProperty('height', '100%', 'important');
+                  parentEl.style.setProperty('margin', '0', 'important');
+                  parentEl.style.setProperty('padding', '0', 'important');
                 }
+                
+                maskContainer.removeAttribute('style');
+                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                
+                element.removeAttribute('style');
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
               } else {
                 const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
                 window.gsap.set(maskContainer, { width: targetWidth + 'px' });
