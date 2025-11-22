@@ -1594,6 +1594,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
+              
+              // For vertical masks (videos), restore original Webflow responsive styles
+              if (isVerticalMask) {
+                maskContainer.style.width = '100%';
+                maskContainer.style.height = '100%';
+                element.style.width = element.dataset.webflowWidth || '100%';
+                element.style.height = element.dataset.webflowHeight || '100%';
+                element.style.removeProperty('width');
+                element.style.removeProperty('height');
+              }
             }
           });
         } else if (!isMobile) {
@@ -1621,6 +1631,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
+              
+              // For vertical masks (videos), restore original Webflow responsive styles
+              if (isVerticalMask) {
+                maskContainer.style.width = '100%';
+                maskContainer.style.height = '100%';
+                element.style.width = element.dataset.webflowWidth || '100%';
+                element.style.height = element.dataset.webflowHeight || '100%';
+                element.style.removeProperty('width');
+                element.style.removeProperty('height');
+              }
             }
           });
         }
@@ -1672,6 +1692,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               if (isVertical) {
                 const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
                 window.gsap.set(maskContainer, { height: targetHeight + 'px' });
+                // Restore responsive styles for vertical masks
+                maskContainer.style.width = '100%';
+                maskContainer.style.height = '100%';
+                element.style.removeProperty('width');
+                element.style.removeProperty('height');
               } else {
                 const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
                 window.gsap.set(maskContainer, { width: targetWidth + 'px' });
