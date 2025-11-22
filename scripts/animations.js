@@ -1571,8 +1571,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           window.gsap.set(maskContainer, { width: '0px' });
         }
         
-        // Set image visible when animation starts
-        window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+        // Keep image hidden until animation starts
+        window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
         
         // MOBILE: Only animate initial viewport images (no ScrollTrigger for scroll-in)
         // DESKTOP: Animate all images with ScrollTrigger
@@ -1587,6 +1587,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
+            onStart: () => {
+              // Make image visible when mask animation starts
+              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+            },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
@@ -1609,6 +1613,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
+            },
+            onStart: () => {
+              // Make image visible when mask animation starts
+              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
             },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
