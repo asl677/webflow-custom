@@ -1600,17 +1600,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent container is properly sized and positioned
+                // Ensure parent container is properly sized but preserve Webflow positioning (like sticky)
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
+                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  // Force parent to be full width/height
+                  // Force parent to be full width/height without affecting Webflow layout properties
                   parentEl.style.setProperty('width', '100%', 'important');
                   parentEl.style.setProperty('height', '100%', 'important');
-                  parentEl.style.setProperty('margin', '0', 'important');
-                  parentEl.style.setProperty('padding', '0', 'important');
+                  // Don't force margin/padding to 0 - preserve Webflow values
                 }
                 
                 // Completely override mask container styles with setAttribute for maximum specificity
@@ -1654,17 +1654,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent container is properly sized and positioned
+                // Ensure parent container is properly sized but preserve Webflow positioning (like sticky)
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
+                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  // Force parent to be full width/height
+                  // Force parent to be full width/height without affecting Webflow layout properties
                   parentEl.style.setProperty('width', '100%', 'important');
                   parentEl.style.setProperty('height', '100%', 'important');
-                  parentEl.style.setProperty('margin', '0', 'important');
-                  parentEl.style.setProperty('padding', '0', 'important');
+                  // Don't force margin/padding to 0 - preserve Webflow values
                 }
                 
                 // Completely override mask container styles with setAttribute for maximum specificity
@@ -1731,16 +1731,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent is properly sized first
+                // Ensure parent is properly sized but preserve Webflow positioning
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
+                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
                   parentEl.style.setProperty('width', '100%', 'important');
                   parentEl.style.setProperty('height', '100%', 'important');
-                  parentEl.style.setProperty('margin', '0', 'important');
-                  parentEl.style.setProperty('padding', '0', 'important');
+                  // Don't force margin/padding to 0 - preserve Webflow values
                 }
                 
                 maskContainer.removeAttribute('style');
