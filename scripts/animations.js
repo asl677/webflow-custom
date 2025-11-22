@@ -1600,18 +1600,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Set mask container to absolute positioning filling parent
-                maskContainer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;';
+                // Completely override mask container styles with setAttribute for maximum specificity
+                maskContainer.removeAttribute('style');
+                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                 
-                // Set video to fill mask container
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`;
+                // Completely override video styles
+                element.removeAttribute('style');
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
                 
                 // Ensure parent has relative positioning
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
                   if (parentStyles.position === 'static') {
-                    parentEl.style.position = 'relative';
+                    parentEl.style.setProperty('position', 'relative', 'important');
                   }
+                  // Ensure parent doesn't have fixed dimensions
+                  parentEl.style.removeProperty('width');
+                  parentEl.style.removeProperty('height');
                 }
               }
             }
@@ -1647,18 +1652,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Set mask container to absolute positioning filling parent
-                maskContainer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;';
+                // Completely override mask container styles with setAttribute for maximum specificity
+                maskContainer.removeAttribute('style');
+                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                 
-                // Set video to fill mask container
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`;
+                // Completely override video styles
+                element.removeAttribute('style');
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
                 
                 // Ensure parent has relative positioning
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
                   if (parentStyles.position === 'static') {
-                    parentEl.style.position = 'relative';
+                    parentEl.style.setProperty('position', 'relative', 'important');
                   }
+                  // Ensure parent doesn't have fixed dimensions
+                  parentEl.style.removeProperty('width');
+                  parentEl.style.removeProperty('height');
                 }
               }
             }
@@ -1712,18 +1722,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               if (isVertical) {
                 const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
                 window.gsap.set(maskContainer, { height: targetHeight + 'px' });
-                // Set mask container to fill parent for vertical masks
+                
+                // Completely override styles for vertical masks
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                maskContainer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: 100% !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;';
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`;
+                maskContainer.removeAttribute('style');
+                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                
+                element.removeAttribute('style');
+                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important;`);
                 
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
                   if (parentStyles.position === 'static') {
-                    parentEl.style.position = 'relative';
+                    parentEl.style.setProperty('position', 'relative', 'important');
                   }
+                  parentEl.style.removeProperty('width');
+                  parentEl.style.removeProperty('height');
                 }
               } else {
                 const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
