@@ -1514,11 +1514,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
+        // Check if this should be a vertical mask reveal
+        const parentContainer = element.closest('.reveal-full.video-full, .reveal.reveal-full.video-full');
+        const isVerticalMask = parentContainer !== null;
+        
         // Process with mask-wrap (desktop always, mobile only for initial viewport)
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
-        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        
+        // Vertical mask: animate height instead of width
+        if (isVerticalMask) {
+          maskContainer.style.cssText = `width:${originalWidth}px;height:0px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+          maskContainer.dataset.vertical = 'true';
+        } else {
+          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        }
         
         // Ensure image stays hidden until mask is ready
         element.style.setProperty('opacity', '0', 'important');
@@ -1542,8 +1553,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
         
-        // Store the target width for animation
+        // Store the target width/height for animation
         maskContainer.dataset.targetWidth = originalWidth;
+        maskContainer.dataset.targetHeight = originalHeight;
         
         // Add small stagger only for initial viewport images
         let staggerDelay = 0;
@@ -1552,7 +1564,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           inViewportCount++;
         }
         
-        window.gsap.set(maskContainer, { width: '0px' });
+        // Set initial state based on mask direction
+        if (isVerticalMask) {
+          window.gsap.set(maskContainer, { height: '0px' });
+        } else {
+          window.gsap.set(maskContainer, { width: '0px' });
+        }
         
         // Set image visible when animation starts
         window.gsap.set(element, { opacity: 1, visibility: 'visible' });
@@ -1561,8 +1578,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // DESKTOP: Animate all images with ScrollTrigger
         if (isMobile && isInViewport) {
           // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
+            ...animProps,
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
@@ -1573,8 +1594,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         } else if (!isMobile) {
           // Desktop: use ScrollTrigger for all images
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
+            ...animProps,
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
@@ -1633,10 +1658,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesToProcess.forEach(element => {
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
-            if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
-              // Force reveal completion
-              const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
-              window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+            if (maskContainer && maskContainer.classList.contains('mask-wrap')) {
+              // Force reveal completion - check if vertical or horizontal
+              const isVertical = maskContainer.dataset.vertical === 'true';
+              if (isVertical) {
+                const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
+                window.gsap.set(maskContainer, { height: targetHeight + 'px' });
+              } else {
+                const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
+                window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+              }
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
