@@ -1600,8 +1600,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
+                // Ensure parent container has proper positioning
+                if (parentEl && parentEl.classList.contains('reveal-full')) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.position = 'relative';
+                  }
+                }
+                
                 // Remove fixed dimensions and restore full responsive styles
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;`;
                 
                 // Move element back to original parent and remove mask wrapper
                 if (parentEl) {
@@ -1642,8 +1650,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
+                // Ensure parent container has proper positioning
+                if (parentEl && parentEl.classList.contains('reveal-full')) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.position = 'relative';
+                  }
+                }
+                
                 // Remove fixed dimensions and restore full responsive styles
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;`;
                 
                 // Move element back to original parent and remove mask wrapper
                 if (parentEl) {
@@ -1705,7 +1721,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 // Unwrap vertical masks to restore responsiveness
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
-                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important;`;
+                
+                // Ensure parent container has proper positioning
+                if (parentEl && parentEl.classList.contains('reveal-full')) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.position = 'relative';
+                  }
+                }
+                
+                element.style.cssText = `width: 100% !important; height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;`;
                 if (parentEl) {
                   parentEl.insertBefore(element, maskContainer);
                   maskContainer.remove();
