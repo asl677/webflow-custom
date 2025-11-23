@@ -1443,6 +1443,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
+    const timeText = document.getElementById('time-text');
+    if (timeText && !timeText.dataset.infiniteClone) {
+      setTimeout(() => scrambleLine(timeText, 800), 400);
+    }
+    
     
     // Fix container responsiveness
     fixContainerResponsiveness();
@@ -1560,7 +1565,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Don't force positioning on parent - let Webflow handle it completely
           // The mask will work with any positioning (static, relative, sticky, fixed, absolute)
         } else {
-          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         }
         
         // Ensure image stays hidden until mask is ready
@@ -1624,7 +1629,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         } else {
           // Images: use fixed pixel dimensions
-          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
         }
         
         element.dataset.maskSetup = 'true';
@@ -1669,7 +1674,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             onStart: () => {
               // Make image visible when mask animation starts
-              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+        window.gsap.set(element, { opacity: 1, visibility: 'visible' });
             },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -1691,15 +1696,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const animProps = isVerticalMask 
             ? { height: maskContainer.dataset.targetHeight + 'px' }
             : { width: maskContainer.dataset.targetWidth + 'px' };
-            
+        
           window.gsap.to(maskContainer, { 
             ...animProps,
-            duration: 1.5,
-            delay: staggerDelay,
+          duration: 1.5,
+          delay: staggerDelay,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%",
+            start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -1750,22 +1755,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          window.gsap.to(element, { 
-            scale: 1.0, 
-            duration: 1.5, 
-            ease: "power2.out",
-            scrollTrigger: { 
-              trigger: element, 
-              start: "top bottom", 
-              end: "top center", 
-              once: true 
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: 1.5, 
+              ease: "power2.out",
+              scrollTrigger: { 
+                trigger: element, 
+                start: "top bottom", 
+                end: "top center", 
+                once: true 
             },
             onComplete: () => {
               // Ensure object-fit is preserved after ScrollTrigger scaling animation
               const objectFit = element.dataset.webflowObjectFit || 'cover';
               element.style.setProperty('object-fit', objectFit, 'important');
-            }
-          });
+              }
+            });
         }
       });
       
@@ -1825,8 +1830,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   }
                 }
               } else {
-                const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
-                window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+              const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
+              window.gsap.set(maskContainer, { width: targetWidth + 'px' });
               }
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
@@ -1969,9 +1974,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             // MOBILE: Show cloned images immediately
             // DESKTOP: Reset styles to allow mask reveal system to control
             if (isMobile) {
-              el.style.setProperty('opacity', '1', 'important');
-              el.style.setProperty('visibility', 'visible', 'important');
-              el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('visibility', 'visible', 'important');
+            el.style.setProperty('display', 'block', 'important');
               el.style.removeProperty('transform');
             } else {
               el.style.removeProperty('opacity');
@@ -2968,19 +2973,19 @@ window.testToggle = function() {
     }
   `;
   document.head.appendChild(style);
-})();
-
+  })();
+  
 // Simple Lenis smooth scroll initialization for #slider
-(function() {
+  (function() {
   // Wait for page load
   window.addEventListener('load', () => {
     const slider = document.querySelector('#slider');
     
     if (!slider) {
       console.log('⚠️ #slider element not found, skipping Lenis initialization');
-      return;
-    }
-    
+        return;
+      }
+      
     // Initialize Lenis on the slider element
     const lenis = new Lenis({
       wrapper: slider,
@@ -3010,4 +3015,5 @@ window.testToggle = function() {
     console.log('✅ Lenis smooth scroll initialized on #slider');
   });
 })();
-
+  
+  
