@@ -3598,21 +3598,48 @@ window.testToggle = function() {
     const infoWrap = document.querySelector('.info-wrap');
     if (!infoWrap) return;
     
-    // Disable smooth scroll when dragging .info-wrap
+    // Store original position style
+    const originalPosition = window.getComputedStyle(infoWrap).position;
+    
+    // Completely prevent scroll on the draggable element
+    infoWrap.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false });
+    
+    infoWrap.addEventListener('touchmove', (e) => {
+      // Allow touch move for dragging but prevent scroll
+      e.stopPropagation();
+    }, { passive: false });
+    
+    // Disable smooth scroll when interacting with .info-wrap
     let isDragging = false;
     
-    infoWrap.addEventListener('mousedown', (e) => {
+    const startDragging = (e) => {
       isDragging = true;
       
-      // Try to stop Lenis if it exists
+      // Stop Lenis if it exists
       if (window.lenis) {
         window.lenis.stop();
       }
       
-      // Prevent default scroll behavior
+      // Make element fixed to prevent scroll affecting it
+      if (originalPosition !== 'fixed') {
+        const rect = infoWrap.getBoundingClientRect();
+        infoWrap.style.position = 'fixed';
+        infoWrap.style.top = rect.top + 'px';
+        infoWrap.style.left = rect.left + 'px';
+      }
+      
+      // Prevent page scroll completely
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-    });
+      
+      // Prevent default to stop any scroll behavior
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
     
     const stopDragging = () => {
       if (!isDragging) return;
@@ -3623,36 +3650,24 @@ window.testToggle = function() {
         window.lenis.start();
       }
       
+      // Restore original position
+      if (originalPosition !== 'fixed') {
+        infoWrap.style.position = '';
+      }
+      
       // Restore scroll
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
     
+    // Mouse events
+    infoWrap.addEventListener('mousedown', startDragging);
     document.addEventListener('mouseup', stopDragging);
-    document.addEventListener('mouseleave', stopDragging);
     
-    // Also handle touch events for mobile
-    infoWrap.addEventListener('touchstart', (e) => {
-      isDragging = true;
-      if (window.lenis) {
-        window.lenis.stop();
-      }
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    }, { passive: true });
-    
-    const stopTouchDragging = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      if (window.lenis) {
-        window.lenis.start();
-      }
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-    
-    document.addEventListener('touchend', stopTouchDragging);
-    document.addEventListener('touchcancel', stopTouchDragging);
+    // Touch events
+    infoWrap.addEventListener('touchstart', startDragging, { passive: false });
+    document.addEventListener('touchend', stopDragging);
+    document.addEventListener('touchcancel', stopDragging);
     
     console.log('✅ Draggable element protection enabled for .info-wrap');
   }, 1000);
