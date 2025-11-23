@@ -3559,9 +3559,6 @@ window.testToggle = function() {
     if (draggableElements.length === 0) return;
     
     draggableElements.forEach(draggableEl => {
-      // Store original position style
-      const originalPosition = window.getComputedStyle(draggableEl).position;
-      
       // Completely prevent scroll on the draggable element
       draggableEl.addEventListener('wheel', (e) => {
         e.preventDefault();
@@ -3593,31 +3590,10 @@ window.testToggle = function() {
           window.lenis.stop();
         }
         
-        // Disable all Webflow interactions temporarily
-        if (window.Webflow) {
-          try {
-            window.Webflow.require('ix2').destroy();
-          } catch(e) {}
-        }
-        
-        // Make element fixed to prevent scroll affecting it
-        if (originalPosition !== 'fixed') {
-          const rect = draggableEl.getBoundingClientRect();
-          draggableEl.style.position = 'fixed';
-          draggableEl.style.top = rect.top + 'px';
-          draggableEl.style.left = rect.left + 'px';
-          draggableEl.style.zIndex = '9999';
-        }
-        
         // Prevent page scroll completely
         document.body.style.overflow = 'hidden';
         document.documentElement.style.overflow = 'hidden';
         document.body.style.touchAction = 'none';
-        
-        // Prevent default to stop any scroll behavior
-        if (e.cancelable) {
-          e.preventDefault();
-        }
       };
       
       const stopDragging = () => {
@@ -3627,19 +3603,6 @@ window.testToggle = function() {
         // Re-enable Lenis if it exists
         if (window.lenis) {
           window.lenis.start();
-        }
-        
-        // Re-enable Webflow interactions
-        if (window.Webflow) {
-          try {
-            window.Webflow.require('ix2').init();
-          } catch(e) {}
-        }
-        
-        // Restore original position
-        if (originalPosition !== 'fixed') {
-          draggableEl.style.position = '';
-          draggableEl.style.zIndex = '';
         }
         
         // Restore scroll
