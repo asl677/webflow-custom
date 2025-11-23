@@ -1725,14 +1725,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
           }
         } else if (!isMobile) {
-          // Desktop: use ScrollTrigger for all images with reverse animation on scroll out
+          // Desktop: use ScrollTrigger for all images
           const animProps = isVerticalMask 
             ? { height: maskContainer.dataset.targetHeight + 'px' }
             : { width: maskContainer.dataset.targetWidth + 'px' };
-          
-          const reverseAnimProps = isVerticalMask
-            ? { height: '0px' }
-            : { width: '0px' };
         
           window.gsap.to(maskContainer, { 
             ...animProps,
@@ -1741,15 +1737,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 85%", // Start reveal sooner (was 90%)
-              end: "top 30%", // End sooner so reverse triggers earlier
-              toggleActions: isInViewport ? "play none none none" : "play none reverse none", // Only reverse if not initially in viewport
-              onLeaveBack: () => {
-                // Hide image when scrolling back up and out of view (only if not initially visible)
-                if (!isInViewport) {
-                  window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
-                }
-              }
+              start: "top 90%",
+              end: "top center", 
+              once: true,
+              toggleActions: "play none none none"
             },
             onStart: () => {
               // Make image visible when mask animation starts
@@ -1770,9 +1761,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
-                start: "top 85%",
-                end: "top 30%",
-                toggleActions: isInViewport ? "play none none none" : "play none reverse none" // Only reverse if not initially visible
+                start: "top 90%",
+                end: "top center", 
+                once: true,
+                toggleActions: "play none none none"
+              },
+              onComplete: () => {
+                // Lock scale at 1.0 after animation completes
+                window.gsap.set(element, { scale: 1.0 });
               }
             });
           }
