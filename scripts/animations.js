@@ -1600,6 +1600,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Set initial state based on mask direction
         if (isVerticalMask) {
           window.gsap.set(maskContainer, { height: '0px' });
+          // Set initial scale for videos
+          window.gsap.set(element, { scale: 1.3 });
         } else {
           window.gsap.set(maskContainer, { width: '0px' });
         }
@@ -1629,6 +1631,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          
+          // For videos, animate scale from 1.3 to 1.0 during mask reveal
+          if (isVerticalMask) {
+            window.gsap.to(element, {
+              scale: 1.0,
+              duration: 1.5,
+              delay: staggerDelay,
+              ease: "power2.out"
+            });
+          }
         } else if (!isMobile) {
           // Desktop: use ScrollTrigger for all images
           const animProps = isVerticalMask 
@@ -1656,6 +1668,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               element.dataset.maskComplete = 'true';
             }
           });
+          
+          // For videos, animate scale from 1.3 to 1.0 during mask reveal
+          if (isVerticalMask) {
+            window.gsap.to(element, {
+              scale: 1.0,
+              duration: 1.5,
+              delay: staggerDelay,
+              ease: "power2.out",
+              scrollTrigger: { 
+                trigger: element, 
+                start: "top 90%",
+                end: "top center", 
+                once: true,
+                toggleActions: "play none none none"
+              }
+            });
+          }
         }
           
         // Legacy support: img-parallax class gets the traditional parallax scale effect
