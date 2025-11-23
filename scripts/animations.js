@@ -3625,9 +3625,12 @@ window.testToggle = function() {
     // Find video wrapper containers that have fixed positioning
     document.querySelectorAll('.video-full, .reveal-full.video-full, .reveal.reveal-full.video-full').forEach(el => {
       const computedStyle = window.getComputedStyle(el);
+      console.log(`🔍 Checking element:`, el.className, `position:`, computedStyle.position);
+      
       // Only protect if the wrapper itself is fixed or sticky
       if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
         protectedElements.push({ element: el, type: 'fixed' });
+        console.log(`✅ Will protect:`, el.className, `with position:`, computedStyle.position);
       }
     });
     
