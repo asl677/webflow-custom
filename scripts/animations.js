@@ -1534,8 +1534,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Vertical mask for videos, horizontal for images
         if (isVerticalMask) {
-          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;margin:0;padding:0;line-height:0`;
+          // Mask container positioned absolutely within parent, starts at height 0
+          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;margin:0;padding:0;line-height:0;pointer-events:none`;
           maskContainer.dataset.vertical = 'true';
+          
+          // Ensure parent has positioning context
+          const parentEl = parent.closest('.reveal-full, .video-full');
+          if (parentEl) {
+            const parentStyles = window.getComputedStyle(parentEl);
+            if (parentStyles.position === 'static') {
+              parentEl.style.position = 'relative';
+            }
+          }
         } else {
           maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         }
@@ -1558,10 +1568,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
         
-        // Vertical masks (videos) use percentage dimensions, horizontal masks (images) use fixed pixels
+        // Vertical masks (videos) - position absolutely relative to PARENT, not mask
+        // This keeps video at full size while mask reveals it
         if (isVerticalMask) {
-          // Videos: use percentage-based sizing with absolute positioning for full coverage
-          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important`;
+          const parentEl = parent.closest('.reveal-full, .video-full');
+          const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
+          
+          // Video is positioned relative to parent container, not the mask wrapper
+          // This prevents it from scaling as the mask expands
+          element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
         } else {
           // Images: use fixed pixel dimensions
           element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
