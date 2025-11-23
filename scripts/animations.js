@@ -1,4 +1,4 @@
-// Version 3.10: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.11: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1586,6 +1586,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (isVerticalMask) {
           const parentEl = parent.closest('.reveal-full, .video-full');
           
+          // Exclude parent from Lenis smooth scroll
+          if (parentEl) {
+            parentEl.setAttribute('data-lenis-prevent', 'true');
+            console.log('✅ Added data-lenis-prevent to video parent during setup:', parentEl.className);
+          }
+          
           // Function to update video dimensions on resize
           const updateVideoDimensions = () => {
             if (parentEl) {
@@ -1792,13 +1798,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
                 // Preserve parent's Webflow positioning and dimensions
-                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
+                if (parentEl && (parentEl.classList.contains('reveal') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
                   // Only set position to relative if it's static - preserve sticky, fixed, absolute
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
                   // Don't force dimensions - let Webflow styles control parent
+                  
+                  // Exclude from Lenis smooth scroll
+                  parentEl.setAttribute('data-lenis-prevent', 'true');
+                  console.log('✅ Added data-lenis-prevent to video parent:', parentEl.className);
                 }
                 
                 // Function to update dimensions responsively
