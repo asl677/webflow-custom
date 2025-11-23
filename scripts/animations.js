@@ -1525,7 +1525,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Vertical mask: animate height instead of width
         if (isVerticalMask) {
-          maskContainer.style.cssText = `width:${originalWidth}px;height:0px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;margin:0;padding:0;line-height:0`;
           maskContainer.dataset.vertical = 'true';
         } else {
           maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
@@ -1548,7 +1548,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        
+        // For vertical masks (videos), use percentage-based dimensions for responsiveness
+        // For horizontal masks (images), use fixed pixel dimensions for animation
+        if (isVerticalMask) {
+          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important`;
+        } else {
+          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        }
+        
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
