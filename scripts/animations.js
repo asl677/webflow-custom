@@ -1,4 +1,4 @@
-// Version 3.7: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.8: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1147,7 +1147,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           startTimeCounter(element);
         }
         
-        if (element.id === 'time-text') {
+        if (element.id === 'time-text' || element.classList.contains('time-text')) {
           element.dataset.timeStarted = 'true';
           startMilitaryTime(element);
         }
@@ -2765,6 +2765,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.error('⏰ No element provided to startMilitaryTime');
       return;
     }
+    
+    console.log('⏰ Starting military time for element:', element, 'ID:', element.id, 'Classes:', element.className);
     
     function updateMilitaryTime() {
       const now = new Date();
