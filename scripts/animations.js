@@ -707,7 +707,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 2600; // Delay images so text scramble completes first (reduced by 200ms)
+    const imageDelay = 2400; // Start 0.2s sooner - delay images so text scramble completes first
     setTimeout(() => {
       startMaskedImageAnimations();
       
@@ -1638,10 +1638,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         maskContainer.dataset.targetWidth = originalWidth;
         maskContainer.dataset.targetHeight = originalHeight;
         
-        // Add small stagger only for initial viewport images
+        // Add sequential stagger for all initial viewport images/videos
         let staggerDelay = 0;
         if (isInViewport) {
-          staggerDelay = inViewportCount * 0.08; // 80ms between visible images (reduced from 150ms)
+          staggerDelay = inViewportCount * 0.12; // 120ms between visible images for perfect sequential feel
           inViewportCount++;
         }
         
