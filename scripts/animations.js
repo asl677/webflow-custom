@@ -1509,7 +1509,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       imagesToProcess.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
         
-        // Process with mask-wrap for ALL devices
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
@@ -1518,11 +1517,51 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           return;
         }
         
+        // Check if this image is in initial viewport
+        const rect = element.getBoundingClientRect();
+        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
+        // MOBILE: Only mask reveal initial viewport images, skip others for performance
+        if (isMobile && !isInViewport) {
+          // Just mark as setup and show immediately without mask animation
+          element.dataset.maskSetup = 'true';
+          element.dataset.maskComplete = 'true';
+          element.style.setProperty('opacity', '1', 'important');
+          element.style.setProperty('visibility', 'visible', 'important');
+          element.style.setProperty('display', 'block', 'important');
+          console.log(`📱 Mobile: Skipping mask for out-of-viewport image ${index}`);
+          return;
+        }
+        
+        // Check if this should be a vertical mask reveal
+        const parentContainer = element.closest('.reveal-full.video-full, .reveal.reveal-full.video-full');
+        const isVerticalMask = parentContainer !== null; // Videos use vertical mask reveal
+        const hasScaleEffect = isVerticalMask || element.classList.contains('img-parallax'); // Videos and parallax images get scale effect
+        
+        // Ensure parent container doesn't get positioning overridden (preserve sticky, etc.)
+        if (parentContainer) {
+          const parentStyles = window.getComputedStyle(parentContainer);
+          // Store original position to preserve it
+          parentContainer.dataset.originalPosition = parentStyles.position;
+          // Don't force any position changes - let Webflow handle it
+        }
+        
+        // Process with mask-wrap (desktop always, mobile only for initial viewport)
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
-        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        
+        // Vertical mask for videos, horizontal for images
+        if (isVerticalMask) {
+          // Mask container positioned absolutely within parent, starts at height 0
+          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;margin:0;padding:0;line-height:0;pointer-events:none`;
+          maskContainer.dataset.vertical = 'true';
+          
+          // Don't force positioning on parent - let Webflow handle it completely
+          // The mask will work with any positioning (static, relative, sticky, fixed, absolute)
+        } else {
+          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        }
         
         // Ensure image stays hidden until mask is ready
         element.style.setProperty('opacity', '0', 'important');
@@ -1541,17 +1580,51 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        
+        // Vertical masks (videos) - position absolutely relative to PARENT, not mask
+        // This keeps video at full size while mask reveals it
+        if (isVerticalMask) {
+          const parentEl = parent.closest('.reveal-full, .video-full');
+          
+          // Function to update video dimensions on resize
+          const updateVideoDimensions = () => {
+            if (parentEl) {
+              const parentHeight = parentEl.offsetHeight;
+              element.style.height = `${parentHeight}px`;
+            }
+          };
+          
+          // Set initial dimensions
+          const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
+          
+          // Video is positioned relative to parent container, not the mask wrapper
+          // This prevents it from scaling as the mask expands
+          element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+          
+          // Add resize listener to update video height
+          if (!element.dataset.videoResizeAdded) {
+            window.addEventListener('resize', updateVideoDimensions);
+            
+            // Also use ResizeObserver for parent container changes
+            const resizeObserver = new ResizeObserver(updateVideoDimensions);
+            if (parentEl) {
+              resizeObserver.observe(parentEl);
+            }
+            
+            element.dataset.videoResizeAdded = 'true';
+          }
+        } else {
+          // Images: use fixed pixel dimensions
+          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        }
+        
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
         
-        // Store the target width for animation
+        // Store the target width/height for animation
         maskContainer.dataset.targetWidth = originalWidth;
-        
-        // Check if this image is in initial viewport
-        const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        maskContainer.dataset.targetHeight = originalHeight;
         
         // Add small stagger only for initial viewport images
         let staggerDelay = 0;
@@ -1560,23 +1633,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           inViewportCount++;
         }
         
-        // Always use ScrollTrigger - it handles viewport detection automatically
+        // Set initial state based on mask direction
+        if (isVerticalMask) {
+          window.gsap.set(maskContainer, { height: '0px' });
+          // Set initial scale for videos - more pronounced effect
+          window.gsap.set(element, { scale: 1.5 });
+        } else {
           window.gsap.set(maskContainer, { width: '0px' });
+        }
         
-        // Set image visible when animation starts
-        window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+        // Keep image hidden until animation starts
+        window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
         
+        // MOBILE: Only animate initial viewport images (no ScrollTrigger for scroll-in)
+        // DESKTOP: Animate all images with ScrollTrigger
+        if (isMobile && isInViewport) {
+          // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
-          duration: 1.5,
-          delay: staggerDelay,
+            ...animProps,
+            duration: 1.5,
+            delay: staggerDelay,
             ease: "power2.out",
-            scrollTrigger: { 
-              trigger: element, 
-            start: "top 90%",
-              end: "top center", 
-              once: true,
-              toggleActions: "play none none none"
+            onStart: () => {
+              // Make image visible when mask animation starts
+              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
             },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
@@ -1584,34 +1668,95 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-        const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) {
-          window.gsap.set(element, { 
-            scale: 1.2,
+          // For videos, animate scale from 1.3 to 1.0 during mask reveal
+          if (isVerticalMask) {
+            window.gsap.to(element, {
+              scale: 1.0,
+              duration: 1.5,
+              delay: staggerDelay,
+              ease: "power2.out"
+            });
+          }
+        } else if (!isMobile) {
+          // Desktop: use ScrollTrigger for all images
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
+          window.gsap.to(maskContainer, { 
+            ...animProps,
+            duration: 1.5,
+            delay: staggerDelay,
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top 90%",
+              end: "top center", 
+              once: true,
+              toggleActions: "play none none none"
+            },
+            onStart: () => {
+              // Make image visible when mask animation starts
+              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+            },
             onComplete: () => {
-              // Ensure object-fit is preserved after scaling
-              element.style.setProperty('object-fit', objectFit, 'important');
+              element.dataset.gsapAnimated = 'mask-revealed';
+              element.dataset.maskComplete = 'true';
             }
           });
-        }
           
-        // Only add parallax when NOT in fullscreen mode
-        if (hasParallax && !window.isFullscreenMode) {
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: 1.5, 
+          // For videos, animate scale from 1.5 to 1.0 during mask reveal
+          if (isVerticalMask) {
+            window.gsap.to(element, {
+              scale: 1.0,
+              duration: 1.5,
+              delay: staggerDelay,
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
-                start: "top bottom", 
+                start: "top 90%",
                 end: "top center", 
-                once: true 
+                once: true,  // Only run once
+                toggleActions: "play none none none"
+              },
+              onComplete: () => {
+                // Lock scale at 1.0 after animation completes
+                window.gsap.set(element, { scale: 1.0 });
+              }
+            });
+          }
+        }
+          
+        // Legacy support: img-parallax class gets the traditional parallax scale effect
+        const hasParallax = element.classList.contains('img-parallax');
+        
+        // Only add parallax scale effect to images with img-parallax class (not videos)
+        if (hasParallax && !isMobile && !window.isFullscreenMode) {
+          window.gsap.set(element, { 
+            scale: 1.4,  // Increased from 1.2 for more noticeable effect
+            onComplete: () => {
+              // Ensure object-fit is preserved after scaling
+              const objectFit = element.dataset.webflowObjectFit || 'cover';
+              element.style.setProperty('object-fit', objectFit, 'important');
+            }
+          });
+          
+          window.gsap.to(element, { 
+            scale: 1.0, 
+            duration: 1.5, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top bottom", 
+              end: "top center", 
+              once: true 
             },
             onComplete: () => {
               // Ensure object-fit is preserved after ScrollTrigger scaling animation
+              const objectFit = element.dataset.webflowObjectFit || 'cover';
               element.style.setProperty('object-fit', objectFit, 'important');
-              }
-            });
+            }
+          });
         }
       });
       
@@ -1626,10 +1771,54 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         imagesToProcess.forEach(element => {
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
-            if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
-              // Force reveal completion
-              const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
-              window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+            if (maskContainer && maskContainer.classList.contains('mask-wrap')) {
+              // Force reveal completion - check if vertical or horizontal
+              const isVertical = maskContainer.dataset.vertical === 'true';
+              if (isVertical) {
+                const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
+                window.gsap.set(maskContainer, { height: targetHeight + 'px' });
+                
+                // Completely override styles for vertical masks
+                const parentEl = maskContainer.parentNode;
+                const objectFit = element.dataset.webflowObjectFit || 'cover';
+                
+                // Preserve parent's Webflow positioning and dimensions
+                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
+                  const parentStyles = window.getComputedStyle(parentEl);
+                  // Only set position to relative if it's static - preserve sticky, fixed, absolute
+                  if (parentStyles.position === 'static') {
+                    parentEl.style.setProperty('position', 'relative', 'important');
+                  }
+                  // Don't force dimensions - let Webflow styles control parent
+                }
+                
+                // Function to update dimensions responsively
+                const updateVideoDimensions = () => {
+                  maskContainer.removeAttribute('style');
+                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                  
+                  element.removeAttribute('style');
+                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                };
+                
+                // Set initial dimensions
+                updateVideoDimensions();
+                
+                // Add resize listener for responsive behavior
+                if (!element.dataset.resizeListenerAdded) {
+                  const resizeObserver = new ResizeObserver(() => {
+                    updateVideoDimensions();
+                  });
+                  
+                  if (parentEl) {
+                    resizeObserver.observe(parentEl);
+                    element.dataset.resizeListenerAdded = 'true';
+                  }
+                }
+              } else {
+                const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
+                window.gsap.set(maskContainer, { width: targetWidth + 'px' });
+              }
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
@@ -1768,11 +1957,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               }
             }
             
-            // Cloned images appear instantly - no animations
-            el.style.setProperty('opacity', '1', 'important');
-            el.style.setProperty('visibility', 'visible', 'important');
-            el.style.setProperty('display', 'block', 'important');
-            el.style.setProperty('transform', 'none', 'important');
+            // MOBILE: Show cloned images immediately
+            // DESKTOP: Reset styles to allow mask reveal system to control
+            if (isMobile) {
+              el.style.setProperty('opacity', '1', 'important');
+              el.style.setProperty('visibility', 'visible', 'important');
+              el.style.setProperty('display', 'block', 'important');
+              el.style.removeProperty('transform');
+            } else {
+              el.style.removeProperty('opacity');
+              el.style.removeProperty('visibility');
+              el.style.setProperty('display', 'block', 'important');
+              el.style.removeProperty('transform');
+            }
         });
         
         // Add slight delay for mask system processing
@@ -1781,6 +1978,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             // Remove any existing mask setup flags so they get fresh animations
             delete el.dataset.maskSetup;
             delete el.dataset.gsapAnimated;
+            delete el.dataset.maskComplete;
             
             // Remove mask container so clones get fresh setup like original images
             const maskContainer = el.closest('.mask-wrap');
@@ -1861,23 +2059,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Let the main mask animation system handle cloned images naturally (desktop only)
-        // Skip heavy mask processing on mobile for performance during infinite scroll
+        // Let the main mask animation system handle cloned images
+        // MOBILE: Skip mask processing - cloned images already visible
+        // DESKTOP: Process with mask reveals
         if (!isMobile) {
           setTimeout(() => {
             if (typeof window.gsap !== 'undefined') {
               const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
               
-              unprocessedImages.forEach((img, i) => {
-              });
-              
               // Call the main mask animation function to process any new images
               if (unprocessedImages.length > 0) {
+                console.log(`🖥️ Desktop: Processing ${unprocessedImages.length} cloned images for mask reveal`);
                 startMaskedImageAnimations();
               }
             }
           }, 500);
         } else {
+          // Mobile: mark cloned images as setup so they don't get processed
+          setTimeout(() => {
+            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            unprocessedImages.forEach(img => {
+              img.dataset.maskSetup = 'true';
+              img.dataset.maskComplete = 'true';
+            });
+            console.log(`📱 Mobile: Marked ${unprocessedImages.length} cloned images as complete (no animation)`);
+          }, 100);
         }
         
         // Add fullscreen functionality to new images in clone
@@ -2781,8 +2987,329 @@ window.testToggle = function() {
     .reveal.reveal-full:hover video {
       opacity: 0;
     }
+    
+    /* Dither background container */
+    [class*="moosestack"] [class*="hero"],
+    [class*="hero"][class*="moosestack"],
+    .moosestack-hero,
+    .hero-moosestack {
+      position: relative;
+    }
+    
+    .dither-canvas {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+      opacity: 1 !important;
+      display: block !important;
+    }
   `;
   document.head.appendChild(style);
+  
+  // Three.js Dither Effect - React Bits style
+  (function() {
+    function loadThreeJS() {
+      return new Promise((resolve, reject) => {
+        if (typeof THREE !== 'undefined') {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load Three.js'));
+        document.head.appendChild(script);
+      });
+    }
+    
+    loadThreeJS().then(() => {
+      if (typeof THREE === 'undefined') {
+        console.warn('Three.js not loaded - dither effect disabled');
+        return;
+      }
+    
+    function initDitherEffect(container) {
+      if (container.dataset.ditherInit) return;
+      if (!container || !container.offsetHeight || container.offsetHeight < 100) return;
+      
+      try {
+        container.dataset.ditherInit = 'true';
+        console.log('Initializing dither effect on:', container);
+        
+        const canvas = document.createElement('canvas');
+        canvas.className = 'dither-canvas';
+        container.insertBefore(canvas, container.firstChild);
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new THREE.WebGLRenderer({ 
+          canvas: canvas,
+          antialias: true,
+          alpha: true
+        });
+        
+        if (!renderer) {
+          console.error('Failed to create WebGL renderer');
+          return;
+        }
+        
+        const waveVertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `;
+      
+      const waveFragmentShader = `
+        precision highp float;
+        uniform vec2 resolution;
+        uniform float time;
+        uniform float waveSpeed;
+        uniform float waveFrequency;
+        uniform float waveAmplitude;
+        uniform vec3 waveColor;
+        uniform vec2 mousePos;
+        uniform int enableMouseInteraction;
+        uniform float mouseRadius;
+        varying vec2 vUv;
+        
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+        vec2 fade(vec2 t) { return t*t*t*(t*(t*6.0-15.0)+10.0); }
+        
+        float cnoise(vec2 P) {
+          vec4 Pi = floor(P.xyxy) + vec4(0.0,0.0,1.0,1.0);
+          vec4 Pf = fract(P.xyxy) - vec4(0.0,0.0,1.0,1.0);
+          Pi = mod289(Pi);
+          vec4 ix = Pi.xzxz;
+          vec4 iy = Pi.yyww;
+          vec4 fx = Pf.xzxz;
+          vec4 fy = Pf.yyww;
+          vec4 i = permute(permute(ix) + iy);
+          vec4 gx = fract(i * (1.0/41.0)) * 2.0 - 1.0;
+          vec4 gy = abs(gx) - 0.5;
+          vec4 tx = floor(gx + 0.5);
+          gx = gx - tx;
+          vec2 g00 = vec2(gx.x, gy.x);
+          vec2 g10 = vec2(gx.y, gy.y);
+          vec2 g01 = vec2(gx.z, gy.z);
+          vec2 g11 = vec2(gx.w, gy.w);
+          vec4 norm = taylorInvSqrt(vec4(dot(g00,g00), dot(g01,g01), dot(g10,g10), dot(g11,g11)));
+          g00 *= norm.x; g01 *= norm.y; g10 *= norm.z; g11 *= norm.w;
+          float n00 = dot(g00, vec2(fx.x, fy.x));
+          float n10 = dot(g10, vec2(fx.y, fy.y));
+          float n01 = dot(g01, vec2(fx.z, fy.z));
+          float n11 = dot(g11, vec2(fx.w, fy.w));
+          vec2 fade_xy = fade(Pf.xy);
+          vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+          return 2.3 * mix(n_x.x, n_x.y, fade_xy.y);
+        }
+        
+        const int OCTAVES = 4;
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amp = 1.0;
+          float freq = waveFrequency;
+          for (int i = 0; i < OCTAVES; i++) {
+            value += amp * abs(cnoise(p));
+            p *= freq;
+            amp *= waveAmplitude;
+          }
+          return value;
+        }
+        
+        float pattern(vec2 p) {
+          vec2 p2 = p - time * waveSpeed;
+          return fbm(p + fbm(p2)); 
+        }
+        
+        void main() {
+          vec2 uv = vUv;
+          uv -= 0.5;
+          uv.x *= resolution.x / resolution.y;
+          float f = pattern(uv);
+          
+          if (enableMouseInteraction == 1) {
+            vec2 mouseNDC = (mousePos / resolution - 0.5) * vec2(1.0, -1.0);
+            mouseNDC.x *= resolution.x / resolution.y;
+            float dist = length(uv - mouseNDC);
+            float effect = 1.0 - smoothstep(0.0, mouseRadius, dist);
+            f -= 0.5 * effect;
+          }
+          
+          vec3 col = mix(vec3(0.0), waveColor, f);
+          
+          // Apply dither effect
+          const float bayerMatrix8x8[64] = float[64](
+            0.0/64.0, 48.0/64.0, 12.0/64.0, 60.0/64.0,  3.0/64.0, 51.0/64.0, 15.0/64.0, 63.0/64.0,
+            32.0/64.0,16.0/64.0, 44.0/64.0, 28.0/64.0, 35.0/64.0,19.0/64.0, 47.0/64.0, 31.0/64.0,
+            8.0/64.0, 56.0/64.0,  4.0/64.0, 52.0/64.0, 11.0/64.0,59.0/64.0,  7.0/64.0, 55.0/64.0,
+            40.0/64.0,24.0/64.0, 36.0/64.0, 20.0/64.0, 43.0/64.0,27.0/64.0, 39.0/64.0, 23.0/64.0,
+            2.0/64.0, 50.0/64.0, 14.0/64.0, 62.0/64.0,  1.0/64.0,49.0/64.0, 13.0/64.0, 61.0/64.0,
+            34.0/64.0,18.0/64.0, 46.0/64.0, 30.0/64.0, 33.0/64.0,17.0/64.0, 45.0/64.0, 29.0/64.0,
+            10.0/64.0,58.0/64.0,  6.0/64.0, 54.0/64.0,  9.0/64.0,57.0/64.0,  5.0/64.0, 53.0/64.0,
+            42.0/64.0,26.0/64.0, 38.0/64.0, 22.0/64.0, 41.0/64.0,25.0/64.0, 37.0/64.0, 21.0/64.0
+          );
+          
+          vec2 pixelCoord = floor(gl_FragCoord.xy / 2.0);
+          int x = int(mod(pixelCoord.x, 8.0));
+          int y = int(mod(pixelCoord.y, 8.0));
+          float threshold = bayerMatrix8x8[y * 8 + x] - 0.25;
+          float colorNum = 4.0;
+          float step = 1.0 / (colorNum - 1.0);
+          col += threshold * step;
+          float bias = 0.2;
+          col = clamp(col - bias, 0.0, 1.0);
+          col = floor(col * (colorNum - 1.0) + 0.5) / (colorNum - 1.0);
+          
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+      
+        const geometry = new THREE.PlaneGeometry(2, 2);
+        const uniforms = {
+          resolution: { value: new THREE.Vector2() },
+          time: { value: 0 },
+          waveSpeed: { value: 0.05 },
+          waveFrequency: { value: 3 },
+          waveAmplitude: { value: 0.5 }, // Increased for more visible waves
+          waveColor: { value: new THREE.Color(1.0, 1.0, 1.0) }, // Pure white for maximum visibility
+          mousePos: { value: new THREE.Vector2() },
+          enableMouseInteraction: { value: 1 },
+          mouseRadius: { value: 0.3 }
+        };
+        
+        const material = new THREE.ShaderMaterial({
+          vertexShader: waveVertexShader,
+          fragmentShader: waveFragmentShader,
+          uniforms: uniforms
+        });
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+        
+        function updateSize() {
+          const rect = container.getBoundingClientRect();
+          const width = rect.width;
+          const height = rect.height;
+          if (width === 0 || height === 0) return;
+          canvas.width = width;
+          canvas.height = height;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          renderer.setSize(width, height);
+          uniforms.resolution.value.set(width, height);
+        }
+        
+        updateSize();
+        
+        let mouseX = 0, mouseY = 0;
+        container.addEventListener('mousemove', (e) => {
+          const rect = container.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+          const rectHeight = rect.height;
+          uniforms.mousePos.value.set(mouseX, rectHeight - mouseY);
+        });
+        
+        let time = 0;
+        function animate() {
+          requestAnimationFrame(animate);
+          time += 0.016;
+          uniforms.time.value = time;
+          renderer.render(scene, camera);
+        }
+        animate();
+        
+        // Test render immediately
+        renderer.render(scene, camera);
+        console.log('Dither effect initialized successfully on:', container);
+        console.log('Canvas size:', canvas.width, 'x', canvas.height);
+        console.log('Canvas style:', canvas.style.cssText);
+        
+        window.addEventListener('resize', updateSize);
+      } catch (error) {
+        console.error('Error initializing dither effect:', error, container);
+      }
+    }
+    
+    setTimeout(() => {
+      // Find any element containing "MooseStack" text
+      const allElements = document.querySelectorAll('*');
+      let targetContainer = null;
+      
+      for (const el of allElements) {
+        if (el.textContent && el.textContent.includes('MooseStack') && el.textContent.includes('composable framework')) {
+          // Found the container - go up to find a suitable parent
+          let parent = el;
+          for (let i = 0; i < 5 && parent; i++) {
+            const rect = parent.getBoundingClientRect();
+            if (rect.height > 300 && rect.width > 200) {
+              targetContainer = parent;
+              break;
+            }
+            parent = parent.parentElement;
+            if (!parent || parent === document.body) break;
+          }
+          if (targetContainer) break;
+        }
+      }
+      
+      // Fallback: try selectors
+      if (!targetContainer) {
+        const selectors = [
+          '[class*="moosestack"]',
+          '[class*="hero"]',
+          'section',
+          'div[class*="container"]'
+        ];
+        
+        for (const sel of selectors) {
+          const found = Array.from(document.querySelectorAll(sel));
+          for (const el of found) {
+            if (el.textContent && el.textContent.includes('MooseStack')) {
+              const rect = el.getBoundingClientRect();
+              if (rect.height > 200) {
+                targetContainer = el;
+                break;
+              }
+            }
+          }
+          if (targetContainer) break;
+        }
+      }
+      
+      if (targetContainer) {
+        console.log('✅ Found MooseStack container:', targetContainer, targetContainer.className);
+        initDitherEffect(targetContainer);
+      } else {
+        console.warn('❌ Could not find MooseStack container');
+      }
+      
+      const observer = new MutationObserver(() => {
+        // Re-check for MooseStack containers
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+          if (el.textContent && el.textContent.includes('MooseStack') && !el.dataset.ditherInit) {
+            const rect = el.getBoundingClientRect();
+            if (rect.height > 200) {
+              initDitherEffect(el);
+            }
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }, 2000);
+    }).catch(err => {
+      console.error('Failed to initialize dither effect:', err);
+    });
+  })();
   
   // WebGL Liquid Distortion Effect - distorts the actual image
   (function() {
@@ -3070,8 +3597,83 @@ window.testToggle = function() {
       observer.observe(document.body, { childList: true, subtree: true });
   }, 2000);
   })();
+})();
 
-// Protect sticky elements from Lenis smooth scroll
+// Prevent Lenis/smooth scroll from interfering with draggable elements
+(function() {
+  // Wait for Lenis to load if it exists
+  setTimeout(() => {
+    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
+    if (draggableElements.length === 0) return;
+    
+    draggableElements.forEach(draggableEl => {
+      // Completely prevent scroll on the draggable element
+      draggableEl.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
+      
+      draggableEl.addEventListener('touchmove', (e) => {
+        // Allow touch move for dragging but prevent scroll propagation
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
+      
+      // Prevent scroll events completely
+      draggableEl.addEventListener('scroll', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
+      
+      // Disable smooth scroll when interacting with draggable elements
+      let isDragging = false;
+      
+      const startDragging = (e) => {
+        isDragging = true;
+        
+        // Stop Lenis if it exists
+        if (window.lenis) {
+          window.lenis.stop();
+        }
+        
+        // Prevent page scroll completely
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+      };
+      
+      const stopDragging = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Re-enable Lenis if it exists
+        if (window.lenis) {
+          window.lenis.start();
+        }
+        
+        // Restore scroll
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.touchAction = '';
+      };
+      
+      // Mouse events
+      draggableEl.addEventListener('mousedown', startDragging, { capture: true });
+      document.addEventListener('mouseup', stopDragging);
+      
+      // Touch events
+      draggableEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
+      document.addEventListener('touchend', stopDragging);
+      document.addEventListener('touchcancel', stopDragging);
+      
+      console.log('✅ Draggable element protection enabled for:', draggableEl);
+    });
+  }, 1000);
+})();
+
+// Protect sticky elements and video containers from Lenis smooth scroll
 (function() {
   // Wait for Lenis to potentially load
   setTimeout(() => {
@@ -3080,50 +3682,61 @@ window.testToggle = function() {
       return;
     }
 
-    // Find all sticky positioned elements
-    const findStickyElements = () => {
-      const allElements = document.querySelectorAll('*');
-      const stickyElements = [];
+    // Find all sticky positioned elements AND video containers
+    const findProtectedElements = () => {
+      const protectedElements = [];
       
-      allElements.forEach(el => {
-        const computedStyle = window.getComputedStyle(el);
-        if (computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
-          stickyElements.push(el);
+      // Always include .reveal.reveal-full.video-full containers
+      const videoContainers = document.querySelectorAll('.reveal.reveal-full.video-full, .reveal-full.video-full');
+      videoContainers.forEach(el => {
+        if (!protectedElements.includes(el)) {
+          protectedElements.push(el);
         }
       });
       
-      return stickyElements;
+      // Also find all sticky positioned elements
+      const allElements = document.querySelectorAll('*');
+      allElements.forEach(el => {
+        const computedStyle = window.getComputedStyle(el);
+        if (computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
+          if (!protectedElements.includes(el)) {
+            protectedElements.push(el);
+          }
+        }
+      });
+      
+      return protectedElements;
     };
 
-    const stickyElements = findStickyElements();
+    const protectedElements = findProtectedElements();
     
-    if (stickyElements.length > 0) {
-      console.log(`✅ Found ${stickyElements.length} sticky elements, protecting from Lenis`);
+    if (protectedElements.length > 0) {
+      console.log(`✅ Found ${protectedElements.length} sticky/video elements, protecting from Lenis`);
       
-      stickyElements.forEach(el => {
+      protectedElements.forEach(el => {
         // Add data attribute to mark as protected
         el.dataset.lenisPrevent = 'true';
         
         // Prevent Lenis from affecting these elements
         el.addEventListener('wheel', (e) => {
-          // Let the native scroll handle sticky elements
+          // Let the native scroll handle these elements
           e.stopPropagation();
-        }, { passive: false });
+        }, { passive: false, capture: true });
         
-        console.log('Protected sticky element:', el.className || el.id || el.tagName);
+        console.log('Protected element:', el.className || el.id || el.tagName);
       });
     }
 
-    // Re-check for dynamically added sticky elements
+    // Re-check for dynamically added elements
     const observer = new MutationObserver(() => {
-      const newSticky = findStickyElements().filter(el => !el.dataset.lenisPrevent);
-      if (newSticky.length > 0) {
-        console.log(`Found ${newSticky.length} new sticky elements`);
-        newSticky.forEach(el => {
+      const newElements = findProtectedElements().filter(el => !el.dataset.lenisPrevent);
+      if (newElements.length > 0) {
+        console.log(`Found ${newElements.length} new sticky/video elements`);
+        newElements.forEach(el => {
           el.dataset.lenisPrevent = 'true';
           el.addEventListener('wheel', (e) => {
             e.stopPropagation();
-          }, { passive: false });
+          }, { passive: false, capture: true });
         });
       }
     });
@@ -3136,7 +3749,6 @@ window.testToggle = function() {
     });
     
   }, 1000);
-})();
 })();
   
   
