@@ -1725,22 +1725,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             });
           }
         } else if (!isMobile) {
-          // Desktop: use ScrollTrigger for all images
+          // Desktop: use ScrollTrigger for all images with reverse animation on scroll out
           const animProps = isVerticalMask 
             ? { height: maskContainer.dataset.targetHeight + 'px' }
             : { width: maskContainer.dataset.targetWidth + 'px' };
+          
+          const reverseAnimProps = isVerticalMask
+            ? { height: '0px' }
+            : { width: '0px' };
         
           window.gsap.to(maskContainer, { 
             ...animProps,
-          duration: 1.5,
-          delay: staggerDelay,
+            duration: 1.5,
+            delay: staggerDelay,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-            start: "top 90%",
-              end: "top center", 
-              once: true,
-              toggleActions: "play none none none"
+              start: "top 90%",
+              end: "bottom 10%",
+              toggleActions: "play none reverse none", // Play on enter, reverse on leave back
+              onLeaveBack: () => {
+                // Hide image when scrolling back up and out of view
+                window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
+              }
             },
             onStart: () => {
               // Make image visible when mask animation starts
@@ -1762,13 +1769,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               scrollTrigger: { 
                 trigger: element, 
                 start: "top 90%",
-                end: "top center", 
-                once: true,  // Only run once
-                toggleActions: "play none none none"
-              },
-              onComplete: () => {
-                // Lock scale at 1.0 after animation completes
-                window.gsap.set(element, { scale: 1.0 });
+                end: "bottom 10%",
+                toggleActions: "play none reverse none" // Reverse scale on scroll out
               }
             });
           }
