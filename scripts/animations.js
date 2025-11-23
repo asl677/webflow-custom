@@ -3009,16 +3009,16 @@ window.testToggle = function() {
   })();
   
 // Simple Lenis smooth scroll initialization for #slider
-  (function() {
+(function() {
   // Wait for page load
   window.addEventListener('load', () => {
     const slider = document.querySelector('#slider');
     
     if (!slider) {
       console.log('⚠️ #slider element not found, skipping Lenis initialization');
-        return;
-      }
-      
+      return;
+    }
+    
     // Initialize Lenis on the slider element
     const lenis = new Lenis({
       wrapper: slider,
@@ -3048,5 +3048,29 @@ window.testToggle = function() {
     console.log('✅ Lenis smooth scroll initialized on #slider');
   });
 })();
-  
-  
+
+// Fix draggable cursor offset issue
+(function() {
+  // Wait for Webflow and jQuery UI to initialize
+  setTimeout(() => {
+    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
+    
+    draggableElements.forEach(el => {
+      // Check if jQuery UI draggable is initialized
+      if (typeof $ !== 'undefined' && $(el).data('ui-draggable')) {
+        // Destroy and reinitialize with better settings
+        $(el).draggable('destroy');
+        $(el).draggable({
+          containment: 'window',
+          scroll: false,
+          cursor: 'move',
+          cursorAt: false, // Don't force cursor position
+          delay: 0, // No delay
+          distance: 0, // Start dragging immediately
+          addClasses: false // Don't add extra classes
+        });
+        console.log('✅ Fixed draggable cursor tracking for:', el);
+      }
+    });
+  }, 2000); // Wait for Webflow to initialize draggable
+})();
