@@ -3621,10 +3621,18 @@ window.testToggle = function() {
   })();
 })();
 
-// Protect draggable elements from scroll interference
-// NOTE: Configure Lenis in Webflow with: wrapper: '#slider' to only apply smooth scroll to the slider
+// Protect draggable and sticky elements from Lenis interference
 (function() {
   setTimeout(() => {
+    // Find and exclude all sticky/fixed positioned elements from Lenis
+    document.querySelectorAll('*').forEach(el => {
+      const computedStyle = window.getComputedStyle(el);
+      if (computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky' || computedStyle.position === 'fixed') {
+        el.setAttribute('data-lenis-prevent', 'true');
+        console.log('✅ Excluded from Lenis:', el.className || el.id || el.tagName, 'position:', computedStyle.position);
+      }
+    });
+    
     // Find draggable elements and protect them
     document.querySelectorAll('.info-wrap, .draggable').forEach(protectedEl => {
       // Completely prevent scroll events
