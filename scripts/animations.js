@@ -3626,7 +3626,16 @@ window.testToggle = function() {
     console.log(`✅ Protecting ${protectedElements.filter(p => p.type === 'draggable').length} draggable and ${protectedElements.filter(p => p.type === 'fixed').length} fixed elements from Lenis`);
     
     protectedElements.forEach(({ element: protectedEl, type }) => {
-      // Completely prevent scroll on the protected element
+      // For fixed elements, we DON'T want to block scroll - just mark them
+      // Fixed elements should stay in place during scroll, not prevent scroll
+      if (type === 'fixed') {
+        // Just add a marker, don't block events
+        protectedEl.dataset.lenisFixed = 'true';
+        console.log(`✅ Fixed element marked for Lenis:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
+        return; // Don't block scroll for fixed elements
+      }
+      
+      // Only for draggable elements: completely prevent scroll
       protectedEl.addEventListener('wheel', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3646,7 +3655,7 @@ window.testToggle = function() {
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
-      // Only add drag handling for draggable elements
+      // Drag handling for draggable elements
       if (type === 'draggable') {
         // Disable smooth scroll when interacting with draggable elements
         let isDragging = false;
