@@ -1622,10 +1622,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 // Function to update dimensions responsively
                 const updateVideoDimensions = () => {
                   // Mask container uses percentage-based sizing with absolute positioning
+                  // Clear any GSAP-set inline styles first
+                  window.gsap.set(maskContainer, { clearProps: "all" });
                   maskContainer.removeAttribute('style');
                   maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                   
                   // Video uses absolute positioning with inset to fill mask container completely
+                  window.gsap.set(element, { clearProps: "all" });
                   element.removeAttribute('style');
                   element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
                 };
@@ -1633,8 +1636,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 // Set initial dimensions
                 updateVideoDimensions();
                 
-                // Add resize listener for responsive behavior
+                // Add both ResizeObserver and window resize listener for comprehensive coverage
                 if (!element.dataset.resizeListenerAdded) {
+                  // ResizeObserver for container changes
                   const resizeObserver = new ResizeObserver(() => {
                     updateVideoDimensions();
                   });
@@ -1642,8 +1646,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   // Observe the parent container for size changes
                   if (parentEl) {
                     resizeObserver.observe(parentEl);
-                    element.dataset.resizeListenerAdded = 'true';
                   }
+                  
+                  // Window resize listener for viewport changes
+                  const handleResize = () => {
+                    updateVideoDimensions();
+                  };
+                  window.addEventListener('resize', handleResize);
+                  
+                  element.dataset.resizeListenerAdded = 'true';
+                  // Store cleanup function
+                  element.dataset.resizeCleanup = () => {
+                    resizeObserver.disconnect();
+                    window.removeEventListener('resize', handleResize);
+                  };
                 }
               }
             }
@@ -1693,10 +1709,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 // Function to update dimensions responsively
                 const updateVideoDimensions = () => {
                   // Mask container uses percentage-based sizing with absolute positioning
+                  // Clear any GSAP-set inline styles first
+                  window.gsap.set(maskContainer, { clearProps: "all" });
                   maskContainer.removeAttribute('style');
                   maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                   
                   // Video uses absolute positioning with inset to fill mask container completely
+                  window.gsap.set(element, { clearProps: "all" });
                   element.removeAttribute('style');
                   element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
                 };
@@ -1704,8 +1723,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 // Set initial dimensions
                 updateVideoDimensions();
                 
-                // Add resize listener for responsive behavior
+                // Add both ResizeObserver and window resize listener for comprehensive coverage
                 if (!element.dataset.resizeListenerAdded) {
+                  // ResizeObserver for container changes
                   const resizeObserver = new ResizeObserver(() => {
                     updateVideoDimensions();
                   });
@@ -1713,8 +1733,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   // Observe the parent container for size changes
                   if (parentEl) {
                     resizeObserver.observe(parentEl);
-                    element.dataset.resizeListenerAdded = 'true';
                   }
+                  
+                  // Window resize listener for viewport changes
+                  const handleResize = () => {
+                    updateVideoDimensions();
+                  };
+                  window.addEventListener('resize', handleResize);
+                  
+                  element.dataset.resizeListenerAdded = 'true';
+                  // Store cleanup function
+                  element.dataset.resizeCleanup = () => {
+                    resizeObserver.disconnect();
+                    window.removeEventListener('resize', handleResize);
+                  };
                 }
               }
             }
