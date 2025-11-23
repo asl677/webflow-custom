@@ -1554,7 +1554,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const objectFit = element.dataset.webflowObjectFit || 'cover';
         
         // All masks now use fixed pixel dimensions for animation (horizontal reveal)
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        // For videos with scale effect, ensure they're centered properly
+        if (hasScaleEffect) {
+          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0 auto!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important`;
+        } else {
+          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
+        }
         
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
@@ -1620,10 +1625,38 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         }
           
+        // Add scale effect for videos and parallax images (on desktop only)
+        if (hasScaleEffect && !isMobile && !window.isFullscreenMode) {
+          window.gsap.set(element, { 
+            scale: 1.2,
+            onComplete: () => {
+              // Ensure object-fit is preserved after scaling
+              element.style.setProperty('object-fit', objectFit, 'important');
+            }
+          });
+          
+          window.gsap.to(element, { 
+            scale: 1.0, 
+            duration: 1.5, 
+            ease: "power2.out",
+            scrollTrigger: { 
+              trigger: element, 
+              start: "top bottom", 
+              end: "top center", 
+              once: true 
+            },
+            onComplete: () => {
+              // Ensure object-fit is preserved after ScrollTrigger scaling animation
+              element.style.setProperty('object-fit', objectFit, 'important');
+            }
+          });
+        }
+        
+        // Legacy support: Also check for img-parallax class
         const hasParallax = element.classList.contains('img-parallax');
         
         // Only add parallax on desktop (skip on mobile for performance)
-        if (hasParallax && !isMobile && !window.isFullscreenMode) {
+        if (hasParallax && !hasScaleEffect && !isMobile && !window.isFullscreenMode) {
           window.gsap.set(element, { 
             scale: 1.2,
             onComplete: () => {
