@@ -1644,33 +1644,39 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
           
         // Add scale effect for videos and parallax images (on desktop only)
+        // Scale effect happens independently, not during mask reveal
         if (hasScaleEffect && !isMobile && !window.isFullscreenMode) {
+          // For videos, start at scale 1.0 during mask reveal, then add subtle scale effect after
           window.gsap.set(element, { 
-            scale: 1.2,
-            onComplete: () => {
-              // Ensure object-fit is preserved after scaling
-              element.style.setProperty('object-fit', objectFit, 'important');
-            }
+            scale: 1.0
           });
           
-          window.gsap.to(element, { 
-            scale: 1.0, 
-            duration: 1.5, 
-            ease: "power2.out",
-            scrollTrigger: { 
-              trigger: element, 
-              start: "top bottom", 
-              end: "top center", 
-              once: true 
-            },
-            onComplete: () => {
-              // Ensure object-fit is preserved after ScrollTrigger scaling animation
-              element.style.setProperty('object-fit', objectFit, 'important');
-            }
-          });
+          // Add a subtle zoom-out effect that happens AFTER the mask reveal starts
+          setTimeout(() => {
+            window.gsap.fromTo(element, 
+              { scale: 1.05 },
+              { 
+                scale: 1.0, 
+                duration: 1.2, 
+                ease: "power2.out",
+                scrollTrigger: { 
+                  trigger: element, 
+                  start: "top 80%",
+                  end: "top 50%", 
+                  once: true,
+                  scrub: 0.5
+                },
+                onComplete: () => {
+                  // Ensure object-fit is preserved after scaling
+                  const objectFit = element.dataset.webflowObjectFit || 'cover';
+                  element.style.setProperty('object-fit', objectFit, 'important');
+                }
+              }
+            );
+          }, 100);
         }
         
-        // Legacy support: Also check for img-parallax class
+        // Legacy support: img-parallax class gets the traditional parallax scale effect
         const hasParallax = element.classList.contains('img-parallax');
         
         // Only add parallax on desktop (skip on mobile for performance)
@@ -1679,6 +1685,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             scale: 1.2,
             onComplete: () => {
               // Ensure object-fit is preserved after scaling
+              const objectFit = element.dataset.webflowObjectFit || 'cover';
               element.style.setProperty('object-fit', objectFit, 'important');
             }
           });
@@ -1695,6 +1702,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             },
             onComplete: () => {
               // Ensure object-fit is preserved after ScrollTrigger scaling animation
+              const objectFit = element.dataset.webflowObjectFit || 'cover';
               element.style.setProperty('object-fit', objectFit, 'important');
             }
           });
