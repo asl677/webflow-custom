@@ -1741,12 +1741,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%",
-              end: "bottom 10%",
-              toggleActions: "play none reverse none", // Play on enter, reverse on leave back
+              start: "top 85%", // Start reveal sooner (was 90%)
+              end: "top 30%", // End sooner so reverse triggers earlier
+              toggleActions: isInViewport ? "play none none none" : "play none reverse none", // Only reverse if not initially in viewport
               onLeaveBack: () => {
-                // Hide image when scrolling back up and out of view
-                window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
+                // Hide image when scrolling back up and out of view (only if not initially visible)
+                if (!isInViewport) {
+                  window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
+                }
               }
             },
             onStart: () => {
@@ -1768,9 +1770,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
-                start: "top 90%",
-                end: "bottom 10%",
-                toggleActions: "play none reverse none" // Reverse scale on scroll out
+                start: "top 85%",
+                end: "top 30%",
+                toggleActions: isInViewport ? "play none none none" : "play none reverse none" // Only reverse if not initially visible
               }
             });
           }
