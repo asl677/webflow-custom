@@ -3289,7 +3289,8 @@ window.testToggle = function() {
         console.log('✅ Found MooseStack container:', targetContainer, targetContainer.className);
         initDitherEffect(targetContainer);
       } else {
-        console.warn('❌ Could not find MooseStack container');
+        // Silently skip - dither effect is optional
+        // console.warn('❌ Could not find MooseStack container');
       }
       
       const observer = new MutationObserver(() => {
