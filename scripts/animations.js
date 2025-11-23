@@ -785,9 +785,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     
-    // Find all text elements - cast wide net
-    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
+    // Find all text elements - cast wide net, explicitly include time-text and rotating-text
+    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a, #time-text, #rotating-text');
     const validElements = Array.from(textElements).filter(el => {
+      // Always include time-text and rotating-text
+      if (el.id === 'time-text' || el.id === 'rotating-text') {
+        return true;
+      }
+      
       const text = el.textContent?.trim();
       const hasChildren = el.children.length === 0; // No child elements
       const isVisible = window.getComputedStyle(el).display !== 'none';
@@ -1438,15 +1443,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => scrambleLine(counter, 800), 200);
     }
     
-    const rotatingText = document.getElementById('rotating-text');
-    if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      setTimeout(() => scrambleLine(rotatingText, 800), 400);
-    }
-    
-    const timeText = document.getElementById('time-text');
-    if (timeText && !timeText.dataset.infiniteClone) {
-      setTimeout(() => scrambleLine(timeText, 800), 400);
-    }
+    // Note: #rotating-text and #time-text are now handled by initHeadingAnimations()
+    // They will scramble in with the line-by-line sequence
     
     
     // Fix container responsiveness
