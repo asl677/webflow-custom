@@ -1643,44 +1643,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         }
           
-        // Add scale effect for videos and parallax images (on desktop only)
-        // Scale effect happens independently, not during mask reveal
-        if (hasScaleEffect && !isMobile && !window.isFullscreenMode) {
-          // For videos, start at scale 1.0 during mask reveal, then add subtle scale effect after
-          window.gsap.set(element, { 
-            scale: 1.0
-          });
-          
-          // Add a subtle zoom-out effect that happens AFTER the mask reveal starts
-          setTimeout(() => {
-            window.gsap.fromTo(element, 
-              { scale: 1.05 },
-              { 
-                scale: 1.0, 
-                duration: 1.2, 
-                ease: "power2.out",
-                scrollTrigger: { 
-                  trigger: element, 
-                  start: "top 80%",
-                  end: "top 50%", 
-                  once: true,
-                  scrub: 0.5
-                },
-                onComplete: () => {
-                  // Ensure object-fit is preserved after scaling
-                  const objectFit = element.dataset.webflowObjectFit || 'cover';
-                  element.style.setProperty('object-fit', objectFit, 'important');
-                }
-              }
-            );
-          }, 100);
-        }
-        
         // Legacy support: img-parallax class gets the traditional parallax scale effect
         const hasParallax = element.classList.contains('img-parallax');
         
-        // Only add parallax on desktop (skip on mobile for performance)
-        if (hasParallax && !hasScaleEffect && !isMobile && !window.isFullscreenMode) {
+        // Only add parallax scale effect to images with img-parallax class (not videos)
+        if (hasParallax && !isMobile && !window.isFullscreenMode) {
           window.gsap.set(element, { 
             scale: 1.2,
             onComplete: () => {
