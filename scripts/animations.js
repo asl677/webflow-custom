@@ -707,7 +707,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 2800; // Delay images so text scramble completes first
+    const imageDelay = 2600; // Delay images so text scramble completes first (reduced by 200ms)
     setTimeout(() => {
       startMaskedImageAnimations();
       
@@ -1629,7 +1629,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Add small stagger only for initial viewport images
         let staggerDelay = 0;
         if (isInViewport) {
-          staggerDelay = inViewportCount * 0.15; // 150ms between visible images
+          staggerDelay = inViewportCount * 0.08; // 80ms between visible images (reduced from 150ms)
           inViewportCount++;
         }
         
