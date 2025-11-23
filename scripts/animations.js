@@ -3717,17 +3717,43 @@ window.testToggle = function() {
       console.log(`✅ Found ${protectedElements.length} sticky/video elements, protecting from Lenis`);
       
       protectedElements.forEach(el => {
-        // Add data attribute to mark as protected
+        // Add data attribute to mark as protected - Lenis checks for this
         el.dataset.lenisPrevent = 'true';
+        el.setAttribute('data-lenis-prevent', ''); // Also add as attribute without value
         
-        // Prevent Lenis from affecting these elements
+        // Prevent Lenis scroll events from affecting these elements
         el.addEventListener('wheel', (e) => {
-          // Let the native scroll handle these elements
           e.stopPropagation();
+          e.stopImmediatePropagation();
         }, { passive: false, capture: true });
+        
+        el.addEventListener('touchmove', (e) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }, { passive: false, capture: true });
+        
+        el.addEventListener('scroll', (e) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }, { passive: false, capture: true });
+        
+        // Apply CSS to ensure sticky positioning works
+        const computedStyle = window.getComputedStyle(el);
+        if (computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
+          // Ensure sticky elements have proper containing block
+          if (!el.style.position) {
+            el.style.position = computedStyle.position;
+          }
+        }
         
         console.log('Protected element:', el.className || el.id || el.tagName);
       });
+      
+      // Also try to configure Lenis directly if it exists
+      if (window.lenis) {
+        console.log('Configuring Lenis to prevent on protected elements');
+        // Lenis will check for data-lenis-prevent attribute
+      }
     }
 
     // Re-check for dynamically added elements
@@ -3737,8 +3763,21 @@ window.testToggle = function() {
         console.log(`Found ${newElements.length} new sticky/video elements`);
         newElements.forEach(el => {
           el.dataset.lenisPrevent = 'true';
+          el.setAttribute('data-lenis-prevent', '');
+          
           el.addEventListener('wheel', (e) => {
             e.stopPropagation();
+            e.stopImmediatePropagation();
+          }, { passive: false, capture: true });
+          
+          el.addEventListener('touchmove', (e) => {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }, { passive: false, capture: true });
+          
+          el.addEventListener('scroll', (e) => {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
           }, { passive: false, capture: true });
         });
       }
