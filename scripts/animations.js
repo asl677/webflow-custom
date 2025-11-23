@@ -12,6 +12,9 @@ window.scriptLoadTest = function() {
 };
 console.log('🚀 Try: window.scriptLoadTest()');
 
+// Add loading class immediately to prevent toggle flash
+document.body.classList.add('loading');
+
 // Immediately show .locked elements to prevent flash
 (function() {
   const showLockedStyle = document.createElement('style');
@@ -721,7 +724,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 2200; // Start 0.2s sooner than before - delay images so text scramble completes first
+    const imageDelay = 1600; // Reduced delay - images start sooner after text scramble
     setTimeout(() => {
       startMaskedImageAnimations();
       
