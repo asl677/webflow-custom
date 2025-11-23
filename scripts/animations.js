@@ -1572,11 +1572,34 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // This keeps video at full size while mask reveals it
         if (isVerticalMask) {
           const parentEl = parent.closest('.reveal-full, .video-full');
+          
+          // Function to update video dimensions on resize
+          const updateVideoDimensions = () => {
+            if (parentEl) {
+              const parentHeight = parentEl.offsetHeight;
+              element.style.height = `${parentHeight}px`;
+            }
+          };
+          
+          // Set initial dimensions
           const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
           
           // Video is positioned relative to parent container, not the mask wrapper
           // This prevents it from scaling as the mask expands
           element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+          
+          // Add resize listener to update video height
+          if (!element.dataset.videoResizeAdded) {
+            window.addEventListener('resize', updateVideoDimensions);
+            
+            // Also use ResizeObserver for parent container changes
+            const resizeObserver = new ResizeObserver(updateVideoDimensions);
+            if (parentEl) {
+              resizeObserver.observe(parentEl);
+            }
+            
+            element.dataset.videoResizeAdded = 'true';
+          }
         } else {
           // Images: use fixed pixel dimensions
           element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
