@@ -12,6 +12,20 @@ window.scriptLoadTest = function() {
 };
 console.log('🚀 Try: window.scriptLoadTest()');
 
+// Immediately show .locked elements to prevent flash
+(function() {
+  const showLockedStyle = document.createElement('style');
+  showLockedStyle.id = 'show-locked-text';
+  showLockedStyle.textContent = `
+    .locked {
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  `;
+  document.head.appendChild(showLockedStyle);
+  console.log('✅ .locked text styles preloaded');
+})();
+
 // Hide images but allow preloader
 (function() {
   const emergencyHide = document.createElement('style');
