@@ -1600,8 +1600,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Set initial state based on mask direction
         if (isVerticalMask) {
           window.gsap.set(maskContainer, { height: '0px' });
-          // Set initial scale for videos
-          window.gsap.set(element, { scale: 1.3 });
+          // Set initial scale for videos - more pronounced effect
+          window.gsap.set(element, { scale: 1.5 });
         } else {
           window.gsap.set(maskContainer, { width: '0px' });
         }
@@ -1693,7 +1693,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Only add parallax scale effect to images with img-parallax class (not videos)
         if (hasParallax && !isMobile && !window.isFullscreenMode) {
           window.gsap.set(element, { 
-            scale: 1.2,
+            scale: 1.4,  // Increased from 1.2 for more noticeable effect
             onComplete: () => {
               // Ensure object-fit is preserved after scaling
               const objectFit = element.dataset.webflowObjectFit || 'cover';
