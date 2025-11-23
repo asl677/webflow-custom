@@ -3695,15 +3695,25 @@ window.testToggle = function() {
         if (!protectedElements.includes(el)) {
           protectedElements.push(el);
         }
+        // Also protect the parent container
+        const parent = el.parentElement;
+        if (parent && !protectedElements.includes(parent)) {
+          protectedElements.push(parent);
+        }
       });
       
-      // Also find all sticky positioned elements
+      // Also find all sticky positioned elements and their scroll containers
       const allElements = document.querySelectorAll('*');
       allElements.forEach(el => {
         const computedStyle = window.getComputedStyle(el);
         if (computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
           if (!protectedElements.includes(el)) {
             protectedElements.push(el);
+          }
+          // Protect the parent scroll container
+          const parent = el.parentElement;
+          if (parent && !protectedElements.includes(parent)) {
+            protectedElements.push(parent);
           }
         }
       });
@@ -3714,12 +3724,17 @@ window.testToggle = function() {
     const protectedElements = findProtectedElements();
     
     if (protectedElements.length > 0) {
-      console.log(`✅ Found ${protectedElements.length} sticky/video elements, protecting from Lenis`);
+      console.log(`✅ Found ${protectedElements.length} sticky/video elements and parents, protecting from Lenis`);
       
       protectedElements.forEach(el => {
         // Add data attribute to mark as protected - Lenis checks for this
         el.dataset.lenisPrevent = 'true';
         el.setAttribute('data-lenis-prevent', ''); // Also add as attribute without value
+        
+        // For Lenis, we need to add the class that it checks
+        if (!el.classList.contains('lenis-prevent')) {
+          el.classList.add('lenis-prevent');
+        }
         
         // Prevent Lenis scroll events from affecting these elements
         el.addEventListener('wheel', (e) => {
@@ -3752,7 +3767,20 @@ window.testToggle = function() {
       // Also try to configure Lenis directly if it exists
       if (window.lenis) {
         console.log('Configuring Lenis to prevent on protected elements');
-        // Lenis will check for data-lenis-prevent attribute
+        
+        // Try to stop Lenis from virtualizing scroll on body
+        try {
+          // Force Lenis to respect native sticky behavior
+          if (window.lenis.options) {
+            window.lenis.options.prevent = (node) => {
+              return node.classList.contains('lenis-prevent') || 
+                     node.hasAttribute('data-lenis-prevent') ||
+                     node.dataset.lenisPrevent === 'true';
+            };
+          }
+        } catch (err) {
+          console.log('Could not configure Lenis options:', err);
+        }
       }
     }
 
@@ -3764,6 +3792,10 @@ window.testToggle = function() {
         newElements.forEach(el => {
           el.dataset.lenisPrevent = 'true';
           el.setAttribute('data-lenis-prevent', '');
+          
+          if (!el.classList.contains('lenis-prevent')) {
+            el.classList.add('lenis-prevent');
+          }
           
           el.addEventListener('wheel', (e) => {
             e.stopPropagation();
