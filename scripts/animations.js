@@ -3622,16 +3622,10 @@ window.testToggle = function() {
       protectedElements.push({ element: el, type: 'draggable' });
     });
     
-    // Find .video-full containers (these need fixed positioning)
-    document.querySelectorAll('.video-full, .reveal-full.video-full, .reveal.reveal-full.video-full').forEach(el => {
-      protectedElements.push({ element: el, type: 'fixed' });
-    });
-    
-    // Find other fixed positioned elements
-    document.querySelectorAll('*').forEach(el => {
+    // Find fixed/sticky positioned elements inside video containers
+    document.querySelectorAll('.video-full *, .reveal-full.video-full *, .reveal.reveal-full.video-full *').forEach(el => {
       const computedStyle = window.getComputedStyle(el);
-      if (computedStyle.position === 'fixed') {
-        // Don't add if already added as video-full
+      if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
         const alreadyAdded = protectedElements.some(p => p.element === el);
         if (!alreadyAdded) {
           protectedElements.push({ element: el, type: 'fixed' });
