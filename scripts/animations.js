@@ -707,7 +707,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 2400; // Start 0.2s sooner - delay images so text scramble completes first
+    const imageDelay = 2200; // Start 0.2s sooner than before - delay images so text scramble completes first
     setTimeout(() => {
       startMaskedImageAnimations();
       
@@ -785,12 +785,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }
     
     
-    // Find all text elements - cast wide net, explicitly include time-text and rotating-text
-    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a, #time-text, #rotating-text');
+    // Find all text elements - cast wide net
+    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
     const validElements = Array.from(textElements).filter(el => {
-      // Always include time-text and rotating-text
+      // Exclude time-text and rotating-text - they have their own handling
       if (el.id === 'time-text' || el.id === 'rotating-text') {
-        return true;
+        return false;
       }
       
       const text = el.textContent?.trim();
@@ -1443,8 +1443,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       setTimeout(() => scrambleLine(counter, 800), 200);
     }
     
-    // Note: #rotating-text and #time-text are now handled by initHeadingAnimations()
-    // They will scramble in with the line-by-line sequence
+    const rotatingText = document.getElementById('rotating-text');
+    if (rotatingText && !rotatingText.dataset.infiniteClone) {
+      console.log('🔄 Scrambling rotating-text');
+      setTimeout(() => scrambleLine(rotatingText, 800), 400);
+    }
+    
+    const timeText = document.getElementById('time-text');
+    if (timeText && !timeText.dataset.infiniteClone) {
+      console.log('⏰ Scrambling time-text');
+      setTimeout(() => scrambleLine(timeText, 800), 400);
+    }
     
     
     // Fix container responsiveness
