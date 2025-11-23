@@ -1611,13 +1611,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   // This preserves sticky positioning behavior
                 }
                 
-                // Completely override mask container styles with setAttribute for maximum specificity
-                maskContainer.removeAttribute('style');
-                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                // Function to update dimensions responsively
+                const updateVideoDimensions = () => {
+                  // Mask container uses percentage-based sizing with absolute positioning
+                  maskContainer.removeAttribute('style');
+                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                  
+                  // Video uses percentage-based sizing for responsiveness
+                  element.removeAttribute('style');
+                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                };
                 
-                // Completely override video styles
-                element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                // Set initial dimensions
+                updateVideoDimensions();
+                
+                // Add resize listener for responsive behavior
+                if (!element.dataset.resizeListenerAdded) {
+                  const resizeObserver = new ResizeObserver(() => {
+                    updateVideoDimensions();
+                  });
+                  
+                  // Observe the parent container for size changes
+                  if (parentEl) {
+                    resizeObserver.observe(parentEl);
+                    element.dataset.resizeListenerAdded = 'true';
+                  }
+                }
               }
             }
           });
@@ -1663,13 +1682,32 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   // This preserves sticky positioning behavior
                 }
                 
-                // Completely override mask container styles with setAttribute for maximum specificity
-                maskContainer.removeAttribute('style');
-                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                // Function to update dimensions responsively
+                const updateVideoDimensions = () => {
+                  // Mask container uses percentage-based sizing with absolute positioning
+                  maskContainer.removeAttribute('style');
+                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                  
+                  // Video uses percentage-based sizing for responsiveness
+                  element.removeAttribute('style');
+                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                };
                 
-                // Completely override video styles
-                element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                // Set initial dimensions
+                updateVideoDimensions();
+                
+                // Add resize listener for responsive behavior
+                if (!element.dataset.resizeListenerAdded) {
+                  const resizeObserver = new ResizeObserver(() => {
+                    updateVideoDimensions();
+                  });
+                  
+                  // Observe the parent container for size changes
+                  if (parentEl) {
+                    resizeObserver.observe(parentEl);
+                    element.dataset.resizeListenerAdded = 'true';
+                  }
+                }
               }
             }
           });
@@ -1737,11 +1775,29 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   // Don't force dimensions - let Webflow styles control parent
                 }
                 
-                maskContainer.removeAttribute('style');
-                maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                // Function to update dimensions responsively
+                const updateVideoDimensions = () => {
+                  maskContainer.removeAttribute('style');
+                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
+                  
+                  element.removeAttribute('style');
+                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                };
                 
-                element.removeAttribute('style');
-                element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                // Set initial dimensions
+                updateVideoDimensions();
+                
+                // Add resize listener for responsive behavior
+                if (!element.dataset.resizeListenerAdded) {
+                  const resizeObserver = new ResizeObserver(() => {
+                    updateVideoDimensions();
+                  });
+                  
+                  if (parentEl) {
+                    resizeObserver.observe(parentEl);
+                    element.dataset.resizeListenerAdded = 'true';
+                  }
+                }
               } else {
                 const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
                 window.gsap.set(maskContainer, { width: targetWidth + 'px' });
