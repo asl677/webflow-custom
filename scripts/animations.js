@@ -1600,17 +1600,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent container is properly sized but preserve Webflow positioning (like sticky)
+                // Preserve parent container's original Webflow positioning and dimensions
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
+                  // Only set position to relative if it's static - otherwise preserve sticky, fixed, absolute
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  // Force parent to be full width/height without affecting Webflow layout properties
-                  parentEl.style.setProperty('width', '100%', 'important');
-                  parentEl.style.setProperty('height', '100%', 'important');
-                  // Don't force margin/padding to 0 - preserve Webflow values
+                  // Don't force width/height on parent - let Webflow styles control it
+                  // This preserves sticky positioning behavior
                 }
                 
                 // Completely override mask container styles with setAttribute for maximum specificity
@@ -1654,17 +1652,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent container is properly sized but preserve Webflow positioning (like sticky)
+                // Preserve parent container's original Webflow positioning and dimensions
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
+                  // Only set position to relative if it's static - otherwise preserve sticky, fixed, absolute
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  // Force parent to be full width/height without affecting Webflow layout properties
-                  parentEl.style.setProperty('width', '100%', 'important');
-                  parentEl.style.setProperty('height', '100%', 'important');
-                  // Don't force margin/padding to 0 - preserve Webflow values
+                  // Don't force width/height on parent - let Webflow styles control it
+                  // This preserves sticky positioning behavior
                 }
                 
                 // Completely override mask container styles with setAttribute for maximum specificity
@@ -1731,16 +1727,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 const parentEl = maskContainer.parentNode;
                 const objectFit = element.dataset.webflowObjectFit || 'cover';
                 
-                // Ensure parent is properly sized but preserve Webflow positioning
+                // Preserve parent's Webflow positioning and dimensions
                 if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
                   const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static (preserve sticky, absolute, fixed, etc.)
+                  // Only set position to relative if it's static - preserve sticky, fixed, absolute
                   if (parentStyles.position === 'static') {
                     parentEl.style.setProperty('position', 'relative', 'important');
                   }
-                  parentEl.style.setProperty('width', '100%', 'important');
-                  parentEl.style.setProperty('height', '100%', 'important');
-                  // Don't force margin/padding to 0 - preserve Webflow values
+                  // Don't force dimensions - let Webflow styles control parent
                 }
                 
                 maskContainer.removeAttribute('style');
