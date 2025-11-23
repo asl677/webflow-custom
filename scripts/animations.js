@@ -3622,41 +3622,17 @@ window.testToggle = function() {
 })();
 
 // Protect draggable and sticky elements from Lenis interference
-// AND configure Lenis to only apply to #slider
 (function() {
   setTimeout(() => {
-    // Configure Lenis to only apply to #slider if it exists
-    if (window.lenis) {
-      const slider = document.querySelector('#slider');
-      if (slider) {
-        console.log('✅ Reconfiguring Lenis to only affect #slider');
-        // Destroy existing Lenis
-        window.lenis.destroy();
-        
-        // Recreate with #slider wrapper
-        window.lenis = new Lenis({
-          wrapper: slider,
-          content: slider,
-          duration: 1.2,
-          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          orientation: 'vertical',
-          gestureOrientation: 'vertical',
-          smoothWheel: true,
-          smoothTouch: false,
-          wheelMultiplier: 1,
-          touchMultiplier: 2,
-          normalizeWheel: true,
-          infinite: false
-        });
-        
-        // Restart the animation loop
-        function raf(time) {
-          window.lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
+    // Add CSS to force sticky/fixed elements to not be transformed
+    const style = document.createElement('style');
+    style.textContent = `
+      [data-lenis-prevent] {
+        transform: none !important;
+        will-change: auto !important;
       }
-    }
+    `;
+    document.head.appendChild(style);
     
     // Find and exclude all sticky/fixed positioned elements from Lenis
     document.querySelectorAll('*').forEach(el => {
