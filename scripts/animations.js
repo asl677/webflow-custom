@@ -1621,15 +1621,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Function to update video dimensions on resize
           const updateVideoDimensions = () => {
             if (parentEl) {
-              const parentHeight = parentEl.offsetHeight;
-              const parentWidth = parentEl.offsetWidth;
-              // Update both dimensions to maintain proper aspect ratio - preserve visibility
-              element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important;opacity:1!important;visibility:visible!important`;
+              // Use 100% dimensions to let the parent container control sizing
+              element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important;opacity:1!important;visibility:visible!important`;
               
-              // Also update mask container to match parent
+              // Update mask container to match parent dimensions
               if (maskContainer) {
-                maskContainer.style.width = `${parentWidth}px`;
-                // Keep current height for animation progress
+                const parentHeight = parentEl.offsetHeight;
+                const parentWidth = parentEl.offsetWidth;
+                
+                // Only update if animation is complete
+                if (element.dataset.maskComplete === 'true') {
+                  maskContainer.style.width = `${parentWidth}px`;
+                  maskContainer.style.height = `${parentHeight}px`;
+                }
               }
             }
           };
