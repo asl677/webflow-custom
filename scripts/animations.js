@@ -1641,9 +1641,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
           const parentWidth = parentEl ? parentEl.offsetWidth : originalWidth;
           
-          // Video is positioned relative to parent container, not the mask wrapper
-          // This prevents it from scaling as the mask expands
-          element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+          // Video uses 100% dimensions to let parent control sizing
+          // This prevents scaling issues and maintains proper aspect ratio
+          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
           
           // Add resize listener to update video height
           if (!element.dataset.videoResizeAdded) {
