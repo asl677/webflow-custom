@@ -2879,9 +2879,29 @@ window.testToggle = function() {
 // DEAD SIMPLE TOGGLE - Just add/remove a class
 (function() {
   function toggleBigImages() {
+    // Preserve draggable element text state during toggle
+    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
+    const textStates = [];
+    
+    draggableElements.forEach(el => {
+      textStates.push({
+        element: el,
+        innerHTML: el.innerHTML,
+        visibility: el.style.visibility,
+        opacity: el.style.opacity
+      });
+    });
+    
     document.body.classList.toggle('fullscreen-mode');
     const isFullscreen = document.body.classList.contains('fullscreen-mode');
     console.log('Toggle:', isFullscreen ? 'ON' : 'OFF');
+    
+    // Restore draggable element text states immediately
+    textStates.forEach(state => {
+      state.element.innerHTML = state.innerHTML;
+      if (state.visibility) state.element.style.visibility = state.visibility;
+      if (state.opacity) state.element.style.opacity = state.opacity;
+    });
     
     if (!isFullscreen) {
       // Toggling OFF - wait for CSS to settle, then restore mask widths
