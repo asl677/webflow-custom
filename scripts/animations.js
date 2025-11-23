@@ -1686,7 +1686,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          // For videos, animate scale from 1.3 to 1.0 during mask reveal
+          // For videos, animate scale from 1.5 to 1.0 during mask reveal
           if (isVerticalMask) {
             window.gsap.to(element, {
               scale: 1.0,
@@ -1697,8 +1697,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 trigger: element, 
                 start: "top 90%",
                 end: "top center", 
-                once: true,
+                once: true,  // Only run once
                 toggleActions: "play none none none"
+              },
+              onComplete: () => {
+                // Lock scale at 1.0 after animation completes
+                window.gsap.set(element, { scale: 1.0 });
               }
             });
           }
