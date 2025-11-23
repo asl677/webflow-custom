@@ -912,12 +912,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
     
-    // Note: Keeping hover effects disabled on mobile since touch devices don't need hover
-    if (isMobile) {
-      return; // Exit early, no hover effects on mobile (touch doesn't need hover)
-    }
+    // Enable hover effects on all devices - users can have mouse on tablets too
+    console.log('🎯 Initializing letter hover effects');
     
     const letterElements = document.querySelectorAll('.letter');
+    console.log(`📊 Found ${letterElements.length} letter elements`);
     
     // Regular letter bouncing for non-links
     letterElements.forEach((letter, i) => {
