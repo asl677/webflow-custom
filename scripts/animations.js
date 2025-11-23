@@ -1590,16 +1590,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           const updateVideoDimensions = () => {
             if (parentEl) {
               const parentHeight = parentEl.offsetHeight;
-              element.style.height = `${parentHeight}px`;
+              const parentWidth = parentEl.offsetWidth;
+              // Update both dimensions to maintain proper aspect ratio
+              element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+              
+              // Also update mask container to match parent
+              if (maskContainer) {
+                maskContainer.style.width = `${parentWidth}px`;
+                // Keep current height for animation progress
+              }
             }
           };
           
           // Set initial dimensions
           const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
+          const parentWidth = parentEl ? parentEl.offsetWidth : originalWidth;
           
           // Video is positioned relative to parent container, not the mask wrapper
           // This prevents it from scaling as the mask expands
-          element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+          element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
           
           // Add resize listener to update video height
           if (!element.dataset.videoResizeAdded) {
