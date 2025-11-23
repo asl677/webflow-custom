@@ -1516,29 +1516,24 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Check if this should be a vertical mask reveal
         const parentContainer = element.closest('.reveal-full.video-full, .reveal.reveal-full.video-full');
-        const isVerticalMask = parentContainer !== null;
+        const isVerticalMask = false; // Changed: All masks are now horizontal, including videos
+        const hasScaleEffect = parentContainer !== null || element.classList.contains('img-parallax'); // Videos and parallax images get scale effect
+        
+        // Ensure parent container doesn't get positioning overridden (preserve sticky, etc.)
+        if (parentContainer) {
+          const parentStyles = window.getComputedStyle(parentContainer);
+          // Store original position to preserve it
+          parentContainer.dataset.originalPosition = parentStyles.position;
+          // Don't force any position changes - let Webflow handle it
+        }
         
         // Process with mask-wrap (desktop always, mobile only for initial viewport)
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
         
-        // Vertical mask: animate height instead of width
-        if (isVerticalMask) {
-          // Mask container starts at height 0, but video inside should already be at full parent size
-          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;bottom:0;margin:0;padding:0;line-height:0`;
-          maskContainer.dataset.vertical = 'true';
-          
-          // Ensure parent has a defined height for the video to reference
-          const parentEl = parent.closest('.reveal-full, .video-full');
-          if (parentEl) {
-            const parentHeight = parentEl.offsetHeight;
-            // Store parent height for video sizing
-            element.dataset.parentHeight = parentHeight;
-          }
-        } else {
-          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-        }
+        // All masks use horizontal (width) animation
+        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         
         // Ensure image stays hidden until mask is ready
         element.style.setProperty('opacity', '0', 'important');
@@ -1558,19 +1553,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
         
-        // For vertical masks (videos), use percentage-based dimensions for responsiveness
-        // Video should be sized relative to the parent container, not the mask wrapper
-        // For horizontal masks (images), use fixed pixel dimensions for animation
-        if (isVerticalMask) {
-          const parentEl = parent.closest('.reveal-full, .video-full');
-          const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
-          
-          // Video uses fixed pixel dimensions during animation to prevent scaling
-          // It will be positioned relative to parent, not mask container
-          element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;position:absolute!important;top:0!important;left:0!important;transform:translateZ(0)!important;will-change:auto!important`;
-        } else {
-          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
-        }
+        // All masks now use fixed pixel dimensions for animation (horizontal reveal)
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
         
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
@@ -1587,12 +1571,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           inViewportCount++;
         }
         
-        // Set initial state based on mask direction
-        if (isVerticalMask) {
-          window.gsap.set(maskContainer, { height: '0px' });
-        } else {
-          window.gsap.set(maskContainer, { width: '0px' });
-        }
+        // Set initial state - all masks are horizontal now
+        window.gsap.set(maskContainer, { width: '0px' });
         
         // Keep image hidden until animation starts
         window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
@@ -1601,12 +1581,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // DESKTOP: Animate all images with ScrollTrigger
         if (isMobile && isInViewport) {
           // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
-          const animProps = isVerticalMask 
-            ? { height: maskContainer.dataset.targetHeight + 'px' }
-            : { width: maskContainer.dataset.targetWidth + 'px' };
-            
           window.gsap.to(maskContainer, { 
-            ...animProps,
+            width: maskContainer.dataset.targetWidth + 'px',
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
@@ -1617,76 +1593,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
-              
-              // For vertical masks (videos), restore full container stretching
-              if (isVerticalMask) {
-                const parentEl = maskContainer.parentNode;
-                const objectFit = element.dataset.webflowObjectFit || 'cover';
-                
-                // Preserve parent container's original Webflow positioning and dimensions
-                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
-                  const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static - otherwise preserve sticky, fixed, absolute
-                  if (parentStyles.position === 'static') {
-                    parentEl.style.setProperty('position', 'relative', 'important');
-                  }
-                  // Don't force width/height on parent - let Webflow styles control it
-                  // This preserves sticky positioning behavior
-                }
-                
-                // Function to update dimensions responsively
-                const updateVideoDimensions = () => {
-                  // Mask container uses percentage-based sizing with absolute positioning
-                  // Clear any GSAP-set inline styles first
-                  window.gsap.set(maskContainer, { clearProps: "all" });
-                  maskContainer.removeAttribute('style');
-                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
-                  
-                  // Video uses absolute positioning with inset to fill mask container completely
-                  window.gsap.set(element, { clearProps: "all" });
-                  element.removeAttribute('style');
-                  element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
-                };
-                
-                // Set initial dimensions
-                updateVideoDimensions();
-                
-                // Add both ResizeObserver and window resize listener for comprehensive coverage
-                if (!element.dataset.resizeListenerAdded) {
-                  // ResizeObserver for container changes
-                  const resizeObserver = new ResizeObserver(() => {
-                    updateVideoDimensions();
-                  });
-                  
-                  // Observe the parent container for size changes
-                  if (parentEl) {
-                    resizeObserver.observe(parentEl);
-                  }
-                  
-                  // Window resize listener for viewport changes
-                  const handleResize = () => {
-                    updateVideoDimensions();
-                  };
-                  window.addEventListener('resize', handleResize);
-                  
-                  element.dataset.resizeListenerAdded = 'true';
-                  // Store cleanup function
-                  element.dataset.resizeCleanup = () => {
-                    resizeObserver.disconnect();
-                    window.removeEventListener('resize', handleResize);
-                  };
-                }
-              }
             }
           });
         } else if (!isMobile) {
           // Desktop: use ScrollTrigger for all images
-          const animProps = isVerticalMask 
-            ? { height: maskContainer.dataset.targetHeight + 'px' }
-            : { width: maskContainer.dataset.targetWidth + 'px' };
-            
           window.gsap.to(maskContainer, { 
-            ...animProps,
+            width: maskContainer.dataset.targetWidth + 'px',
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
@@ -1704,66 +1616,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
-              
-              // For vertical masks (videos), restore full container stretching
-              if (isVerticalMask) {
-                const parentEl = maskContainer.parentNode;
-                const objectFit = element.dataset.webflowObjectFit || 'cover';
-                
-                // Preserve parent container's original Webflow positioning and dimensions
-                if (parentEl && (parentEl.classList.contains('reveal-full') || parentEl.classList.contains('video-full'))) {
-                  const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static - otherwise preserve sticky, fixed, absolute
-                  if (parentStyles.position === 'static') {
-                    parentEl.style.setProperty('position', 'relative', 'important');
-                  }
-                  // Don't force width/height on parent - let Webflow styles control it
-                  // This preserves sticky positioning behavior
-                }
-                
-                // Function to update dimensions responsively
-                const updateVideoDimensions = () => {
-                  // Mask container uses percentage-based sizing with absolute positioning
-                  // Clear any GSAP-set inline styles first
-                  window.gsap.set(maskContainer, { clearProps: "all" });
-                  maskContainer.removeAttribute('style');
-                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
-                  
-                  // Video uses absolute positioning with inset to fill mask container completely
-                  window.gsap.set(element, { clearProps: "all" });
-                  element.removeAttribute('style');
-                  element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
-                };
-                
-                // Set initial dimensions
-                updateVideoDimensions();
-                
-                // Add both ResizeObserver and window resize listener for comprehensive coverage
-                if (!element.dataset.resizeListenerAdded) {
-                  // ResizeObserver for container changes
-                  const resizeObserver = new ResizeObserver(() => {
-                    updateVideoDimensions();
-                  });
-                  
-                  // Observe the parent container for size changes
-                  if (parentEl) {
-                    resizeObserver.observe(parentEl);
-                  }
-                  
-                  // Window resize listener for viewport changes
-                  const handleResize = () => {
-                    updateVideoDimensions();
-                  };
-                  window.addEventListener('resize', handleResize);
-                  
-                  element.dataset.resizeListenerAdded = 'true';
-                  // Store cleanup function
-                  element.dataset.resizeCleanup = () => {
-                    resizeObserver.disconnect();
-                    window.removeEventListener('resize', handleResize);
-                  };
-                }
-              }
             }
           });
         }
@@ -3610,81 +3462,110 @@ window.testToggle = function() {
 (function() {
   // Wait for Lenis to load if it exists
   setTimeout(() => {
-    const infoWrap = document.querySelector('.info-wrap');
-    if (!infoWrap) return;
+    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
+    if (draggableElements.length === 0) return;
     
-    // Store original position style
-    const originalPosition = window.getComputedStyle(infoWrap).position;
-    
-    // Completely prevent scroll on the draggable element
-    infoWrap.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive: false });
-    
-    infoWrap.addEventListener('touchmove', (e) => {
-      // Allow touch move for dragging but prevent scroll
-      e.stopPropagation();
-    }, { passive: false });
-    
-    // Disable smooth scroll when interacting with .info-wrap
-    let isDragging = false;
-    
-    const startDragging = (e) => {
-      isDragging = true;
+    draggableElements.forEach(draggableEl => {
+      // Store original position style
+      const originalPosition = window.getComputedStyle(draggableEl).position;
       
-      // Stop Lenis if it exists
-      if (window.lenis) {
-        window.lenis.stop();
-      }
-      
-      // Make element fixed to prevent scroll affecting it
-      if (originalPosition !== 'fixed') {
-        const rect = infoWrap.getBoundingClientRect();
-        infoWrap.style.position = 'fixed';
-        infoWrap.style.top = rect.top + 'px';
-        infoWrap.style.left = rect.left + 'px';
-      }
-      
-      // Prevent page scroll completely
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      
-      // Prevent default to stop any scroll behavior
-      if (e.cancelable) {
+      // Completely prevent scroll on the draggable element
+      draggableEl.addEventListener('wheel', (e) => {
         e.preventDefault();
-      }
-    };
-    
-    const stopDragging = () => {
-      if (!isDragging) return;
-      isDragging = false;
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
       
-      // Re-enable Lenis if it exists
-      if (window.lenis) {
-        window.lenis.start();
-      }
+      draggableEl.addEventListener('touchmove', (e) => {
+        // Allow touch move for dragging but prevent scroll propagation
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
       
-      // Restore original position
-      if (originalPosition !== 'fixed') {
-        infoWrap.style.position = '';
-      }
+      // Prevent scroll events completely
+      draggableEl.addEventListener('scroll', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }, { passive: false, capture: true });
       
-      // Restore scroll
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-    
-    // Mouse events
-    infoWrap.addEventListener('mousedown', startDragging);
-    document.addEventListener('mouseup', stopDragging);
-    
-    // Touch events
-    infoWrap.addEventListener('touchstart', startDragging, { passive: false });
-    document.addEventListener('touchend', stopDragging);
-    document.addEventListener('touchcancel', stopDragging);
-    
-    console.log('✅ Draggable element protection enabled for .info-wrap');
+      // Disable smooth scroll when interacting with draggable elements
+      let isDragging = false;
+      
+      const startDragging = (e) => {
+        isDragging = true;
+        
+        // Stop Lenis if it exists
+        if (window.lenis) {
+          window.lenis.stop();
+        }
+        
+        // Disable all Webflow interactions temporarily
+        if (window.Webflow) {
+          try {
+            window.Webflow.require('ix2').destroy();
+          } catch(e) {}
+        }
+        
+        // Make element fixed to prevent scroll affecting it
+        if (originalPosition !== 'fixed') {
+          const rect = draggableEl.getBoundingClientRect();
+          draggableEl.style.position = 'fixed';
+          draggableEl.style.top = rect.top + 'px';
+          draggableEl.style.left = rect.left + 'px';
+          draggableEl.style.zIndex = '9999';
+        }
+        
+        // Prevent page scroll completely
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+        
+        // Prevent default to stop any scroll behavior
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      };
+      
+      const stopDragging = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Re-enable Lenis if it exists
+        if (window.lenis) {
+          window.lenis.start();
+        }
+        
+        // Re-enable Webflow interactions
+        if (window.Webflow) {
+          try {
+            window.Webflow.require('ix2').init();
+          } catch(e) {}
+        }
+        
+        // Restore original position
+        if (originalPosition !== 'fixed') {
+          draggableEl.style.position = '';
+          draggableEl.style.zIndex = '';
+        }
+        
+        // Restore scroll
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.touchAction = '';
+      };
+      
+      // Mouse events
+      draggableEl.addEventListener('mousedown', startDragging, { capture: true });
+      document.addEventListener('mouseup', stopDragging);
+      
+      // Touch events
+      draggableEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
+      document.addEventListener('touchend', stopDragging);
+      document.addEventListener('touchcancel', stopDragging);
+      
+      console.log('✅ Draggable element protection enabled for:', draggableEl);
+    });
   }, 1000);
 })();
   
