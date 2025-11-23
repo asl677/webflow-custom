@@ -3611,42 +3611,13 @@ window.testToggle = function() {
   })();
 })();
 
-// Prevent Lenis/smooth scroll from interfering with draggable and fixed elements
+// Protect draggable elements from scroll interference
+// NOTE: Configure Lenis in Webflow with: wrapper: '#slider' to only apply smooth scroll to the slider
 (function() {
-  // Wait for Lenis to load if it exists
   setTimeout(() => {
-    const protectedElements = [];
-    
-    // Find draggable elements
-    document.querySelectorAll('.info-wrap, .draggable').forEach(el => {
-      protectedElements.push({ element: el, type: 'draggable' });
-    });
-    
-    // Find video wrapper containers that have fixed positioning
-    document.querySelectorAll('.video-full, .reveal-full.video-full, .reveal.reveal-full.video-full').forEach(el => {
-      const computedStyle = window.getComputedStyle(el);
-      console.log(`🔍 Checking element:`, el.className, `position:`, computedStyle.position);
-      
-      // Only protect if the wrapper itself is fixed or sticky
-      if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
-        protectedElements.push({ element: el, type: 'fixed' });
-        console.log(`✅ Will protect:`, el.className, `with position:`, computedStyle.position);
-      }
-    });
-    
-    if (protectedElements.length === 0) return;
-    
-    console.log(`✅ Protecting ${protectedElements.filter(p => p.type === 'draggable').length} draggable and ${protectedElements.filter(p => p.type === 'fixed').length} fixed elements from Lenis`);
-    
-    protectedElements.forEach(({ element: protectedEl, type }) => {
-      // For fixed elements, just add data-lenis-prevent and let Webflow styles handle it
-      if (type === 'fixed') {
-        protectedEl.setAttribute('data-lenis-prevent', 'true');
-        console.log(`✅ Added data-lenis-prevent to:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
-        return; // Don't block scroll for fixed elements
-      }
-      
-      // Only for draggable elements: completely prevent scroll
+    // Find draggable elements and protect them
+    document.querySelectorAll('.info-wrap, .draggable').forEach(protectedEl => {
+      // Completely prevent scroll events
       protectedEl.addEventListener('wheel', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -3654,63 +3625,51 @@ window.testToggle = function() {
       }, { passive: false, capture: true });
       
       protectedEl.addEventListener('touchmove', (e) => {
-        // Allow touch move for dragging but prevent scroll propagation
         e.stopPropagation();
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
-      // Prevent scroll events completely
       protectedEl.addEventListener('scroll', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
-      // Drag handling for draggable elements
-      if (type === 'draggable') {
-        // Disable smooth scroll when interacting with draggable elements
-        let isDragging = false;
-        
-        const startDragging = (e) => {
-          isDragging = true;
-          
-          // Stop Lenis if it exists
-          if (window.lenis) {
-            window.lenis.stop();
-          }
-          
-          // Prevent page scroll completely
-          document.body.style.overflow = 'hidden';
-          document.documentElement.style.overflow = 'hidden';
-          document.body.style.touchAction = 'none';
-        };
-        
-        const stopDragging = () => {
-          if (!isDragging) return;
-          isDragging = false;
-          
-          // Re-enable Lenis if it exists
-          if (window.lenis) {
-            window.lenis.start();
-          }
-          
-          // Restore scroll
-          document.body.style.overflow = '';
-          document.documentElement.style.overflow = '';
-          document.body.style.touchAction = '';
-        };
-        
-        // Mouse events
-        protectedEl.addEventListener('mousedown', startDragging, { capture: true });
-        document.addEventListener('mouseup', stopDragging);
-        
-        // Touch events
-        protectedEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
-        document.addEventListener('touchend', stopDragging);
-        document.addEventListener('touchcancel', stopDragging);
-      }
+      // Disable smooth scroll when dragging
+      let isDragging = false;
       
-      console.log(`✅ ${type === 'draggable' ? 'Draggable' : 'Fixed'} element protection enabled for:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
+      const startDragging = (e) => {
+        isDragging = true;
+        
+        if (window.lenis) {
+          window.lenis.stop();
+        }
+        
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+      };
+      
+      const stopDragging = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        if (window.lenis) {
+          window.lenis.start();
+        }
+        
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.touchAction = '';
+      };
+      
+      protectedEl.addEventListener('mousedown', startDragging, { capture: true });
+      document.addEventListener('mouseup', stopDragging);
+      protectedEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
+      document.addEventListener('touchend', stopDragging);
+      document.addEventListener('touchcancel', stopDragging);
+      
+      console.log('✅ Draggable element protected:', protectedEl.className || protectedEl.id || protectedEl.tagName);
     });
   }, 1000);
 })();
