@@ -1538,14 +1538,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;margin:0;padding:0;line-height:0;pointer-events:none`;
           maskContainer.dataset.vertical = 'true';
           
-          // Ensure parent has positioning context
-          const parentEl = parent.closest('.reveal-full, .video-full');
-          if (parentEl) {
-            const parentStyles = window.getComputedStyle(parentEl);
-            if (parentStyles.position === 'static') {
-              parentEl.style.position = 'relative';
-            }
-          }
+          // Don't force positioning on parent - let Webflow handle it completely
+          // The mask will work with any positioning (static, relative, sticky, fixed, absolute)
         } else {
           maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         }
