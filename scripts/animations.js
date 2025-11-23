@@ -3061,7 +3061,6 @@ window.testToggle = function() {
         // Destroy and reinitialize with better settings
         $(el).draggable('destroy');
         $(el).draggable({
-          containment: 'window',
           scroll: false,
           cursor: 'move',
           cursorAt: false, // Don't force cursor position
