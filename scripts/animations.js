@@ -3602,76 +3602,95 @@ window.testToggle = function() {
   })();
 })();
 
-// Prevent Lenis/smooth scroll from interfering with draggable elements
+// Prevent Lenis/smooth scroll from interfering with draggable and fixed elements
 (function() {
   // Wait for Lenis to load if it exists
   setTimeout(() => {
-    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
-    if (draggableElements.length === 0) return;
+    const protectedElements = [];
     
-    draggableElements.forEach(draggableEl => {
-      // Completely prevent scroll on the draggable element
-      draggableEl.addEventListener('wheel', (e) => {
+    // Find draggable elements
+    document.querySelectorAll('.info-wrap, .draggable').forEach(el => {
+      protectedElements.push({ element: el, type: 'draggable' });
+    });
+    
+    // Find fixed positioned elements
+    document.querySelectorAll('*').forEach(el => {
+      const computedStyle = window.getComputedStyle(el);
+      if (computedStyle.position === 'fixed') {
+        protectedElements.push({ element: el, type: 'fixed' });
+      }
+    });
+    
+    if (protectedElements.length === 0) return;
+    
+    console.log(`✅ Protecting ${protectedElements.filter(p => p.type === 'draggable').length} draggable and ${protectedElements.filter(p => p.type === 'fixed').length} fixed elements from Lenis`);
+    
+    protectedElements.forEach(({ element: protectedEl, type }) => {
+      // Completely prevent scroll on the protected element
+      protectedEl.addEventListener('wheel', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
-      draggableEl.addEventListener('touchmove', (e) => {
+      protectedEl.addEventListener('touchmove', (e) => {
         // Allow touch move for dragging but prevent scroll propagation
         e.stopPropagation();
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
       // Prevent scroll events completely
-      draggableEl.addEventListener('scroll', (e) => {
+      protectedEl.addEventListener('scroll', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
       }, { passive: false, capture: true });
       
-      // Disable smooth scroll when interacting with draggable elements
-      let isDragging = false;
-      
-      const startDragging = (e) => {
-        isDragging = true;
+      // Only add drag handling for draggable elements
+      if (type === 'draggable') {
+        // Disable smooth scroll when interacting with draggable elements
+        let isDragging = false;
         
-        // Stop Lenis if it exists
-        if (window.lenis) {
-          window.lenis.stop();
-        }
+        const startDragging = (e) => {
+          isDragging = true;
+          
+          // Stop Lenis if it exists
+          if (window.lenis) {
+            window.lenis.stop();
+          }
+          
+          // Prevent page scroll completely
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.overflow = 'hidden';
+          document.body.style.touchAction = 'none';
+        };
         
-        // Prevent page scroll completely
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.touchAction = 'none';
-      };
-      
-      const stopDragging = () => {
-        if (!isDragging) return;
-        isDragging = false;
+        const stopDragging = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          
+          // Re-enable Lenis if it exists
+          if (window.lenis) {
+            window.lenis.start();
+          }
+          
+          // Restore scroll
+          document.body.style.overflow = '';
+          document.documentElement.style.overflow = '';
+          document.body.style.touchAction = '';
+        };
         
-        // Re-enable Lenis if it exists
-        if (window.lenis) {
-          window.lenis.start();
-        }
+        // Mouse events
+        protectedEl.addEventListener('mousedown', startDragging, { capture: true });
+        document.addEventListener('mouseup', stopDragging);
         
-        // Restore scroll
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-        document.body.style.touchAction = '';
-      };
+        // Touch events
+        protectedEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
+        document.addEventListener('touchend', stopDragging);
+        document.addEventListener('touchcancel', stopDragging);
+      }
       
-      // Mouse events
-      draggableEl.addEventListener('mousedown', startDragging, { capture: true });
-      document.addEventListener('mouseup', stopDragging);
-      
-      // Touch events
-      draggableEl.addEventListener('touchstart', startDragging, { passive: false, capture: true });
-      document.addEventListener('touchend', stopDragging);
-      document.addEventListener('touchcancel', stopDragging);
-      
-      console.log('✅ Draggable element protection enabled for:', draggableEl);
+      console.log(`✅ ${type === 'draggable' ? 'Draggable' : 'Fixed'} element protection enabled for:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
     });
   }, 1000);
 })();
