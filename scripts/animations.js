@@ -784,6 +784,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
     
+    // Check if we're in Webflow editor/preview - use sessionStorage to prevent re-animations
+    const isWebflowPreview = window.location.href.includes('webflow.io') || window.parent !== window;
+    const animationKey = 'webflow-animations-complete';
+    
+    if (isWebflowPreview && sessionStorage.getItem(animationKey)) {
+      console.log('⚡ Animations already completed in this session, skipping');
+      // Still make text visible but skip animations
+      const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
+      textElements.forEach(el => {
+        el.style.visibility = 'visible';
+        el.style.opacity = '1';
+      });
+      return;
+    }
+    
     
     // Find all text elements - cast wide net
     const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
@@ -829,6 +844,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Setup hover effects after wrapping letters
     setTimeout(() => {
       initLetterHoverEffects();
+      
+      // Mark animations as complete for Webflow preview sessions
+      const isWebflowPreview = window.location.href.includes('webflow.io') || window.parent !== window;
+      if (isWebflowPreview) {
+        sessionStorage.setItem('webflow-animations-complete', 'true');
+        console.log('✅ Animations complete, cached for session');
+      }
     }, 500);
   }
   
