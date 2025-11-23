@@ -1516,8 +1516,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Check if this should be a vertical mask reveal
         const parentContainer = element.closest('.reveal-full.video-full, .reveal.reveal-full.video-full');
-        const isVerticalMask = false; // Changed: All masks are now horizontal, including videos
-        const hasScaleEffect = parentContainer !== null || element.classList.contains('img-parallax'); // Videos and parallax images get scale effect
+        const isVerticalMask = parentContainer !== null; // Videos use vertical mask reveal
+        const hasScaleEffect = isVerticalMask || element.classList.contains('img-parallax'); // Videos and parallax images get scale effect
         
         // Ensure parent container doesn't get positioning overridden (preserve sticky, etc.)
         if (parentContainer) {
@@ -1532,8 +1532,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
         
-        // All masks use horizontal (width) animation
-        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        // Vertical mask for videos, horizontal for images
+        if (isVerticalMask) {
+          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;margin:0;padding:0;line-height:0`;
+          maskContainer.dataset.vertical = 'true';
+        } else {
+          maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        }
         
         // Ensure image stays hidden until mask is ready
         element.style.setProperty('opacity', '0', 'important');
@@ -1553,11 +1558,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Preserve object-fit and other important properties while setting dimensions
         const objectFit = element.dataset.webflowObjectFit || 'cover';
         
-        // All masks now use fixed pixel dimensions for animation (horizontal reveal)
-        // For videos with scale effect, ensure they're centered properly
-        if (hasScaleEffect) {
-          element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0 auto!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important`;
+        // Vertical masks (videos) use percentage dimensions, horizontal masks (images) use fixed pixels
+        if (isVerticalMask) {
+          // Videos: use percentage-based sizing with absolute positioning for full coverage
+          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important`;
         } else {
+          // Images: use fixed pixel dimensions
           element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
         }
         
@@ -1576,8 +1582,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           inViewportCount++;
         }
         
-        // Set initial state - all masks are horizontal now
-        window.gsap.set(maskContainer, { width: '0px' });
+        // Set initial state based on mask direction
+        if (isVerticalMask) {
+          window.gsap.set(maskContainer, { height: '0px' });
+        } else {
+          window.gsap.set(maskContainer, { width: '0px' });
+        }
         
         // Keep image hidden until animation starts
         window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
@@ -1586,8 +1596,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // DESKTOP: Animate all images with ScrollTrigger
         if (isMobile && isInViewport) {
           // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px',
+            ...animProps,
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
@@ -1602,8 +1616,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           });
         } else if (!isMobile) {
           // Desktop: use ScrollTrigger for all images
+          const animProps = isVerticalMask 
+            ? { height: maskContainer.dataset.targetHeight + 'px' }
+            : { width: maskContainer.dataset.targetWidth + 'px' };
+            
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px',
+            ...animProps,
             duration: 1.5,
             delay: staggerDelay,
             ease: "power2.out",
