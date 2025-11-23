@@ -784,21 +784,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return;
     }
     
-    // Check if we're in Webflow editor/preview - use sessionStorage to prevent re-animations
-    const isWebflowPreview = window.location.href.includes('webflow.io') || window.parent !== window;
-    const animationKey = 'webflow-animations-complete';
-    
-    if (isWebflowPreview && sessionStorage.getItem(animationKey)) {
-      console.log('⚡ Animations already completed in this session, skipping');
-      // Still make text visible but skip animations
-      const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
-      textElements.forEach(el => {
-        el.style.visibility = 'visible';
-        el.style.opacity = '1';
-      });
-      return;
-    }
-    
     
     // Find all text elements - cast wide net
     const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
@@ -850,13 +835,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Setup hover effects after wrapping letters
     setTimeout(() => {
       initLetterHoverEffects();
-      
-      // Mark animations as complete for Webflow preview sessions
-      const isWebflowPreview = window.location.href.includes('webflow.io') || window.parent !== window;
-      if (isWebflowPreview) {
-        sessionStorage.setItem('webflow-animations-complete', 'true');
-        console.log('✅ Animations complete, cached for session');
-      }
     }, 500);
   }
   
@@ -2907,29 +2885,9 @@ window.testToggle = function() {
 // DEAD SIMPLE TOGGLE - Just add/remove a class
 (function() {
   function toggleBigImages() {
-    // Preserve draggable element text state during toggle
-    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
-    const textStates = [];
-    
-    draggableElements.forEach(el => {
-      textStates.push({
-        element: el,
-        innerHTML: el.innerHTML,
-        visibility: el.style.visibility,
-        opacity: el.style.opacity
-      });
-    });
-    
     document.body.classList.toggle('fullscreen-mode');
     const isFullscreen = document.body.classList.contains('fullscreen-mode');
     console.log('Toggle:', isFullscreen ? 'ON' : 'OFF');
-    
-    // Restore draggable element text states immediately
-    textStates.forEach(state => {
-      state.element.innerHTML = state.innerHTML;
-      if (state.visibility) state.element.style.visibility = state.visibility;
-      if (state.opacity) state.element.style.opacity = state.opacity;
-    });
     
     if (!isFullscreen) {
       // Toggling OFF - wait for CSS to settle, then restore mask widths
