@@ -1591,8 +1591,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (parentEl) {
               const parentHeight = parentEl.offsetHeight;
               const parentWidth = parentEl.offsetWidth;
-              // Update both dimensions to maintain proper aspect ratio
-              element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
+              // Update both dimensions to maintain proper aspect ratio - preserve visibility
+              element.style.cssText = `width:${parentWidth}px!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important;opacity:1!important;visibility:visible!important`;
               
               // Also update mask container to match parent
               if (maskContainer) {
@@ -3622,14 +3622,12 @@ window.testToggle = function() {
       protectedElements.push({ element: el, type: 'draggable' });
     });
     
-    // Find fixed/sticky positioned elements inside video containers
-    document.querySelectorAll('.video-full *, .reveal-full.video-full *, .reveal.reveal-full.video-full *').forEach(el => {
+    // Find video wrapper containers that have fixed positioning
+    document.querySelectorAll('.video-full, .reveal-full.video-full, .reveal.reveal-full.video-full').forEach(el => {
       const computedStyle = window.getComputedStyle(el);
+      // Only protect if the wrapper itself is fixed or sticky
       if (computedStyle.position === 'fixed' || computedStyle.position === 'sticky' || computedStyle.position === '-webkit-sticky') {
-        const alreadyAdded = protectedElements.some(p => p.element === el);
-        if (!alreadyAdded) {
-          protectedElements.push({ element: el, type: 'fixed' });
-        }
+        protectedElements.push({ element: el, type: 'fixed' });
       }
     });
     
