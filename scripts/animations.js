@@ -808,6 +808,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         return false;
       }
       
+      // Exclude .locked class - has special multi-column formatting
+      if (el.classList.contains('locked')) {
+        return false;
+      }
+      
       const text = el.textContent?.trim();
       const hasChildren = el.children.length === 0; // No child elements
       const isVisible = window.getComputedStyle(el).display !== 'none';
@@ -822,6 +827,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     validElements.forEach((element, index) => {
       if (element.dataset.animationInit || element.dataset.infiniteClone) return;
       if (element.closest('.label-wrap')) return;
+      if (element.classList.contains('locked')) return; // Skip .locked elements
       
       element.dataset.animationInit = 'true';
       
