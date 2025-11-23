@@ -3626,12 +3626,35 @@ window.testToggle = function() {
     console.log(`✅ Protecting ${protectedElements.filter(p => p.type === 'draggable').length} draggable and ${protectedElements.filter(p => p.type === 'fixed').length} fixed elements from Lenis`);
     
     protectedElements.forEach(({ element: protectedEl, type }) => {
-      // For fixed elements, we DON'T want to block scroll - just mark them
-      // Fixed elements should stay in place during scroll, not prevent scroll
+      // For fixed elements, we need to force them to stay fixed even with Lenis
       if (type === 'fixed') {
-        // Just add a marker, don't block events
+        // Add marker
         protectedEl.dataset.lenisFixed = 'true';
-        console.log(`✅ Fixed element marked for Lenis:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
+        
+        // Force the element to stay truly fixed
+        const originalTransform = protectedEl.style.transform;
+        protectedEl.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
+        protectedEl.style.setProperty('will-change', 'auto', 'important');
+        
+        // Prevent Lenis from applying transforms
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              const currentTransform = protectedEl.style.transform;
+              // If Lenis tries to transform it, reset it
+              if (currentTransform && currentTransform !== 'translate3d(0, 0, 0)' && currentTransform !== 'none') {
+                protectedEl.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
+              }
+            }
+          });
+        });
+        
+        observer.observe(protectedEl, {
+          attributes: true,
+          attributeFilter: ['style']
+        });
+        
+        console.log(`✅ Fixed element protected from Lenis transforms:`, protectedEl.className || protectedEl.id || protectedEl.tagName);
         return; // Don't block scroll for fixed elements
       }
       
