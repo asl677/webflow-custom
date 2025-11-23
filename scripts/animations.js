@@ -1525,8 +1525,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Vertical mask: animate height instead of width
         if (isVerticalMask) {
-          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;margin:0;padding:0;line-height:0`;
+          // Mask container starts at height 0, but video inside should already be at full parent size
+          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;right:0;bottom:0;margin:0;padding:0;line-height:0`;
           maskContainer.dataset.vertical = 'true';
+          
+          // Ensure parent has a defined height for the video to reference
+          const parentEl = parent.closest('.reveal-full, .video-full');
+          if (parentEl) {
+            const parentHeight = parentEl.offsetHeight;
+            // Store parent height for video sizing
+            element.dataset.parentHeight = parentHeight;
+          }
         } else {
           maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         }
@@ -1550,9 +1559,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const objectFit = element.dataset.webflowObjectFit || 'cover';
         
         // For vertical masks (videos), use percentage-based dimensions for responsiveness
+        // Video should be sized relative to the parent container, not the mask wrapper
         // For horizontal masks (images), use fixed pixel dimensions for animation
         if (isVerticalMask) {
-          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important`;
+          const parentEl = parent.closest('.reveal-full, .video-full');
+          const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
+          
+          // Video uses fixed pixel dimensions during animation to prevent scaling
+          // It will be positioned relative to parent, not mask container
+          element.style.cssText = `width:100%!important;height:${parentHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;position:absolute!important;top:0!important;left:0!important;transform:translateZ(0)!important;will-change:auto!important`;
         } else {
           element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
         }
