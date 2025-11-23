@@ -756,7 +756,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
-          if (element.id === 'time-text') {
+          if (element.id === 'time-text' || element.classList.contains('time-text')) {
             element.dataset.timeStarted = 'true';
             startMilitaryTime(element);
           }
@@ -1093,7 +1093,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startTimeCounter(element);
           }
           
-          if (element.id === 'time-text') {
+          if (element.id === 'time-text' || element.classList.contains('time-text')) {
             element.dataset.timeStarted = 'true';
             startMilitaryTime(element);
           }
@@ -1291,7 +1291,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startTimeCounter(element);
           }
           
-          if (element.id === 'time-text') {
+          if (element.id === 'time-text' || element.classList.contains('time-text')) {
             element.dataset.timeStarted = 'true';
             startMilitaryTime(element);
           }
