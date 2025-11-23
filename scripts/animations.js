@@ -1,4 +1,4 @@
-// Version 3.8: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 3.10: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -3613,11 +3613,20 @@ window.testToggle = function() {
       protectedElements.push({ element: el, type: 'draggable' });
     });
     
-    // Find fixed positioned elements
+    // Find .video-full containers (these need fixed positioning)
+    document.querySelectorAll('.video-full, .reveal-full.video-full, .reveal.reveal-full.video-full').forEach(el => {
+      protectedElements.push({ element: el, type: 'fixed' });
+    });
+    
+    // Find other fixed positioned elements
     document.querySelectorAll('*').forEach(el => {
       const computedStyle = window.getComputedStyle(el);
       if (computedStyle.position === 'fixed') {
-        protectedElements.push({ element: el, type: 'fixed' });
+        // Don't add if already added as video-full
+        const alreadyAdded = protectedElements.some(p => p.element === el);
+        if (!alreadyAdded) {
+          protectedElements.push({ element: el, type: 'fixed' });
+        }
       }
     });
     
