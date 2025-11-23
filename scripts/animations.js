@@ -3590,5 +3590,72 @@ window.testToggle = function() {
   }, 2000);
   })();
 })();
+
+// Prevent Lenis/smooth scroll from interfering with draggable elements
+(function() {
+  // Wait for Lenis to load if it exists
+  setTimeout(() => {
+    const infoWrap = document.querySelector('.info-wrap');
+    if (!infoWrap) return;
+    
+    // Disable smooth scroll when dragging .info-wrap
+    let isDragging = false;
+    
+    infoWrap.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      
+      // Try to stop Lenis if it exists
+      if (window.lenis) {
+        window.lenis.stop();
+      }
+      
+      // Prevent default scroll behavior
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    });
+    
+    const stopDragging = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      // Re-enable Lenis if it exists
+      if (window.lenis) {
+        window.lenis.start();
+      }
+      
+      // Restore scroll
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+    
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('mouseleave', stopDragging);
+    
+    // Also handle touch events for mobile
+    infoWrap.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      if (window.lenis) {
+        window.lenis.stop();
+      }
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }, { passive: true });
+    
+    const stopTouchDragging = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      if (window.lenis) {
+        window.lenis.start();
+      }
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+    
+    document.addEventListener('touchend', stopTouchDragging);
+    document.addEventListener('touchcancel', stopTouchDragging);
+    
+    console.log('✅ Draggable element protection enabled for .info-wrap');
+  }, 1000);
+})();
   
   
