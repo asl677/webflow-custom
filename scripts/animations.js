@@ -1617,9 +1617,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   maskContainer.removeAttribute('style');
                   maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                   
-                  // Video uses percentage-based sizing for responsiveness
+                  // Video uses absolute positioning with inset to fill mask container completely
                   element.removeAttribute('style');
-                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                  element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
                 };
                 
                 // Set initial dimensions
@@ -1688,9 +1688,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   maskContainer.removeAttribute('style');
                   maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
                   
-                  // Video uses percentage-based sizing for responsiveness
+                  // Video uses absolute positioning with inset to fill mask container completely
                   element.removeAttribute('style');
-                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
+                  element.setAttribute('style', `position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
                 };
                 
                 // Set initial dimensions
