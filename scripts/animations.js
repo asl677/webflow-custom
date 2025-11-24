@@ -1498,8 +1498,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     }
     
-    // Mobile-optimized mask reveal for images (include clones, exclude preloader)  
-    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    // Mobile-optimized mask reveal for images (exclude clones and preloader)  
+    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
   
   // Process ALL images the same way (mobile and desktop)
   const imagesToProcess = Array.from(allImages);
@@ -2005,39 +2005,28 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
             
             // MOBILE: Show cloned images immediately
-            // DESKTOP: Reset styles to allow mask reveal system to control
-            if (isMobile) {
+            // DESKTOP: Show cloned images immediately (no mask animation for clones)
             el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('visibility', 'visible', 'important');
             el.style.setProperty('display', 'block', 'important');
-              el.style.removeProperty('transform');
-            } else {
-              el.style.removeProperty('opacity');
-              el.style.removeProperty('visibility');
-              el.style.setProperty('display', 'block', 'important');
-              el.style.removeProperty('transform');
-            }
+            el.style.removeProperty('transform');
         });
         
-        // Add slight delay for mask system processing
-            setTimeout(() => {
-          clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
-            // Remove any existing mask setup flags so they get fresh animations
-            delete el.dataset.maskSetup;
-            delete el.dataset.gsapAnimated;
-            delete el.dataset.maskComplete;
-            
-            // Remove mask container so clones get fresh setup like original images
-            const maskContainer = el.closest('.mask-wrap');
-            if (maskContainer) {
-              // Unwrap the image from existing mask
-              const parent = maskContainer.parentNode;
+        // Mark cloned images as setup complete to prevent mask animation
+        clone.querySelectorAll('img, video').forEach((el) => {
+          el.dataset.maskSetup = 'true';
+          el.dataset.maskComplete = 'true';
+          
+          // Remove any existing mask wrapper if present
+          const maskContainer = el.closest('.mask-wrap');
+          if (maskContainer && maskContainer !== el.parentElement) {
+            const parent = maskContainer.parentNode;
+            if (parent) {
               parent.insertBefore(el, maskContainer);
               maskContainer.remove();
             }
-            
-          });
-        }, 50); // Small delay to ensure layout is complete
+          }
+        });
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
