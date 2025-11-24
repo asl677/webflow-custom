@@ -3067,15 +3067,15 @@ window.testToggle = function() {
   })();
   
 // Simple column toggle on .fixed-sizer click
-(function() {
+  (function() {
   const fixedSizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
   const yzyGrid = document.querySelector('.flex-grid.yzy');
   
   if (!fixedSizer || !yzyGrid) {
     console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
-    return;
-  }
-  
+        return;
+      }
+      
   const minColumns = 2;
   const maxColumns = 4;
   let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
@@ -3103,33 +3103,13 @@ window.testToggle = function() {
       }
     }
     
-    // Directly set column count with CSS transition
+    // Just change column count with CSS transition - let the grid reflow naturally
     yzyGrid.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
     yzyGrid.style.columnCount = currentColumns;
-    
-    // Scale images proportionally based on column count
-    const items = yzyGrid.querySelectorAll('.reveal, .reveal-full');
-    items.forEach(item => {
-      if (window.gsap) {
-        // Calculate scale: fewer columns = larger images
-        const scale = 1 + (maxColumns - currentColumns) * 0.15;
-        
-        // Kill any existing animations on this item
-        window.gsap.killTweensOf(item);
-        
-        // Scale the entire reveal container with transform origin at center
-        window.gsap.to(item, {
-          scale: scale,
-          transformOrigin: 'center center',
-          duration: 0.6,
-          ease: "power2.inOut",
-          overwrite: true
-        });
-      }
-    });
     
     console.log(`📊 Column count: ${currentColumns} (${increasing ? 'increasing' : 'decreasing'}), Button: ${fixedSizer.textContent}`);
   });
   
   console.log('✅ Column toggle initialized on .fixed-sizer');
 })();
+  
