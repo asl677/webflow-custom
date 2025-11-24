@@ -3083,43 +3083,70 @@ window.testToggle = function() {
   }, 2000); // Wait for Webflow to initialize draggable
   })();
   
-// Simple column toggle on .fixed-sizer click
+// Bidirectional column toggle on .yzy click
   (function() {
-  const fixedSizer = document.querySelector('.fixed-sizer');
+  const yzyTrigger = document.querySelector('.yzy');
   const yzyGrid = document.querySelector('.flex-grid.yzy');
   
-  if (!fixedSizer || !yzyGrid) {
-    console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
-        return;
-      }
-      
-  const minColumns = 2;
-  const maxColumns = 6;
-  let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 2;
+  if (!yzyTrigger || !yzyGrid) {
+    console.log('⚠️ .yzy or .flex-grid.yzy not found');
+    return;
+  }
   
-  fixedSizer.addEventListener('click', () => {
-    // Increase by 1, reset to min if exceeding max
-    currentColumns = currentColumns >= maxColumns ? minColumns : currentColumns + 1;
+  const minColumns = 2;
+  const maxColumns = 4;
+  let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
+  let direction = 'decreasing'; // Start by decreasing from 4 to 2
+  
+  // Set initial text based on direction
+  if (!yzyTrigger.dataset.originalText) {
+    yzyTrigger.dataset.originalText = yzyTrigger.textContent;
+  }
+  yzyTrigger.textContent = '+'; // Start with + (will decrease columns)
+  
+  yzyTrigger.style.cursor = 'pointer';
+  
+  yzyTrigger.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    yzyGrid.style.transition = 'column-count 0.4s ease';
+    if (direction === 'decreasing') {
+      // Decrease columns (4 → 3 → 2)
+      currentColumns = currentColumns - 1;
+      
+      if (currentColumns <= minColumns) {
+        currentColumns = minColumns;
+        direction = 'increasing';
+        yzyTrigger.textContent = '−'; // Switch to minus, will now increase
+      }
+    } else {
+      // Increase columns (2 → 3 → 4)
+      currentColumns = currentColumns + 1;
+      
+      if (currentColumns >= maxColumns) {
+        currentColumns = maxColumns;
+        direction = 'decreasing';
+        yzyTrigger.textContent = '+'; // Switch to plus, will now decrease
+      }
+    }
+    
+    // Animate column count
+    yzyGrid.style.transition = 'column-count 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
     yzyGrid.style.columnCount = currentColumns;
     
     // Clear any GSAP transforms on images within the grid to maintain Webflow layout
     const images = yzyGrid.querySelectorAll('.reveal.reveal-full, img, video');
     images.forEach(img => {
       if (window.gsap) {
-        // Kill any active GSAP animations on these images
         window.gsap.killTweensOf(img);
-        // Clear transform/scale properties to restore Webflow layout
         window.gsap.set(img, { clearProps: "scale,transform" });
       }
-      // Also remove inline transforms
       img.style.removeProperty('transform');
     });
     
-    console.log(`📊 Column count: ${currentColumns}`);
+    console.log(`📊 Column count: ${currentColumns}, Direction: ${direction}, Button: ${yzyTrigger.textContent}`);
   });
   
-  console.log('✅ Column toggle initialized (click .fixed-sizer to change)');
+  console.log('✅ Bidirectional column toggle initialized (click .yzy to toggle)');
 })();
   
