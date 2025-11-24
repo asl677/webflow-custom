@@ -725,30 +725,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for text animations to mostly complete before starting images
     const imageDelay = 1600; // Reduced delay - images start sooner after text scramble
-    
-    // MASK ANIMATIONS DISABLED
-    /*
     setTimeout(() => {
       startMaskedImageAnimations();
       
-    }, imageDelay);
-    */
-    
-    // Show all images immediately without mask animation
-    setTimeout(() => {
-      const allImages = document.querySelectorAll('img:not(#preloader img), video');
-      allImages.forEach(img => {
-        img.style.setProperty('opacity', '1', 'important');
-        img.style.setProperty('visibility', 'visible', 'important');
-      });
-      
-      // Remove emergency hide style
-      const emergencyHide = document.getElementById('emergency-image-hide');
-      if (emergencyHide) {
-        emergencyHide.remove();
-      }
-      
-      console.log('✅ Images shown without mask animation');
     }, imageDelay);
   }
 
@@ -3020,15 +2999,15 @@ window.testToggle = function() {
   
 // Simple Lenis smooth scroll initialization for #slider - DISABLED
 /*
-(function() {
+  (function() {
   // Wait for page load
   window.addEventListener('load', () => {
     const slider = document.querySelector('#slider');
     
     if (!slider) {
       console.log('⚠️ #slider element not found, skipping Lenis initialization');
-      return;
-    }
+        return;
+      }
     
     // Initialize Lenis on the slider element
     const lenis = new Lenis({
