@@ -3103,48 +3103,27 @@ window.testToggle = function() {
       }
     }
     
-    // Animate the grid column count
-    if (window.gsap) {
-      window.gsap.to(yzyGrid, {
-        '--column-count': currentColumns,
-        duration: 0.6,
-        ease: "power2.inOut",
-        onUpdate: function() {
-          const progress = this.progress();
-          const startColumns = increasing ? currentColumns - 1 : currentColumns + 1;
-          const targetColumns = currentColumns;
-          const interpolated = Math.round(startColumns + (targetColumns - startColumns) * progress);
-          yzyGrid.style.columnCount = interpolated;
-        }
-      });
-    } else {
-      yzyGrid.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-      yzyGrid.style.columnCount = currentColumns;
-    }
+    // Directly set column count with CSS transition
+    yzyGrid.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    yzyGrid.style.columnCount = currentColumns;
     
-    // Scale images and their containers proportionally
+    // Scale images proportionally based on column count
     const items = yzyGrid.querySelectorAll('.reveal, .reveal-full');
     items.forEach(item => {
       if (window.gsap) {
         // Calculate scale: fewer columns = larger images
         const scale = 1 + (maxColumns - currentColumns) * 0.15;
         
-        // Scale the entire reveal container
+        // Kill any existing animations on this item
+        window.gsap.killTweensOf(item);
+        
+        // Scale the entire reveal container with transform origin at center
         window.gsap.to(item, {
           scale: scale,
           transformOrigin: 'center center',
           duration: 0.6,
-          ease: "power2.inOut"
-        });
-        
-        // Also ensure images inside don't get double-scaled
-        const innerImages = item.querySelectorAll('img, video');
-        innerImages.forEach(img => {
-          window.gsap.to(img, {
-            scale: 1, // Keep at 1, parent handles scaling
-            duration: 0.6,
-            ease: "power2.inOut"
-          });
+          ease: "power2.inOut",
+          overwrite: true
         });
       }
     });
