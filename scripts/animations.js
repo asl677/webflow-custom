@@ -1732,12 +1732,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
           window.gsap.to(maskContainer, { 
             ...animProps,
-            duration: 1.5,
-            delay: staggerDelay,
+          duration: 1.5,
+          delay: staggerDelay,
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-              start: "top 90%",
+            start: "top 90%",
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
@@ -3009,15 +3009,15 @@ window.testToggle = function() {
   })();
   
 // Simple Lenis smooth scroll initialization for #slider
-(function() {
+  (function() {
   // Wait for page load
   window.addEventListener('load', () => {
     const slider = document.querySelector('#slider');
     
     if (!slider) {
       console.log('⚠️ #slider element not found, skipping Lenis initialization');
-      return;
-    }
+        return;
+      }
     
     // Initialize Lenis on the slider element
     const lenis = new Lenis({
@@ -3072,10 +3072,10 @@ window.testToggle = function() {
       }
     });
   }, 2000); // Wait for Webflow to initialize draggable
-})();
-
+  })();
+  
 // Yeezy-inspired swipe column animation
-(function() {
+  (function() {
   const yzyElements = document.querySelectorAll('.yzy');
   if (yzyElements.length === 0) return;
   
@@ -3095,6 +3095,45 @@ window.testToggle = function() {
   let touchStartY = 0;
   let isAnimating = false;
   
+  // Create plus button for desktop
+  const plusButton = document.createElement('button');
+  plusButton.className = 'yzy-column-toggle';
+  plusButton.innerHTML = '+';
+  plusButton.style.cssText = `
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    border: 2px solid #fff;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+  `;
+  
+  // Hover effect
+  plusButton.addEventListener('mouseenter', () => {
+    plusButton.style.opacity = '1';
+    plusButton.style.transform = 'translateX(-50%) scale(1.1)';
+  });
+  
+  plusButton.addEventListener('mouseleave', () => {
+    plusButton.style.opacity = '0.8';
+    plusButton.style.transform = 'translateX(-50%) scale(1)';
+  });
+  
+  document.body.appendChild(plusButton);
+  
   function updateColumns(direction) {
     if (isAnimating) return;
     isAnimating = true;
@@ -3108,6 +3147,12 @@ window.testToggle = function() {
     
     const newColumnCount = columnStates[currentStateIndex];
     console.log(`🔄 Transitioning to ${newColumnCount} columns`);
+    
+    // Update button text to show column count
+    plusButton.innerHTML = newColumnCount;
+    setTimeout(() => {
+      plusButton.innerHTML = '+';
+    }, 800);
     
     // Animate column count
     yzyElements.forEach(el => {
@@ -3136,7 +3181,12 @@ window.testToggle = function() {
     }, 600);
   }
   
-  // Touch event handlers
+  // Plus button click cycles forward through columns
+  plusButton.addEventListener('click', () => {
+    updateColumns('left');
+  });
+  
+  // Touch event handlers for mobile
   document.addEventListener('touchstart', (e) => {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
@@ -3159,41 +3209,17 @@ window.testToggle = function() {
     }
   }, { passive: true });
   
-  // Mouse/trackpad swipe for desktop
-  let mouseStartX = 0;
-  let isMouseDown = false;
-  
-  document.addEventListener('mousedown', (e) => {
-    mouseStartX = e.clientX;
-    isMouseDown = true;
-  });
-  
-  document.addEventListener('mouseup', (e) => {
-    if (!isMouseDown) return;
-    isMouseDown = false;
-    
-    const deltaX = e.clientX - mouseStartX;
-    
-    // Trigger on significant horizontal movement
-    if (Math.abs(deltaX) > 100) {
-      if (deltaX > 0) {
-        updateColumns('right');
-      } else {
-        updateColumns('left');
-      }
-    }
-  });
-  
   // Keyboard controls (left/right arrows)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') {
-      updateColumns('left');
-    } else if (e.key === 'ArrowRight') {
       updateColumns('right');
+    } else if (e.key === 'ArrowRight') {
+      updateColumns('left');
     }
   });
   
   console.log('✅ Yeezy-style swipe column animation initialized');
   console.log(`📊 Starting at ${columnStates[currentStateIndex]} columns`);
-  console.log('👆 Swipe left/right or use arrow keys to change columns');
+  console.log('👆 Click + button, swipe, or use arrow keys to change columns');
 })();
+  
