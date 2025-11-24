@@ -12,15 +12,8 @@ window.scriptLoadTest = function() {
 };
 console.log('🚀 Try: window.scriptLoadTest()');
 
-// Hide images but allow preloader
-(function() {
-  const emergencyHide = document.createElement('style');
-  emergencyHide.id = 'emergency-image-hide';
-  emergencyHide.textContent = `
-    img:not(#preloader img), video { opacity: 0 !important; }
-  `;
-  (document.head || document.documentElement).appendChild(emergencyHide);
-})();
+// Images will start hidden and fade in via GSAP
+// No emergency hide CSS needed - GSAP handles initial state
 
 window.portfolioAnimations = window.portfolioAnimations || {};
 
