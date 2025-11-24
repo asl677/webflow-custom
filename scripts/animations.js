@@ -2018,15 +2018,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           el.dataset.maskComplete = 'true';
           
           // Remove any existing mask wrapper if present
-          const maskContainer = el.closest('.mask-wrap');
+            const maskContainer = el.closest('.mask-wrap');
           if (maskContainer && maskContainer !== el.parentElement) {
-            const parent = maskContainer.parentNode;
+              const parent = maskContainer.parentNode;
             if (parent) {
               parent.insertBefore(el, maskContainer);
               maskContainer.remove();
             }
           }
-        });
+          });
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
@@ -3068,93 +3068,117 @@ window.testToggle = function() {
   const yzyElements = document.querySelectorAll('.yzy');
   if (yzyElements.length === 0) return;
   
-  // Column states to cycle through (inspired by Yeezy.com)
-  const columnStates = [1, 2, 3, 4, 5, 6];
-  let currentStateIndex = 0;
+  // Column range: 1 to 5 columns
+  const minColumns = 1;
+  const maxColumns = 5;
+  let currentColumns = 2; // Start at 2
   
   // Get initial column count from Webflow styles
   yzyElements.forEach(el => {
     const computedStyle = window.getComputedStyle(el);
-    const currentColumns = parseInt(computedStyle.columnCount) || 2;
-    currentStateIndex = columnStates.indexOf(currentColumns);
-    if (currentStateIndex === -1) currentStateIndex = 1; // Default to 2 columns
+    const initialColumns = parseInt(computedStyle.columnCount) || 2;
+    currentColumns = Math.max(minColumns, Math.min(maxColumns, initialColumns));
   });
   
   let touchStartX = 0;
   let touchStartY = 0;
   let isAnimating = false;
   
-  // Create plus button for desktop
-  const plusButton = document.createElement('button');
-  plusButton.className = 'yzy-column-toggle';
-  plusButton.innerHTML = '+';
-  plusButton.style.cssText = `
+  // Create button container
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.cssText = `
     position: fixed;
-    bottom: 40px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #000;
-    color: #fff;
-    border: 2px solid #fff;
-    font-size: 32px;
-    font-weight: 300;
-    cursor: pointer;
-    z-index: 9999;
     display: flex;
+    gap: 12px;
     align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    opacity: 0.8;
+    z-index: 9999;
+    font-family: Wagon, sans-serif;
   `;
   
-  // Hover effect
+  // Create minus button
+  const minusButton = document.createElement('button');
+  minusButton.className = 'yzy-column-minus';
+  minusButton.innerHTML = '−';
+  minusButton.style.cssText = `
+    background: transparent;
+    color: #000;
+    border: none;
+    font-size: 12pt;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+    opacity: 0.6;
+  `;
+  
+  // Create plus button
+  const plusButton = document.createElement('button');
+  plusButton.className = 'yzy-column-plus';
+  plusButton.innerHTML = '+';
+  plusButton.style.cssText = `
+    background: transparent;
+    color: #000;
+    border: none;
+    font-size: 12pt;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+    opacity: 0.6;
+  `;
+  
+  // Hover effects
+  minusButton.addEventListener('mouseenter', () => {
+    minusButton.style.opacity = '1';
+  });
+  minusButton.addEventListener('mouseleave', () => {
+    minusButton.style.opacity = '0.6';
+  });
+  
   plusButton.addEventListener('mouseenter', () => {
     plusButton.style.opacity = '1';
-    plusButton.style.transform = 'translateX(-50%) scale(1.1)';
   });
-  
   plusButton.addEventListener('mouseleave', () => {
-    plusButton.style.opacity = '0.8';
-    plusButton.style.transform = 'translateX(-50%) scale(1)';
+    plusButton.style.opacity = '0.6';
   });
   
-  document.body.appendChild(plusButton);
+  // Add buttons to container
+  buttonContainer.appendChild(minusButton);
+  buttonContainer.appendChild(plusButton);
+  document.body.appendChild(buttonContainer);
   
   function updateColumns(direction) {
     if (isAnimating) return;
     isAnimating = true;
     
-    // Update state index
-    if (direction === 'left') {
-      currentStateIndex = (currentStateIndex + 1) % columnStates.length;
+    // Update column count
+    if (direction === 'increase') {
+      currentColumns = Math.min(maxColumns, currentColumns + 1);
     } else {
-      currentStateIndex = (currentStateIndex - 1 + columnStates.length) % columnStates.length;
+      currentColumns = Math.max(minColumns, currentColumns - 1);
     }
     
-    const newColumnCount = columnStates[currentStateIndex];
-    console.log(`🔄 Transitioning to ${newColumnCount} columns`);
-    
-    // Update button text to show column count
-    plusButton.innerHTML = newColumnCount;
-    setTimeout(() => {
-      plusButton.innerHTML = '+';
-    }, 800);
+    console.log(`🔄 Transitioning to ${currentColumns} columns`);
     
     // Animate column count
     yzyElements.forEach(el => {
       el.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-      el.style.columnCount = newColumnCount;
+      el.style.columnCount = currentColumns;
     });
     
     // Scale reveal images proportionally
     const revealImages = document.querySelectorAll('.reveal.reveal-full');
     revealImages.forEach(img => {
       if (window.gsap) {
-        // Calculate scale based on column count (more columns = smaller images)
-        const scale = 1 + (6 - newColumnCount) * 0.1; // More columns = less scale
+        // Calculate scale based on column count (fewer columns = larger images)
+        const scale = 1 + (maxColumns - currentColumns) * 0.15;
         
         window.gsap.to(img, {
           scale: scale,
@@ -3170,9 +3194,14 @@ window.testToggle = function() {
     }, 600);
   }
   
-  // Plus button click cycles forward through columns
+  // Plus button increases columns
   plusButton.addEventListener('click', () => {
-    updateColumns('left');
+    updateColumns('increase');
+  });
+  
+  // Minus button decreases columns
+  minusButton.addEventListener('click', () => {
+    updateColumns('decrease');
   });
   
   // Touch event handlers for mobile
@@ -3191,9 +3220,9 @@ window.testToggle = function() {
     // Only trigger if horizontal swipe is dominant and significant
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
       if (deltaX > 0) {
-        updateColumns('right'); // Swipe right = fewer columns
+        updateColumns('decrease'); // Swipe right = fewer columns
       } else {
-        updateColumns('left'); // Swipe left = more columns
+        updateColumns('increase'); // Swipe left = more columns
       }
     }
   }, { passive: true });
@@ -3201,14 +3230,14 @@ window.testToggle = function() {
   // Keyboard controls (left/right arrows)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') {
-      updateColumns('right');
+      updateColumns('decrease');
     } else if (e.key === 'ArrowRight') {
-      updateColumns('left');
+      updateColumns('increase');
     }
   });
   
-  console.log('✅ Yeezy-style swipe column animation initialized');
-  console.log(`📊 Starting at ${columnStates[currentStateIndex]} columns`);
-  console.log('👆 Click + button, swipe, or use arrow keys to change columns');
+  console.log('✅ Yeezy-style column animation initialized');
+  console.log(`📊 Starting at ${currentColumns} columns (range: ${minColumns}-${maxColumns})`);
+  console.log('👆 Click +/− buttons, swipe, or use arrow keys to change columns');
 })();
   
