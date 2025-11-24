@@ -3084,6 +3084,19 @@ window.testToggle = function() {
     yzyGrid.style.transition = 'column-count 0.4s ease';
     yzyGrid.style.columnCount = currentColumns;
     
+    // Clear any GSAP transforms on images within the grid to maintain Webflow layout
+    const images = yzyGrid.querySelectorAll('.reveal.reveal-full, img, video');
+    images.forEach(img => {
+      if (window.gsap) {
+        // Kill any active GSAP animations on these images
+        window.gsap.killTweensOf(img);
+        // Clear transform/scale properties to restore Webflow layout
+        window.gsap.set(img, { clearProps: "scale,transform" });
+      }
+      // Also remove inline transforms
+      img.style.removeProperty('transform');
+    });
+    
     console.log(`📊 Column count: ${currentColumns}`);
   });
   
