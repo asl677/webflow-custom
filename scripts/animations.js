@@ -3062,4 +3062,31 @@ window.testToggle = function() {
     });
   }, 2000); // Wait for Webflow to initialize draggable
 })();
+
+// Simple column toggle on .fixed-sizer click
+(function() {
+  const fixedSizer = document.querySelector('.fixed-sizer');
+  const yzyGrid = document.querySelector('.flex-grid.yzy');
+  
+  if (!fixedSizer || !yzyGrid) {
+    console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
+    return;
+  }
+  
+  const minColumns = 2;
+  const maxColumns = 6;
+  let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 2;
+  
+  fixedSizer.addEventListener('click', () => {
+    // Increase by 1, reset to min if exceeding max
+    currentColumns = currentColumns >= maxColumns ? minColumns : currentColumns + 1;
+    
+    yzyGrid.style.transition = 'column-count 0.4s ease';
+    yzyGrid.style.columnCount = currentColumns;
+    
+    console.log(`📊 Column count: ${currentColumns}`);
+  });
+  
+  console.log('✅ Column toggle initialized (click .fixed-sizer to change)');
+})();
   
