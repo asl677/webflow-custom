@@ -3073,3 +3073,127 @@ window.testToggle = function() {
     });
   }, 2000); // Wait for Webflow to initialize draggable
 })();
+
+// Yeezy-inspired swipe column animation
+(function() {
+  const yzyElements = document.querySelectorAll('.yzy');
+  if (yzyElements.length === 0) return;
+  
+  // Column states to cycle through (inspired by Yeezy.com)
+  const columnStates = [1, 2, 3, 4, 5, 6];
+  let currentStateIndex = 0;
+  
+  // Get initial column count from Webflow styles
+  yzyElements.forEach(el => {
+    const computedStyle = window.getComputedStyle(el);
+    const currentColumns = parseInt(computedStyle.columnCount) || 2;
+    currentStateIndex = columnStates.indexOf(currentColumns);
+    if (currentStateIndex === -1) currentStateIndex = 1; // Default to 2 columns
+  });
+  
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isAnimating = false;
+  
+  function updateColumns(direction) {
+    if (isAnimating) return;
+    isAnimating = true;
+    
+    // Update state index
+    if (direction === 'left') {
+      currentStateIndex = (currentStateIndex + 1) % columnStates.length;
+    } else {
+      currentStateIndex = (currentStateIndex - 1 + columnStates.length) % columnStates.length;
+    }
+    
+    const newColumnCount = columnStates[currentStateIndex];
+    console.log(`🔄 Transitioning to ${newColumnCount} columns`);
+    
+    // Animate column count
+    yzyElements.forEach(el => {
+      el.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+      el.style.columnCount = newColumnCount;
+    });
+    
+    // Scale reveal images proportionally
+    const revealImages = document.querySelectorAll('.reveal.reveal-full');
+    revealImages.forEach(img => {
+      if (window.gsap) {
+        // Calculate scale based on column count (more columns = smaller images)
+        const scale = 1 + (6 - newColumnCount) * 0.1; // More columns = less scale
+        
+        window.gsap.to(img, {
+          scale: scale,
+          duration: 0.6,
+          ease: "power2.inOut"
+        });
+      }
+    });
+    
+    // Reset animation flag
+    setTimeout(() => {
+      isAnimating = false;
+    }, 600);
+  }
+  
+  // Touch event handlers
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  document.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    
+    // Only trigger if horizontal swipe is dominant and significant
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        updateColumns('right'); // Swipe right = fewer columns
+      } else {
+        updateColumns('left'); // Swipe left = more columns
+      }
+    }
+  }, { passive: true });
+  
+  // Mouse/trackpad swipe for desktop
+  let mouseStartX = 0;
+  let isMouseDown = false;
+  
+  document.addEventListener('mousedown', (e) => {
+    mouseStartX = e.clientX;
+    isMouseDown = true;
+  });
+  
+  document.addEventListener('mouseup', (e) => {
+    if (!isMouseDown) return;
+    isMouseDown = false;
+    
+    const deltaX = e.clientX - mouseStartX;
+    
+    // Trigger on significant horizontal movement
+    if (Math.abs(deltaX) > 100) {
+      if (deltaX > 0) {
+        updateColumns('right');
+      } else {
+        updateColumns('left');
+      }
+    }
+  });
+  
+  // Keyboard controls (left/right arrows)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      updateColumns('left');
+    } else if (e.key === 'ArrowRight') {
+      updateColumns('right');
+    }
+  });
+  
+  console.log('✅ Yeezy-style swipe column animation initialized');
+  console.log(`📊 Starting at ${columnStates[currentStateIndex]} columns`);
+  console.log('👆 Swipe left/right or use arrow keys to change columns');
+})();
