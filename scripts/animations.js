@@ -1880,8 +1880,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
     
-    // Back to simpler working selectors
-    const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
+    // Back to simpler working selectors (exclude .flex-grid.yzy for column layout)
+    const selectors = ['.flex-grid:not(.yzy)', '.w-layout-grid:not(.yzy)', '[class*="grid"]:not(.yzy)', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
     for (const selector of selectors) {
@@ -1896,6 +1896,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔍 Available elements with classes:', 
         [...document.querySelectorAll('[class]')].slice(0, 10).map(el => el.className)
       );
+      return; 
+    }
+    
+    // Skip if container is .yzy (column layout should not have infinite scroll)
+    if (container.classList.contains('yzy')) {
+      console.log('⚠️ Skipping infinite scroll for .yzy column layout');
       return; 
     }
     
@@ -3061,18 +3067,18 @@ window.testToggle = function() {
       }
     });
   }, 2000); // Wait for Webflow to initialize draggable
-})();
-
+  })();
+  
 // Simple column toggle on .fixed-sizer click
-(function() {
+  (function() {
   const fixedSizer = document.querySelector('.fixed-sizer');
   const yzyGrid = document.querySelector('.flex-grid.yzy');
   
   if (!fixedSizer || !yzyGrid) {
     console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
-    return;
-  }
-  
+        return;
+      }
+      
   const minColumns = 2;
   const maxColumns = 6;
   let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 2;
