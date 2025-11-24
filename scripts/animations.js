@@ -1,40 +1,23 @@
-// Version 3.13: Mobile mask-wrap width fix - CACHE REFRESH REQUIRED
+// Version 2.7: Revert to working custom scramble, ensure counter is included
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
 
 // IMMEDIATE SCRIPT LOAD TEST
-console.log('🚀 SCRIPT LOADED: Portfolio animations v3.3 - Mobile mask fix');
+console.log('🚀 SCRIPT LOADED: Portfolio animations starting...');
 console.log('🚀 URL:', window.location.href);
-console.log('🚀 MOBILE DETECTION:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
 window.scriptLoadTest = function() {
+  console.log('✅ SCRIPT IS DEFINITELY LOADED');
   return 'SUCCESS: Script loaded and working';
 };
 console.log('🚀 Try: window.scriptLoadTest()');
-
-// Add loading class immediately to prevent toggle flash
-document.body.classList.add('loading');
-
-// Immediately show .locked elements to prevent flash
-(function() {
-  const showLockedStyle = document.createElement('style');
-  showLockedStyle.id = 'show-locked-text';
-  showLockedStyle.textContent = `
-    .locked {
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-  `;
-  document.head.appendChild(showLockedStyle);
-  console.log('✅ .locked text styles preloaded');
-})();
 
 // Hide images but allow preloader
 (function() {
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
+    img:not(#preloader img), video { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -43,374 +26,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
 (function(exports) {
   let isInit = false, preloaderComplete = false, gsapLoaded = false, scrollTriggerLoaded = false, observerLoaded = false, threejsLoaded = false;
-  
-  // Global mobile detection (used across multiple functions)
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-  // Theme system removed to prevent complications
-
-  // Fullscreen scrolling toggle system
-  function initFullscreenScrollToggle() {
-    
-    let isFullscreenMode = false;
-    
-    // Find existing .toggle.top element
-    let toggleButton = document.querySelector('.toggle.top');
-    
-    if (!toggleButton) {
-      console.warn('📺 No .toggle element found initially - trying alternatives...');
-      
-      // Try to find any element with toggle in the class name
-      const anyToggle = document.querySelector('[class*="toggle"]');
-      if (anyToggle) {
-        toggleButton = anyToggle;
-      } else {
-        // List all elements to help debug
-        const possibleToggles = document.querySelectorAll('[class*="toggle"], [class*="btn"], [class*="button"], [id*="toggle"]');
-        possibleToggles.forEach((el, i) => {
-          console.log(`  ${i}: ${el.tagName}.${el.className} #${el.id}`);
-        });
-        
-        console.warn('📺 No toggle element found - fullscreen scroll toggle disabled');
-        return null;
-      }
-    }
-    
-    
-    // Also check for .img-parallax elements immediately
-    const testParallaxElements = document.querySelectorAll('.img-parallax');
-    
-    // Function to toggle fullscreen mode
-    function toggleFullscreenMode() {
-      isFullscreenMode = !isFullscreenMode;
-      
-      // Get all img-parallax elements
-      const parallaxElements = document.querySelectorAll('.img-parallax');
-      
-      if (isFullscreenMode) {
-        // Enter fullscreen mode
-        toggleButton.classList.add('fullscreen-active');
-        
-        // Apply fullscreen styles to img-parallax elements
-        parallaxElements.forEach((element, index) => {
-          // Store original styles
-          if (!element.dataset.originalStyles) {
-            const computedStyle = window.getComputedStyle(element);
-            element.dataset.originalStyles = JSON.stringify({
-              width: element.style.width || computedStyle.width,
-              height: element.style.height || computedStyle.height,
-              maxWidth: element.style.maxWidth || computedStyle.maxWidth,
-              maxHeight: element.style.maxHeight || computedStyle.maxHeight,
-              position: element.style.position || computedStyle.position,
-              top: element.style.top || computedStyle.top,
-              left: element.style.left || computedStyle.left,
-              right: element.style.right || computedStyle.right,
-              bottom: element.style.bottom || computedStyle.bottom,
-              transform: element.style.transform || computedStyle.transform,
-              margin: element.style.margin || computedStyle.margin,
-              padding: element.style.padding || computedStyle.padding
-            });
-          }
-          
-          // Apply fullscreen styles
-          element.style.setProperty('width', '100vw', 'important');
-          element.style.setProperty('height', '100vh', 'important');
-          element.style.setProperty('max-width', 'none', 'important');
-          element.style.setProperty('max-height', 'none', 'important');
-          element.style.setProperty('position', 'relative', 'important');
-          element.style.setProperty('margin', '0', 'important');
-          element.style.setProperty('padding', '0', 'important');
-          element.style.setProperty('box-sizing', 'border-box', 'important');
-          
-          // Ensure images within fill the space
-          const images = element.querySelectorAll('img, video');
-          images.forEach(img => {
-            if (!img.dataset.originalImageStyles) {
-              const imgComputedStyle = window.getComputedStyle(img);
-              img.dataset.originalImageStyles = JSON.stringify({
-                width: img.style.width || imgComputedStyle.width,
-                height: img.style.height || imgComputedStyle.height,
-                objectFit: img.style.objectFit || imgComputedStyle.objectFit,
-                objectPosition: img.style.objectPosition || imgComputedStyle.objectPosition
-              });
-            }
-            
-            img.style.setProperty('width', '100%', 'important');
-            img.style.setProperty('height', '100%', 'important');
-            img.style.setProperty('object-fit', 'cover', 'important');
-            img.style.setProperty('object-position', 'center', 'important');
-          });
-          
-        });
-        
-        // Add body class for additional styling
-        document.body.classList.add('fullscreen-scroll-mode');
-        
-      } else {
-        // Exit fullscreen mode
-        toggleButton.classList.remove('fullscreen-active');
-        
-        // Restore original styles
-        parallaxElements.forEach((element, index) => {
-          if (element.dataset.originalStyles) {
-            const originalStyles = JSON.parse(element.dataset.originalStyles);
-            
-            // Remove fullscreen styles and restore originals
-            Object.keys(originalStyles).forEach(property => {
-              if (originalStyles[property] && originalStyles[property] !== 'auto') {
-                element.style.setProperty(property, originalStyles[property]);
-              } else {
-                element.style.removeProperty(property);
-              }
-            });
-            
-            // Restore image styles
-            const images = element.querySelectorAll('img, video');
-            images.forEach(img => {
-              if (img.dataset.originalImageStyles) {
-                const originalImageStyles = JSON.parse(img.dataset.originalImageStyles);
-                
-                Object.keys(originalImageStyles).forEach(property => {
-                  if (originalImageStyles[property] && originalImageStyles[property] !== 'auto') {
-                    img.style.setProperty(property, originalImageStyles[property]);
-                  } else {
-                    img.style.removeProperty(property);
-                  }
-                });
-              }
-            });
-            
-          }
-        });
-        
-        // Remove body class
-        document.body.classList.remove('fullscreen-scroll-mode');
-      }
-      
-      // Refresh ScrollTrigger if available (desktop only)
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
-        setTimeout(() => {
-          window.gsap.ScrollTrigger.refresh();
-        }, 100);
-      }
-    }
-    
-    // Add click listener to existing .toggle element with debugging
-    toggleButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleFullscreenMode();
-    });
-    
-    // Add additional event listeners for debugging
-    toggleButton.addEventListener('mousedown', () => {
-    });
-    
-    toggleButton.addEventListener('mouseup', () => {
-    });
-    
-    // Test if element is clickable
-    console.log('📺 Toggle element details:', {
-      tagName: toggleButton.tagName,
-      className: toggleButton.className,
-      id: toggleButton.id,
-      style: toggleButton.style.cssText,
-      pointerEvents: getComputedStyle(toggleButton).pointerEvents,
-      display: getComputedStyle(toggleButton).display,
-      visibility: getComputedStyle(toggleButton).visibility,
-      zIndex: getComputedStyle(toggleButton).zIndex
-    });
-    
-    
-    return {
-      toggle: toggleFullscreenMode,
-      isFullscreen: () => isFullscreenMode
-    };
-  }
-
-  // Full-screen image viewer system
-  function initFullscreenImageViewer() {
-    
-    // Create fullscreen overlay (hidden by default)
-    const overlay = document.createElement('div');
-    overlay.id = 'fullscreen-overlay';
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
-      z-index: 999999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      cursor: default;
-    `;
-    
-    // Create fullscreen image container
-    const imageContainer = document.createElement('div');
-    imageContainer.style.cssText = `
-      max-width: 90vw;
-      max-height: 90vh;
-      cursor: default;
-    `;
-    
-    const fullscreenImage = document.createElement('img');
-    fullscreenImage.style.cssText = `
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      cursor: default;
-    `;
-    
-    imageContainer.appendChild(fullscreenImage);
-    overlay.appendChild(imageContainer);
-    document.body.appendChild(overlay);
-    
-    // Function to enter fullscreen
-    function enterFullscreen(originalImage) {
-      
-      // Set the source
-      fullscreenImage.src = originalImage.src;
-      fullscreenImage.alt = originalImage.alt || '';
-      
-      // Show overlay with fade in
-      overlay.style.display = 'flex';
-      overlay.style.opacity = '0';
-      
-      // Animate in
-      if (window.gsap) {
-        window.gsap.to(overlay, {
-          opacity: 1,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-        
-        window.gsap.fromTo(imageContainer, {
-          scale: 0.8,
-          opacity: 0
-        }, {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          ease: "power2.out"
-        });
-      } else {
-        // Fallback without GSAP
-        overlay.style.opacity = '1';
-      }
-      
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-    }
-    
-    // Function to exit fullscreen
-    function exitFullscreen() {
-      
-      if (window.gsap) {
-        window.gsap.to(overlay, {
-          opacity: 0,
-          duration: 0.2,
-          ease: "power2.out",
-          onComplete: () => {
-            overlay.style.display = 'none';
-          }
-        });
-      } else {
-        // Fallback without GSAP
-        overlay.style.display = 'none';
-      }
-      
-      // Restore body scroll
-      document.body.style.overflow = '';
-    }
-    
-    // Add click listener to overlay for exit
-    overlay.addEventListener('click', exitFullscreen);
-    
-    // Add escape key listener
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.style.display === 'flex') {
-        exitFullscreen();
-      }
-    });
-    
-    // Function to add fullscreen functionality to images
-    function addFullscreenToImages() {
-      // Target all images except preloader and already processed ones
-      const images = document.querySelectorAll('img:not(#preloader img):not([data-fullscreen-enabled])');
-      
-      images.forEach((img, index) => {
-        // Debug image properties
-        console.log(`🖼️ Processing image ${index}:`, {
-          src: img.src?.substring(0, 50) + '...',
-          width: img.offsetWidth,
-          height: img.offsetHeight,
-          naturalWidth: img.naturalWidth,
-          naturalHeight: img.naturalHeight,
-          hasParentLink: !!img.closest('a'),
-          hasParentButton: !!img.closest('button'),
-          hasOnClick: !!img.closest('[onclick]')
-        });
-        
-        // More lenient size check - include images that might not have loaded dimensions yet
-        const hasValidDimensions = (img.offsetWidth > 20 && img.offsetHeight > 20) || 
-                                  (img.naturalWidth > 20 && img.naturalHeight > 20) ||
-                                  (!img.offsetWidth && !img.offsetHeight); // Not loaded yet
-        
-        if (!hasValidDimensions) {
-          return;
-        }
-        
-        // Mark as processed
-        img.dataset.fullscreenEnabled = 'true';
-        
-        // Ensure cursor stays as default (arrow)
-        img.style.cursor = 'default';
-        
-        // Add click listener with more debugging
-        img.addEventListener('click', (e) => {
-          
-          // Don't interfere with existing interactions
-          e.stopPropagation();
-          
-          // Check for parent interactive elements
-          const parentLink = img.closest('a');
-          const parentButton = img.closest('button');
-          const parentOnClick = img.closest('[onclick]');
-          
-          if (parentLink || parentButton || parentOnClick) {
-            return;
-          }
-          
-          enterFullscreen(img);
-        });
-        
-      });
-      
-    }
-    
-    // Initialize for existing images
-    addFullscreenToImages();
-    
-    // Add delayed initialization for images that might load later
-    setTimeout(() => {
-      addFullscreenToImages();
-    }, 2000);
-    
-    // Also try after page fully loads
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-          addFullscreenToImages();
-        }, 1000);
-      });
-    }
-    
-    // Return function to add to new images (for infinite scroll)
-    return addFullscreenToImages;
-  }
 
   // Remove the initial hide style when animations start
   const initialHideStyle = document.querySelector('style');
@@ -422,7 +37,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.warn('Webflow script error detected, not interfering:', e.message);
       return;
     }
-    console.error('Global JavaScript error:', e.error || e.message || 'Unknown error');
+    console.error('Global JavaScript error:', e.error);
   });
 
   // Load GSAP scripts sequentially with error handling
@@ -451,18 +66,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function loadGSAP() {
     // Check if GSAP is already available from Webflow
     if (typeof window.gsap !== 'undefined') {
+      console.log('✅ Using Webflow\'s built-in GSAP');
       gsapLoaded = true;
       
       // Check for ScrollTrigger
       if (window.gsap.ScrollTrigger) {
+        console.log('✅ Using Webflow\'s built-in ScrollTrigger');
         scrollTriggerLoaded = true;
       } else {
         // Load ScrollTrigger if not available
         loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
+          console.log('✅ ScrollTrigger loaded externally');
           if (window.gsap && window.gsap.registerPlugin) {
             try {
               window.gsap.registerPlugin(ScrollTrigger);
+              console.log('✅ ScrollTrigger registered');
             } catch (e) {
               console.error('❌ ScrollTrigger registration failed:', e);
             }
@@ -473,20 +92,25 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Load Observer plugin
       loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
         observerLoaded = true;
+        console.log('✅ Observer loaded');
       });
       
       return;
     }
     
     // Fallback: Load GSAP externally if not provided by Webflow
+    console.log('ℹ️ Webflow GSAP not found, loading externally...');
     loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', () => {
       gsapLoaded = true;
+      console.log('✅ GSAP loaded externally');
               loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', () => {
           scrollTriggerLoaded = true;
+        console.log('✅ ScrollTrigger loaded externally');
           setTimeout(() => {
             if (window.gsap && window.gsap.registerPlugin) {
               try {
               window.gsap.registerPlugin(ScrollTrigger);
+              console.log('✅ ScrollTrigger registered');
               } catch (e) {
                 console.error('❌ ScrollTrigger registration failed:', e);
               }
@@ -494,6 +118,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }, 100);
           loadGSAPScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js', () => {
             observerLoaded = true;
+            console.log('✅ Observer loaded');
           });
         });
     });
@@ -530,6 +155,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     document.body.classList.add('loading');
     
     // Show immediately, no delay
+    console.log('🎬 Preloader visible immediately with pulsing digits');
     return preloader;
   }
 
@@ -540,6 +166,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     // Wait for GSAP to load before starting preloader
     function waitForGSAPThenStart() {
       if (typeof window.gsap !== 'undefined') {
+        console.log('✅ GSAP ready, starting preloader');
+        console.log('📊 GSAP version:', window.gsap.version);
+        console.log('📊 ScrollTrigger available:', !!window.gsap.ScrollTrigger);
         startActualPreloader();
       } else {
         console.log('⏳ Still waiting for GSAP...', {
@@ -585,8 +214,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const totalImages = images.length;
     let loadedCount = 0;
     
+    console.log(`🖼️ Preloader starting: Found ${totalImages} images to preload`);
     
     if (totalImages === 0) {
+      console.log(`🖼️ No images found, completing preloader after brief delay`);
       preloader.className = 'counting';
       updateCounter(100);
       setTimeout(completePreloader, 1000); // Slight delay even with no images
@@ -601,16 +232,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       // Switch from pulsing to counting mode when images start loading
       if (loadedCount === 1) {
         preloader.className = 'counting';
+        console.log('🎬 Images loading detected - switching to counting mode');
       }
       
+      console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
       // Wait for at least 10 images AND 80% of total before completing
       const minImagesLoaded = loadedCount >= 10;
       const majorityLoaded = loadedCount >= Math.ceil(totalImages * 0.8);
       const minThreshold = Math.ceil(totalImages * 0.8);
       
+      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 10 (${minImagesLoaded}) and ${minThreshold} for 80% (${majorityLoaded})`);
       
       if (minImagesLoaded && majorityLoaded) {
+        console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded (min 10 ✓, 80% ✓)`);
         setTimeout(completePreloader, 200);
       }
     }
@@ -690,10 +325,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           setTimeout(() => {
             console.log('🚀 Starting animations after preloader');
             startPageAnimations();
+            console.log('🚀 startPageAnimations completed');
             
             console.log('🚀 About to call initImageToggle...');
             try {
               initImageToggle();
+              console.log('🚀 initImageToggle call completed successfully');
             } catch (error) {
               console.error('🚀 ERROR calling initImageToggle:', error);
             }
@@ -704,6 +341,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Start all page animations after preloader with mobile optimization
   function startPageAnimations() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     // Animate nav elements (excluding fake, middle, and bottom nav)
     const allNavElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"])');
@@ -716,16 +354,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Start text animations immediately
+    // Start text animations immediately - these must complete FIRST on mobile
+    console.log('🎬 Starting text animations (priority on mobile)');
+    console.log('🎬 About to call initTextAndOtherAnimations()');
     try {
       initTextAndOtherAnimations();
+      console.log('✅ initTextAndOtherAnimations() completed');
     } catch (error) {
       console.error('❌ initTextAndOtherAnimations() failed:', error);
     }
     
     // Wait for text animations to mostly complete before starting images
-    const imageDelay = 1600; // Reduced delay - images start sooner after text scramble
+    const imageDelay = isMobile ? 1500 : 800; // Much longer delay on mobile
     setTimeout(() => {
+      console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
       
     }, imageDelay);
@@ -773,10 +415,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             element.dataset.counterStarted = 'true';
             startTimeCounter(element);
           }
-          if (element.id === 'time-text' || element.classList.contains('time-text')) {
-            element.dataset.timeStarted = 'true';
-            startMilitaryTime(element);
-          }
           if (element.id === 'rotating-text') {
             element.dataset.rotatingStarted = 'true';
             try {
@@ -798,23 +436,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Simple working scrambling for all visible text elements
   function initHeadingAnimations() {
     if (typeof window.gsap === 'undefined') {
+      console.log('⚠️ GSAP not loaded yet, will try again...');
       return;
     }
     
+    console.log('🎭 Starting SIMPLE working scrambling...');
     
     // Find all text elements - cast wide net
     const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a');
     const validElements = Array.from(textElements).filter(el => {
-      // Exclude time-text and rotating-text - they have their own handling
-      if (el.id === 'time-text' || el.id === 'rotating-text') {
-        return false;
-      }
-      
-      // Exclude .locked class - has special multi-column formatting
-      if (el.classList.contains('locked')) {
-        return false;
-      }
-      
       const text = el.textContent?.trim();
       const hasChildren = el.children.length === 0; // No child elements
       const isVisible = window.getComputedStyle(el).display !== 'none';
@@ -824,14 +454,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       return text && text.length > 2 && text.length < 150 && hasChildren && isVisible && inViewport;
     });
     
+    console.log(`🔍 Found ${validElements.length} text elements for scrambling`);
     
     // Apply line-by-line stagger reveal with scrambling (no fading)
     validElements.forEach((element, index) => {
       if (element.dataset.animationInit || element.dataset.infiniteClone) return;
       if (element.closest('.label-wrap')) return;
-      if (element.classList.contains('locked')) return; // Skip .locked elements
       
       element.dataset.animationInit = 'true';
+      console.log(`🎯 [${index}] LINE-BY-LINE:`, element.textContent.substring(0, 40));
       
       // Start invisible for line-by-line reveal
       element.style.visibility = 'hidden';
@@ -874,16 +505,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   }
   
   // Simple, reliable text scrambling
-  function simpleScrambleText(element, duration = 1500) {
+  function simpleScrambleText(element, duration = 1200) {
     const spans = element.querySelectorAll('.letter');
     if (spans.length === 0) return;
     
     const originalLetters = Array.from(spans).map(span => span.textContent);
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     
+    console.log(`🎬 Starting scramble for ${originalLetters.length} letters`);
     
     let frame = 0;
-    const totalFrames = duration / 80; // 80ms intervals (slower)
+    const totalFrames = duration / 60; // 60ms intervals
       
       const interval = setInterval(() => {
       spans.forEach((span, i) => {
@@ -908,18 +540,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         spans.forEach((span, i) => {
           span.textContent = originalLetters[i];
         });
+        console.log(`✅ Completed scrambling`);
       }
-    }, 80);
+    }, 60);
   }
   
   // Letter hover effects + whole-word link scrambling
   function initLetterHoverEffects() {
-    
-    // Enable hover effects on all devices - users can have mouse on tablets too
-    console.log('🎯 Initializing letter hover effects');
-    
     const letterElements = document.querySelectorAll('.letter');
-    console.log(`📊 Found ${letterElements.length} letter elements`);
+    console.log(`🎯 Setting up hover effects for ${letterElements.length} letters`);
     
     // Regular letter bouncing for non-links
     letterElements.forEach((letter, i) => {
@@ -1062,6 +691,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       startTime: Date.now()
     });
     
+    console.log(`🎬 Started line scrambling ${lineIndex}: "${lineText}" for ${duration}ms`);
     
     // Start the update loop if not already running
     if (!state.updateInterval) {
@@ -1105,6 +735,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Remove completed scrambles
         completedScrambles.forEach(index => {
+          console.log(`✅ Completed line scrambling ${index}`);
           state.activeScrambles.delete(index);
         });
         
@@ -1120,16 +751,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startTimeCounter(element);
           }
           
-          if (element.id === 'time-text' || element.classList.contains('time-text')) {
-            element.dataset.timeStarted = 'true';
-            startMilitaryTime(element);
-          }
-          
           if (element.id === 'rotating-text') {
             element.dataset.rotatingStarted = 'true';
               startRotatingText(element);
           }
           
+          console.log(`🎉 All line scrambles completed for: ${element.textContent.substring(0, 30)}`);
         }
       }, 80); // 80ms update interval for smooth effect
     }
@@ -1140,6 +767,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const originalText = element.textContent.trim();
     if (!originalText) return;
     
+    console.log(`🎬 SCRAMBLING "${originalText}" for ${duration}ms`);
     
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let frame = 0;
@@ -1167,16 +795,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       if (frame >= totalFrames) {
         clearInterval(interval);
         element.textContent = originalText;
+        console.log(`✅ COMPLETED scrambling "${originalText}"`);
         
         // Handle special elements
         if (element.classList.contains('counter')) {
           element.dataset.counterStarted = 'true';
           startTimeCounter(element);
-        }
-        
-        if (element.id === 'time-text' || element.classList.contains('time-text')) {
-          element.dataset.timeStarted = 'true';
-          startMilitaryTime(element);
         }
         
         if (element.id === 'rotating-text') {
@@ -1260,6 +884,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       startTime: Date.now()
     });
     
+    console.log(`🎬 Started scrambling line ${lineIndex}: "${lineText.substring(0, 20)}" for ${duration}ms`);
     
     // Start the update loop if not already running
     if (!state.updateInterval) {
@@ -1303,6 +928,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Remove completed scrambles
         completedScrambles.forEach(index => {
+          console.log(`✅ Completed scrambling line ${index}`);
           state.activeScrambles.delete(index);
         });
         
@@ -1318,16 +944,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startTimeCounter(element);
           }
           
-          if (element.id === 'time-text' || element.classList.contains('time-text')) {
-            element.dataset.timeStarted = 'true';
-            startMilitaryTime(element);
-          }
-          
           if (element.id === 'rotating-text') {
             element.dataset.rotatingStarted = 'true';
             startRotatingText(element);
           }
           
+          console.log(`🎉 All lines completed for element: ${element.textContent.substring(0, 30)}`);
         }
       }, 50); // 50ms update interval
     }
@@ -1336,99 +958,27 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Wrap text lines for animation (simplified for hover effects only)
   function wrapLines(el) {
     // DISABLED: This function was creating text duplication by modifying innerHTML
+    console.log('🚫 wrapLines disabled to prevent text duplication');
     el.dataset.splitDone = 'true';
     return [el]; // Return the original element, no DOM manipulation
-  }
-
-  // Fix container responsiveness and window coverage issues
-  function fixContainerResponsiveness() {
-    console.log('📐 Fixing container responsiveness');
-    
-    // Target main containers that might have responsiveness issues
-    const containers = document.querySelectorAll('.container, .main-wrapper, .page-wrapper, .flex-grid, .w-layout-grid, main, body');
-    
-    containers.forEach((container, index) => {
-      if (!container) return;
-      
-      console.log(`📐 Processing container ${index}: ${container.className || container.tagName}`);
-      
-      // Ensure containers are responsive and cover window properly
-      const currentStyle = getComputedStyle(container);
-      
-      // Fix common responsiveness issues
-      if (container.tagName.toLowerCase() === 'body') {
-        // Ensure body covers full viewport
-        container.style.cssText += `
-          min-height: 100vh !important;
-          width: 100% !important;
-          overflow-x: hidden !important;
-        `;
-      } else if (container.classList.contains('container') || container.classList.contains('main-wrapper') || container.classList.contains('page-wrapper')) {
-        // Main content containers
-        container.style.cssText += `
-          width: 100% !important;
-          max-width: 100% !important;
-          min-height: 100vh !important;
-          box-sizing: border-box !important;
-        `;
-      } else if (container.classList.contains('flex-grid') || container.classList.contains('w-layout-grid')) {
-        // Grid containers
-        container.style.cssText += `
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-        `;
-      }
-      
-      // Add resize listener to maintain responsiveness
-      if (index === 0) { // Only add once
-        window.addEventListener('resize', () => {
-          console.log('📐 Window resized, updating container dimensions');
-          // Force recalculation of container dimensions
-          containers.forEach(c => {
-            if (c && c.style) {
-              c.style.width = '100%';
-              c.style.maxWidth = '100%';
-            }
-          });
-        });
-      }
-    });
-    
-    // Also fix any fixed-positioned elements that might cause issues
-    const fixedElements = document.querySelectorAll('.fixed-full, [style*="position: fixed"], [style*="position:fixed"]');
-    fixedElements.forEach((element, index) => {
-      console.log(`📐 Fixing fixed element ${index}: ${element.className}`);
-      element.style.cssText += `
-        width: 100vw !important;
-        height: 100vh !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-      `;
-    });
-    
-    console.log(`📐 Fixed ${containers.length} containers and ${fixedElements.length} fixed elements`);
   }
 
   // Text and other animations (non-masked content) - SIMPLIFIED TO PREVENT DUPLICATION
   function initTextAndOtherAnimations() {
     isInit = true;
-    
-    if (isMobile) {
-      // Continue with normal text animations on mobile for parity
-    }
+    console.log('🎬 SIMPLIFIED: Starting text scrambling only...');
     
     // Remove the class that keeps content hidden
     document.body.classList.remove('animations-ready');
     
     // DO NOT reset all element visibility - this was causing issues
+    console.log('🚫 Skipping global visibility reset to prevent conflicts');
     // SUPER SIMPLE: Just start heading animations, nothing else
     console.log('✨ SIMPLIFIED: Only doing heading scrambling to prevent duplication');
     
     // Start heading animations immediately
     setTimeout(() => {
+      console.log('🎯 Starting initHeadingAnimations...');
       initHeadingAnimations();
     }, 100);
     
@@ -1467,142 +1017,71 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     const rotatingText = document.getElementById('rotating-text');
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
-      console.log('🔄 Scrambling rotating-text');
+      console.log('🔄 Scrambling rotating text');
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
     }
     
-    const timeText = document.getElementById('time-text');
-    if (timeText && !timeText.dataset.infiniteClone) {
-      console.log('⏰ Scrambling time-text');
-      setTimeout(() => scrambleLine(timeText, 800), 400);
-    }
-    
-    
-    // Fix container responsiveness
-    fixContainerResponsiveness();
+    console.log('✅ Text animations complete - now setting up infinite scroll');
     
     // Setup infinite scroll after text animations
-    
-    // INFINITE SCROLL DISABLED
-    /*
+    console.log('🔄 About to call setupInfiniteScroll()');
     try {
       setupInfiniteScroll();
+      console.log('✅ setupInfiniteScroll() completed successfully');
         } catch (error) {
       console.error('❌ setupInfiniteScroll() failed:', error);
     }
-    */
   }
   
-  // Masked image animations - unified for all devices
+  // Masked image animations - called after text completes on mobile
   function startMaskedImageAnimations() {
+    // Detect Safari mobile for performance optimization
+    const isSafariMobile = /Safari/.test(navigator.userAgent) && 
+                          /Mobile|iPhone|iPad|iPod/.test(navigator.userAgent) && 
+                          !/Chrome|CriOS|FxiOS/.test(navigator.userAgent);
     
-    // Register ScrollTrigger for all devices
-    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
-      window.gsap.registerPlugin(window.gsap.ScrollTrigger);
+    if (isSafariMobile) {
+      console.log('🎭 SKIPPING mask animations on Safari mobile for performance');
+      // Just make all images visible without masking
+      document.querySelectorAll('img:not(#preloader img), video').forEach(img => {
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(img, { opacity: 1 });
+        } else {
+          img.style.opacity = '1';
+        }
+      });
+      return;
     }
     
-    // Mobile-optimized mask reveal for images (exclude clones and preloader)  
-    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
-  
-  // Process ALL images the same way (mobile and desktop)
-  const imagesToProcess = Array.from(allImages);
-  
-  // Ensure all images have loaded or at least have dimensions
-  const ensureImageDimensions = (img) => {
-    return new Promise((resolve) => {
-      if (img.offsetWidth > 0 && img.offsetHeight > 0) {
-        resolve();
-      } else if (img.complete) {
-        // Image is loaded but might not have dimensions yet (force reflow)
-        img.style.display = img.style.display || 'block';
-        setTimeout(() => resolve(), 0);
-        } else {
-        // Wait for image to load
-        img.addEventListener('load', () => resolve(), { once: true });
-        img.addEventListener('error', () => resolve(), { once: true });
-        // Timeout fallback
-        setTimeout(() => resolve(), 100);
-      }
-    });
-  };
-  
-  // Wait for all images to have dimensions
-  Promise.all(imagesToProcess.map(ensureImageDimensions)).then(() => {
-    // Debug: Check if any images are already hidden
-    const hiddenImages = Array.from(imagesToProcess).filter(img => {
-      const computed = getComputedStyle(img);
-      return computed.visibility === 'hidden' || computed.opacity === '0';
-    });
+    typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
-    if (imagesToProcess.length) {
-      // Count how many images are initially in viewport for stagger
-      let inViewportCount = 0;
-      const viewportImages = imagesToProcess.filter(img => {
-        const rect = img.getBoundingClientRect();
-        return rect.top < window.innerHeight && rect.bottom > 0;
-      });
+    // NOW remove the emergency image hiding since mask animations are about to start
+    const emergencyHide = document.getElementById('emergency-image-hide');
+    if (emergencyHide) {
+      emergencyHide.remove();
+      console.log('🔧 Removed emergency image hiding for mask animations');
+    }
+    
+    // Mobile-optimized mask reveal for images (include clones, exclude preloader)
+    const allImages = document.querySelectorAll('img:not(#preloader img), video');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (allImages.length) {
+      // On mobile, only animate first 2 images immediately to reduce load even more
+      const maxInitialImages = isMobile ? 2 : allImages.length;
       
-      // Process all images the same way
-      imagesToProcess.forEach((element, index) => {
+      allImages.forEach((element, index) => {
         if (element.dataset.maskSetup) return;
-        
+        // Process both original and cloned images the same way
         const originalWidth = element.offsetWidth;
         const originalHeight = element.offsetHeight;
         
-        if (originalWidth === 0 || originalHeight === 0) {
-          console.warn(`⚠️ Skipping image ${index} - no dimensions yet (${originalWidth}x${originalHeight})`, element.src || element.tagName);
-          return;
-        }
+        if (originalWidth === 0 || originalHeight === 0) return;
         
-        // Check if this image is in initial viewport
-        const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        // MOBILE: Only mask reveal initial viewport images, skip others for performance
-        if (isMobile && !isInViewport) {
-          // Just mark as setup and show immediately without mask animation
-          element.dataset.maskSetup = 'true';
-          element.dataset.maskComplete = 'true';
-          element.style.setProperty('opacity', '1', 'important');
-          element.style.setProperty('visibility', 'visible', 'important');
-          element.style.setProperty('display', 'block', 'important');
-          console.log(`📱 Mobile: Skipping mask for out-of-viewport image ${index}`);
-          return;
-        }
-        
-        // Check if this should be a vertical mask reveal
-        const parentContainer = element.closest('.reveal-full.video-full, .reveal.reveal-full.video-full');
-        const isVerticalMask = parentContainer !== null; // Videos use vertical mask reveal
-        const hasScaleEffect = isVerticalMask || element.classList.contains('img-parallax'); // Videos and parallax images get scale effect
-        
-        // Ensure parent container doesn't get positioning overridden (preserve sticky, etc.)
-        if (parentContainer) {
-          const parentStyles = window.getComputedStyle(parentContainer);
-          // Store original position to preserve it
-          parentContainer.dataset.originalPosition = parentStyles.position;
-          // Don't force any position changes - let Webflow handle it
-        }
-        
-        // Process with mask-wrap (desktop always, mobile only for initial viewport)
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
-        
-        // Vertical mask for videos, horizontal for images
-        if (isVerticalMask) {
-          // Mask container positioned absolutely within parent, starts at height 0
-          maskContainer.style.cssText = `width:100%;height:0px;overflow:hidden;display:block;position:absolute;top:0;left:0;margin:0;padding:0;line-height:0;pointer-events:none`;
-          maskContainer.dataset.vertical = 'true';
-          
-          // Don't force positioning on parent - let Webflow handle it completely
-          // The mask will work with any positioning (static, relative, sticky, fixed, absolute)
-        } else {
         maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
-        }
-        
-        // Ensure image stays hidden until mask is ready
-        element.style.setProperty('opacity', '0', 'important');
-        element.style.setProperty('visibility', 'hidden', 'important');
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
@@ -1615,287 +1094,142 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Also store original CSS classes to preserve Webflow responsive behavior
         element.dataset.webflowClasses = element.className;
         
-        // Preserve object-fit and other important properties while setting dimensions
-        const objectFit = element.dataset.webflowObjectFit || 'cover';
-        
-        // Vertical masks (videos) - position absolutely relative to PARENT, not mask
-        // This keeps video at full size while mask reveals it
-        if (isVerticalMask) {
-          const parentEl = parent.closest('.reveal-full, .video-full');
-          
-          // Function to update video dimensions on resize
-          const updateVideoDimensions = () => {
-            if (parentEl) {
-              // Use 100% dimensions to let the parent container control sizing
-              element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important;opacity:1!important;visibility:visible!important`;
-              
-              // Update mask container to match parent dimensions
-              if (maskContainer) {
-                const parentHeight = parentEl.offsetHeight;
-                const parentWidth = parentEl.offsetWidth;
-                
-                // Only update if animation is complete
-                if (element.dataset.maskComplete === 'true') {
-                  maskContainer.style.width = `${parentWidth}px`;
-                  maskContainer.style.height = `${parentHeight}px`;
-                }
-              }
-            }
-          };
-          
-          // Set initial dimensions
-          const parentHeight = parentEl ? parentEl.offsetHeight : originalHeight;
-          const parentWidth = parentEl ? parentEl.offsetWidth : originalWidth;
-          
-          // Video uses 100% dimensions to let parent control sizing
-          // This prevents scaling issues and maintains proper aspect ratio
-          element.style.cssText = `width:100%!important;height:100%!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important;object-position:center center!important;position:absolute!important;top:0!important;left:0!important;z-index:1!important`;
-          
-          // Add resize listener to update video height
-          if (!element.dataset.videoResizeAdded) {
-            window.addEventListener('resize', updateVideoDimensions);
-            
-            // Also use ResizeObserver for parent container changes
-            const resizeObserver = new ResizeObserver(updateVideoDimensions);
-            if (parentEl) {
-              resizeObserver.observe(parentEl);
-            }
-            
-            element.dataset.videoResizeAdded = 'true';
-          }
-        } else {
-          // Images: use fixed pixel dimensions
-        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;object-fit:${objectFit}!important`;
-        }
-        
+        // Revert to cssText for original images (this was working before)
+        element.style.cssText = `width:${originalWidth}px!important;height:${originalHeight}px!important;display:block!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important`;
         element.dataset.maskSetup = 'true';
         element.dataset.originalMaskWidth = originalWidth;
         element.dataset.originalMaskHeight = originalHeight;
         
-        // Store the target width/height for animation
+        // Force immediate opacity and visibility and clear any existing GSAP animations
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.set(element, { opacity: 1, clearProps: "opacity" });
+        }
+        element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('visibility', 'visible', 'important');
+        console.log('🔧 Set mask image opacity to 1:', element);
+        
+        // Store the target width for animation
         maskContainer.dataset.targetWidth = originalWidth;
-        maskContainer.dataset.targetHeight = originalHeight;
         
-        // Add sequential stagger for all initial viewport images/videos
-        let staggerDelay = 0;
-        if (isInViewport) {
-          staggerDelay = inViewportCount * 0.12; // 120ms between visible images for perfect sequential feel
-          inViewportCount++;
-        }
+        const hasParallax = element.classList.contains('img-parallax');
+        if (hasParallax) window.gsap.set(element, { scale: 1.2 });
         
-        // Set initial state based on mask direction
-        if (isVerticalMask) {
-          window.gsap.set(maskContainer, { height: '0px' });
-          // Set initial scale for videos - more pronounced effect
-          window.gsap.set(element, { scale: 1.5 });
-        } else {
-          window.gsap.set(maskContainer, { width: '0px' });
-        }
+        // Check if image is in viewport for immediate animation
+        const rect = element.getBoundingClientRect();
+        const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
-        // Keep image hidden until animation starts
-        window.gsap.set(element, { opacity: 0, visibility: 'hidden' });
-        
-        // MOBILE: Only animate initial viewport images (no ScrollTrigger for scroll-in)
-        // DESKTOP: Animate all images with ScrollTrigger
-        if (isMobile && isInViewport) {
-          // Mobile viewport images: animate immediately with stagger, no ScrollTrigger
-          const animProps = isVerticalMask 
-            ? { height: maskContainer.dataset.targetHeight + 'px' }
-            : { width: maskContainer.dataset.targetWidth + 'px' };
-            
+        if (inViewport && index < maxInitialImages) {
+          // Animate images in viewport immediately with proper top-to-bottom order
+          const staggerDelay = index * 0.2; // Consistent, slower stagger
+          const duration = 1.2; // Same duration across all devices
+          
+          // Consistent easing for stability
+          const easing = "power2.out";
+          
+          console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
           window.gsap.to(maskContainer, { 
-            ...animProps,
-            duration: 1.5,
-            delay: staggerDelay,
-            ease: "power2.out",
+            width: maskContainer.dataset.targetWidth + 'px', 
+            duration: duration, 
+            ease: easing, 
+          delay: staggerDelay,
             onStart: () => {
-              // Make image visible when mask animation starts
-        window.gsap.set(element, { opacity: 1, visibility: 'visible' });
+              console.log(`🎭 Mask animation started for image ${index}`);
             },
             onComplete: () => {
+              console.log(`🎭 Mask animation completed for image ${index}`);
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
           });
           
-          // For videos, animate scale from 1.3 to 1.0 during mask reveal
-          if (isVerticalMask) {
-            window.gsap.to(element, {
-              scale: 1.0,
-              duration: 1.5,
-              delay: staggerDelay,
-              ease: "power2.out"
+          if (hasParallax && !isMobile) { // Disable parallax on mobile for performance
+            window.gsap.to(element, { 
+              scale: 1.0, 
+              duration: duration + 0.5, 
+              ease: easing, 
+              delay: staggerDelay
             });
           }
-        } else if (!isMobile) {
-          // Desktop: use ScrollTrigger for all images
-          const animProps = isVerticalMask 
-            ? { height: maskContainer.dataset.targetHeight + 'px' }
-            : { width: maskContainer.dataset.targetWidth + 'px' };
-        
+        } else {
+          // Images below fold: use optimized ScrollTrigger
+          window.gsap.set(maskContainer, { width: '0px' });
           window.gsap.to(maskContainer, { 
-            ...animProps,
-          duration: 1.5,
-          delay: staggerDelay,
+            width: maskContainer.dataset.targetWidth + 'px', 
+            duration: 1.2, // Same duration across all devices
             ease: "power2.out",
             scrollTrigger: { 
               trigger: element, 
-            start: "top 90%",
+              start: "top 90%", // Consistent trigger point
               end: "top center", 
               once: true,
               toggleActions: "play none none none"
             },
-            onStart: () => {
-              // Make image visible when mask animation starts
-              window.gsap.set(element, { opacity: 1, visibility: 'visible' });
-            },
             onComplete: () => {
               element.dataset.gsapAnimated = 'mask-revealed';
               element.dataset.maskComplete = 'true';
             }
           });
           
-          // For videos, animate scale from 1.5 to 1.0 during mask reveal
-          if (isVerticalMask) {
-            window.gsap.to(element, {
-              scale: 1.0,
-              duration: 1.5,
-              delay: staggerDelay,
-              ease: "power2.out",
-              scrollTrigger: { 
-                trigger: element, 
-                start: "top 90%",
-                end: "top center", 
-                once: true,
-                toggleActions: "play none none none"
-              },
-              onComplete: () => {
-                // Lock scale at 1.0 after animation completes
-                window.gsap.set(element, { scale: 1.0 });
-              }
-            });
-          }
-        }
-          
-        // Legacy support: img-parallax class gets the traditional parallax scale effect
-        const hasParallax = element.classList.contains('img-parallax');
-        
-        // Only add parallax scale effect to images with img-parallax class (not videos)
-        if (hasParallax && !isMobile && !window.isFullscreenMode) {
-          window.gsap.set(element, { 
-            scale: 1.4,  // Increased from 1.2 for more noticeable effect
-            onComplete: () => {
-              // Ensure object-fit is preserved after scaling
-              const objectFit = element.dataset.webflowObjectFit || 'cover';
-              element.style.setProperty('object-fit', objectFit, 'important');
-            }
-          });
-          
+          // Only add parallax on desktop
+          if (hasParallax && !isMobile) {
             window.gsap.to(element, { 
               scale: 1.0, 
-              duration: 1.5, 
+              duration: 1.2, 
               ease: "power2.out",
               scrollTrigger: { 
                 trigger: element, 
                 start: "top bottom", 
                 end: "top center", 
                 once: true 
-            },
-            onComplete: () => {
-              // Ensure object-fit is preserved after ScrollTrigger scaling animation
-              const objectFit = element.dataset.webflowObjectFit || 'cover';
-              element.style.setProperty('object-fit', objectFit, 'important');
               }
             });
+          }
         }
       });
       
-      // Remove emergency hide AFTER all mask-wraps are created to prevent flicker
-      const emergencyHide = document.getElementById('emergency-image-hide');
-      if (emergencyHide) {
-        emergencyHide.remove();
-      }
-      
       // Safety fallback: force completion of any stuck reveals after 5 seconds
       setTimeout(() => {
-        imagesToProcess.forEach(element => {
+        allImages.forEach(element => {
           if (element.dataset.maskSetup && !element.dataset.maskComplete) {
             const maskContainer = element.parentNode;
-            if (maskContainer && maskContainer.classList.contains('mask-wrap')) {
-              // Force reveal completion - check if vertical or horizontal
-              const isVertical = maskContainer.dataset.vertical === 'true';
-              if (isVertical) {
-                const targetHeight = maskContainer.dataset.targetHeight || element.offsetHeight;
-                window.gsap.set(maskContainer, { height: targetHeight + 'px' });
-                
-                // Completely override styles for vertical masks
-                const parentEl = maskContainer.parentNode;
-                const objectFit = element.dataset.webflowObjectFit || 'cover';
-                
-                // Preserve parent's Webflow positioning and dimensions
-                if (parentEl && (parentEl.classList.contains('reveal') || parentEl.classList.contains('video-full'))) {
-                  const parentStyles = window.getComputedStyle(parentEl);
-                  // Only set position to relative if it's static - preserve sticky, fixed, absolute
-                  if (parentStyles.position === 'static') {
-                    parentEl.style.setProperty('position', 'relative', 'important');
-                  }
-                  // Don't force dimensions - let Webflow styles control parent
-                }
-                
-                // Function to update dimensions responsively
-                const updateVideoDimensions = () => {
-                  maskContainer.removeAttribute('style');
-                  maskContainer.setAttribute('style', 'position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; overflow: visible !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0 !important;');
-                  
-                  element.removeAttribute('style');
-                  element.setAttribute('style', `position: relative !important; width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; min-width: 100% !important; min-height: 100% !important; display: block !important; margin: 0 !important; padding: 0 !important; object-fit: ${objectFit} !important; object-position: center center !important; opacity: 1 !important; visibility: visible !important;`);
-                };
-                
-                // Set initial dimensions
-                updateVideoDimensions();
-                
-                // Add resize listener for responsive behavior
-                if (!element.dataset.resizeListenerAdded) {
-                  const resizeObserver = new ResizeObserver(() => {
-                    updateVideoDimensions();
-                  });
-                  
-                  if (parentEl) {
-                    resizeObserver.observe(parentEl);
-                    element.dataset.resizeListenerAdded = 'true';
-                  }
-                }
-              } else {
+            if (maskContainer && maskContainer.classList.contains('proper-mask-reveal')) {
+              // Force reveal completion
               const targetWidth = maskContainer.dataset.targetWidth || element.offsetWidth;
               window.gsap.set(maskContainer, { width: targetWidth + 'px' });
-              }
               window.gsap.set(element, { opacity: 1, scale: 1 });
               element.dataset.gsapAnimated = 'mask-revealed-fallback';
               element.dataset.maskComplete = 'true';
+              console.log('🔧 Forced reveal completion for stuck element');
             }
           }
         });
       }, 4000);
     }
-  }); // End of Promise.all - wait for image dimensions
   }
 
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
+    console.log('🔄 STARTING INFINITE SCROLL SETUP - DEBUG MODE');
+    console.log('🔄 Document ready state:', document.readyState);
+    console.log('🔄 Body exists:', !!document.body);
     
     // Back to simpler working selectors
     const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
+    console.log('🔍 Searching for infinite scroll container...');
     for (const selector of selectors) {
       const found = document.querySelector(selector);
+      console.log(`🔍 Checking ${selector}:`, found ? `Found with ${found.children.length} children` : 'Not found');
       if (found && found.children.length > 1) { 
         container = found; 
+        console.log(`✅ SELECTED container: ${selector} with ${found.children.length} items`); 
         break; 
       }
     }
     
     if (!container) { 
+      console.log('❌ NO CONTAINER FOUND for infinite scroll');
       console.log('🔍 Available elements with classes:', 
         [...document.querySelectorAll('[class]')].slice(0, 10).map(el => el.className)
       );
@@ -1910,51 +1244,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const itemHeight = originalItems[0] ? originalItems[0].offsetHeight : 100;
     let isLoading = false;
     
-    // MOBILE: Preload all images immediately for smooth scrolling
-    if (isMobile) {
-      const allImages = originalItems.flatMap(item => 
-        Array.from(item.querySelectorAll('img'))
-      );
-      
-      const imagePromises = allImages.map(img => {
-        return new Promise((resolve) => {
-          if (img.complete) {
-            resolve();
-          } else {
-            img.onload = () => resolve();
-            img.onerror = () => resolve(); // Resolve even on error
-            // Force load if not started
-            if (!img.src) {
-              const dataSrc = img.getAttribute('data-src');
-              if (dataSrc) img.src = dataSrc;
-            }
-          }
-        });
-      });
-      
-      Promise.all(imagePromises).then(() => {
-      });
-    }
-    
-    // OPTIMIZED load more items function with cached selectors
+    // Load more items function
     function loadMoreItems() {
       if (isLoading) return;
       isLoading = true;
-      
-      // Use DocumentFragment for better performance
-      const fragment = document.createDocumentFragment();
+      console.log('🔄 Loading more items...');
       
       originalItems.forEach(item => {
-        // Exclude items that contain .reveal-full.new-fixed elements from cloning
-        if (item.classList.contains('reveal-full') && item.classList.contains('new-fixed')) {
-          return;
-        }
-        
-        // Also check if the item contains any .reveal-full.new-fixed descendants
-        if (item.querySelector('.reveal-full.new-fixed')) {
-          return;
-        }
-        
         const clone = item.cloneNode(true);
         
         // Mark cloned elements to prevent text animations from affecting them
@@ -1990,46 +1286,31 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Special handling for images and videos in clones - prevent flickering
+        // Special handling for images and videos in clones - preserve mask animations
+        // Add slight delay to ensure cloned elements are properly laid out
+        setTimeout(() => {
           clone.querySelectorAll('img, video').forEach((el, imgIndex) => {
             el.dataset.infiniteClone = 'true';
+            // Don't mark as animated - let them get proper mask animations
             
-            // MOBILE: Force immediate load and visibility
-            if (isMobile && el.tagName === 'IMG') {
-              // Ensure image is loaded
-              if (!el.complete && !el.src) {
-                const dataSrc = el.getAttribute('data-src');
-                if (dataSrc) el.src = dataSrc;
-              }
-              // Force decode for instant display
-              if (el.decode && el.complete) {
-                el.decode().catch(() => {});
-              }
-            }
+            // Remove any existing mask setup flags so they get fresh animations
+            delete el.dataset.maskSetup;
+            delete el.dataset.gsapAnimated;
             
-            // MOBILE: Show cloned images immediately
-            // DESKTOP: Show cloned images immediately (no mask animation for clones)
-            el.style.setProperty('opacity', '1', 'important');
-            el.style.setProperty('visibility', 'visible', 'important');
-            el.style.setProperty('display', 'block', 'important');
-            el.style.removeProperty('transform');
-        });
-        
-        // Mark cloned images as setup complete to prevent mask animation
-        clone.querySelectorAll('img, video').forEach((el) => {
-          el.dataset.maskSetup = 'true';
-          el.dataset.maskComplete = 'true';
-            
-          // Remove any existing mask wrapper if present
+            // Remove mask container so clones get fresh setup like original images
             const maskContainer = el.closest('.mask-wrap');
-          if (maskContainer && maskContainer !== el.parentElement) {
+            if (maskContainer) {
+              // Unwrap the image from existing mask
               const parent = maskContainer.parentNode;
-            if (parent) {
               parent.insertBefore(el, maskContainer);
               maskContainer.remove();
             }
-          }
+            
+            // Don't aggressively hide cloned images - let mask system handle visibility naturally
+            // Just ensure they're ready for mask processing
+            console.log(`🔧 Clone image ${imgIndex} prepared for mask system`);
           });
+        }, 50); // Small delay to ensure layout is complete
         
         // Preserve Webflow hover interactions for .reveal and .label-wrap elements
         const interactiveElements = clone.querySelectorAll('.reveal, .label-wrap');
@@ -2056,6 +1337,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   ix.init();
                 }
               } catch (e) {
+                console.log('⚠️ Method 1 failed for Webflow interactions');
               }
             }
             
@@ -2067,6 +1349,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                   ix2.init();
                 }
               } catch (e) {
+                console.log('⚠️ Method 2 failed for Webflow interactions');
               }
             }
             
@@ -2075,9 +1358,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               try {
                 window.Webflow.ready();
               } catch (e) {
+                console.log('⚠️ Method 3 failed for Webflow interactions');
               }
             }
             
+            console.log(`✅ Attempted to reinitialize Webflow interactions for ${interactiveElements.length} elements (.reveal and .label-wrap)`);
           }, 100);
         }
         
@@ -2086,9 +1371,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         clone.style.transform = 'none';
         clone.style.visibility = 'visible';
         
-        fragment.appendChild(clone);
-        
-        // Mobile: skip additional processing - images already set to visible above for performance
+        container.appendChild(clone);
+        console.log('✅ Clone appended with visible text');
         
         // Clean up any orphaned mask containers in the clone
         clone.querySelectorAll('.proper-mask-reveal').forEach(maskContainer => {
@@ -2098,153 +1382,113 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         });
         
-        // Let the main mask animation system handle cloned images
-        // MOBILE: Skip mask processing - cloned images already visible
-        // DESKTOP: Process with mask reveals
-        if (!isMobile) {
+        // Let the main mask animation system handle cloned images naturally
+        // Trigger mask animations for any new images that weren't processed yet
           setTimeout(() => {
+          console.log('🎭 Triggering mask animations for any unprocessed images...');
             if (typeof window.gsap !== 'undefined') {
               const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
+              
+              unprocessedImages.forEach((img, i) => {
+              console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
+              });
               
               // Call the main mask animation function to process any new images
               if (unprocessedImages.length > 0) {
-                console.log(`🖥️ Desktop: Processing ${unprocessedImages.length} cloned images for mask reveal`);
                 startMaskedImageAnimations();
               }
             }
           }, 500);
-        } else {
-          // Mobile: mark cloned images as setup so they don't get processed
-          setTimeout(() => {
-            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
-            unprocessedImages.forEach(img => {
-              img.dataset.maskSetup = 'true';
-              img.dataset.maskComplete = 'true';
-            });
-            console.log(`📱 Mobile: Marked ${unprocessedImages.length} cloned images as complete (no animation)`);
-          }, 100);
-        }
-        
-        // Add fullscreen functionality to new images in clone
-        if (window.addFullscreenToNewImages) {
-          setTimeout(() => {
-            window.addFullscreenToNewImages();
-          }, 100);
-        }
       });
       
-      // PERFORMANCE: Append all clones at once using DocumentFragment
-      container.appendChild(fragment);
+      console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
       
-      // OPTIMIZED ScrollTrigger refresh with nav protection (desktop only) - batched
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
-        // Batch ScrollTrigger refresh to avoid multiple calls
-        if (!window.scrollTriggerRefreshPending) {
-          window.scrollTriggerRefreshPending = true;
-          
-          // Cache nav elements for better performance
+      // Refresh ScrollTrigger with nav protection
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
+        // Store nav element styles before refresh (exclude middle/bottom nav)
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
-          
-          // Debounce ScrollTrigger refresh for performance
-        setTimeout(() => {
-            if (!isMobile) {
+        console.log(`🔍 Found ${navElements.length} nav elements for infinite scroll protection:`, [...navElements].map(el => el.className));
+        const navStyles = [];
+        navElements.forEach((nav, index) => {
+          navStyles[index] = {
+            opacity: nav.style.opacity || getComputedStyle(nav).opacity,
+            transform: nav.style.transform || getComputedStyle(nav).transform,
+            visibility: nav.style.visibility || getComputedStyle(nav).visibility
+          };
+        });
+        
         window.gsap.ScrollTrigger.refresh();
-            }
-            
-            // Restore nav elements with cached styles
-            navElements.forEach(nav => {
+        
+        // Restore nav element styles after refresh
+        setTimeout(() => {
+          navElements.forEach((nav, index) => {
+            if (navStyles[index]) {
               nav.style.setProperty('opacity', '1', 'important');
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
-            });
-            
-            window.scrollTriggerRefreshPending = false;
-          }, 200); // Debounce by 200ms
-        }
+              console.log('🔧 Restored nav element:', nav.className, 'opacity:', nav.style.opacity);
+            }
+          });
+          console.log('🔧 Protected nav elements during infinite scroll refresh');
+        }, 50);
       }
       setTimeout(() => isLoading = false, 500);
     }
     
-    // PERFORMANCE OPTIMIZED scroll handler with caching
-    let cachedWindowHeight = window.innerHeight;
-    let cachedDocumentHeight = document.documentElement.scrollHeight;
-    let lastScrollTop = 0;
-    let scrollDirection = 'down';
-    
-    // Cache dimensions on resize
-    const updateCachedDimensions = () => {
-      cachedWindowHeight = window.innerHeight;
-      cachedDocumentHeight = document.documentElement.scrollHeight;
-    };
-    
+    // Enhanced scroll handler with better detection
     function handleScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-      // Detect scroll direction for optimization
-      scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
-      lastScrollTop = scrollTop;
-      
-      // Only check for infinite scroll when scrolling down
-      if (scrollDirection === 'up') return;
-      
-      // Use cached dimensions for better performance
-      const windowHeight = cachedWindowHeight;
-      const documentHeight = cachedDocumentHeight;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
       
       // Prevent immediate triggering on page load
       if (documentHeight <= windowHeight * 1.1) {
+        // Page is too short, wait for content to fully load
         return;
       }
       
       const scrollPercent = (scrollTop + windowHeight) / documentHeight;
-      const nearBottom = scrollPercent >= 0.6; // Trigger earlier for smoother mobile experience
+      const nearBottom = scrollPercent >= 0.85; // Trigger at 85% scroll for more reliable infinite scroll
       
-      // Reduced logging for performance
+      // Debug logging (only when approaching bottom)
+      if (scrollPercent > 0.8 || nearBottom) {
+        console.log(`📊 Scroll: ${Math.round(scrollPercent * 100)}% | ScrollTop: ${scrollTop} | DocHeight: ${documentHeight} | WindowHeight: ${windowHeight} | Loading: ${isLoading} | NearBottom: ${nearBottom}`);
+      }
+      
       if (nearBottom && !isLoading) {
+        console.log('🎯 Infinite scroll triggered!');
         loadMoreItems();
-        // Update cached height after adding content
-        setTimeout(updateCachedDimensions, 100);
       }
     }
     
-    // THROTTLED scroll listener for better performance
+    // More reliable scroll listener
     let ticking = false;
-    let lastScrollTime = 0;
-    const SCROLL_THROTTLE = 16; // ~60fps
-    
     const scrollListener = () => { 
-      const now = performance.now();
-      
-      if (!ticking && (now - lastScrollTime) > SCROLL_THROTTLE) {
+      if (!ticking) { 
         requestAnimationFrame(() => { 
           handleScroll(); 
           ticking = false; 
-          lastScrollTime = now;
         }); 
         ticking = true; 
       }
     };
     
-    // Attach scroll listener for infinite scroll (mobile gets simpler handling)
     window.addEventListener('scroll', scrollListener, { passive: true });
+    console.log('🔄 Infinite scroll event listener attached to window');
     
     // Test scroll immediately
     setTimeout(() => {
+      console.log('🔄 Testing initial scroll state...');
       handleScroll();
     }, 1000);
     
-    // Add resize listener for cached dimensions
-    window.addEventListener('resize', updateCachedDimensions, { passive: true });
-    
-    // OPTIMIZED resize handler with nav protection (desktop only) - throttled
-    let resizeTimeout;
+    // Separate resize handler with nav protection
     window.addEventListener('resize', () => {
-      // Debounce resize events for better performance
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
+      if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
         // Store nav element styles before refresh - exclude middle/bottom nav
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav, .nav-left, .left-nav');
+        console.log(`🔍 Found ${navElements.length} nav elements for resize protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
           navStyles[index] = {
@@ -2256,9 +1500,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Refresh ScrollTrigger
         setTimeout(() => {
-          if (!isMobile) {
           window.gsap.ScrollTrigger.refresh();
-        }
           
           // Restore nav element styles after refresh
           navElements.forEach((nav, index) => {
@@ -2267,6 +1509,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
               nav.style.setProperty('display', 'block', 'important');
+              console.log('🔧 Restored resize nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
           
@@ -2284,18 +1527,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
+          console.log('🔧 Protected nav elements during ScrollTrigger refresh');
         }, 100);
       }
-      }, 150); // Debounce resize events by 150ms
     }, { passive: true });
+    console.log('🎯 Infinite scroll listeners attached');
     
-    // Set visibility for infinite scroll images - unified for all devices
+    // Set visibility for infinite scroll images
     container.querySelectorAll('img, video').forEach(img => {
-      if (img.dataset.gsapAnimated) {
-        return;
-      }
-      
-      if (typeof window.gsap !== 'undefined' && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
+      if (typeof window.gsap !== 'undefined' && !img.dataset.gsapAnimated && (img.closest('.flex-grid, .container.video-wrap-hide') || img.closest('.reveal, .reveal-full, .thumbnail-container, .video-container, .video-large, .video-fixed'))) {
         window.gsap.set(img, { opacity: 1 });
         img.dataset.gsapAnimated = 'infinite-scroll';
       }
@@ -2315,10 +1555,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     }, 2000); // Longer delay to ensure page is fully loaded
     
     // Clean infinite scroll setup completed
+    console.log('✅ Infinite scroll fully initialized');
     
+    console.log(`🌊 Natural infinite scroll enabled with ${originalItems.length} base items`);
     
     // Add manual test function
     window.testInfiniteScroll = function() {
+      console.log('🔄 Manual infinite scroll test triggered');
       loadMoreItems();
       return 'Infinite scroll test completed';
     };
@@ -2332,15 +1575,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       };
     };
     
+    console.log('🔄 Added window.testInfiniteScroll() and window.getInfiniteScrollStatus() for debugging');
     
     // Add function to fix hidden cloned images
     window.fixHiddenClonedImages = function() {
+      console.log('🔧 Checking for hidden cloned images...');
       const clonedImages = document.querySelectorAll('img[data-infinite-clone="true"], video[data-infinite-clone="true"]');
       let fixedCount = 0;
       
       clonedImages.forEach((img, index) => {
         const computedStyle = getComputedStyle(img);
         if (computedStyle.visibility === 'hidden' || computedStyle.opacity === '0') {
+          console.log(`🔧 Fixing hidden cloned image ${index}:`, img.src?.substring(0, 50) + '...');
           img.style.setProperty('opacity', '1', 'important');
           img.style.setProperty('visibility', 'visible', 'important');
           img.style.setProperty('display', 'block', 'important');
@@ -2348,38 +1594,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
+      console.log(`✅ Fixed ${fixedCount} hidden cloned images out of ${clonedImages.length} total`);
       return `Fixed ${fixedCount}/${clonedImages.length} hidden cloned images`;
     };
     
+    console.log('🔧 Added window.fixHiddenClonedImages() for manual debugging');
     
-    // Add mobile image debugging function
-    window.fixMobileImages = function() {
-      const allImages = document.querySelectorAll('img:not(#preloader img), video');
-      let fixedCount = 0;
-      
-      allImages.forEach((img, index) => {
-        const computedStyle = getComputedStyle(img);
-        const isHidden = computedStyle.visibility === 'hidden' || 
-                        computedStyle.opacity === '0' || 
-                        computedStyle.display === 'none';
-        
-        if (isHidden) {
-          img.style.setProperty('opacity', '1', 'important');
-          img.style.setProperty('visibility', 'visible', 'important');
-          img.style.setProperty('display', 'block', 'important');
-          fixedCount++;
-        }
-      });
-      
-      return `Fixed ${fixedCount}/${allImages.length} mobile images`;
-    };
-    
-    
-    // Final ScrollTrigger refresh with nav protection (desktop only)
-    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && !isMobile) {
+    // Final ScrollTrigger refresh with nav protection
+    if (typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger) {
       setTimeout(() => {
         // Store nav element styles before refresh (exclude middle/bottom nav)
         const navElements = document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav):not([class*="middle"]):not([class*="bottom"]), .w-layout-grid.nav, .top-right-nav');
+        console.log(`🔍 Found ${navElements.length} nav elements for final protection:`, [...navElements].map(el => el.className));
         const navStyles = [];
         navElements.forEach((nav, index) => {
           navStyles[index] = {
@@ -2389,9 +1615,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           };
         });
         
-        if (!isMobile) {
         window.gsap.ScrollTrigger.refresh();
-        }
         
         // Restore nav element styles after refresh
         setTimeout(() => {
@@ -2400,8 +1624,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               nav.style.setProperty('opacity', '1', 'important');
               nav.style.setProperty('transform', 'translateY(0)', 'important');
               nav.style.setProperty('visibility', 'visible', 'important');
+              console.log('🔧 Restored final nav element:', nav.className, 'opacity:', nav.style.opacity);
             }
           });
+          console.log('🔧 Protected nav elements during infinite scroll final refresh');
         }, 50);
       }, 100);
     }
@@ -2687,6 +1913,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Enhanced fallback text visibility (excluding clones)
   setTimeout(() => {
+    console.log('🔧 Fallback check: ensuring all text is visible');
     document.querySelectorAll('h1:not([data-infinite-clone]), h2:not([data-infinite-clone]), h3:not([data-infinite-clone]), h4:not([data-infinite-clone]), h5:not([data-infinite-clone]), h6:not([data-infinite-clone]), p:not([data-infinite-clone]), .hover-text:not([data-infinite-clone]), a:not(.nav a):not(.fake-nav a):not(.w-layout-grid.nav a):not([data-infinite-clone])').forEach(el => {
       // Skip elements inside .label-wrap to preserve Webflow hover interactions
       if (el.closest('.label-wrap')) return;
@@ -2694,6 +1921,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         el.style.opacity = '1'; 
         el.style.transform = 'none'; 
         el.classList.remove('initial-hidden');
+        console.log('🔧 Made visible:', el);
       }
     });
   }, 2000);
@@ -2702,37 +1930,13 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Main initialization function with error protection
   function init() {
-    console.log('🚀 MAIN INIT CALLED - isInit:', isInit);
-    if (isInit) {
-      console.log('🚀 INIT ALREADY COMPLETED - SKIPPING');
-      return;
-    }
-    
-    console.log('🚀 STARTING MAIN INITIALIZATION...');
-    
-    // Initialize fullscreen scroll toggle
-    try {
-      const fullscreenScrollToggle = initFullscreenScrollToggle();
-      window.fullscreenScrollToggle = fullscreenScrollToggle; // Make available globally
-    } catch (error) {
-      console.error('❌ Fullscreen scroll toggle initialization error:', error);
-    }
-    
-    // Initialize fullscreen image viewer
-    let addFullscreenToNewImages;
-    try {
-      addFullscreenToNewImages = initFullscreenImageViewer();
-      window.addFullscreenToNewImages = addFullscreenToNewImages; // Make available globally
-    } catch (error) {
-      console.error('❌ Fullscreen viewer initialization error:', error);
-    }
-    
-    // Theme system removed
+    if (isInit) return;
     
     function waitForGSAP() { 
       if (typeof window.gsap !== 'undefined') {
         requestAnimationFrame(() => { 
           try {
+            console.log('✅ GSAP loaded, starting text animations');
             initTextAndOtherAnimations();
           } catch (error) {
             console.error('❌ Animation initialization error:', error);
@@ -2740,6 +1944,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           }
         }); 
       } else {
+        console.log('⏳ Waiting for GSAP...');
         setTimeout(waitForGSAP, 100); 
       }
     }
@@ -2796,6 +2001,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       element.textContent = texts[currentIndex];
     }, 2000);
     
+    console.log('🔄 Rotating text started after scramble');
   }
   
   // Military time counter functionality - called after scramble completes
@@ -2833,239 +2039,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Start preloader with Webflow safety
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', waitForWebflow) : waitForWebflow();
   
+  console.log('🚀 SCRIPT END: Animation system initialization completed');
 })(window.portfolioAnimations);
 
-console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading - VERSION 2.3 with fullscreen debug');
+console.log('🚀 SCRIPT FULLY EXECUTED: Animation script finished loading');
 
-// Add global test function for debugging fullscreen
-window.testFullscreen = function() {
-  const images = document.querySelectorAll('img:not(#preloader img)');
-  
-  const enabledImages = document.querySelectorAll('img[data-fullscreen-enabled="true"]');
-  
-  if (enabledImages.length > 0) {
-    const firstImage = enabledImages[0];
-    firstImage.click();
-  } else {
-    images.forEach((img, i) => {
-      if (i < 5) { // Check first 5 images
-        console.log(`Image ${i}:`, {
-          src: img.src?.substring(0, 50) + '...',
-          hasFullscreen: img.dataset.fullscreenEnabled,
-          width: img.offsetWidth,
-              height: img.offsetHeight, 
-          inLink: !!img.closest('a')
-        });
-      }
-    });
-  }
-};
-
-
-// Add global test function for debugging fullscreen scroll toggle
-window.testToggle = function() {
-  
-  const toggleEl = document.querySelector('.toggle.top');
-  console.log('Toggle element found:', !!toggleEl);
-  
-  if (toggleEl) {
-    console.log('Toggle element details:', {
-      tagName: toggleEl.tagName,
-      className: toggleEl.className,
-      id: toggleEl.id
-    });
-    
-    console.log('Simulating click...');
-    toggleEl.click();
-  } else {
-    console.log('No .toggle element found');
-    
-    // Try to find the fullscreen toggle function directly
-    if (window.fullscreenScrollToggle && window.fullscreenScrollToggle.toggle) {
-      console.log('Calling toggle function directly...');
-      window.fullscreenScrollToggle.toggle();
-      } else {
-      console.log('No fullscreen toggle function available');
-    }
-  }
-};
-
-
-// DEAD SIMPLE TOGGLE - Just add/remove a class
-(function() {
-  function toggleBigImages() {
-    document.body.classList.toggle('fullscreen-mode');
-    const isFullscreen = document.body.classList.contains('fullscreen-mode');
-    console.log('Toggle:', isFullscreen ? 'ON' : 'OFF');
-    
-    if (!isFullscreen) {
-      // Toggling OFF - wait for CSS to settle, then restore mask widths
-          setTimeout(() => {
-        const maskWraps = document.querySelectorAll('.mask-wrap');
-        maskWraps.forEach(maskWrap => {
-          const img = maskWrap.querySelector('img');
-          const targetWidth = maskWrap.dataset.targetWidth;
-          
-          if (img && img.dataset.maskComplete && targetWidth) {
-            // Was complete - restore full width
-            maskWrap.style.width = targetWidth + 'px';
-          } else {
-            // Wasn't complete - reset to 0 for ScrollTrigger
-            maskWrap.style.width = '0px';
-          }
-        });
-        
-        // Refresh ScrollTrigger after everything settles
-        if (window.ScrollTrigger) {
-        setTimeout(() => {
-            window.ScrollTrigger.refresh(true);
-            console.log('ScrollTrigger refreshed');
-          }, 100);
-        }
-      }, 300);
-      } else {
-      // Toggling ON - just refresh after CSS applies
-      if (window.ScrollTrigger) {
-        setTimeout(() => {
-          window.ScrollTrigger.refresh(true);
-        }, 100);
-      }
-    }
-  }
-  
-  // Find toggle button
-  setTimeout(() => {
-    const toggle = document.querySelector('.toggle.top');
-    if (toggle) {
-      toggle.addEventListener('click', toggleBigImages);
-      console.log('✅ Fullscreen toggle ready');
-    }
-    window.toggleBigImages = toggleBigImages;
-  }, 1000);
-  
-  // Add CSS for fullscreen mode
-  const style = document.createElement('style');
-  style.textContent = `
-    /* Hide toggle buttons initially, show after delay */
-    .toggle,
-    .toggle.top,
-    .toggle.bottom,
-    [class*="toggle"] {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-      transition: opacity 0.3s ease-in-out;
-    }
-    
-    /* Show toggle buttons after page loads */
-    body:not(.loading) .toggle,
-    body:not(.loading) .toggle.top,
-    body:not(.loading) .toggle.bottom,
-    body:not(.loading) [class*="toggle"] {
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
-    }
-    
-    /* Force all image containers to fullscreen */
-    body.fullscreen-mode .img-parallax,
-    body.fullscreen-mode .reveal,
-    body.fullscreen-mode .reveal-full,
-    body.fullscreen-mode .mask-wrap,
-    body.fullscreen-mode .thumbnail-container,
-    body.fullscreen-mode .video-container {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-      min-width: 100vw !important;
-      min-height: 100vh !important;
-    }
-    
-    /* Force all images to fill containers (except nav and fix-center) */
-    body.fullscreen-mode img:not(.nav img):not(.fix-center img),
-    body.fullscreen-mode video:not(.nav video):not(.fix-center video) {
-      width: 100% !important;
-      height: 100% !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
-      object-fit: cover !important;
-      transform: scale(1) !important;
-      opacity: 1 !important;
-    }
-  `;
-  document.head.appendChild(style);
-  })();
-  
-// Simple Lenis smooth scroll initialization for #slider - DISABLED
-/*
-  (function() {
-  // Wait for page load
-  window.addEventListener('load', () => {
-    const slider = document.querySelector('#slider');
-    
-    if (!slider) {
-      console.log('⚠️ #slider element not found, skipping Lenis initialization');
-        return;
-      }
-    
-    // Initialize Lenis on the slider element
-    const lenis = new Lenis({
-      wrapper: slider,
-      content: slider,
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      smoothTouch: false,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-      normalizeWheel: true,
-      infinite: false
-    });
-        
-    // Store globally if needed
-    window.sliderLenis = lenis;
-    
-    // Animation loop
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-    
-    console.log('✅ Lenis smooth scroll initialized on #slider');
-  });
-})();
-*/
-console.log('⚠️ Lenis smooth scroll disabled');
-  
-// Fix draggable cursor offset issue
-  (function() {
-  // Wait for Webflow and jQuery UI to initialize
-  setTimeout(() => {
-    const draggableElements = document.querySelectorAll('.info-wrap, .draggable');
-    
-    draggableElements.forEach(el => {
-      // Check if jQuery UI draggable is initialized
-      if (typeof $ !== 'undefined' && $(el).data('ui-draggable')) {
-        // Destroy and reinitialize with better settings
-        $(el).draggable('destroy');
-        $(el).draggable({
-          scroll: false,
-          cursor: 'move',
-          cursorAt: false, // Don't force cursor position
-          delay: 0, // No delay
-          distance: 0, // Start dragging immediately
-          addClasses: false // Don't add extra classes
-        });
-        console.log('✅ Fixed draggable cursor tracking for:', el);
-        }
-    });
-  }, 2000); // Wait for Webflow to initialize draggable
-  })();
-  
 // Simple column toggle on .fixed-sizer click
   (function() {
   const fixedSizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
@@ -3075,7 +2053,7 @@ console.log('⚠️ Lenis smooth scroll disabled');
     console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
         return;
       }
-      
+    
   const minColumns = 2;
   const maxColumns = 4;
   let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
@@ -3094,7 +2072,7 @@ console.log('⚠️ Lenis smooth scroll disabled');
         increasing = false;
         fixedSizer.textContent = '+'; // At max, show + (will decrease next)
       }
-    } else {
+      } else {
       currentColumns--;
       if (currentColumns <= minColumns) {
         currentColumns = minColumns;
