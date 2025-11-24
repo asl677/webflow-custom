@@ -3067,15 +3067,15 @@ window.testToggle = function() {
   })();
   
 // Simple column toggle on .fixed-sizer click
-  (function() {
+(function() {
   const fixedSizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
   const yzyGrid = document.querySelector('.flex-grid.yzy');
   
   if (!fixedSizer || !yzyGrid) {
     console.log('⚠️ .fixed-sizer or .flex-grid.yzy not found');
-        return;
-      }
-      
+    return;
+  }
+  
   const minColumns = 2;
   const maxColumns = 4;
   let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
@@ -3098,12 +3098,42 @@ window.testToggle = function() {
       }
     }
     
-    yzyGrid.style.transition = 'column-count 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-    yzyGrid.style.columnCount = currentColumns;
+    // Animate the grid column count
+    if (window.gsap) {
+      window.gsap.to(yzyGrid, {
+        '--column-count': currentColumns,
+        duration: 0.6,
+        ease: "power2.inOut",
+        onUpdate: function() {
+          const progress = this.progress();
+          const startColumns = increasing ? currentColumns - 1 : currentColumns + 1;
+          const targetColumns = currentColumns;
+          const interpolated = Math.round(startColumns + (targetColumns - startColumns) * progress);
+          yzyGrid.style.columnCount = interpolated;
+        }
+      });
+    } else {
+      yzyGrid.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+      yzyGrid.style.columnCount = currentColumns;
+    }
+    
+    // Scale images proportionally based on column count
+    const images = yzyGrid.querySelectorAll('img, video, .reveal');
+    images.forEach(img => {
+      if (window.gsap) {
+        // Calculate scale: fewer columns = larger images
+        const scale = 1 + (maxColumns - currentColumns) * 0.2;
+        
+        window.gsap.to(img, {
+          scale: scale,
+          duration: 0.6,
+          ease: "power2.inOut"
+        });
+      }
+    });
     
     console.log(`📊 Column count: ${currentColumns} (${increasing ? 'increasing' : 'decreasing'})`);
   });
   
   console.log('✅ Column toggle initialized on .fixed-sizer');
 })();
-  
