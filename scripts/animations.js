@@ -3081,6 +3081,9 @@ window.testToggle = function() {
   let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
   let increasing = false; // Start by decreasing
   
+  // Set initial text
+  fixedSizer.textContent = '+';
+  
   fixedSizer.addEventListener('click', (e) => {
     e.preventDefault();
     
@@ -3089,12 +3092,14 @@ window.testToggle = function() {
       if (currentColumns >= maxColumns) {
         currentColumns = maxColumns;
         increasing = false;
+        fixedSizer.textContent = '+'; // At max, show + (will decrease next)
       }
     } else {
       currentColumns--;
       if (currentColumns <= minColumns) {
         currentColumns = minColumns;
         increasing = true;
+        fixedSizer.textContent = '−'; // At min, show − (will increase next)
       }
     }
     
@@ -3117,22 +3122,34 @@ window.testToggle = function() {
       yzyGrid.style.columnCount = currentColumns;
     }
     
-    // Scale images proportionally based on column count
-    const images = yzyGrid.querySelectorAll('img, video, .reveal');
-    images.forEach(img => {
+    // Scale images and their containers proportionally
+    const items = yzyGrid.querySelectorAll('.reveal, .reveal-full');
+    items.forEach(item => {
       if (window.gsap) {
         // Calculate scale: fewer columns = larger images
-        const scale = 1 + (maxColumns - currentColumns) * 0.2;
+        const scale = 1 + (maxColumns - currentColumns) * 0.15;
         
-        window.gsap.to(img, {
+        // Scale the entire reveal container
+        window.gsap.to(item, {
           scale: scale,
+          transformOrigin: 'center center',
           duration: 0.6,
           ease: "power2.inOut"
+        });
+        
+        // Also ensure images inside don't get double-scaled
+        const innerImages = item.querySelectorAll('img, video');
+        innerImages.forEach(img => {
+          window.gsap.to(img, {
+            scale: 1, // Keep at 1, parent handles scaling
+            duration: 0.6,
+            ease: "power2.inOut"
+          });
         });
       }
     });
     
-    console.log(`📊 Column count: ${currentColumns} (${increasing ? 'increasing' : 'decreasing'})`);
+    console.log(`📊 Column count: ${currentColumns} (${increasing ? 'increasing' : 'decreasing'}), Button: ${fixedSizer.textContent}`);
   });
   
   console.log('✅ Column toggle initialized on .fixed-sizer');
