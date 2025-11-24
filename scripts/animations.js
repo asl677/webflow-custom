@@ -3103,8 +3103,7 @@ window.testToggle = function() {
       }
     }
     
-    // Just change column count with CSS transition - let the grid reflow naturally
-    yzyGrid.style.transition = 'column-count 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    // Simply set column count - no transition, instant change
     yzyGrid.style.columnCount = currentColumns;
     
     console.log(`📊 Column count: ${currentColumns} (${increasing ? 'increasing' : 'decreasing'}), Button: ${fixedSizer.textContent}`);
