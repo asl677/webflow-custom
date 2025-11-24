@@ -416,6 +416,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               console.error('🔄 Error starting rotating text:', error);
             }
           }
+          
+          if (element.id === 'time-text') {
+            element.dataset.timeStarted = 'true';
+            try {
+              startMilitaryTime(element);
+            } catch (error) {
+              console.error('⏰ Error starting military time:', error);
+            }
+          }
         }
     }, 100); // Slower interval to match frame rate
   }
@@ -749,6 +758,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
               startRotatingText(element);
           }
           
+          if (element.id === 'time-text') {
+            element.dataset.timeStarted = 'true';
+            startMilitaryTime(element);
+          }
+          
           console.log(`🎉 All line scrambles completed for: ${element.textContent.substring(0, 30)}`);
         }
       }, 80); // 80ms update interval for smooth effect
@@ -799,6 +813,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         if (element.id === 'rotating-text') {
           element.dataset.rotatingStarted = 'true';
           startRotatingText(element);
+        }
+        
+        if (element.id === 'time-text') {
+          element.dataset.timeStarted = 'true';
+          startMilitaryTime(element);
         }
       }
     }, 100); // Slower update for visibility
@@ -942,6 +961,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             startRotatingText(element);
           }
           
+          if (element.id === 'time-text') {
+            element.dataset.timeStarted = 'true';
+            startMilitaryTime(element);
+          }
+          
           console.log(`🎉 All lines completed for element: ${element.textContent.substring(0, 30)}`);
         }
       }, 50); // 50ms update interval
@@ -1012,6 +1036,12 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     if (rotatingText && !rotatingText.dataset.infiniteClone) {
       console.log('🔄 Scrambling rotating text');
       setTimeout(() => scrambleLine(rotatingText, 800), 400);
+    }
+    
+    const timeText = document.getElementById('time-text');
+    if (timeText && !timeText.dataset.infiniteClone) {
+      console.log('⏰ Scrambling time text');
+      setTimeout(() => scrambleLine(timeText, 800), 600);
     }
     
     console.log('✅ Text animations complete - now setting up infinite scroll');
