@@ -3018,16 +3018,17 @@ window.testToggle = function() {
   document.head.appendChild(style);
   })();
   
-// Simple Lenis smooth scroll initialization for #slider
-  (function() {
+// Simple Lenis smooth scroll initialization for #slider - DISABLED
+/*
+(function() {
   // Wait for page load
   window.addEventListener('load', () => {
     const slider = document.querySelector('#slider');
     
     if (!slider) {
       console.log('⚠️ #slider element not found, skipping Lenis initialization');
-        return;
-      }
+      return;
+    }
     
     // Initialize Lenis on the slider element
     const lenis = new Lenis({
@@ -3052,12 +3053,14 @@ window.testToggle = function() {
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
-              }
+    }
     requestAnimationFrame(raf);
     
     console.log('✅ Lenis smooth scroll initialized on #slider');
-    });
-  })();
+  });
+})();
+*/
+console.log('⚠️ Lenis smooth scroll disabled');
   
 // Fix draggable cursor offset issue
   (function() {
