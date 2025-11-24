@@ -738,9 +738,16 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     setTimeout(() => {
       const allImages = document.querySelectorAll('img:not(#preloader img), video');
       allImages.forEach(img => {
-        img.style.opacity = '1';
-        img.style.visibility = 'visible';
+        img.style.setProperty('opacity', '1', 'important');
+        img.style.setProperty('visibility', 'visible', 'important');
       });
+      
+      // Remove emergency hide style
+      const emergencyHide = document.getElementById('emergency-image-hide');
+      if (emergencyHide) {
+        emergencyHide.remove();
+      }
+      
       console.log('✅ Images shown without mask animation');
     }, imageDelay);
   }
