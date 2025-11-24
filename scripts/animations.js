@@ -725,9 +725,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Wait for text animations to mostly complete before starting images
     const imageDelay = 1600; // Reduced delay - images start sooner after text scramble
+    
+    // MASK ANIMATIONS DISABLED
+    /*
     setTimeout(() => {
       startMaskedImageAnimations();
       
+    }, imageDelay);
+    */
+    
+    // Show all images immediately without mask animation
+    setTimeout(() => {
+      const allImages = document.querySelectorAll('img:not(#preloader img), video');
+      allImages.forEach(img => {
+        img.style.opacity = '1';
+        img.style.visibility = 'visible';
+      });
+      console.log('✅ Images shown without mask animation');
     }, imageDelay);
   }
 
