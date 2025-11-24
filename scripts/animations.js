@@ -29,12 +29,23 @@ document.body.classList.add('loading');
   console.log('✅ .locked text styles preloaded');
 })();
 
-// Hide images but allow preloader
+// Hide images but allow preloader and .yzy column layout images
 (function() {
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
+    img:not(#preloader img):not([data-infinite-clone]):not(.yzy img):not(.flex-grid.yzy img), 
+    video:not([data-infinite-clone]):not(.yzy video):not(.flex-grid.yzy video) { 
+      opacity: 0 !important; 
+    }
+    /* Keep .yzy column layout images visible and maintain layout */
+    .yzy img, .flex-grid.yzy img,
+    .yzy video, .flex-grid.yzy video {
+      opacity: 1 !important;
+      transform: none !important;
+      scale: 1 !important;
+      visibility: visible !important;
+    }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -1498,11 +1509,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     }
     
-    // Mobile-optimized mask reveal for images (exclude clones and preloader)  
-    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
+    // Mobile-optimized mask reveal for images (exclude clones, preloader, and .yzy column layout)  
+    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]):not(.yzy img):not(.flex-grid.yzy img), video:not([data-infinite-clone]):not(.yzy video):not(.flex-grid.yzy video)');
   
   // Process ALL images the same way (mobile and desktop)
-  const imagesToProcess = Array.from(allImages);
+  const imagesToProcess = Array.from(allImages).filter(img => {
+    // Exclude images inside .yzy or .flex-grid.yzy containers
+    return !img.closest('.yzy') && !img.closest('.flex-grid.yzy');
+  });
   
   // Ensure all images have loaded or at least have dimensions
   const ensureImageDimensions = (img) => {
