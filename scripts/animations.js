@@ -29,23 +29,12 @@ document.body.classList.add('loading');
   console.log('✅ .locked text styles preloaded');
 })();
 
-// Hide images but allow preloader and .yzy column layout images
+// Hide images but allow preloader
 (function() {
   const emergencyHide = document.createElement('style');
   emergencyHide.id = 'emergency-image-hide';
   emergencyHide.textContent = `
-    img:not(#preloader img):not([data-infinite-clone]):not(.yzy img):not(.flex-grid.yzy img), 
-    video:not([data-infinite-clone]):not(.yzy video):not(.flex-grid.yzy video) { 
-      opacity: 0 !important; 
-    }
-    /* Keep .yzy column layout images visible and maintain layout */
-    .yzy img, .flex-grid.yzy img,
-    .yzy video, .flex-grid.yzy video {
-      opacity: 1 !important;
-      transform: none !important;
-      scale: 1 !important;
-      visibility: visible !important;
-    }
+    img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone]) { opacity: 0 !important; }
   `;
   (document.head || document.documentElement).appendChild(emergencyHide);
 })();
@@ -1509,14 +1498,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     }
     
-    // Mobile-optimized mask reveal for images (exclude clones, preloader, and .yzy column layout)  
-    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]):not(.yzy img):not(.flex-grid.yzy img), video:not([data-infinite-clone]):not(.yzy video):not(.flex-grid.yzy video)');
+    // Mobile-optimized mask reveal for images (exclude clones and preloader)  
+    const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
   
   // Process ALL images the same way (mobile and desktop)
-  const imagesToProcess = Array.from(allImages).filter(img => {
-    // Exclude images inside .yzy or .flex-grid.yzy containers
-    return !img.closest('.yzy') && !img.closest('.flex-grid.yzy');
-  });
+  const imagesToProcess = Array.from(allImages);
   
   // Ensure all images have loaded or at least have dimensions
   const ensureImageDimensions = (img) => {
@@ -1894,8 +1880,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   // Natural infinite scroll setup
   function setupInfiniteScroll() {
     
-    // Back to simpler working selectors (exclude .flex-grid.yzy for column layout)
-    const selectors = ['.flex-grid:not(.yzy)', '.w-layout-grid:not(.yzy)', '[class*="grid"]:not(.yzy)', '.container', '.main-wrapper', '.page-wrapper', 'main'];
+    // Back to simpler working selectors
+    const selectors = ['.flex-grid', '.w-layout-grid', '[class*="grid"]', '.container', '.main-wrapper', '.page-wrapper', 'main'];
     let container = null;
     
     for (const selector of selectors) {
@@ -1910,12 +1896,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🔍 Available elements with classes:', 
         [...document.querySelectorAll('[class]')].slice(0, 10).map(el => el.className)
       );
-      return; 
-    }
-    
-    // Skip if container is .yzy (column layout should not have infinite scroll)
-    if (container.classList.contains('yzy')) {
-      console.log('⚠️ Skipping infinite scroll for .yzy column layout');
       return; 
     }
     
@@ -2036,7 +2016,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         clone.querySelectorAll('img, video').forEach((el) => {
           el.dataset.maskSetup = 'true';
           el.dataset.maskComplete = 'true';
-          
+            
           // Remove any existing mask wrapper if present
             const maskContainer = el.closest('.mask-wrap');
           if (maskContainer && maskContainer !== el.parentElement) {
@@ -3043,7 +3023,7 @@ window.testToggle = function() {
       normalizeWheel: true,
       infinite: false
     });
-    
+        
     // Store globally if needed
     window.sliderLenis = lenis;
     
@@ -3051,7 +3031,7 @@ window.testToggle = function() {
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
-    }
+              }
     requestAnimationFrame(raf);
     
     console.log('✅ Lenis smooth scroll initialized on #slider');
@@ -3078,75 +3058,8 @@ window.testToggle = function() {
           addClasses: false // Don't add extra classes
         });
         console.log('✅ Fixed draggable cursor tracking for:', el);
-      }
+        }
     });
   }, 2000); // Wait for Webflow to initialize draggable
-  })();
-  
-// Bidirectional column toggle on .yzy click
-  (function() {
-  const yzyTrigger = document.querySelector('.yzy');
-  const yzyGrid = document.querySelector('.flex-grid.yzy');
-  
-  if (!yzyTrigger || !yzyGrid) {
-    console.log('⚠️ .yzy or .flex-grid.yzy not found');
-    return;
-  }
-  
-  const minColumns = 2;
-  const maxColumns = 4;
-  let currentColumns = parseInt(window.getComputedStyle(yzyGrid).columnCount) || 4;
-  let direction = 'decreasing'; // Start by decreasing from 4 to 2
-  
-  // Set initial text based on direction
-  if (!yzyTrigger.dataset.originalText) {
-    yzyTrigger.dataset.originalText = yzyTrigger.textContent;
-  }
-  yzyTrigger.textContent = '+'; // Start with + (will decrease columns)
-  
-  yzyTrigger.style.cursor = 'pointer';
-  
-  yzyTrigger.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (direction === 'decreasing') {
-      // Decrease columns (4 → 3 → 2)
-      currentColumns = currentColumns - 1;
-      
-      if (currentColumns <= minColumns) {
-        currentColumns = minColumns;
-        direction = 'increasing';
-        yzyTrigger.textContent = '−'; // Switch to minus, will now increase
-      }
-    } else {
-      // Increase columns (2 → 3 → 4)
-      currentColumns = currentColumns + 1;
-      
-      if (currentColumns >= maxColumns) {
-        currentColumns = maxColumns;
-        direction = 'decreasing';
-        yzyTrigger.textContent = '+'; // Switch to plus, will now decrease
-      }
-    }
-    
-    // Animate column count
-    yzyGrid.style.transition = 'column-count 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-    yzyGrid.style.columnCount = currentColumns;
-    
-    // Clear any GSAP transforms on images within the grid to maintain Webflow layout
-    const images = yzyGrid.querySelectorAll('.reveal.reveal-full, img, video');
-    images.forEach(img => {
-      if (window.gsap) {
-        window.gsap.killTweensOf(img);
-        window.gsap.set(img, { clearProps: "scale,transform" });
-      }
-      img.style.removeProperty('transform');
-    });
-    
-    console.log(`📊 Column count: ${currentColumns}, Direction: ${direction}, Button: ${yzyTrigger.textContent}`);
-  });
-  
-  console.log('✅ Bidirectional column toggle initialized (click .yzy to toggle)');
 })();
   
