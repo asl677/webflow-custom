@@ -1483,11 +1483,14 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     // Setup infinite scroll after text animations
     
+    // INFINITE SCROLL DISABLED
+    /*
     try {
       setupInfiniteScroll();
         } catch (error) {
       console.error('❌ setupInfiniteScroll() failed:', error);
     }
+    */
   }
   
   // Masked image animations - unified for all devices
