@@ -1023,6 +1023,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('✅ Text animations complete - now setting up infinite scroll');
     
+    // INFINITE SCROLL DISABLED
+    /*
     // Setup infinite scroll after text animations
     console.log('🔄 About to call setupInfiniteScroll()');
     try {
@@ -1031,6 +1033,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         } catch (error) {
       console.error('❌ setupInfiniteScroll() failed:', error);
     }
+    */
+    console.log('⚠️ Infinite scroll disabled');
   }
   
   // Masked image animations - called after text completes on mobile
@@ -1081,7 +1085,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         const parent = element.parentNode;
         const maskContainer = document.createElement('div');
         maskContainer.className = 'mask-wrap';
-        maskContainer.style.cssText = `width:0px;height:${originalHeight}px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
+        maskContainer.style.cssText = `width:${originalWidth}px;height:0px;overflow:hidden;display:block;position:relative;margin:0;padding:0;line-height:0`;
         
         parent.insertBefore(maskContainer, element);
         maskContainer.appendChild(element);
@@ -1108,11 +1112,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         element.style.setProperty('visibility', 'visible', 'important');
         console.log('🔧 Set mask image opacity to 1:', element);
         
-        // Store the target width for animation
-        maskContainer.dataset.targetWidth = originalWidth;
+        // Store the target height for animation (VERTICAL)
+        maskContainer.dataset.targetHeight = originalHeight;
         
         const hasParallax = element.classList.contains('img-parallax');
-        if (hasParallax) window.gsap.set(element, { scale: 1.2 });
+        // REMOVED: No initial scaling
         
         // Check if image is in viewport for immediate animation
         const rect = element.getBoundingClientRect();
@@ -1126,9 +1130,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           // Consistent easing for stability
           const easing = "power2.out";
           
-          console.log(`🎭 Starting mask animation for image ${index}: width 0 → ${maskContainer.dataset.targetWidth}px`);
+          console.log(`🎭 Starting VERTICAL mask animation for image ${index}: height 0 → ${maskContainer.dataset.targetHeight}px`);
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
+            height: maskContainer.dataset.targetHeight + 'px', 
             duration: duration, 
             ease: easing, 
           delay: staggerDelay,
@@ -1142,25 +1146,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          if (hasParallax && !isMobile) { // Disable parallax on mobile for performance
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: duration + 0.5, 
-              ease: easing, 
-              delay: staggerDelay
-            });
-          }
+          // REMOVED: No parallax scaling
         } else {
           // Images below fold: use optimized ScrollTrigger
-          window.gsap.set(maskContainer, { width: '0px' });
+          window.gsap.set(maskContainer, { height: '0px' });
           window.gsap.to(maskContainer, { 
-            width: maskContainer.dataset.targetWidth + 'px', 
+            height: maskContainer.dataset.targetHeight + 'px', 
             duration: 1.2, // Same duration across all devices
-            ease: "power2.out",
-            scrollTrigger: { 
-              trigger: element, 
+              ease: "power2.out",
+              scrollTrigger: { 
+                trigger: element, 
               start: "top 90%", // Consistent trigger point
-              end: "top center", 
+                end: "top center", 
               once: true,
               toggleActions: "play none none none"
             },
@@ -1170,20 +1167,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             }
           });
           
-          // Only add parallax on desktop
-          if (hasParallax && !isMobile) {
-            window.gsap.to(element, { 
-              scale: 1.0, 
-              duration: 1.2, 
-              ease: "power2.out",
-              scrollTrigger: { 
-                trigger: element, 
-                start: "top bottom", 
-                end: "top center", 
-                once: true 
-              }
-            });
-          }
+          // REMOVED: No parallax scaling
         }
       });
       
