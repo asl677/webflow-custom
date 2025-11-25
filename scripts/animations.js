@@ -12,6 +12,18 @@ window.scriptLoadTest = function() {
 };
 console.log('🚀 Try: window.scriptLoadTest()');
 
+// IMMEDIATELY add loading class and hide styles to prevent flash
+document.body.classList.add('loading');
+(function() {
+  const immediateHide = document.createElement('style');
+  immediateHide.id = 'immediate-hide';
+  immediateHide.textContent = `
+    body.loading{overflow:hidden}
+    body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
+  `;
+  (document.head || document.documentElement).appendChild(immediateHide);
+})();
+
 // Images will start hidden and fade in via GSAP
 // No emergency hide CSS needed - GSAP handles initial state
 
