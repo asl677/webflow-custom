@@ -2064,7 +2064,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     const link = e.target.closest('a[href]');
     if (!link) return;
     const href = link.getAttribute('href');
-    (href.startsWith('/') || href.startsWith(window.location.origin)) && handleTransition(e, href);
+    
+    // Exclude hash links (Webflow toggles), external links, and links with Webflow interactions
+    if (!href || 
+        href === '#' || 
+        href.startsWith('#') || 
+        href.startsWith('mailto:') || 
+        href.startsWith('tel:') ||
+        link.hasAttribute('data-w-id') || 
+        link.closest('[data-w-id]') ||
+        !(href.startsWith('/') || href.startsWith(window.location.origin))) {
+      return; // Let Webflow handle these
+    }
+    
+    // Only handle internal page navigation
+    handleTransition(e, href);
     } catch (error) {
       console.error('❌ Click handler error:', error);
       // Don't let our errors break Webflow navigation
