@@ -1076,54 +1076,86 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function startMaskedImageAnimations() {
     const allImages = document.querySelectorAll('img:not(#preloader img):not([data-infinite-clone]), video:not([data-infinite-clone])');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     
     if (allImages.length) {
-      console.log(`🎭 Starting simple fade-in for ${allImages.length} images`);
+      console.log(`🎭 Starting optimized fade-in for ${allImages.length} images (Safari: ${isSafari})`);
+      
+      // Safari optimization: use single batched GSAP timeline instead of individual ScrollTriggers
+      const viewportImages = [];
+      const belowFoldImages = [];
       
       allImages.forEach((element, index) => {
         if (element.dataset.fadeSetup) return;
         element.dataset.fadeSetup = 'true';
         
-        // Set initial state
+        // Set initial state with GPU acceleration
         element.style.opacity = '0';
         element.style.visibility = 'visible';
+        element.style.willChange = 'opacity';
         
         // Check if image is in viewport for immediate animation
         const rect = element.getBoundingClientRect();
         const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
         
         if (inViewport) {
-          // Fade in images in viewport with sequential stagger
-          const staggerDelay = index * 0.15; // 150ms between each
-          
-          console.log(`🎭 Fading in image ${index} after ${staggerDelay}s`);
-          window.gsap.to(element, {
-            opacity: 1,
-            duration: 0.8,
-            delay: staggerDelay,
-            ease: "power2.out",
-            onComplete: () => {
-              element.dataset.fadeComplete = 'true';
-            }
-          });
+          viewportImages.push({ element, index });
         } else {
-          // Images below fold: fade in on scroll
-          window.gsap.to(element, {
-            opacity: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 90%",
-              once: true,
-              toggleActions: "play none none none"
-            },
-            onComplete: () => {
-              element.dataset.fadeComplete = 'true';
-            }
-          });
+          belowFoldImages.push(element);
         }
       });
+      
+      // Batch animate viewport images with single timeline (more performant)
+      if (viewportImages.length > 0) {
+        console.log(`🎭 Batch fading ${viewportImages.length} viewport images`);
+        const tl = window.gsap.timeline();
+        
+        viewportImages.forEach(({ element, index }, i) => {
+          tl.to(element, {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            onComplete: () => {
+              element.dataset.fadeComplete = 'true';
+              element.style.willChange = 'auto'; // Remove GPU hint after animation
+            }
+          }, i * 0.1); // 100ms stagger (faster than 150ms)
+        });
+      }
+      
+      // For below-fold images, use IntersectionObserver (more performant than ScrollTrigger)
+      if (belowFoldImages.length > 0) {
+        console.log(`🎭 Setting up IntersectionObserver for ${belowFoldImages.length} below-fold images`);
+        
+        const observerOptions = {
+          root: null,
+          rootMargin: '100px', // Start animation 100px before entering viewport
+          threshold: 0.01
+        };
+        
+        const fadeInObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.fadeComplete) {
+              entry.target.dataset.fadeComplete = 'true';
+              
+              window.gsap.to(entry.target, {
+                opacity: 1,
+                duration: 0.6,
+                ease: "power2.out",
+                onComplete: () => {
+                  entry.target.style.willChange = 'auto';
+                }
+              });
+              
+              // Stop observing this element
+              fadeInObserver.unobserve(entry.target);
+            }
+          });
+        }, observerOptions);
+        
+        // Observe all below-fold images
+        belowFoldImages.forEach(img => fadeInObserver.observe(img));
+      }
       
       console.log('✅ Simple fade-in animations set up');
     }
