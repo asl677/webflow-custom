@@ -1105,47 +1105,59 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      // Batch animate viewport images with single timeline (more performant)
+      // Batch animate viewport images with optimized stagger (Chrome performance)
       if (viewportImages.length > 0) {
         console.log(`🎭 Batch fading ${viewportImages.length} viewport images`);
-        const tl = window.gsap.timeline();
         
+        // Use individual tweens with delays instead of timeline (better Chrome performance)
         viewportImages.forEach(({ element, index }, i) => {
-          tl.to(element, {
+          window.gsap.to(element, {
             opacity: 1,
-            duration: 0.6,
+            duration: 0.5,
+            delay: i * 0.08, // 80ms stagger
             ease: "power2.out",
+            overwrite: 'auto', // Prevent conflicts
+            onStart: () => {
+              element.style.transform = 'translateZ(0)'; // Force GPU layer
+            },
             onComplete: () => {
               element.dataset.fadeComplete = 'true';
-              element.style.willChange = 'auto'; // Remove GPU hint after animation
+              element.style.willChange = 'auto';
+              element.style.transform = ''; // Remove GPU hint
             }
-          }, i * 0.1); // 100ms stagger (faster than 150ms)
+          });
         });
       }
       
-      // For below-fold images, use IntersectionObserver (more performant than ScrollTrigger)
+      // For below-fold images, use IntersectionObserver with delayed trigger
       if (belowFoldImages.length > 0) {
         console.log(`🎭 Setting up IntersectionObserver for ${belowFoldImages.length} below-fold images`);
         
         const observerOptions = {
           root: null,
-          rootMargin: '100px', // Start animation 100px before entering viewport
-          threshold: 0.01
+          rootMargin: '-100px', // Trigger 100px AFTER entering viewport (delayed)
+          threshold: 0.1 // Require 10% visibility before triggering
         };
         
         const fadeInObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
-            if (entry.isIntersecting && !entry.target.dataset.fadeComplete) {
-              entry.target.dataset.fadeComplete = 'true';
+            if (entry.isIntersecting && !entry.target.dataset.fadeStarted) {
+              entry.target.dataset.fadeStarted = 'true';
               
-              window.gsap.to(entry.target, {
-                opacity: 1,
-                duration: 0.6,
-                ease: "power2.out",
-                onComplete: () => {
-                  entry.target.style.willChange = 'auto';
-                }
-              });
+              // Add 200ms delay before starting fade
+              setTimeout(() => {
+                if (entry.target.dataset.fadeComplete) return;
+                entry.target.dataset.fadeComplete = 'true';
+                
+                window.gsap.to(entry.target, {
+                  opacity: 1,
+                  duration: 0.5,
+                  ease: "power2.out",
+                  onComplete: () => {
+                    entry.target.style.willChange = 'auto';
+                  }
+                });
+              }, 200);
               
               // Stop observing this element
               fadeInObserver.unobserve(entry.target);
