@@ -375,7 +375,69 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
       
+      // Setup image hover preview
+      setupImageHoverPreview();
+      
     }, imageDelay);
+  }
+
+  // Setup hover preview for .reveal-wrap images
+  function setupImageHoverPreview() {
+    console.log('🖼️ Setting up image hover preview');
+    
+    // Create preview container
+    const previewContainer = document.createElement('div');
+    previewContainer.id = 'hover-preview';
+    previewContainer.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 30vw;
+      height: auto;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 9999;
+      transition: opacity 0.2s ease;
+    `;
+    
+    const previewImg = document.createElement('img');
+    previewImg.style.cssText = `
+      width: 100%;
+      height: auto;
+      display: block;
+    `;
+    
+    previewContainer.appendChild(previewImg);
+    document.body.appendChild(previewContainer);
+    
+    // Get all .reveal-wrap elements
+    const revealWraps = document.querySelectorAll('.reveal-wrap');
+    console.log(`🖼️ Found ${revealWraps.length} .reveal-wrap elements`);
+    
+    revealWraps.forEach(wrap => {
+      // Find the image inside this reveal-wrap
+      const img = wrap.querySelector('img, video');
+      if (!img) return;
+      
+      // Get the source
+      const imgSrc = img.tagName === 'VIDEO' ? 
+        (img.querySelector('source')?.src || img.src) : 
+        img.src;
+      
+      if (!imgSrc) return;
+      
+      // Add hover listeners to the entire wrap
+      wrap.addEventListener('mouseenter', () => {
+        previewImg.src = imgSrc;
+        previewContainer.style.opacity = '1';
+      });
+      
+      wrap.addEventListener('mouseleave', () => {
+        previewContainer.style.opacity = '0';
+      });
+    });
+    
+    console.log('✅ Image hover preview setup complete');
   }
 
 
@@ -1177,9 +1239,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
           img.style.opacity = '1';
         }
       });
-      return;
-    }
-    
+          return;
+        }
+        
     typeof window.gsap !== 'undefined' && window.gsap.ScrollTrigger && window.gsap.registerPlugin(window.gsap.ScrollTrigger);
     
     // NOW remove the emergency image hiding since mask animations are about to start
