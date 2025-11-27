@@ -28,17 +28,13 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const immediateHide = document.createElement('style');
   immediateHide.id = 'immediate-hide';
   immediateHide.textContent = `
-    /* Hide toggle elements at all times until explicitly shown */
-    .toggle,
-    .toggle.bottom{opacity:0!important;visibility:hidden!important;display:none!important}
-    
-    /* Only show when ready */
-    .toggle.show-toggle,
-    .toggle.bottom.show-toggle{display:block!important;visibility:visible!important}
-    
-    /* Loading state */
+    /* Loading state - hide content except preloader and nav */
     body.loading{overflow:hidden}
     body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
+    
+    /* Toggle fade-in when ready (Webflow handles initial opacity: 0) */
+    .toggle.show-toggle,
+    .toggle.bottom.show-toggle{opacity:1!important;transition:opacity 0.6s ease!important}
   `;
   // Insert as first style in head for highest priority
   const head = document.head || document.getElementsByTagName('head')[0];
@@ -1090,25 +1086,9 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const toggleElements = document.querySelectorAll('.toggle, .toggle.bottom');
       console.log(`🎯 Fading in ${toggleElements.length} toggle elements`);
       toggleElements.forEach(toggle => {
-        // Add show-toggle class to override global hide
+        // Add show-toggle class to trigger CSS transition
+        // Webflow's opacity: 0 will transition to opacity: 1
         toggle.classList.add('show-toggle');
-        
-        if (typeof window.gsap !== 'undefined') {
-          window.gsap.to(toggle, {
-            opacity: 1,
-            duration: 0.6,
-            ease: "power2.out",
-            onStart: () => {
-              toggle.style.opacity = '0'; // Start from 0
-            },
-            onComplete: () => {
-              toggle.style.opacity = ''; // Let CSS take over
-            }
-          });
-        } else {
-          toggle.style.transition = 'opacity 0.6s ease';
-          toggle.style.opacity = '1';
-        }
       });
     }, 1500); // 100ms after last scramble completes
     
