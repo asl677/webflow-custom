@@ -28,9 +28,12 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const immediateHide = document.createElement('style');
   immediateHide.id = 'immediate-hide';
   immediateHide.textContent = `
-    /* Loading state - hide content except preloader and nav */
+    /* Loading state - hide images/videos/toggle, allow text for better LCP */
     body.loading{overflow:hidden}
-    body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
+    body.loading img:not(#preloader img),
+    body.loading video,
+    body.loading .toggle,
+    body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important}
     
     /* Toggle fade-in when ready (Webflow handles initial opacity: 0) */
     .toggle.show-toggle,
@@ -164,7 +167,10 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       #preloader.counting .digit{animation:none}
       @keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.5}}
       body.loading{overflow:hidden}
-      body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *):not([data-mask-setup]):not(.mask-wrap):not(.mask-wrap *){opacity:0!important;visibility:hidden!important}
+      body.loading img:not(#preloader img),
+      body.loading video,
+      body.loading .toggle,
+      body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important}
       
       /* REMOVE animations-ready hiding to prevent slide-up effects */
       
@@ -241,15 +247,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
-      // Balanced completion: need 5 images AND 50% loaded
-      const minImagesLoaded = loadedCount >= 5;
-      const halfLoaded = loadedCount >= Math.ceil(totalImages * 0.5);
+      // Fast completion for better LCP: just 3 images OR 40% loaded
+      const minImagesLoaded = loadedCount >= 3;
+      const basicProgress = loadedCount >= Math.ceil(totalImages * 0.4);
       
-      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 5 (${minImagesLoaded}) and 50% (${halfLoaded})`);
+      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 3 (${minImagesLoaded}) or 40% (${basicProgress})`);
       
-      if (minImagesLoaded && halfLoaded) {
+      if (minImagesLoaded || basicProgress) {
         console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded`);
-        setTimeout(completePreloader, 200);
+        setTimeout(completePreloader, 150);
       }
     }
     
