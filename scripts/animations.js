@@ -13,15 +13,36 @@ window.scriptLoadTest = function() {
 console.log('🚀 Try: window.scriptLoadTest()');
 
 // IMMEDIATELY add loading class and hide styles to prevent flash
-document.body.classList.add('loading');
+// This runs the instant the script loads
 (function() {
+  // Add loading class to body immediately
+  document.documentElement.classList.add('preload');
+  if (document.body) {
+    document.body.classList.add('loading');
+      } else {
+    // Body doesn't exist yet, add listener
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('loading');
+    });
+  }
+  
   const immediateHide = document.createElement('style');
   immediateHide.id = 'immediate-hide';
   immediateHide.textContent = `
+    html.preload body{opacity:0!important}
     body.loading{overflow:hidden}
     body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
+    body.loading .toggle{opacity:0!important;visibility:hidden!important}
+    body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important;display:none!important}
   `;
-  (document.head || document.documentElement).appendChild(immediateHide);
+  // Insert as first style in head for highest priority
+  const head = document.head || document.getElementsByTagName('head')[0];
+  const firstChild = head.firstChild;
+  if (firstChild) {
+    head.insertBefore(immediateHide, firstChild);
+      } else {
+    head.appendChild(immediateHide);
+  }
 })();
 
 // Images will start hidden and fade in via GSAP
@@ -312,6 +333,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         onComplete: () => { 
           preloader.remove(); 
           document.body.classList.remove('loading');
+          document.documentElement.classList.remove('preload');
           document.body.classList.add('animations-ready');
           // Wait additional time after preloader is removed
           setTimeout(() => {
@@ -326,6 +348,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         setTimeout(() => { 
           preloader.remove(); 
           document.body.classList.remove('loading');
+          document.documentElement.classList.remove('preload');
           document.body.classList.add('animations-ready');
           setTimeout(() => {
             console.log('🚀 Starting animations after preloader');
