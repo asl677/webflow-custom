@@ -15,8 +15,7 @@ console.log('🚀 Try: window.scriptLoadTest()');
 // IMMEDIATELY add loading class and hide styles to prevent flash
 // This runs the instant the script loads
 (function() {
-  // Add loading class to body immediately
-  document.documentElement.classList.add('preload');
+  // Add loading class to body when it exists
   if (document.body) {
     document.body.classList.add('loading');
       } else {
@@ -29,22 +28,17 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const immediateHide = document.createElement('style');
   immediateHide.id = 'immediate-hide';
   immediateHide.textContent = `
-    /* Hide everything at HTML level */
-    html.preload body{opacity:0!important}
-    html.preload .toggle,
-    html.preload .toggle.bottom{opacity:0!important;visibility:hidden!important;display:none!important}
-    
-    /* Hide during loading state */
-    body.loading{overflow:hidden}
-    body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
-    body.loading .toggle{opacity:0!important;visibility:hidden!important;display:none!important}
-    body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important;display:none!important}
-    
-    /* Keep hidden until explicitly shown */
+    /* Hide toggle elements at all times until explicitly shown */
     .toggle,
     .toggle.bottom{opacity:0!important;visibility:hidden!important;display:none!important}
+    
+    /* Only show when ready */
     .toggle.show-toggle,
     .toggle.bottom.show-toggle{display:block!important;visibility:visible!important}
+    
+    /* Loading state */
+    body.loading{overflow:hidden}
+    body.loading *:not(#preloader):not(#preloader *):not(.nav):not(.nav *):not(.fake-nav):not(.fake-nav *):not(.w-layout-grid.nav):not(.w-layout-grid.nav *){opacity:0!important;visibility:hidden!important}
   `;
   // Insert as first style in head for highest priority
   const head = document.head || document.getElementsByTagName('head')[0];
@@ -344,7 +338,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         onComplete: () => { 
           preloader.remove(); 
           document.body.classList.remove('loading');
-          document.documentElement.classList.remove('preload');
           document.body.classList.add('animations-ready');
           // Wait additional time after preloader is removed
           setTimeout(() => {
@@ -359,7 +352,6 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         setTimeout(() => { 
           preloader.remove(); 
           document.body.classList.remove('loading');
-          document.documentElement.classList.remove('preload');
           document.body.classList.add('animations-ready');
           setTimeout(() => {
             console.log('🚀 Starting animations after preloader');
