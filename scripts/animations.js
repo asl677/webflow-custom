@@ -1152,38 +1152,65 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         }
       });
       
-      // Batch animate viewport images with optimized stagger (Chrome performance)
+      // Batch animate viewport images with CSS transitions (better performance)
       if (viewportImages.length > 0) {
         console.log(`🎭 Batch fading ${viewportImages.length} viewport images`);
         
-        // Use individual tweens with delays instead of timeline (better Chrome performance)
+        // Use CSS transitions instead of GSAP for better scroll performance
         viewportImages.forEach(({ element, index }, i) => {
-          window.gsap.to(element, {
-            opacity: 1,
-            duration: 1,
-            delay: i * 0.06, // 80ms stagger
-            ease: "power2.out",
-            overwrite: 'auto', // Prevent conflicts
-            onStart: () => {
-              element.style.transform = 'translateZ(0)'; // Force GPU layer
-            },
-            onComplete: () => {
-              element.dataset.fadeComplete = 'true';
+          const delay = i * 0.06; // 60ms stagger
+          
+          setTimeout(() => {
+            element.style.transition = 'opacity 1s ease';
+            element.style.opacity = '1';
+            element.dataset.fadeComplete = 'true';
+            
+            // Clean up after animation
+            setTimeout(() => {
               element.style.willChange = 'auto';
-              element.style.transform = ''; // Remove GPU hint
-            }
-          });
+              element.style.transition = '';
+            }, 1000);
+          }, delay * 1000);
         });
       }
       
-      // For below-fold images, use IntersectionObserver with delayed trigger
+      // For below-fold images, use optimized IntersectionObserver with batching
       if (belowFoldImages.length > 0) {
-        console.log(`🎭 Setting up IntersectionObserver for ${belowFoldImages.length} below-fold images`);
+        console.log(`🎭 Setting up optimized IntersectionObserver for ${belowFoldImages.length} below-fold images`);
+        
+        // Batch animations using requestAnimationFrame for better performance
+        let animationQueue = [];
+        let rafScheduled = false;
+        
+        const processAnimationQueue = () => {
+          rafScheduled = false;
+          
+          if (animationQueue.length === 0) return;
+          
+          // Process all queued animations in a single frame
+          const toAnimate = [...animationQueue];
+          animationQueue = [];
+          
+          toAnimate.forEach(element => {
+            if (element.dataset.fadeComplete) return;
+            element.dataset.fadeComplete = 'true';
+            
+            // Use CSS transition instead of GSAP for better scroll performance
+            element.style.transition = 'opacity 1s ease';
+            element.style.opacity = '1';
+            
+            // Clean up after animation
+            setTimeout(() => {
+              element.style.willChange = 'auto';
+              element.style.transition = '';
+            }, 1000);
+          });
+        };
         
         const observerOptions = {
           root: null,
-          rootMargin: '-80px', // Trigger 100px AFTER entering viewport (delayed)
-          threshold: 0.1 // Require 10% visibility before triggering
+          rootMargin: '-80px',
+          threshold: 0.1
         };
         
         const fadeInObserver = new IntersectionObserver((entries) => {
@@ -1191,22 +1218,19 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             if (entry.isIntersecting && !entry.target.dataset.fadeStarted) {
               entry.target.dataset.fadeStarted = 'true';
               
-              // Add 200ms delay before starting fade
+              // Add to animation queue instead of animating immediately
               setTimeout(() => {
-                if (entry.target.dataset.fadeComplete) return;
-                entry.target.dataset.fadeComplete = 'true';
-                
-                window.gsap.to(entry.target, {
-                  opacity: 1,
-                  duration: 1,
-                  ease: "power2.out",
-                  onComplete: () => {
-                    entry.target.style.willChange = 'auto';
+                if (!entry.target.dataset.fadeComplete) {
+                  animationQueue.push(entry.target);
+                  
+                  // Schedule RAF if not already scheduled
+                  if (!rafScheduled) {
+                    rafScheduled = true;
+                    requestAnimationFrame(processAnimationQueue);
                   }
-                });
+                }
               }, 200);
               
-              // Stop observing this element
               fadeInObserver.unobserve(entry.target);
             }
           });
