@@ -397,7 +397,69 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       console.log('🎭 Starting masked image animations after text completion');
       startMaskedImageAnimations();
       
+      // Initialize optimized draggable
+      initOptimizedDraggable();
+      
     }, imageDelay);
+  }
+
+  // Optimize draggable elements to follow cursor precisely
+  function initOptimizedDraggable() {
+    console.log('🖱️ Initializing optimized draggable');
+    
+    // Find draggable elements (Webflow adds this class)
+    const draggableElements = document.querySelectorAll('.w-draggable, [data-draggable="true"]');
+    
+    if (draggableElements.length === 0) {
+      console.log('🖱️ No draggable elements found');
+      return;
+    }
+    
+    draggableElements.forEach(element => {
+      // Check if jQuery and jQuery UI are available
+      if (typeof jQuery !== 'undefined' && jQuery.fn.draggable) {
+        const $element = jQuery(element);
+        
+        // Destroy existing draggable if it exists
+        if ($element.data('ui-draggable')) {
+          $element.draggable('destroy');
+        }
+        
+        // Reinitialize with optimized settings
+        $element.draggable({
+          scroll: false,        // Disable auto-scroll
+          delay: 0,            // No delay
+          distance: 0,         // Start dragging immediately
+          cursor: 'move',      // Show move cursor
+          // Don't set cursorAt - this was causing the offset issue
+          start: function(event, ui) {
+            // Store the initial offset between cursor and element
+            const offset = $element.offset();
+            const mouseX = event.pageX;
+            const mouseY = event.pageY;
+            
+            // Calculate where in the element the user clicked
+            $element.data('clickOffsetX', mouseX - offset.left);
+            $element.data('clickOffsetY', mouseY - offset.top);
+          },
+          drag: function(event, ui) {
+            // Keep the same offset throughout dragging
+            const clickOffsetX = $element.data('clickOffsetX');
+            const clickOffsetY = $element.data('clickOffsetY');
+            
+            if (clickOffsetX !== undefined && clickOffsetY !== undefined) {
+              // Position element so cursor stays at the same spot
+              ui.position.left = event.pageX - clickOffsetX - ui.helper.parent().offset().left;
+              ui.position.top = event.pageY - clickOffsetY - ui.helper.parent().offset().top;
+            }
+          }
+        });
+        
+        console.log('✅ Optimized draggable for element:', element.className);
+      } else {
+        console.warn('⚠️ jQuery or jQuery UI draggable not available');
+      }
+    });
   }
 
 
