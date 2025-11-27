@@ -1,4 +1,4 @@
-// Version 2.7: Revert to working custom scramble, ensure counter is included
+// Version 2.8: Revert to working custom scramble, ensure counter is included
 // REQUIRED: Add these script tags BEFORE this script:
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/5.0.0/imagesloaded.pkgd.min.js"></script>
 // GSAP, ScrollTrigger, and Observer are loaded dynamically
@@ -1113,8 +1113,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         viewportImages.forEach(({ element, index }, i) => {
           window.gsap.to(element, {
             opacity: 1,
-            duration: 0.5,
-            delay: i * 0.08, // 80ms stagger
+            duration: 1,
+            delay: i * 0.06, // 80ms stagger
             ease: "power2.out",
             overwrite: 'auto', // Prevent conflicts
             onStart: () => {
@@ -1135,7 +1135,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         const observerOptions = {
           root: null,
-          rootMargin: '-100px', // Trigger 100px AFTER entering viewport (delayed)
+          rootMargin: '-80px', // Trigger 100px AFTER entering viewport (delayed)
           threshold: 0.1 // Require 10% visibility before triggering
         };
         
@@ -1151,7 +1151,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
                 
                 window.gsap.to(entry.target, {
                   opacity: 1,
-                  duration: 0.5,
+                  duration: 1,
                   ease: "power2.out",
                   onComplete: () => {
                     entry.target.style.willChange = 'auto';
