@@ -35,9 +35,9 @@ console.log('🚀 Try: window.scriptLoadTest()');
     body.loading .toggle,
     body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important}
     
-    /* Toggle fade-in when ready (Webflow handles initial opacity: 0) */
+    /* Toggle fade-in when ready - don't use !important to allow Webflow interactions */
     .toggle.show-toggle,
-    .toggle.bottom.show-toggle{opacity:1!important;transition:opacity 0.6s ease!important}
+    .toggle.bottom.show-toggle{transition:opacity 0.6s ease}
   `;
   // Insert as first style in head for highest priority
   const head = document.head || document.getElementsByTagName('head')[0];
@@ -1130,9 +1130,18 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const toggleElements = document.querySelectorAll('.toggle, .toggle.bottom');
       console.log(`🎯 Fading in ${toggleElements.length} toggle elements`);
       toggleElements.forEach(toggle => {
-        // Add show-toggle class to trigger CSS transition
-        // Webflow's opacity: 0 will transition to opacity: 1
+        // Add show-toggle class and animate opacity
         toggle.classList.add('show-toggle');
+        
+        // Use inline style to fade in, then remove so Webflow can control it
+        toggle.style.transition = 'opacity 0.6s ease';
+        toggle.style.opacity = '1';
+        
+        // After fade completes, clear inline styles so Webflow interactions work
+        setTimeout(() => {
+          toggle.style.transition = '';
+          toggle.style.opacity = '';
+        }, 600);
       });
     }, 1500); // 100ms after last scramble completes
     
