@@ -264,16 +264,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
-      // Wait for at least 10 images AND 80% of total before completing
-      const minImagesLoaded = loadedCount >= 10;
-      const majorityLoaded = loadedCount >= Math.ceil(totalImages * 0.8);
-      const minThreshold = Math.ceil(totalImages * 0.8);
+      // Much faster completion: just need 3 images OR 30% loaded
+      const minImagesLoaded = loadedCount >= 3;
+      const basicProgress = loadedCount >= Math.ceil(totalImages * 0.3);
       
-      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 10 (${minImagesLoaded}) and ${minThreshold} for 80% (${majorityLoaded})`);
+      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 3 (${minImagesLoaded}) or 30% (${basicProgress})`);
       
-      if (minImagesLoaded && majorityLoaded) {
-        console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded (min 10 ✓, 80% ✓)`);
-        setTimeout(completePreloader, 200);
+      if (minImagesLoaded || basicProgress) {
+        console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded`);
+        setTimeout(completePreloader, 100);
       }
     }
     
@@ -297,23 +296,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Switch to counting mode after 3 seconds even if no images load (slow connection)
+    // Switch to counting mode after 1 second even if no images load (slow connection)
     setTimeout(() => {
       if (loadedCount === 0) {
         preloader.className = 'counting';
         console.log('🐌 Slow connection detected - switching to counting mode anyway');
       }
-    }, 3000);
+    }, 1000);
     
-    // Fallback: complete after 10 seconds regardless
+    // Fallback: complete after 3 seconds regardless
     setTimeout(() => {
       if (!preloaderComplete) {
-        console.log(`⏰ Preloader timeout: Completing after 10 seconds`);
+        console.log(`⏰ Preloader timeout: Completing after 3 seconds`);
         preloader.className = 'counting';
         updateCounter(100);
-        setTimeout(completePreloader, 200);
+        setTimeout(completePreloader, 100);
       }
-    }, 10000);
+    }, 3000);
   }
 
   // Complete preloader and start animations
