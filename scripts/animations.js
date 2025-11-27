@@ -1081,6 +1081,30 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log('✅ Text animations complete - now setting up infinite scroll');
     
+    // Fade in toggle after all scrambling is complete
+    // Latest scramble is timeText at 600ms + 800ms = 1400ms
+    setTimeout(() => {
+      const toggleElements = document.querySelectorAll('.toggle, .toggle.bottom');
+      console.log(`🎯 Fading in ${toggleElements.length} toggle elements`);
+      toggleElements.forEach(toggle => {
+        if (typeof window.gsap !== 'undefined') {
+          window.gsap.to(toggle, {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            onStart: () => {
+              toggle.style.display = ''; // Remove display:none
+              toggle.style.visibility = 'visible';
+            }
+          });
+        } else {
+          toggle.style.opacity = '1';
+          toggle.style.visibility = 'visible';
+          toggle.style.display = '';
+        }
+      });
+    }, 1500); // 100ms after last scramble completes
+    
     // INFINITE SCROLL DISABLED
     /*
     // Setup infinite scroll after text animations
