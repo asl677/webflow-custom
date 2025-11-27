@@ -188,34 +188,11 @@ window.portfolioAnimations = window.portfolioAnimations || {};
 
   // Initialize preloader with image loading tracking
   function initPreloader() {
+    // Show preloader immediately, don't wait for GSAP
+        startActualPreloader();
+    
+    // Load GSAP in parallel
     loadGSAP();
-    
-    // Wait for GSAP to load before starting preloader
-    function waitForGSAPThenStart() {
-      if (typeof window.gsap !== 'undefined') {
-        console.log('✅ GSAP ready, starting preloader');
-        console.log('📊 GSAP version:', window.gsap.version);
-        console.log('📊 ScrollTrigger available:', !!window.gsap.ScrollTrigger);
-        startActualPreloader();
-      } else {
-        console.log('⏳ Still waiting for GSAP...', {
-          gsap: typeof window.gsap,
-          Webflow: typeof window.Webflow,
-          readyState: document.readyState
-        });
-        setTimeout(waitForGSAPThenStart, 100);
-      }
-    }
-    
-    // Fallback: if GSAP doesn't load in 5 seconds, continue without it
-    setTimeout(() => {
-      if (!gsapLoaded) {
-        console.warn('⚠️ GSAP failed to load in 5 seconds - continuing without enhanced animations');
-        startActualPreloader();
-      }
-    }, 5000);
-    
-    waitForGSAPThenStart();
   }
   
   function startActualPreloader() {
@@ -264,15 +241,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       
       console.log(`🖼️ Image ${loadedCount}/${totalImages} loaded (${Math.round(progress)}%)`);
       
-      // Much faster completion: just need 3 images OR 30% loaded
-      const minImagesLoaded = loadedCount >= 3;
-      const basicProgress = loadedCount >= Math.ceil(totalImages * 0.3);
+      // Balanced completion: need 5 images AND 50% loaded
+      const minImagesLoaded = loadedCount >= 5;
+      const halfLoaded = loadedCount >= Math.ceil(totalImages * 0.5);
       
-      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 3 (${minImagesLoaded}) or 30% (${basicProgress})`);
+      console.log(`🔍 Progress check: ${loadedCount} loaded, need min 5 (${minImagesLoaded}) and 50% (${halfLoaded})`);
       
-      if (minImagesLoaded || basicProgress) {
+      if (minImagesLoaded && halfLoaded) {
         console.log(`✅ Preloader completing: ${loadedCount}/${totalImages} images loaded`);
-        setTimeout(completePreloader, 100);
+        setTimeout(completePreloader, 200);
       }
     }
     
@@ -296,23 +273,23 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       }
     });
     
-    // Switch to counting mode after 1 second even if no images load (slow connection)
+    // Switch to counting mode after 2 seconds even if no images load (slow connection)
     setTimeout(() => {
       if (loadedCount === 0) {
         preloader.className = 'counting';
         console.log('🐌 Slow connection detected - switching to counting mode anyway');
       }
-    }, 1000);
+    }, 2000);
     
-    // Fallback: complete after 3 seconds regardless
+    // Fallback: complete after 5 seconds regardless
     setTimeout(() => {
       if (!preloaderComplete) {
-        console.log(`⏰ Preloader timeout: Completing after 3 seconds`);
+        console.log(`⏰ Preloader timeout: Completing after 5 seconds`);
         preloader.className = 'counting';
         updateCounter(100);
-        setTimeout(completePreloader, 100);
+        setTimeout(completePreloader, 200);
       }
-    }, 3000);
+    }, 5000);
   }
 
   // Complete preloader and start animations
