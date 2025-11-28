@@ -28,12 +28,14 @@ console.log('🚀 Try: window.scriptLoadTest()');
   const immediateHide = document.createElement('style');
   immediateHide.id = 'immediate-hide';
   immediateHide.textContent = `
-    /* Loading state - hide images/videos/toggle, allow text for better LCP */
+    /* Loading state - hide images/videos/toggle/yzy, allow text for better LCP */
     body.loading{overflow:hidden}
     body.loading img:not(#preloader img),
     body.loading video,
     body.loading .toggle,
-    body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important}
+    body.loading .toggle.bottom,
+    body.loading .yzy,
+    body.loading .flex-grid.yzy{opacity:0!important;visibility:hidden!important}
     
     /* Toggle fade-in when ready - don't use !important to allow Webflow interactions */
     .toggle.show-toggle,
@@ -1141,6 +1143,20 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         setTimeout(() => {
           toggle.style.transition = '';
           toggle.style.opacity = '';
+        }, 600);
+      });
+      
+      // Fade in .yzy elements
+      const yzyElements = document.querySelectorAll('.yzy, .flex-grid.yzy');
+      console.log(`🎯 Fading in ${yzyElements.length} .yzy elements`);
+      yzyElements.forEach(yzy => {
+        yzy.style.transition = 'opacity 0.6s ease, visibility 0s';
+        yzy.style.visibility = 'visible';
+        yzy.style.opacity = '1';
+        
+        // Clear inline styles after fade
+        setTimeout(() => {
+          yzy.style.transition = '';
         }, 600);
       });
     }, 1500); // 100ms after last scramble completes
