@@ -166,6 +166,9 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
     elements.forEach((el, i) => {
       if (el.dataset.animInit || el.closest('.label-wrap')) return;
+      // Skip draggable content - handle separately without hiding
+      if (el.closest('.w-draggable') || el.closest('[data-draggable]')) return;
+      
       el.dataset.animInit = 'true';
       el.style.visibility = 'hidden';
       el.style.opacity = '1';
@@ -178,19 +181,17 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       }, i * 80);
     });
     
-    // ALSO wrap letters in draggable links that might have been missed
+    // Wrap letters in draggable links for hover effects ONLY (no hiding)
     document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link, .w-inline-block a, a.menu-link, a.shimmer, a.accordion, a.chip-link, a.w-inline-block').forEach(link => {
       if (link.dataset.animInit) return;
-      // For elements that are links or contain text
-      const el = link.tagName === 'A' ? link : link.closest('a') || link;
-      const text = el.textContent?.trim();
+      if (link.querySelector('.letter')) return; // Already wrapped
+      
+      const text = link.textContent?.trim();
       if (text && text.length > 1 && text.length < 150) {
-        // Check if already has letter spans
-        if (!el.querySelector('.letter')) {
-          el.dataset.animInit = 'true';
-          wrapLetters(el);
-          console.log(`🔗 Wrapped special link: ${text.substring(0, 30)}`);
-        }
+        link.dataset.animInit = 'true';
+        wrapLetters(link);
+        // Don't hide - just wrap for hover effects
+        console.log(`🔗 Wrapped link for hover: ${text.substring(0, 30)}`);
       }
     });
 
