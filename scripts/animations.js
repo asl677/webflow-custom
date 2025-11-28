@@ -177,6 +177,17 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         scrambleElement(el, 1000);
       }, i * 80);
     });
+    
+    // ALSO wrap letters in draggable links that might have been missed
+    document.querySelectorAll('.w-draggable a, [data-draggable] a').forEach(link => {
+      if (link.dataset.animInit) return;
+      const text = link.textContent?.trim();
+      if (text && text.length > 1 && text.length < 150 && link.children.length === 0) {
+        link.dataset.animInit = 'true';
+        wrapLetters(link);
+        console.log(`🔗 Wrapped draggable link: ${text}`);
+      }
+    });
 
     // Setup hover effects
     setTimeout(initHoverEffects, 500);
