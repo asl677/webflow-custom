@@ -156,9 +156,13 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a'))
       .filter(el => {
         const text = el.textContent?.trim();
-        const noChildren = el.children.length === 0;
+        const isLink = el.tagName === 'A';
+        // Links can have children (like spans), other elements must be leaf nodes
+        const noChildren = isLink || el.children.length === 0;
         const visible = getComputedStyle(el).display !== 'none';
-        const inView = el.getBoundingClientRect().top < window.innerHeight + 200;
+        // Be more permissive with viewport check
+        const rect = el.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight + 500 || rect.bottom > -200;
         return text && text.length > 2 && text.length < 150 && noChildren && visible && inView;
       });
 
@@ -178,8 +182,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       }, i * 80);
     });
 
-    // Setup hover effects
-    setTimeout(initHoverEffects, 500);
+    // Setup hover effects - give more time for DOM to be ready
+    setTimeout(initHoverEffects, 800);
 
     // Special elements
     const counter = document.querySelector('.counter');
@@ -211,7 +215,9 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
   // Wrap letters in spans
   function wrapLetters(el) {
-    el.innerHTML = el.textContent.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
+    // Get only the direct text content, not nested element text
+    const text = el.tagName === 'A' ? el.textContent : el.textContent;
+    el.innerHTML = text.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
   }
 
   // Scramble element with letter spans
