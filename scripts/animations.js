@@ -1135,14 +1135,15 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         // Add show-toggle class and animate opacity
         toggle.classList.add('show-toggle');
         
-        // Use inline style to fade in, then remove so Webflow can control it
+        // Use inline style to fade in
         toggle.style.transition = 'opacity 0.6s ease';
         toggle.style.opacity = '1';
         
-        // After fade completes, clear inline styles so Webflow interactions work
+        // After fade completes, only clear transition (keep opacity: 1)
+        // Webflow interactions will override inline opacity when clicked
         setTimeout(() => {
           toggle.style.transition = '';
-          toggle.style.opacity = '';
+          // Keep opacity: 1 - Webflow's click will set its own inline style
         }, 600);
       });
       
