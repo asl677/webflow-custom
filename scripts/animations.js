@@ -38,8 +38,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
         document.head.appendChild(st);
       } else callback();
-      return;
-    }
+          return;
+        }
     const gsap = document.createElement('script');
     gsap.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
     gsap.onload = () => {
@@ -67,7 +67,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const images = document.querySelectorAll('img');
     const total = images.length;
     let loaded = 0;
-
+    
     function updateCounter(progress) {
       const str = Math.floor(progress).toString().padStart(3, '0');
       counter.querySelectorAll('.digit').forEach((d, i) => d.textContent = str[i]);
@@ -87,7 +87,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       setTimeout(completePreloader, 500);
       return;
     }
-
+    
     images.forEach(img => {
       if (img.complete) checkLoaded();
       else {
@@ -115,19 +115,19 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     if (window.gsap) {
       window.gsap.to(preloader, {
         opacity: 0, duration: 0.4, ease: "power2.out",
-        onComplete: () => {
-          preloader.remove();
+        onComplete: () => { 
+          preloader.remove(); 
           document.body.classList.remove('loading');
           setTimeout(startAnimations, 300);
         }
       });
     } else {
-      preloader.style.opacity = '0';
-      setTimeout(() => {
-        preloader.remove();
-        document.body.classList.remove('loading');
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
+          document.body.classList.remove('loading');
         startAnimations();
-      }, 400);
+      }, 400); 
     }
   }
 
@@ -179,13 +179,18 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     });
     
     // ALSO wrap letters in draggable links that might have been missed
-    document.querySelectorAll('.w-draggable a, [data-draggable] a').forEach(link => {
+    document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link, .w-inline-block a, a.menu-link, a.shimmer, a.accordion, a.chip-link, a.w-inline-block').forEach(link => {
       if (link.dataset.animInit) return;
-      const text = link.textContent?.trim();
-      if (text && text.length > 1 && text.length < 150 && link.children.length === 0) {
-        link.dataset.animInit = 'true';
-        wrapLetters(link);
-        console.log(`🔗 Wrapped draggable link: ${text}`);
+      // For elements that are links or contain text
+      const el = link.tagName === 'A' ? link : link.closest('a') || link;
+      const text = el.textContent?.trim();
+      if (text && text.length > 1 && text.length < 150) {
+        // Check if already has letter spans
+        if (!el.querySelector('.letter')) {
+          el.dataset.animInit = 'true';
+          wrapLetters(el);
+          console.log(`🔗 Wrapped special link: ${text.substring(0, 30)}`);
+        }
       }
     });
 
@@ -234,8 +239,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let frame = 0;
     const totalFrames = duration / 60;
-
-    const interval = setInterval(() => {
+      
+      const interval = setInterval(() => {
       spans.forEach((span, i) => {
         const reveal = (i / spans.length) * totalFrames * 0.8;
         if (frame > reveal) span.textContent = original[i];
@@ -243,7 +248,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       });
       frame++;
       if (frame >= totalFrames) {
-        clearInterval(interval);
+          clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i]);
       }
     }, 60);
@@ -256,7 +261,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     let frame = 0;
     const totalFrames = duration / 50;
     const revealSpeed = original.length / (totalFrames * 0.7);
-
+    
     const interval = setInterval(() => {
       let text = '';
       for (let i = 0; i < original.length; i++) {
@@ -305,9 +310,9 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       link.addEventListener('mouseleave', () => {
         if (window.gsap) letters.forEach((l, i) => window.gsap.to(l, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" }));
         stopLinkScramble(link);
-      });
-    });
-  }
+          });
+        });
+      }
 
   function startLinkScramble(link) {
     if (link._scrambleInterval) return;
@@ -347,7 +352,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       img.style.visibility = 'visible';
       img.style.willChange = 'opacity';
       
-      const rect = img.getBoundingClientRect();
+        const rect = img.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) viewportImages.push({ img, i });
       else belowFold.push(img);
     });
@@ -457,10 +462,10 @@ console.log('🚀 Portfolio animations v4.0 loading...');
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
-})();
-
+  })();
+  
 // Column toggle for .yzy grid
-(function() {
+  (function() {
   const sizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
   const grid = document.querySelector('.flex-grid.yzy');
   if (!sizer || !grid) return;
@@ -476,5 +481,6 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     grid.style.columnCount = cols;
   });
 })();
-
+  
 console.log('🚀 Portfolio animations v4.0 ready');
+  
