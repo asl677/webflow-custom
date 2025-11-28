@@ -33,9 +33,11 @@ console.log('🚀 Try: window.scriptLoadTest()');
     body.loading img:not(#preloader img),
     body.loading video,
     body.loading .toggle,
-    body.loading .toggle.bottom,
-    body.loading .yzy,
-    body.loading .flex-grid.yzy{opacity:0!important;visibility:hidden!important}
+    body.loading .toggle.bottom{opacity:0!important;visibility:hidden!important}
+    
+    /* .yzy starts hidden always until explicitly shown */
+    .yzy:not(.yzy-visible),
+    .flex-grid.yzy:not(.yzy-visible){opacity:0;visibility:hidden}
     
     /* Toggle fade-in when ready - don't use !important to allow Webflow interactions */
     .toggle.show-toggle,
@@ -1151,13 +1153,21 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       const yzyElements = document.querySelectorAll('.yzy, .flex-grid.yzy');
       console.log(`🎯 Fading in ${yzyElements.length} .yzy elements`);
       yzyElements.forEach(yzy => {
-        yzy.style.transition = 'opacity 0.6s ease, visibility 0s';
+        // Add class to override the hidden state, then animate
+        yzy.classList.add('yzy-visible');
+        yzy.style.transition = 'opacity 0.6s ease';
+        yzy.style.opacity = '0';
         yzy.style.visibility = 'visible';
+        
+        // Force reflow then fade in
+        yzy.offsetHeight;
         yzy.style.opacity = '1';
         
         // Clear inline styles after fade
         setTimeout(() => {
           yzy.style.transition = '';
+          yzy.style.opacity = '';
+          yzy.style.visibility = '';
         }, 600);
       });
     }, 1500); // 100ms after last scramble completes
