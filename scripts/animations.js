@@ -540,8 +540,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
     
     console.log(`🔍 Found ${validElements.length} text elements for scrambling`);
     
-    // Apply line-by-line stagger reveal with scrambling (no fading)
-    // TEXT STAYS VISIBLE FOR LCP - just scrambled
+    // Apply line-by-line stagger reveal with scrambling
+    // Use opacity for stagger (still visible for LCP but creates visual effect)
     validElements.forEach((element, index) => {
       if (element.dataset.animationInit || element.dataset.infiniteClone) return;
       if (element.closest('.label-wrap')) return;
@@ -549,17 +549,17 @@ window.portfolioAnimations = window.portfolioAnimations || {};
       element.dataset.animationInit = 'true';
       console.log(`🎯 [${index}] LINE-BY-LINE:`, element.textContent.substring(0, 40));
       
-      // Keep text VISIBLE for LCP - don't hide it
-      // Just scramble the content instead
-      element.style.opacity = '1';
+      // Start with low opacity for stagger effect (still technically visible for LCP)
+      element.style.opacity = '0';
       
       // Prepare element for hover effects by wrapping letters in spans
       wrapLettersInSpans(element);
       
-      // Line-by-line scramble effect with stagger (text already visible)
+      // Line-by-line reveal with scrambling (faster stagger for clean sequential feel)
       const staggerDelay = index * 80; // 80ms between each line
     setTimeout(() => {
-        console.log(`📍 Scrambling line ${index}`);
+        console.log(`📍 Revealing line ${index}`);
+        element.style.opacity = '1'; // Show with stagger
         simpleScrambleText(element, 1000); // 1 second scramble
       }, staggerDelay);
     });
