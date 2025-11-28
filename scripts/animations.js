@@ -38,8 +38,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
         document.head.appendChild(st);
       } else callback();
-          return;
-        }
+      return;
+    }
     const gsap = document.createElement('script');
     gsap.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
     gsap.onload = () => {
@@ -67,7 +67,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const images = document.querySelectorAll('img');
     const total = images.length;
     let loaded = 0;
-    
+
     function updateCounter(progress) {
       const str = Math.floor(progress).toString().padStart(3, '0');
       counter.querySelectorAll('.digit').forEach((d, i) => d.textContent = str[i]);
@@ -87,7 +87,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       setTimeout(completePreloader, 500);
       return;
     }
-    
+
     images.forEach(img => {
       if (img.complete) checkLoaded();
       else {
@@ -115,19 +115,19 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     if (window.gsap) {
       window.gsap.to(preloader, {
         opacity: 0, duration: 0.4, ease: "power2.out",
-        onComplete: () => { 
-          preloader.remove(); 
+        onComplete: () => {
+          preloader.remove();
           document.body.classList.remove('loading');
           setTimeout(startAnimations, 300);
         }
       });
     } else {
-        preloader.style.opacity = '0'; 
-        setTimeout(() => { 
-          preloader.remove(); 
-          document.body.classList.remove('loading');
+      preloader.style.opacity = '0';
+      setTimeout(() => {
+        preloader.remove();
+        document.body.classList.remove('loading');
         startAnimations();
-      }, 400); 
+      }, 400);
     }
   }
 
@@ -156,13 +156,9 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a'))
       .filter(el => {
         const text = el.textContent?.trim();
-        const isLink = el.tagName === 'A';
-        // Links can have children (like spans), other elements must be leaf nodes
-        const noChildren = isLink || el.children.length === 0;
+        const noChildren = el.children.length === 0;
         const visible = getComputedStyle(el).display !== 'none';
-        // Be more permissive with viewport check
-        const rect = el.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight + 500 || rect.bottom > -200;
+        const inView = el.getBoundingClientRect().top < window.innerHeight + 200;
         return text && text.length > 2 && text.length < 150 && noChildren && visible && inView;
       });
 
@@ -182,8 +178,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       }, i * 80);
     });
 
-    // Setup hover effects - give more time for DOM to be ready
-    setTimeout(initHoverEffects, 800);
+    // Setup hover effects
+    setTimeout(initHoverEffects, 500);
 
     // Special elements
     const counter = document.querySelector('.counter');
@@ -215,9 +211,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
   // Wrap letters in spans
   function wrapLetters(el) {
-    // Get only the direct text content, not nested element text
-    const text = el.tagName === 'A' ? el.textContent : el.textContent;
-    el.innerHTML = text.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
+    el.innerHTML = el.textContent.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
   }
 
   // Scramble element with letter spans
@@ -229,8 +223,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let frame = 0;
     const totalFrames = duration / 60;
-      
-      const interval = setInterval(() => {
+
+    const interval = setInterval(() => {
       spans.forEach((span, i) => {
         const reveal = (i / spans.length) * totalFrames * 0.8;
         if (frame > reveal) span.textContent = original[i];
@@ -238,7 +232,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       });
       frame++;
       if (frame >= totalFrames) {
-          clearInterval(interval);
+        clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i]);
       }
     }, 60);
@@ -251,7 +245,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     let frame = 0;
     const totalFrames = duration / 50;
     const revealSpeed = original.length / (totalFrames * 0.7);
-    
+
     const interval = setInterval(() => {
       let text = '';
       for (let i = 0; i < original.length; i++) {
@@ -274,21 +268,16 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }, 50);
   }
 
-  // Hover effects - optimized with CSS transforms
+  // Hover effects
   function initHoverEffects() {
-    // Letter bounce for non-links - use CSS transforms only
-    document.querySelectorAll('.letter').forEach((letter) => {
+    // Letter bounce for non-links
+    document.querySelectorAll('.letter').forEach((letter, i) => {
       if (letter.closest('a')) return;
-      
-      letter.style.display = 'inline-block';
-      letter.style.transition = 'transform 0.3s ease';
-      
       letter.addEventListener('mouseenter', () => {
-        letter.style.transform = 'translateY(-15px)';
+        if (window.gsap) window.gsap.to(letter, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" });
       });
-      
       letter.addEventListener('mouseleave', () => {
-        letter.style.transform = 'translateY(0)';
+        if (window.gsap) window.gsap.to(letter, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" });
       });
     });
 
@@ -297,22 +286,17 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       const letters = link.querySelectorAll('.letter');
       if (!letters.length) return;
       
-      letters.forEach(l => {
-        l.style.display = 'inline-block';
-        l.style.transition = 'transform 0.3s ease';
-      });
-      
       link.addEventListener('mouseenter', () => {
-        letters.forEach(l => l.style.transform = 'translateY(-15px)');
+        if (window.gsap) letters.forEach((l, i) => window.gsap.to(l, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" }));
         startLinkScramble(link);
       });
       
       link.addEventListener('mouseleave', () => {
-        letters.forEach(l => l.style.transform = 'translateY(0)');
+        if (window.gsap) letters.forEach((l, i) => window.gsap.to(l, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" }));
         stopLinkScramble(link);
-          });
-        });
-      }
+      });
+    });
+  }
 
   function startLinkScramble(link) {
     if (link._scrambleInterval) return;
@@ -335,17 +319,12 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }
   }
 
-  // Image fade-in with optimized IntersectionObserver
+  // Image fade-in with IntersectionObserver
   function startImageFadeIn() {
     const images = document.querySelectorAll('img:not(#preloader img), video');
     if (!images.length) return;
     
     console.log(`🎭 Setting up fade-in for ${images.length} images`);
-    
-    // Add performance CSS once
-    const perfStyle = document.createElement('style');
-    perfStyle.textContent = `.img-fade{opacity:0;transition:opacity 0.8s ease;contain:layout style paint}`;
-    document.head.appendChild(perfStyle);
     
     const viewportImages = [];
     const belowFold = [];
@@ -353,44 +332,39 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     images.forEach((img, i) => {
       if (img.dataset.fadeSetup) return;
       img.dataset.fadeSetup = 'true';
-      img.classList.add('img-fade');
+      img.style.opacity = '0';
+      img.style.visibility = 'visible';
+      img.style.willChange = 'opacity';
       
-        const rect = img.getBoundingClientRect();
+      const rect = img.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) viewportImages.push({ img, i });
       else belowFold.push(img);
     });
 
-    // Batch animate viewport images using RAF
-    if (viewportImages.length) {
-        requestAnimationFrame(() => { 
-        viewportImages.forEach(({ img }, i) => {
-          setTimeout(() => { img.style.opacity = '1'; }, i * 50);
-        });
-      });
-    }
+    // Animate viewport images with stagger
+    viewportImages.forEach(({ img }, i) => {
+      setTimeout(() => {
+        img.style.transition = 'opacity 1s ease';
+        img.style.opacity = '1';
+        setTimeout(() => { img.style.willChange = 'auto'; img.style.transition = ''; }, 1000);
+      }, i * 60);
+    });
 
-    // Optimized IntersectionObserver - no setTimeout, batch updates
+    // IntersectionObserver for below-fold
     if (belowFold.length) {
-      let pending = [];
-      let rafId = null;
-      
-      const processPending = () => {
-        rafId = null;
-        const batch = pending.splice(0, pending.length);
-        batch.forEach(img => { img.style.opacity = '1'; });
-      };
-      
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            pending.push(entry.target);
+          if (entry.isIntersecting && !entry.target.dataset.fadeStarted) {
+            entry.target.dataset.fadeStarted = 'true';
+            setTimeout(() => {
+              entry.target.style.transition = 'opacity 1s ease';
+              entry.target.style.opacity = '1';
+              setTimeout(() => { entry.target.style.willChange = 'auto'; entry.target.style.transition = ''; }, 1000);
+            }, 200);
             observer.unobserve(entry.target);
-            
-            // Batch with RAF for smooth updates
-            if (!rafId) rafId = requestAnimationFrame(processPending);
           }
         });
-      }, { rootMargin: '50px', threshold: 0 });
+      }, { rootMargin: '-80px', threshold: 0.1 });
       
       belowFold.forEach(img => observer.observe(img));
     }
@@ -472,10 +446,10 @@ console.log('🚀 Portfolio animations v4.0 loading...');
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
-  })();
-  
+})();
+
 // Column toggle for .yzy grid
-  (function() {
+(function() {
   const sizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
   const grid = document.querySelector('.flex-grid.yzy');
   if (!sizer || !grid) return;
@@ -491,6 +465,5 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     grid.style.columnCount = cols;
   });
 })();
-  
+
 console.log('🚀 Portfolio animations v4.0 ready');
-  
