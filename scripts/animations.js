@@ -221,8 +221,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       el.style.opacity = '1';
     });
 
-    // Setup hover effects
-    setTimeout(initHoverEffects, 500);
+    // Setup hover effects AFTER all letters are wrapped (including draggable)
+    setTimeout(initHoverEffects, 800);
 
     // Special elements
     const counter = document.querySelector('.counter');
