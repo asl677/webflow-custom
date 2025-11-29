@@ -20,6 +20,11 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
     .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s;contain:layout style paint}
+    html.lenis,html.lenis body{height:auto}
+    .lenis.lenis-smooth{scroll-behavior:auto}
+    .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+    *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+    .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
   document.head.insertBefore(style, document.head.firstChild);
   
