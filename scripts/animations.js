@@ -9,7 +9,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
   style.id = 'immediate-hide';
   style.textContent = `
     body.loading{overflow:hidden}
-    body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy,body.loading .reveal-wrap{opacity:0!important}
+    body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
     #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
@@ -18,7 +18,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
-    .img-hidden{opacity:0}
+    img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0}
     .img-visible{opacity:1;transition:opacity 1.1s ease}
   `;
   document.head.insertBefore(style, document.head.firstChild);
@@ -194,7 +194,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       wrapLetters(el);
       
       // Stagger reveal with scramble
-      setTimeout(() => {
+    setTimeout(() => {
         el.style.transition = 'opacity 0.3s ease';
         el.style.opacity = '1';
         scrambleElement(el, 1000);
@@ -226,7 +226,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
               node.replaceWith(...wrapper.childNodes);
             }
           });
-        } else {
+    } else {
           wrapLetters(link);
         }
         console.log(`🔗 Wrapped draggable link: ${text.substring(0, 30)}`);
@@ -382,33 +382,27 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
   // Image fade-in with IntersectionObserver - optimized for scroll performance
   function startImageFadeIn() {
-    const images = document.querySelectorAll('img:not(#preloader img), video, .reveal-wrap');
-    if (!images.length) return;
+    const elements = document.querySelectorAll('img:not(#preloader img), video, .reveal-wrap');
+    if (!elements.length) return;
     
-    console.log(`🎭 Setting up fade-in for ${images.length} images/reveal-wraps`);
+    console.log(`🎭 Setting up fade-in for ${elements.length} images/reveal-wraps`);
     
-    // Add optimized CSS class once
-    const fadeStyle = document.createElement('style');
-    fadeStyle.textContent = `.img-hidden{opacity:0}.img-visible{opacity:1;transition:opacity 1.1s ease}`;
-    document.head.appendChild(fadeStyle);
-    
-    const viewportImages = [];
+    const viewportElements = [];
     const belowFold = [];
     
-    images.forEach((img, i) => {
-      if (img.dataset.fadeSetup) return;
-      img.dataset.fadeSetup = 'true';
-      img.classList.add('img-hidden');
+    elements.forEach((el, i) => {
+      if (el.dataset.fadeSetup) return;
+      el.dataset.fadeSetup = 'true';
       
-        const rect = img.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewportImages.push({ img, i });
-      else belowFold.push(img);
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) viewportElements.push({ el, i });
+      else belowFold.push(el);
     });
 
-    // Animate viewport images with stagger using RAF
+    // Animate viewport elements with stagger using RAF
         requestAnimationFrame(() => { 
-      viewportImages.forEach(({ img }, i) => {
-        setTimeout(() => img.classList.replace('img-hidden', 'img-visible'), i * 50);
+      viewportElements.forEach(({ el }, i) => {
+        setTimeout(() => el.classList.add('img-visible'), i * 50);
       });
     });
 
@@ -419,7 +413,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       
       const flush = () => {
         scheduled = false;
-        pending.forEach(img => img.classList.replace('img-hidden', 'img-visible'));
+        pending.forEach(el => el.classList.add('img-visible'));
         pending = [];
       };
       
@@ -436,7 +430,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         });
       }, { rootMargin: '-130px', threshold: 0.15 });
       
-      belowFold.forEach(img => observer.observe(img));
+      belowFold.forEach(el => observer.observe(el));
     }
   }
 
