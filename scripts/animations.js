@@ -336,12 +336,17 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }
   }
 
-  // Image fade-in with IntersectionObserver
+  // Image fade-in with IntersectionObserver - optimized for scroll performance
   function startImageFadeIn() {
     const images = document.querySelectorAll('img:not(#preloader img), video');
     if (!images.length) return;
     
     console.log(`🎭 Setting up fade-in for ${images.length} images`);
+    
+    // Add optimized CSS class once
+    const fadeStyle = document.createElement('style');
+    fadeStyle.textContent = `.img-hidden{opacity:0}.img-visible{opacity:1;transition:opacity 0.8s ease}`;
+    document.head.appendChild(fadeStyle);
     
     const viewportImages = [];
     const belowFold = [];
@@ -349,39 +354,43 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     images.forEach((img, i) => {
       if (img.dataset.fadeSetup) return;
       img.dataset.fadeSetup = 'true';
-      img.style.opacity = '0';
-      img.style.visibility = 'visible';
-      img.style.willChange = 'opacity';
+      img.classList.add('img-hidden');
       
         const rect = img.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) viewportImages.push({ img, i });
       else belowFold.push(img);
     });
 
-    // Animate viewport images with stagger
-    viewportImages.forEach(({ img }, i) => {
-      setTimeout(() => {
-        img.style.transition = 'opacity 1s ease';
-        img.style.opacity = '1';
-        setTimeout(() => { img.style.willChange = 'auto'; img.style.transition = ''; }, 1000);
-      }, i * 60);
+    // Animate viewport images with stagger using RAF
+        requestAnimationFrame(() => { 
+      viewportImages.forEach(({ img }, i) => {
+        setTimeout(() => img.classList.replace('img-hidden', 'img-visible'), i * 50);
+      });
     });
 
-    // IntersectionObserver for below-fold
+    // Optimized IntersectionObserver - batch with RAF, no setTimeout
     if (belowFold.length) {
+      let pending = [];
+      let scheduled = false;
+      
+      const flush = () => {
+        scheduled = false;
+        pending.forEach(img => img.classList.replace('img-hidden', 'img-visible'));
+        pending = [];
+      };
+      
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting && !entry.target.dataset.fadeStarted) {
-            entry.target.dataset.fadeStarted = 'true';
-            setTimeout(() => {
-              entry.target.style.transition = 'opacity 1s ease';
-              entry.target.style.opacity = '1';
-              setTimeout(() => { entry.target.style.willChange = 'auto'; entry.target.style.transition = ''; }, 1000);
-            }, 200);
+          if (entry.isIntersecting) {
+            pending.push(entry.target);
             observer.unobserve(entry.target);
+            if (!scheduled) {
+              scheduled = true;
+              requestAnimationFrame(flush);
+            }
           }
         });
-      }, { rootMargin: '-80px', threshold: 0.1 });
+      }, { rootMargin: '100px', threshold: 0 });
       
       belowFold.forEach(img => observer.observe(img));
     }
