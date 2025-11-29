@@ -463,11 +463,14 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     } else window.location.href = href;
   }, true);
 
-  // Initialize
+  // Initialize - show preloader IMMEDIATELY, load GSAP in parallel
   function init() {
+    // Show preloader right away - don't wait for anything
+    runPreloader();
+    
+    // Load GSAP in parallel for animations later
     loadGSAP(() => {
-      if (typeof window.Webflow !== 'undefined') setTimeout(runPreloader, 300);
-      else runPreloader();
+      console.log('✅ GSAP ready for animations');
     });
   }
 
