@@ -14,8 +14,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     body.loading{overflow:hidden}
     body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important;visibility:hidden!important}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
-    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center}
-    #preloader .counter{font-family:monospace;font-size:0.8rem;color:white;letter-spacing:0.1em}
+    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
+    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block;animation:pulse 2s ease-in-out infinite}
     #preloader.counting .digit{animation:none}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
