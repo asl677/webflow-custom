@@ -270,9 +270,22 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }, 1500);
   }
 
-  // Wrap letters in spans
+  // Wrap letters in spans - preserve layout
   function wrapLetters(el) {
-    el.innerHTML = el.textContent.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
+    // Store original white-space setting
+    const originalWhiteSpace = getComputedStyle(el).whiteSpace;
+    
+    // Wrap each character including spaces in spans to maintain consistent spacing
+    el.innerHTML = el.textContent.split('').map(c => {
+      if (c === ' ') {
+        return '<span class="letter" style="display:inline-block;width:0.3em">&nbsp;</span>';
+      }
+      return `<span class="letter" style="display:inline-block">${c}</span>`;
+    }).join('');
+    
+    // Prevent wrapping during animation
+    el.style.whiteSpace = 'nowrap';
+    el.dataset.originalWhiteSpace = originalWhiteSpace;
   }
 
   // Scramble element with letter spans
@@ -280,21 +293,29 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     const spans = el.querySelectorAll('.letter');
     if (!spans.length) return;
     
-    const original = Array.from(spans).map(s => s.textContent);
+    const original = Array.from(spans).map(s => s.textContent === '\u00A0' ? ' ' : s.textContent);
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let frame = 0;
     const totalFrames = duration / 60;
       
-      const interval = setInterval(() => {
+    const interval = setInterval(() => {
       spans.forEach((span, i) => {
         const reveal = (i / spans.length) * totalFrames * 0.8;
-        if (frame > reveal) span.textContent = original[i];
-        else if (/[a-zA-Z0-9]/.test(original[i])) span.textContent = chars[Math.floor(Math.random() * chars.length)];
+        if (frame > reveal) {
+          span.textContent = original[i] === ' ' ? '\u00A0' : original[i];
+        } else if (/[a-zA-Z0-9]/.test(original[i])) {
+          span.textContent = chars[Math.floor(Math.random() * chars.length)];
+        }
       });
       frame++;
       if (frame >= totalFrames) {
-          clearInterval(interval);
-        spans.forEach((s, i) => s.textContent = original[i]);
+        clearInterval(interval);
+        spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
+        
+        // Restore original white-space after animation
+        if (el.dataset.originalWhiteSpace) {
+          el.style.whiteSpace = el.dataset.originalWhiteSpace;
+        }
       }
     }, 60);
   }
