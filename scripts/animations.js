@@ -205,12 +205,30 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link').forEach(link => {
       if (link.dataset.animInit) return;
       if (link.querySelector('.letter')) return; // Already wrapped
-      if (link.children.length > 0) return; // Skip links with nested elements
       
-      const text = link.textContent?.trim();
+      // Get direct text content only (not from nested elements)
+      const directText = Array.from(link.childNodes)
+        .filter(node => node.nodeType === Node.TEXT_NODE)
+        .map(node => node.textContent)
+        .join('').trim();
+      
+      // If has direct text, wrap it; otherwise try full textContent for simple links
+      const text = directText || (link.children.length === 0 ? link.textContent?.trim() : '');
+      
       if (text && text.length > 1 && text.length < 150) {
         link.dataset.animInit = 'true';
-        wrapLetters(link);
+        // For links with children, only wrap direct text nodes
+        if (link.children.length > 0 && directText) {
+          link.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+              const wrapper = document.createElement('span');
+              wrapper.innerHTML = node.textContent.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
+              node.replaceWith(...wrapper.childNodes);
+            }
+          });
+        } else {
+          wrapLetters(link);
+        }
         console.log(`🔗 Wrapped draggable link: ${text.substring(0, 30)}`);
       }
     });
