@@ -350,25 +350,50 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }, 50);
   }
 
-  // Hover effects - optimized with CSS instead of GSAP for better scroll performance
+  // Hover effects - letter bounce + scramble
   function initHoverEffects() {
-    // Add CSS for letter hover (GPU accelerated, no JS during scroll)
+    // Add base CSS for letters
     const hoverStyle = document.createElement('style');
-    hoverStyle.textContent = `
-      .letter{display:inline-block;transition:transform 0.3s ease;will-change:transform}
-      .letter:hover{transform:translateY(-15px)}
-      a .letter{transition:transform 0.3s ease}
-      a:hover .letter{transform:translateY(-15px)}
-    `;
+    hoverStyle.textContent = `.letter{display:inline-block}`;
     document.head.appendChild(hoverStyle);
 
-    // Link scramble on hover only (no GSAP transforms)
+    // Letter bounce for non-links
+    document.querySelectorAll('.letter').forEach((letter, i) => {
+      if (letter.closest('a')) return;
+      letter.addEventListener('mouseenter', () => {
+        if (window.gsap) window.gsap.to(letter, { y: -15, duration: 0.3, ease: "power2.out" });
+      });
+      letter.addEventListener('mouseleave', () => {
+        if (window.gsap) window.gsap.to(letter, { y: 0, duration: 0.3, ease: "power2.in" });
+      });
+    });
+
+    // Link hover: bounce all letters + scramble
     document.querySelectorAll('a').forEach(link => {
       const letters = link.querySelectorAll('.letter');
       if (!letters.length) return;
       
-      link.addEventListener('mouseenter', () => startLinkScramble(link));
-      link.addEventListener('mouseleave', () => stopLinkScramble(link));
+      link.addEventListener('mouseenter', () => {
+        // Staggered bounce
+        if (window.gsap) {
+          letters.forEach((l, i) => {
+            window.gsap.to(l, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" });
+          });
+        }
+        // Start scramble
+        startLinkScramble(link);
+      });
+      
+      link.addEventListener('mouseleave', () => {
+        // Return letters
+        if (window.gsap) {
+          letters.forEach((l, i) => {
+            window.gsap.to(l, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" });
+          });
+        }
+        // Stop scramble
+        stopLinkScramble(link);
+      });
     });
   }
 
