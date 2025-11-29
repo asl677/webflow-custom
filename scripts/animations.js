@@ -205,9 +205,22 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       if (text && text.length > 1 && text.length < 150) {
         link.dataset.animInit = 'true';
         wrapLetters(link);
-        // Don't hide - just wrap for hover effects
+        // Ensure visible - don't hide
+        link.style.visibility = 'visible';
+        link.style.opacity = '1';
         console.log(`🔗 Wrapped link for hover: ${text.substring(0, 30)}`);
       }
+    });
+    
+    // Force draggable content to be visible
+    document.querySelectorAll('.w-draggable, [data-draggable]').forEach(el => {
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+      el.querySelectorAll('*').forEach(child => {
+        if (child.style.visibility === 'hidden') {
+          child.style.visibility = 'visible';
+        }
+      });
     });
 
     // Setup hover effects
