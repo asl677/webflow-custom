@@ -9,7 +9,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
   style.id = 'immediate-hide';
   style.textContent = `
     body.loading{overflow:hidden}
-    body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important}
+    body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy,body.loading .reveal-wrap{opacity:0!important}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
     #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
@@ -19,7 +19,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     .img-hidden{opacity:0}
-    .img-visible{opacity:1;transition:opacity 0.8s ease}
+    .img-visible{opacity:1;transition:opacity 1.1s ease}
   `;
   document.head.insertBefore(style, document.head.firstChild);
   
@@ -382,10 +382,10 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
   // Image fade-in with IntersectionObserver - optimized for scroll performance
   function startImageFadeIn() {
-    const images = document.querySelectorAll('img:not(#preloader img), video');
+    const images = document.querySelectorAll('img:not(#preloader img), video, .reveal-wrap');
     if (!images.length) return;
     
-    console.log(`🎭 Setting up fade-in for ${images.length} images`);
+    console.log(`🎭 Setting up fade-in for ${images.length} images/reveal-wraps`);
     
     // Add optimized CSS class once
     const fadeStyle = document.createElement('style');
