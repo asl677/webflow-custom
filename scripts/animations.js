@@ -18,8 +18,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
-    img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0}
-    .img-visible{opacity:1;transition:opacity 1.1s ease}
+    img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
+    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s}
   `;
   document.head.insertBefore(style, document.head.firstChild);
   
