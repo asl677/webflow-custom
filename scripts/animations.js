@@ -3,11 +3,8 @@
 
 console.log('🚀 Portfolio animations v4.0 loading...');
 
-// Immediately hide elements during load
+// Immediately hide elements and show preloader
 (function() {
-  if (document.body) document.body.classList.add('loading');
-  else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('loading'));
-  
   const style = document.createElement('style');
   style.id = 'immediate-hide';
   style.textContent = `
@@ -23,6 +20,21 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
   `;
   document.head.insertBefore(style, document.head.firstChild);
+  
+  // Inject preloader as soon as body exists
+  function tryInjectPreloader() {
+    if (!document.body || document.getElementById('preloader')) return;
+    document.body.classList.add('loading');
+    const p = document.createElement('div');
+    p.id = 'preloader';
+    p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
+    document.body.appendChild(p);
+  }
+  
+  if (document.body) tryInjectPreloader();
+  else {
+    const i = setInterval(() => { if (document.body) { clearInterval(i); tryInjectPreloader(); } }, 5);
+  }
 })();
 
 (function() {
@@ -51,9 +63,12 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     document.head.appendChild(gsap);
   }
 
-  // Create preloader
+  // Create preloader (or use existing one from immediate injection)
   function createPreloader() {
-    const preloader = document.createElement('div');
+    let preloader = document.getElementById('preloader');
+    if (preloader) return preloader;
+    
+    preloader = document.createElement('div');
     preloader.id = 'preloader';
     preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
     document.body.appendChild(preloader);
