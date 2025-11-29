@@ -1,48 +1,51 @@
-// Portfolio Animations v4.0 - Streamlined
+// Portfolio Animations v6.7 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-console.log('🚀 Portfolio animations v4.0 loading...');
-
-// Immediately hide elements and show preloader
+// INSTANT: Add preloader before anything else renders
 (function() {
+  // Inject CSS immediately - this runs synchronously
   const style = document.createElement('style');
-  style.id = 'immediate-hide';
+  style.id = 'preloader-styles';
   style.textContent = `
-    body.loading{overflow:hidden}
-    body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important}
-    .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
-    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
+    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
+    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
     #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block;animation:pulse 2s ease-in-out infinite}
     #preloader.counting .digit{animation:none}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    html.loaded .toggle,html.loaded .toggle.bottom,html.loaded .yzy,html.loaded .flex-grid.yzy{opacity:0}
+    .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
     .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s;contain:layout style paint}
     html.lenis,html.lenis body{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
     *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
     .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
-  document.head.insertBefore(style, document.head.firstChild);
+  // Insert at very start of head
+  if (document.head) document.head.insertBefore(style, document.head.firstChild);
+  else document.documentElement.appendChild(style);
   
-  // Inject preloader as soon as body exists
-  function tryInjectPreloader() {
-    if (!document.body || document.getElementById('preloader')) return;
-    document.body.classList.add('loading');
-    const p = document.createElement('div');
-    p.id = 'preloader';
-    p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
-    document.body.appendChild(p);
-  }
+  // Create preloader element immediately
+  const p = document.createElement('div');
+  p.id = 'preloader';
+  p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
   
-  if (document.body) tryInjectPreloader();
-  else {
-    const i = setInterval(() => { if (document.body) { clearInterval(i); tryInjectPreloader(); } }, 5);
+  // Insert preloader as first child of body (or wait for body)
+  function inject() {
+    if (document.getElementById('preloader')) return;
+    if (document.body) {
+      document.body.insertBefore(p, document.body.firstChild);
+      } else {
+      requestAnimationFrame(inject);
+    }
   }
+  inject();
 })();
+
+console.log('🚀 Portfolio animations v6.7 loading...');
 
 (function() {
   let preloaderComplete = false;
@@ -139,7 +142,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         opacity: 0, duration: 0.4, ease: "power2.out",
         onComplete: () => { 
           preloader.remove(); 
-          document.body.classList.remove('loading');
+          document.documentElement.classList.add('loaded');
           setTimeout(startAnimations, 300);
         }
       });
@@ -147,7 +150,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
         preloader.style.opacity = '0'; 
         setTimeout(() => { 
           preloader.remove(); 
-          document.body.classList.remove('loading');
+          document.documentElement.classList.add('loaded');
         startAnimations();
       }, 400); 
     }
