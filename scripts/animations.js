@@ -169,8 +169,8 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     // Start text scrambling
     initTextAnimations();
 
-    // Start image fade-in after text
-    setTimeout(() => startImageFadeIn(), isMobile ? 1500 : 800);
+    // Start image fade-in after text scrambling completes (~1200ms)
+    setTimeout(() => startImageFadeIn(), isMobile ? 1800 : 1200);
     
     // Init draggable
     setTimeout(() => initDraggable(), 1000);
@@ -415,11 +415,9 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       else belowFold.push(el);
     });
 
-    // Animate viewport elements with stagger using RAF
-        requestAnimationFrame(() => { 
-      viewportElements.forEach(({ el }, i) => {
-        setTimeout(() => el.classList.add('img-visible'), i * 50);
-      });
+    // Animate viewport elements with stagger - slower timing
+    viewportElements.forEach(({ el }, i) => {
+      setTimeout(() => el.classList.add('img-visible'), i * 150);
     });
 
     // Optimized IntersectionObserver - minimal work during scroll
