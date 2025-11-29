@@ -197,34 +197,18 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       }, i * 80);
     });
     
-    // For draggable links - DON'T wrap letters (preserves Webflow styles)
-    // Just set up hover scramble using text content directly
+    // Wrap letters in draggable links for hover effects (same as other links)
     document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link').forEach(link => {
-      if (link.dataset.hoverInit) return;
-      link.dataset.hoverInit = 'true';
+      if (link.dataset.animInit) return;
+      if (link.querySelector('.letter')) return; // Already wrapped
+      if (link.children.length > 0) return; // Skip links with nested elements
       
-      // Store original text for hover scramble (don't modify DOM)
-      const originalText = link.textContent;
-      
-      link.addEventListener('mouseenter', () => {
-        if (link._scrambleInterval) return;
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        link._scrambleInterval = setInterval(() => {
-          link.textContent = originalText.split('').map(c => 
-            /[a-zA-Z0-9]/.test(c) ? chars[Math.floor(Math.random() * chars.length)] : c
-          ).join('');
-    }, 80);
-      });
-      
-      link.addEventListener('mouseleave', () => {
-        if (link._scrambleInterval) {
-          clearInterval(link._scrambleInterval);
-          link._scrambleInterval = null;
-          link.textContent = originalText;
-        }
-      });
-      
-      console.log(`🔗 Setup hover scramble (no DOM change): ${originalText.substring(0, 30)}`);
+      const text = link.textContent?.trim();
+      if (text && text.length > 1 && text.length < 150) {
+        link.dataset.animInit = 'true';
+        wrapLetters(link);
+        console.log(`🔗 Wrapped draggable link: ${text.substring(0, 30)}`);
+      }
     });
     
     // Force draggable content to be visible
