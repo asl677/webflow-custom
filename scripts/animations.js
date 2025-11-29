@@ -371,7 +371,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     
     // Add optimized CSS class once
     const fadeStyle = document.createElement('style');
-    fadeStyle.textContent = `.img-hidden{opacity:0}.img-visible{opacity:1;transition:opacity 0.8s ease}`;
+    fadeStyle.textContent = `.img-hidden{opacity:0}.img-visible{opacity:1;transition:opacity 1.1s ease}`;
     document.head.appendChild(fadeStyle);
     
     const viewportImages = [];
@@ -416,7 +416,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
             }
           }
         });
-      }, { rootMargin: '-150px', threshold: 0.15 });
+      }, { rootMargin: '-130px', threshold: 0.15 });
       
       belowFold.forEach(img => observer.observe(img));
     }
