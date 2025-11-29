@@ -19,7 +19,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s}
+    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s;contain:layout style paint}
   `;
   document.head.insertBefore(style, document.head.firstChild);
   
@@ -350,35 +350,27 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }, 50);
   }
 
-  // Hover effects
+  // Hover effects - optimized with CSS instead of GSAP for better scroll performance
   function initHoverEffects() {
-    // Letter bounce for non-links
-    document.querySelectorAll('.letter').forEach((letter, i) => {
-      if (letter.closest('a')) return;
-      letter.addEventListener('mouseenter', () => {
-        if (window.gsap) window.gsap.to(letter, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" });
-      });
-      letter.addEventListener('mouseleave', () => {
-        if (window.gsap) window.gsap.to(letter, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" });
-      });
-    });
+    // Add CSS for letter hover (GPU accelerated, no JS during scroll)
+    const hoverStyle = document.createElement('style');
+    hoverStyle.textContent = `
+      .letter{display:inline-block;transition:transform 0.3s ease;will-change:transform}
+      .letter:hover{transform:translateY(-15px)}
+      a .letter{transition:transform 0.3s ease}
+      a:hover .letter{transform:translateY(-15px)}
+    `;
+    document.head.appendChild(hoverStyle);
 
-    // Link scramble on hover
+    // Link scramble on hover only (no GSAP transforms)
     document.querySelectorAll('a').forEach(link => {
       const letters = link.querySelectorAll('.letter');
       if (!letters.length) return;
       
-      link.addEventListener('mouseenter', () => {
-        if (window.gsap) letters.forEach((l, i) => window.gsap.to(l, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" }));
-        startLinkScramble(link);
-      });
-      
-      link.addEventListener('mouseleave', () => {
-        if (window.gsap) letters.forEach((l, i) => window.gsap.to(l, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" }));
-        stopLinkScramble(link);
-          });
-        });
-      }
+      link.addEventListener('mouseenter', () => startLinkScramble(link));
+      link.addEventListener('mouseleave', () => stopLinkScramble(link));
+    });
+  }
 
   function startLinkScramble(link) {
     if (link._scrambleInterval) return;
@@ -427,29 +419,32 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       });
     });
 
-    // Optimized IntersectionObserver - batch with RAF, no setTimeout
+    // Optimized IntersectionObserver - minimal work during scroll
     if (belowFold.length) {
       let pending = [];
       let scheduled = false;
       
       const flush = () => {
         scheduled = false;
-        pending.forEach(el => el.classList.add('img-visible'));
-        pending = [];
+        const batch = pending.splice(0, pending.length);
+        // Use single RAF for all class additions
+        batch.forEach(el => el.classList.add('img-visible'));
       };
       
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            pending.push(entry.target);
-            observer.unobserve(entry.target);
-            if (!scheduled) {
-              scheduled = true;
-              requestAnimationFrame(flush);
-            }
+        let hasNew = false;
+        for (let i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            pending.push(entries[i].target);
+            observer.unobserve(entries[i].target);
+            hasNew = true;
           }
-        });
-      }, { rootMargin: '-130px', threshold: 0.15 });
+        }
+        if (hasNew && !scheduled) {
+          scheduled = true;
+          requestAnimationFrame(flush);
+        }
+      }, { rootMargin: '-100px', threshold: 0 });
       
       belowFold.forEach(el => observer.observe(el));
     }
