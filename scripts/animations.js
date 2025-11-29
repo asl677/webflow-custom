@@ -360,14 +360,19 @@ console.log('🚀 Portfolio animations v6.7 loading...');
 
   // Hover effects - same scramble as page load
   function initHoverEffects() {
-    // Link hover: scramble letters (same effect as page load)
-    document.querySelectorAll('a').forEach(link => {
+    // Use event delegation on document for all links (catches dynamically added/moved elements)
+    document.addEventListener('mouseenter', e => {
+      const link = e.target.closest('a');
+      if (!link) return;
       const letters = link.querySelectorAll('.letter');
-      if (!letters.length) return;
-      
-      link.addEventListener('mouseenter', () => startLinkScramble(link));
-      link.addEventListener('mouseleave', () => stopLinkScramble(link));
-    });
+      if (letters.length) startLinkScramble(link);
+    }, true);
+    
+    document.addEventListener('mouseleave', e => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      stopLinkScramble(link);
+    }, true);
   }
 
   function startLinkScramble(link) {
