@@ -168,7 +168,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     setTimeout(() => initDraggable(), 1000);
   }
 
-  // Text scrambling animations - NO HIDING for better LCP
+  // Text scrambling animations with stagger reveal
   function initTextAnimations() {
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a'))
       .filter(el => {
@@ -187,12 +187,16 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       if (el.closest('.w-draggable') || el.closest('[data-draggable]')) return;
       
       el.dataset.animInit = 'true';
-      // DON'T hide - keep visible for LCP
-      // Just wrap letters and scramble in place
+      
+      // Start hidden for stagger effect
+      el.style.opacity = '0';
+      
       wrapLetters(el);
       
-      // Stagger the scramble effect only
-    setTimeout(() => {
+      // Stagger reveal with scramble
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s ease';
+        el.style.opacity = '1';
         scrambleElement(el, 1000);
       }, i * 80);
     });
