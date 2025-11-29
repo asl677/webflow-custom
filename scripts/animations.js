@@ -93,9 +93,9 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     function checkLoaded() {
       loaded++;
       updateCounter((loaded / total) * 100);
-      if (loaded >= 3 || loaded >= total * 0.4) {
+      if (loaded >= 2 || loaded >= total * 0.3) {
         preloader.className = 'counting';
-        setTimeout(completePreloader, 150);
+        setTimeout(completePreloader, 100);
       }
     }
 
@@ -113,14 +113,14 @@ console.log('🚀 Portfolio animations v4.0 loading...');
       }
     });
 
-    // Fallback timeout
+    // Fallback timeout - complete after 2s max
     setTimeout(() => {
       if (!preloaderComplete) {
         preloader.className = 'counting';
         updateCounter(100);
-        setTimeout(completePreloader, 200);
+        setTimeout(completePreloader, 100);
       }
-    }, 5000);
+    }, 2000);
   }
 
   // Complete preloader and start animations
@@ -350,50 +350,15 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     }, 50);
   }
 
-  // Hover effects - letter bounce + scramble
+  // Hover effects - same scramble as page load
   function initHoverEffects() {
-    // Add base CSS for letters
-    const hoverStyle = document.createElement('style');
-    hoverStyle.textContent = `.letter{display:inline-block}`;
-    document.head.appendChild(hoverStyle);
-
-    // Letter bounce for non-links
-    document.querySelectorAll('.letter').forEach((letter, i) => {
-      if (letter.closest('a')) return;
-      letter.addEventListener('mouseenter', () => {
-        if (window.gsap) window.gsap.to(letter, { y: -15, duration: 0.3, ease: "power2.out" });
-      });
-      letter.addEventListener('mouseleave', () => {
-        if (window.gsap) window.gsap.to(letter, { y: 0, duration: 0.3, ease: "power2.in" });
-      });
-    });
-
-    // Link hover: bounce all letters + scramble
+    // Link hover: scramble letters (same effect as page load)
     document.querySelectorAll('a').forEach(link => {
       const letters = link.querySelectorAll('.letter');
       if (!letters.length) return;
       
-      link.addEventListener('mouseenter', () => {
-        // Staggered bounce
-        if (window.gsap) {
-          letters.forEach((l, i) => {
-            window.gsap.to(l, { y: -15, duration: 0.3, delay: i * 0.02, ease: "power2.out" });
-          });
-        }
-        // Start scramble
-        startLinkScramble(link);
-      });
-      
-      link.addEventListener('mouseleave', () => {
-        // Return letters
-        if (window.gsap) {
-          letters.forEach((l, i) => {
-            window.gsap.to(l, { y: 0, duration: 0.3, delay: i * 0.02, ease: "power2.in" });
-          });
-        }
-        // Stop scramble
-        stopLinkScramble(link);
-      });
+      link.addEventListener('mouseenter', () => startLinkScramble(link));
+      link.addEventListener('mouseleave', () => stopLinkScramble(link));
     });
   }
 
