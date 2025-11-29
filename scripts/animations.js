@@ -405,7 +405,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
             }
           }
         });
-      }, { rootMargin: '100px', threshold: 0 });
+      }, { rootMargin: '-150px', threshold: 0.15 });
       
       belowFold.forEach(img => observer.observe(img));
     }
