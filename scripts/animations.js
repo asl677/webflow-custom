@@ -9,7 +9,7 @@ console.log('🚀 Portfolio animations v4.0 loading...');
   style.id = 'immediate-hide';
   style.textContent = `
     body.loading{overflow:hidden}
-    body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important;visibility:hidden!important}
+    body.loading img:not(#preloader img),body.loading video,body.loading .toggle,body.loading .toggle.bottom,body.loading .yzy,body.loading .flex-grid.yzy{opacity:0!important}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
     #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
@@ -18,6 +18,8 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
+    .img-hidden{opacity:0}
+    .img-visible{opacity:1;transition:opacity 0.8s ease}
   `;
   document.head.insertBefore(style, document.head.firstChild);
   
@@ -166,11 +168,11 @@ console.log('🚀 Portfolio animations v4.0 loading...');
     setTimeout(() => initDraggable(), 1000);
   }
 
-  // Text scrambling animations
+  // Text scrambling animations - NO HIDING for better LCP
   function initTextAnimations() {
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a'))
       .filter(el => {
-        const text = el.textContent?.trim();
+      const text = el.textContent?.trim();
         const noChildren = el.children.length === 0;
         const visible = getComputedStyle(el).display !== 'none';
         const inView = el.getBoundingClientRect().top < window.innerHeight + 200;
@@ -181,46 +183,54 @@ console.log('🚀 Portfolio animations v4.0 loading...');
 
     elements.forEach((el, i) => {
       if (el.dataset.animInit || el.closest('.label-wrap')) return;
-      // Skip draggable content - handle separately without hiding
+      // Skip draggable content - handle separately
       if (el.closest('.w-draggable') || el.closest('[data-draggable]')) return;
       
       el.dataset.animInit = 'true';
-      el.style.visibility = 'hidden';
-      el.style.opacity = '1';
-      
+      // DON'T hide - keep visible for LCP
+      // Just wrap letters and scramble in place
       wrapLetters(el);
       
-      setTimeout(() => {
-        el.style.visibility = 'visible';
+      // Stagger the scramble effect only
+    setTimeout(() => {
         scrambleElement(el, 1000);
       }, i * 80);
     });
     
-    // Wrap letters in draggable links for hover effects ONLY (no hiding)
-    document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link, .w-inline-block a, a.menu-link, a.shimmer, a.accordion, a.chip-link, a.w-inline-block').forEach(link => {
-      if (link.dataset.animInit) return;
-      if (link.querySelector('.letter')) return; // Already wrapped
+    // For draggable links - DON'T wrap letters (preserves Webflow styles)
+    // Just set up hover scramble using text content directly
+    document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link').forEach(link => {
+      if (link.dataset.hoverInit) return;
+      link.dataset.hoverInit = 'true';
       
-      const text = link.textContent?.trim();
-      if (text && text.length > 1 && text.length < 150) {
-        link.dataset.animInit = 'true';
-        wrapLetters(link);
-        // Ensure visible - don't hide
-        link.style.visibility = 'visible';
-        link.style.opacity = '1';
-        console.log(`🔗 Wrapped link for hover: ${text.substring(0, 30)}`);
-      }
+      // Store original text for hover scramble (don't modify DOM)
+      const originalText = link.textContent;
+      
+      link.addEventListener('mouseenter', () => {
+        if (link._scrambleInterval) return;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        link._scrambleInterval = setInterval(() => {
+          link.textContent = originalText.split('').map(c => 
+            /[a-zA-Z0-9]/.test(c) ? chars[Math.floor(Math.random() * chars.length)] : c
+          ).join('');
+    }, 80);
+      });
+      
+      link.addEventListener('mouseleave', () => {
+        if (link._scrambleInterval) {
+          clearInterval(link._scrambleInterval);
+          link._scrambleInterval = null;
+          link.textContent = originalText;
+        }
+      });
+      
+      console.log(`🔗 Setup hover scramble (no DOM change): ${originalText.substring(0, 30)}`);
     });
     
     // Force draggable content to be visible
     document.querySelectorAll('.w-draggable, [data-draggable]').forEach(el => {
       el.style.visibility = 'visible';
       el.style.opacity = '1';
-      el.querySelectorAll('*').forEach(child => {
-        if (child.style.visibility === 'hidden') {
-          child.style.visibility = 'visible';
-        }
-      });
     });
 
     // Setup hover effects
