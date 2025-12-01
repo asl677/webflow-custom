@@ -88,15 +88,18 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     const preloader = createPreloader();
     const counter = preloader.querySelector('.counter');
     
-    // Only track above-fold images for faster perceived load
-    const allImages = document.querySelectorAll('img');
-    const aboveFoldImages = Array.from(allImages).filter(img => {
+    // Track images in viewport
+    const allImages = document.querySelectorAll('img:not([src=""])');
+    const viewportImages = Array.from(allImages).filter(img => {
       const rect = img.getBoundingClientRect();
-      return rect.top < window.innerHeight * 1.5;
+      return rect.top < window.innerHeight && rect.bottom > 0;
     });
     
-    const total = aboveFoldImages.length || 1;
+    const total = viewportImages.length || 1;
     let loaded = 0;
+    let readyToComplete = false;
+    
+    console.log(`📷 Preloader tracking ${viewportImages.length} viewport images`);
     
     function updateCounter(progress) {
       const str = Math.floor(progress).toString().padStart(3, '0');
@@ -105,36 +108,43 @@ console.log('🚀 Portfolio animations v6.7 loading...');
 
     function checkLoaded() {
       loaded++;
-      updateCounter((loaded / total) * 100);
-      // Complete when 50% of above-fold images loaded, minimum 3
-      if (loaded >= Math.max(3, total * 0.5)) {
+      const progress = (loaded / total) * 100;
+      updateCounter(progress);
+      console.log(`📷 Image loaded: ${loaded}/${total} (${Math.floor(progress)}%)`);
+      
+      // Complete when ALL viewport images loaded
+      if (loaded >= total && !readyToComplete) {
+        readyToComplete = true;
         preloader.className = 'counting';
-        setTimeout(completePreloader, 400);
+        console.log('✅ All viewport images loaded, completing preloader');
+        setTimeout(completePreloader, 500);
       }
     }
 
-    if (total === 0 || aboveFoldImages.length === 0) {
+    if (viewportImages.length === 0) {
       updateCounter(100);
-      setTimeout(completePreloader, 800);
+      setTimeout(completePreloader, 600);
       return;
     }
     
-    aboveFoldImages.forEach(img => {
-      if (img.complete) checkLoaded();
-      else {
+    viewportImages.forEach(img => {
+      if (img.complete && img.naturalWidth > 0) {
+        checkLoaded();
+      } else {
         img.addEventListener('load', checkLoaded);
         img.addEventListener('error', checkLoaded);
       }
     });
 
-    // Fallback timeout - complete after 3.5s max
+    // Fallback timeout - complete after 4s max
     setTimeout(() => {
       if (!preloaderComplete) {
+        console.log(`⚠️ Preloader timeout - ${loaded}/${total} loaded`);
         preloader.className = 'counting';
         updateCounter(100);
         setTimeout(completePreloader, 300);
       }
-    }, 3500);
+    }, 4000);
   }
 
   // Complete preloader and start animations
@@ -421,37 +431,37 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       else belowFold.push(el);
     });
 
-    // Animate viewport elements with stagger - cascade smoothly
+    // Animate viewport elements with stagger - match scroll fade timing
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 120);
+      setTimeout(() => el.classList.add('img-visible'), i * 250);
     });
 
-    // Optimized IntersectionObserver - minimal work during scroll
+    // Scroll-triggered fade with stagger
     if (belowFold.length) {
-      let pending = [];
-      let scheduled = false;
+      let queue = [];
+      let isProcessing = false;
       
-      const flush = () => {
-        scheduled = false;
-        const batch = pending.splice(0, pending.length);
-        // Use single RAF for all class additions
-        batch.forEach(el => el.classList.add('img-visible'));
+      const processQueue = () => {
+        if (queue.length === 0) {
+          isProcessing = false;
+          return;
+        }
+        isProcessing = true;
+        const el = queue.shift();
+        el.classList.add('img-visible');
+        // Stagger each image by 250ms to match viewport stagger
+        setTimeout(processQueue, 250);
       };
       
       const observer = new IntersectionObserver((entries) => {
-        let hasNew = false;
-        for (let i = 0; i < entries.length; i++) {
-          if (entries[i].isIntersecting) {
-            pending.push(entries[i].target);
-            observer.unobserve(entries[i].target);
-            hasNew = true;
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            queue.push(entry.target);
+            observer.unobserve(entry.target);
+            if (!isProcessing) processQueue();
           }
-        }
-        if (hasNew && !scheduled) {
-          scheduled = true;
-          requestAnimationFrame(flush);
-        }
-      }, { rootMargin: '-100px', threshold: 0 });
+        });
+      }, { rootMargin: '-80px', threshold: 0.1 });
       
       belowFold.forEach(el => observer.observe(el));
     }
