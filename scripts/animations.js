@@ -87,8 +87,15 @@ console.log('🚀 Portfolio animations v6.7 loading...');
   function runPreloader() {
     const preloader = createPreloader();
     const counter = preloader.querySelector('.counter');
-    const images = document.querySelectorAll('img');
-    const total = images.length;
+    
+    // Only track above-fold images for faster perceived load
+    const allImages = document.querySelectorAll('img');
+    const aboveFoldImages = Array.from(allImages).filter(img => {
+      const rect = img.getBoundingClientRect();
+      return rect.top < window.innerHeight * 1.5;
+    });
+    
+    const total = aboveFoldImages.length || 1;
     let loaded = 0;
     
     function updateCounter(progress) {
@@ -99,19 +106,20 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     function checkLoaded() {
       loaded++;
       updateCounter((loaded / total) * 100);
-      if (loaded >= 2 || loaded >= total * 0.3) {
+      // Complete when 50% of above-fold images loaded, minimum 3
+      if (loaded >= Math.max(3, total * 0.5)) {
         preloader.className = 'counting';
-        setTimeout(completePreloader, 100);
+        setTimeout(completePreloader, 400);
       }
     }
 
-    if (total === 0) {
+    if (total === 0 || aboveFoldImages.length === 0) {
       updateCounter(100);
-      setTimeout(completePreloader, 500);
+      setTimeout(completePreloader, 800);
       return;
     }
     
-    images.forEach(img => {
+    aboveFoldImages.forEach(img => {
       if (img.complete) checkLoaded();
       else {
         img.addEventListener('load', checkLoaded);
@@ -119,14 +127,14 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       }
     });
 
-    // Fallback timeout - complete after 2s max
+    // Fallback timeout - complete after 3.5s max
     setTimeout(() => {
       if (!preloaderComplete) {
         preloader.className = 'counting';
         updateCounter(100);
-        setTimeout(completePreloader, 100);
+        setTimeout(completePreloader, 300);
       }
-    }, 2000);
+    }, 3500);
   }
 
   // Complete preloader and start animations
