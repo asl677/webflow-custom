@@ -170,7 +170,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     initTextAnimations();
 
     // Start image fade-in shortly after text starts
-    setTimeout(() => startImageFadeIn(), isMobile ? 800 : 600);
+    setTimeout(() => startImageFadeIn(), isMobile ? 500 : 300);
     
     // Init draggable
     setTimeout(() => initDraggable(), 1000);
@@ -417,7 +417,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
 
     // Animate viewport elements with stagger
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 50);
+      setTimeout(() => el.classList.add('img-visible'), i * 100);
     });
 
     // Optimized IntersectionObserver - minimal work during scroll
