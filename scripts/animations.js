@@ -18,7 +18,7 @@
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.1s ease,visibility 0s;contain:layout style paint}
+    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.5s ease,visibility 0s;contain:layout style paint}
     html.lenis,html.lenis body{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
     *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
@@ -170,7 +170,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     initTextAnimations();
 
     // Start image fade-in shortly after text starts
-    setTimeout(() => startImageFadeIn(), isMobile ? 500 : 300);
+    setTimeout(() => startImageFadeIn(), isMobile ? 300 : 100);
     
     // Init draggable
     setTimeout(() => initDraggable(), 1000);
