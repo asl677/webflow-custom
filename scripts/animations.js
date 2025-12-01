@@ -423,7 +423,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
 
     // Animate viewport elements with stagger - cascade smoothly
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 200);
+      setTimeout(() => el.classList.add('img-visible'), i * 120);
     });
 
     // Optimized IntersectionObserver - minimal work during scroll
