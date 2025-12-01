@@ -19,9 +19,7 @@
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
     .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.5s ease,visibility 0s;contain:layout style paint}
-    html.lenis,html.lenis body{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
     .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
   // Insert at very start of head
@@ -415,9 +413,9 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       else belowFold.push(el);
     });
 
-    // Animate viewport elements with stagger
+    // Animate viewport elements with stagger - cascade smoothly
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 100);
+      setTimeout(() => el.classList.add('img-visible'), i * 200);
     });
 
     // Optimized IntersectionObserver - minimal work during scroll
