@@ -431,9 +431,9 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       else belowFold.push(el);
     });
 
-    // Animate viewport elements with stagger - match scroll fade timing
+    // Animate viewport elements with stagger - overlap for faster cascade
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 250);
+      setTimeout(() => el.classList.add('img-visible'), i * 125);
     });
 
     // Scroll-triggered fade with stagger
