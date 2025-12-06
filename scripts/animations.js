@@ -1,4 +1,4 @@
-// Portfolio Animations v6.7 - Streamlined
+// Portfolio Animations v6.8 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
 // INSTANT: Add preloader before anything else renders
@@ -449,8 +449,8 @@ console.log('🚀 Portfolio animations v6.7 loading...');
         isProcessing = true;
         const el = queue.shift();
         el.classList.add('img-visible');
-        // Stagger each image by 250ms to match viewport stagger
-        setTimeout(processQueue, 250);
+        // Stagger each image by 125ms to match viewport stagger
+        setTimeout(processQueue, 125);
       };
       
       const observer = new IntersectionObserver((entries) => {
