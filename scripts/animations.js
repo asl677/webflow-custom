@@ -18,29 +18,31 @@
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease,visibility 0s;contain:layout style paint}
+    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
     .lenis.lenis-smooth{scroll-behavior:auto}
     .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
-  // Insert at very start of head
-  if (document.head) document.head.insertBefore(style, document.head.firstChild);
-  else document.documentElement.appendChild(style);
+  // Insert at very start of head or documentElement
+  (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
   
-  // Create preloader element immediately
+  // Create preloader element
   const p = document.createElement('div');
   p.id = 'preloader';
   p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
   
-  // Insert preloader as first child of body (or wait for body)
-  function inject() {
-    if (document.getElementById('preloader')) return;
-    if (document.body) {
+  // Poll aggressively for body (1ms interval)
+  const poll = setInterval(() => {
+    if (document.body && !document.getElementById('preloader')) {
+      clearInterval(poll);
       document.body.insertBefore(p, document.body.firstChild);
-      } else {
-      requestAnimationFrame(inject);
     }
+  }, 1);
+  
+  // Also try immediately
+  if (document.body) {
+    clearInterval(poll);
+    document.body.insertBefore(p, document.body.firstChild);
   }
-  inject();
 })();
 
 console.log('🚀 Portfolio animations v6.7 loading...');
@@ -431,37 +433,24 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       else belowFold.push(el);
     });
 
-    // Animate viewport elements with stagger - overlap for faster cascade
+    // Sort viewport elements by vertical position for sequential cascade
+    viewportElements.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top);
+    
+    // Animate viewport elements with consistent stagger
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 125);
+      setTimeout(() => el.classList.add('img-visible'), i * 150);
     });
 
-    // Scroll-triggered fade with stagger
+    // Scroll-triggered fade - immediate on intersect (no queue delay)
     if (belowFold.length) {
-      let queue = [];
-      let isProcessing = false;
-      
-      const processQueue = () => {
-        if (queue.length === 0) {
-          isProcessing = false;
-          return;
-        }
-        isProcessing = true;
-        const el = queue.shift();
-        el.classList.add('img-visible');
-        // Stagger each image by 125ms to match viewport stagger
-        setTimeout(processQueue, 125);
-      };
-      
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            queue.push(entry.target);
+            entry.target.classList.add('img-visible');
             observer.unobserve(entry.target);
-            if (!isProcessing) processQueue();
           }
         });
-      }, { rootMargin: '-80px', threshold: 0.1 });
+      }, { rootMargin: '-50px', threshold: 0.1 });
       
       belowFold.forEach(el => observer.observe(el));
     }
