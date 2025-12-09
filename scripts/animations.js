@@ -18,7 +18,7 @@
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.5s ease,visibility 0s;contain:layout style paint}
+    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease,visibility 0s;contain:layout style paint}
     .lenis.lenis-smooth{scroll-behavior:auto}
     .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
