@@ -1,48 +1,56 @@
-// Portfolio Animations v6.8 - Streamlined
+// Portfolio Animations v7.1 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-// INSTANT: Add preloader before anything else renders
+// INSTANT: Add preloader and start counter IMMEDIATELY
 (function() {
-  // Inject CSS immediately - this runs synchronously
+  // Inject CSS immediately
   const style = document.createElement('style');
   style.id = 'preloader-styles';
   style.textContent = `
     html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
-    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
-    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
-    #preloader .digit{display:inline-block;animation:pulse 2s ease-in-out infinite}
-    #preloader.counting .digit{animation:none}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
+    #preloader .counter{font-family:monospace;font-size:0.8rem;color:#fff;letter-spacing:0.1em}
+    #preloader .digit{display:inline-block}
     html.loaded .toggle,html.loaded .toggle.bottom,html.loaded .yzy,html.loaded .flex-grid.yzy{opacity:0}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
-    img:not(#preloader img):not(.img-visible),video:not(.img-visible),.reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    .reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
+    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    .reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1!important;visibility:visible!important}
+    img:not(.reveal-wrap img):not(#preloader img):not(.img-visible),video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;visibility:hidden!important}
+    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    .reveal,.reveal-wrap,.reveal-full{contain:layout style;transform:translateZ(0)}
   `;
-  // Insert at very start of head or documentElement
   (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
   
-  // Create preloader element
+  // Create and inject preloader immediately
   const p = document.createElement('div');
   p.id = 'preloader';
   p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
   
-  // Poll aggressively for body (1ms interval)
-  const poll = setInterval(() => {
-    if (document.body && !document.getElementById('preloader')) {
-      clearInterval(poll);
-      document.body.insertBefore(p, document.body.firstChild);
+  function injectAndStart() {
+    if (document.getElementById('preloader')) return;
+    if (!document.body) {
+      setTimeout(injectAndStart, 1);
+      return;
     }
-  }, 1);
-  
-  // Also try immediately
-  if (document.body) {
-    clearInterval(poll);
     document.body.insertBefore(p, document.body.firstChild);
+    
+    // Start counter animation IMMEDIATELY
+    const digits = p.querySelectorAll('.digit');
+    let count = 1;
+    const interval = setInterval(() => {
+      count += Math.floor(Math.random() * 15) + 5;
+      if (count > 100) count = 100;
+      const str = count.toString().padStart(3, '0');
+      digits[0].textContent = str[0];
+      digits[1].textContent = str[1];
+      digits[2].textContent = str[2];
+      if (count >= 100) clearInterval(interval);
+    }, 100);
   }
+  injectAndStart();
 })();
 
 console.log('🚀 Portfolio animations v6.7 loading...');
@@ -85,68 +93,10 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     return preloader;
   }
 
-  // Run preloader with image tracking
+  // Run preloader - simple timed completion (counter already animating from immediate IIFE)
   function runPreloader() {
-    const preloader = createPreloader();
-    const counter = preloader.querySelector('.counter');
-    
-    // Track images in viewport
-    const allImages = document.querySelectorAll('img:not([src=""])');
-    const viewportImages = Array.from(allImages).filter(img => {
-      const rect = img.getBoundingClientRect();
-      return rect.top < window.innerHeight && rect.bottom > 0;
-    });
-    
-    const total = viewportImages.length || 1;
-    let loaded = 0;
-    let readyToComplete = false;
-    
-    console.log(`📷 Preloader tracking ${viewportImages.length} viewport images`);
-    
-    function updateCounter(progress) {
-      const str = Math.floor(progress).toString().padStart(3, '0');
-      counter.querySelectorAll('.digit').forEach((d, i) => d.textContent = str[i]);
-    }
-
-    function checkLoaded() {
-      loaded++;
-      const progress = (loaded / total) * 100;
-      updateCounter(progress);
-      console.log(`📷 Image loaded: ${loaded}/${total} (${Math.floor(progress)}%)`);
-      
-      // Complete when ALL viewport images loaded
-      if (loaded >= total && !readyToComplete) {
-        readyToComplete = true;
-        preloader.className = 'counting';
-        console.log('✅ All viewport images loaded, completing preloader');
-        setTimeout(completePreloader, 500);
-      }
-    }
-
-    if (viewportImages.length === 0) {
-      updateCounter(100);
-      setTimeout(completePreloader, 600);
-      return;
-    }
-    
-    viewportImages.forEach(img => {
-      if (img.complete && img.naturalWidth > 0) {
-        checkLoaded();
-      } else {
-        img.addEventListener('load', checkLoaded);
-        img.addEventListener('error', checkLoaded);
-      }
-    });
-
-    // Fallback timeout - complete after 4s max
-    setTimeout(() => {
-      if (!preloaderComplete) {
-        console.log(`⚠️ Preloader timeout - ${loaded}/${total} loaded`);
-        preloader.className = 'counting';
-        updateCounter(100);
-        setTimeout(completePreloader, 300);
-      }
-    }, 4000);
+    // Just complete after 1.5s - counter animation is already running
+    setTimeout(completePreloader, 1500);
   }
 
   // Complete preloader and start animations
@@ -416,10 +366,13 @@ console.log('🚀 Portfolio animations v6.7 loading...');
 
   // Image fade-in with IntersectionObserver - optimized for scroll performance
   function startImageFadeIn() {
-    const elements = document.querySelectorAll('img:not(#preloader img), video, .reveal-wrap');
+    // Only fade reveal-wrap containers OR standalone images (not images inside reveal-wrap)
+    const revealWraps = document.querySelectorAll('.reveal-wrap');
+    const standaloneImages = document.querySelectorAll('img:not(#preloader img):not(.reveal-wrap img), video:not(.reveal-wrap video)');
+    const elements = [...revealWraps, ...standaloneImages];
     if (!elements.length) return;
     
-    console.log(`🎭 Setting up fade-in for ${elements.length} images/reveal-wraps`);
+    console.log(`🎭 Setting up fade-in for ${revealWraps.length} reveal-wraps + ${standaloneImages.length} standalone images`);
     
     const viewportElements = [];
     const belowFold = [];
