@@ -1,4 +1,4 @@
-// Portfolio Animations v9.9 - Timer, Rotator, Stagger, Lenis, Choppy Preloader
+// Portfolio Animations v10.0 - Timer, Rotator, Stagger, Lenis, Small Segment Preloader
 // Immediate CSS + preloader injection
 document.write(`
 <style id="pre-anim">
@@ -19,11 +19,10 @@ document.write(`
   function updateProgress() {
     if (!line || complete) return;
     
-    // Calculate target as stepped segments (instant jumps)
-    const percent = total > 0 ? loaded / total : 0;
-    const targetWidth = Math.floor(percent * 10) * 9; // 0, 9, 18, 27... 90%
+    // Small segments - each image adds its share instantly
+    const targetWidth = total > 0 ? Math.floor((loaded / total) * 95) : 0;
     
-    // Instant jump to new segment
+    // Instant jump to new width
     if (targetWidth > currentWidth) {
       currentWidth = targetWidth;
       line.style.width = currentWidth + '%';
@@ -38,7 +37,7 @@ document.write(`
     if (complete) return;
     complete = true;
     line.style.width = '100%';
-        setTimeout(() => {
+          setTimeout(() => {
       line.style.opacity = '0';
       setTimeout(() => line.remove(), 100);
       startAnimations();
@@ -54,18 +53,17 @@ document.write(`
     currentWidth = 10;
     
     if (total === 0) {
-      // No images, choppy segmented progress
-      let segment = 0;
-      const segments = [15, 35, 55, 70, 90];
+      // No images, small choppy segments filling up
+      let progress = 0;
       const fakeInterval = setInterval(() => {
-        if (segment < segments.length) {
-          line.style.width = segments[segment] + '%';
-          segment++;
-      } else {
+        progress += 3 + Math.floor(Math.random() * 5); // Random 3-7% jumps
+        if (progress >= 95) {
           clearInterval(fakeInterval);
           completePreloader();
-        }
-      }, 150);
+      } else {
+          line.style.width = progress + '%';
+      }
+    }, 80);
           return;
         }
         
@@ -73,7 +71,7 @@ document.write(`
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
         loaded++;
-      } else {
+          } else {
         img.addEventListener('load', () => {
           loaded++;
           updateProgress();
@@ -89,7 +87,7 @@ document.write(`
     updateProgress();
 
     // Fallback timeout
-    setTimeout(() => {
+            setTimeout(() => {
       if (!complete) completePreloader();
     }, 8000);
   }
