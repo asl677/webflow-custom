@@ -8,8 +8,8 @@
   style.id = 'preloader-styles';
   style.textContent = `
     html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
-    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
-    #preloader .counter{font-family:monospace;font-size:0.8rem;color:#fff;letter-spacing:0.1em}
+    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
+    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
     html.loaded .toggle,html.loaded .toggle.bottom,html.loaded .yzy,html.loaded .flex-grid.yzy{opacity:0}
     .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
@@ -48,8 +48,8 @@
       digits[1].textContent = str[1];
       digits[2].textContent = str[2];
       if (count >= 100) clearInterval(interval);
-    }, 100);
-  }
+        }, 100);
+      }
   injectAndStart();
 })();
 
@@ -394,15 +394,33 @@ console.log('🚀 Portfolio animations v6.7 loading...');
       setTimeout(() => el.classList.add('img-visible'), i * 150);
     });
 
-    // Scroll-triggered fade - immediate on intersect (no queue delay)
+    // Scroll-triggered fade - stagger matching viewport behavior
     if (belowFold.length) {
+      let scrollQueue = [];
+      let isProcessing = false;
+      
+      function processQueue() {
+        if (isProcessing || !scrollQueue.length) return;
+        isProcessing = true;
+        const el = scrollQueue.shift();
+        el.classList.add('img-visible');
+        setTimeout(() => {
+          isProcessing = false;
+          processQueue();
+        }, 150); // Same 150ms stagger as viewport
+      }
+      
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('img-visible');
-            observer.unobserve(entry.target);
-          }
+        // Sort entries by vertical position
+        const sorted = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        
+        sorted.forEach(entry => {
+          scrollQueue.push(entry.target);
+          observer.unobserve(entry.target);
         });
+        processQueue();
       }, { rootMargin: '-50px', threshold: 0.1 });
       
       belowFold.forEach(el => observer.observe(el));
