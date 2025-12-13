@@ -1,14 +1,15 @@
-// Portfolio Animations v9.4 - Timer, Rotator, Stagger, Lenis
+// Portfolio Animations v9.5 - Timer, Rotator, Stagger, Lenis
+// Immediate CSS injection to prevent flash
+document.write('<style id="pre-anim">.reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}.anim-visible{opacity:1!important}</style>');
+
 (function() {
-  // Inject CSS immediately to prevent flash
-  const style = document.createElement('style');
-  style.textContent = `
-    .reveal-wrap{opacity:0}
-    .reveal-visible{opacity:1}
+  // Additional CSS
+    const style = document.createElement('style');
+    style.textContent = `
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-  `;
-  document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
 
   function init() {
     // Initialize Lenis smooth scroll
@@ -49,10 +50,10 @@
     }, 2000);
     }
 
-    // Stagger reveal-wrap elements (instant 0 to 1, no transition)
-    const wraps = document.querySelectorAll('.reveal-wrap');
-    wraps.forEach((el, i) => {
-      setTimeout(() => el.classList.add('reveal-visible'), i * 50);
+    // Stagger all elements (text + reveal-wrap) - instant opacity 0 to 1
+    const elements = document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading');
+    elements.forEach((el, i) => {
+      setTimeout(() => el.classList.add('anim-visible'), i * 50);
     });
   }
 
