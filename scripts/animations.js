@@ -3,12 +3,15 @@
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - only preloader styles, let Webflow handle the rest
+  // Inject CSS
   const style = document.createElement('style');
   style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
+    html:not(.loaded) .reveal-wrap,
+    html:not(.loaded) img:not(#preloader img),
+    html:not(.loaded) video{opacity:0}
   `;
   document.head.appendChild(style);
 
