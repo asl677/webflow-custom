@@ -1,15 +1,34 @@
-// Portfolio Animations v9.5 - Timer, Rotator, Stagger, Lenis
-// Immediate CSS injection to prevent flash
-document.write('<style id="pre-anim">.reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}.anim-visible{opacity:1!important}</style>');
+// Portfolio Animations v9.6 - Timer, Rotator, Stagger, Lenis, Line Preloader
+// Immediate CSS + preloader injection
+document.write(`
+<style id="pre-anim">
+.reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}
+.anim-visible{opacity:1!important}
+#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}
+</style>
+<div id="line-preloader"></div>
+`);
 
 (function() {
+  // Animate preloader line
+  const line = document.getElementById('line-preloader');
+  if (line) {
+    line.style.transition = 'width 1.5s ease-out';
+    requestAnimationFrame(() => line.style.width = '100%');
+    setTimeout(() => {
+      line.style.transition = 'opacity 0.3s';
+      line.style.opacity = '0';
+      setTimeout(() => line.remove(), 300);
+    }, 1500);
+  }
+
   // Additional CSS
-    const style = document.createElement('style');
-    style.textContent = `
+  const style = document.createElement('style');
+  style.textContent = `
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    `;
-    document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
 
   function init() {
     // Initialize Lenis smooth scroll
