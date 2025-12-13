@@ -1,4 +1,4 @@
-// Portfolio Animations v11.0 - Segmented preloader + stagger
+// Portfolio Animations v11.1 - No fade out
 (function() {
   const SEGMENTS = 40;
   
@@ -47,12 +47,8 @@
     if (complete) return;
     complete = true;
     fillRemaining();
-    setTimeout(() => {
-      bar.style.opacity = '0';
-      bar.style.transition = 'opacity 0.2s';
-      setTimeout(() => bar.remove(), 200);
-      init();
-    }, 150);
+    bar.remove(); // Instant removal, no fade
+    init();
   }
 
   function onReady() {
