@@ -267,40 +267,51 @@
     }
   }
 
-  // Image fade-in - only animate standalone images (NOT inside reveal-wrap, Webflow handles those)
+  // Image fade-in - animate reveal-wrap containers (expand height + fade images)
   function startImageFadeIn() {
-    // Only animate images/videos NOT inside reveal-wrap (let Webflow handle reveal-wrap content)
-    const elements = [
-      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not(.preview)'),
-      ...document.querySelectorAll('video:not(.reveal-wrap video)')
-    ];
-    if (!elements.length) return;
+    // Get all reveal-wrap containers
+    const wraps = document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)');
+    if (!wraps.length) return;
     
     const viewport = [], below = [];
-    elements.forEach(el => {
-      if (el.dataset.fadeSetup) return;
-      el.dataset.fadeSetup = 'true';
-      el.style.opacity = '0';
-      el.style.transition = 'opacity 1.2s ease-out';
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
-      else below.push(el);
+    wraps.forEach(wrap => {
+      if (wrap.dataset.fadeSetup) return;
+      wrap.dataset.fadeSetup = 'true';
+      
+      // Set initial state - collapsed height, hidden images
+      wrap.style.height = 'auto';  // Let it size naturally
+      wrap.style.overflow = 'hidden';
+      
+      // Get all non-preview images inside and hide them
+      const imgs = wrap.querySelectorAll('img:not(.preview)');
+      imgs.forEach(img => {
+        img.style.opacity = '0';
+        img.style.transition = 'opacity 1.2s ease-out';
+      });
+      
+      const rect = wrap.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(wrap);
+      else below.push(wrap);
     });
 
     // Force reflow
     void document.body.offsetHeight;
 
+    // Animate viewport elements
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    viewport.forEach((el, i) => setTimeout(() => { el.style.opacity = '1'; }, i * 250));
+    viewport.forEach((wrap, i) => setTimeout(() => {
+      wrap.querySelectorAll('img:not(.preview)').forEach(img => img.style.opacity = '1');
+    }, i * 150));
 
+    // Animate below-fold on scroll
     if (below.length) {
       let queue = [], processing = false;
       const processQueue = () => {
         if (processing || !queue.length) return;
         processing = true;
-        const el = queue.shift();
-            el.style.opacity = '1';
-        setTimeout(() => { processing = false; processQueue(); }, 250);
+        const wrap = queue.shift();
+        wrap.querySelectorAll('img:not(.preview)').forEach(img => img.style.opacity = '1');
+        setTimeout(() => { processing = false; processQueue(); }, 150);
       };
       
       const obs = new IntersectionObserver(entries => {
@@ -310,7 +321,7 @@
         processQueue();
       }, { rootMargin: '-50px', threshold: 0.1 });
       
-      below.forEach(el => obs.observe(el));
+      below.forEach(wrap => obs.observe(wrap));
     }
   }
 
