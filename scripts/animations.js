@@ -132,9 +132,13 @@
       else below.push(el);
     });
     
-    // Sort by position, stagger viewport
+    // Sort by position, stagger viewport - delay to let opacity:0 render first
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    viewport.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 120));
+    
+    // Force reflow so opacity:0 is painted before transition starts
+    void document.body.offsetHeight;
+    
+    viewport.forEach((el, i) => setTimeout(() => el.classList.add('visible'), 50 + i * 120));
     
     // Scroll observer for below fold
     if (below.length) {
