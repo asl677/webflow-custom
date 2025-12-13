@@ -14,8 +14,8 @@
   </style>`);
   
   // Create preloader
-  const preloader = document.createElement('div');
-  preloader.id = 'preloader';
+    const preloader = document.createElement('div');
+    preloader.id = 'preloader';
   preloader.innerHTML = `<p class="heading small link muted"><span class="digit">${rand()}</span><span class="digit">${rand()}</span><span class="digit">${rand()}</span></p>`;
   
   function init() {
@@ -68,9 +68,9 @@
   function finishPreloader() {
     document.body.classList.add('loaded');
     preloader.style.transition = 'opacity 0.3s';
-    preloader.style.opacity = '0';
-    setTimeout(() => {
-      preloader.remove();
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
       startAnimations();
     }, 300);
   }
@@ -115,17 +115,17 @@
   
   // Timer
   function initTimer() {
-    const counter = document.querySelector('.counter');
-    if (!counter) return;
+    const timer = document.getElementById('time-text');
+    if (!timer) return;
     
     function update() {
       const now = new Date();
-      counter.textContent = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      timer.textContent = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
     }
     update();
     setInterval(update, 1000);
-    wrapLetters(counter);
-    scrambleReveal(counter);
+    wrapLetters(timer);
+    scrambleReveal(timer);
   }
   
   // Rotator
@@ -212,10 +212,10 @@
       link._scrambling = setInterval(() => {
         letters.forEach((l, i) => {
           if (/[a-zA-Z0-9]/.test(link._originals[i])) l.textContent = rand();
-        });
-      }, 50);
-    }, true);
-    
+          });
+        }, 50);
+  }, true);
+
     document.addEventListener('mouseleave', e => {
       if (!e.target?.closest) return;
       const link = e.target.closest('a');
@@ -232,4 +232,5 @@
   } else {
     init();
   }
-})();
+  })();
+  
