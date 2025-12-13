@@ -1,4 +1,4 @@
-// Portfolio Animations v7.5
+// Portfolio Animations v7.6
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
