@@ -1,10 +1,8 @@
-// Portfolio Animations v10.6 - Works with inline preloader
+// Portfolio Animations v10.7 - No content hiding
 (function() {
-  // CSS for content hiding
+  // Lenis CSS only
   const css = document.createElement('style');
   css.textContent = `
-    .reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0}
-    .anim-visible{opacity:1!important}
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
   `;
@@ -91,10 +89,7 @@
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
-    // Stagger
-    document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading').forEach((el, i) => {
-      setTimeout(() => el.classList.add('anim-visible'), i * 50);
-    });
+    // Content is visible by default - no stagger needed
   }
 
   if (document.readyState === 'loading') {
