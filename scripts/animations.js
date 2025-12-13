@@ -12,10 +12,12 @@
       .toggle,.yzy{opacity:0}
       .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
       .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
-      .reveal-wrap{opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-      .reveal-wrap.img-visible{opacity:1}
-      img:not(.reveal-wrap img):not(#preloader img){opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-      img.img-visible{opacity:1}
+      .reveal-wrap:not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+      .reveal-wrap.img-visible{opacity:1!important}
+      img:not(.reveal-wrap img):not(#preloader img):not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+      img.img-visible{opacity:1!important}
+      video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+      video.img-visible{opacity:1!important}
     </style>
     <div id="preloader"><p class="heading small link muted counter">001</p></div>
   `);
