@@ -3,24 +3,18 @@
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS
-    const style = document.createElement('style');
-    style.textContent = `
-    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
+  // Inject CSS - minimal, don't override Webflow
+  const style = document.createElement('style');
+  style.textContent = `
+    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0;visibility:hidden}
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
-    html.loaded .toggle,html.loaded .yzy{opacity:0}
-    .toggle.show-toggle{transition:opacity 0.6s ease}
-    .toggle,.toggle:hover,.toggle:active,.toggle:focus,.fixed-sizer,.fixed-sizer:hover,.fixed-sizer:active,.fixed-sizer:focus{background:transparent!important;outline:none!important}
-      .nav:not(.fake-nav){opacity:0}
-    .nav-middle,.nav-bottom,.middle-nav,.bottom-nav{opacity:1!important}
-    .reveal-wrap,.reveal-wrap img,.reveal-wrap video{opacity:0!important;transition:opacity 1.2s ease-out!important}
-    .reveal-wrap.img-visible,.reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1!important}
-    img:not(.reveal-wrap img),video:not(.reveal-wrap video){opacity:0!important;transition:opacity 1.2s ease-out!important}
-    img.img-visible,video.img-visible{opacity:1!important}
-    `;
-    document.head.appendChild(style);
+    .stagger-fade{opacity:0;transition:opacity 1.2s ease-out}
+    .stagger-fade.img-visible{opacity:1}
+    .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
+  `;
+  document.head.appendChild(style);
 
   // Create preloader
   const p = document.createElement('div');
@@ -272,10 +266,14 @@
     elements.forEach(el => {
       if (el.dataset.fadeSetup) return;
       el.dataset.fadeSetup = 'true';
+      el.classList.add('stagger-fade'); // Add base class for transition
       const rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
       else below.push(el);
     });
+
+    // Force reflow so opacity:0 renders before transition
+    void document.body.offsetHeight;
 
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     viewport.forEach((el, i) => setTimeout(() => el.classList.add('img-visible'), i * 250));
