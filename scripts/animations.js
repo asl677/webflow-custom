@@ -1,41 +1,27 @@
-// Portfolio Animations v10.5 - Slower preloader
+// Portfolio Animations v10.6 - Works with inline preloader
 (function() {
-  // Inject CSS and preloader immediately
+  // CSS for content hiding
   const css = document.createElement('style');
   css.textContent = `
     .reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0}
     .anim-visible{opacity:1!important}
-    #line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
   `;
   document.head.appendChild(css);
 
-  // Create preloader line
-  const line = document.createElement('div');
-  line.id = 'line-preloader';
-  document.body ? document.body.prepend(line) : document.addEventListener('DOMContentLoaded', () => document.body.prepend(line));
-
-  let progress = 0;
-  let complete = false;
-
-  // Base animation - runs regardless of image loading
-  let baseProgress = 0;
-  function tick() {
-    if (complete) return;
-    if (baseProgress < 70) {
-      baseProgress += 0.5;
-      if (baseProgress > progress) {
-        progress = baseProgress;
-        line.style.width = progress + '%';
-      }
-      setTimeout(tick, 20);
-    }
+  // Get existing preloader (created in Webflow head code) or create one
+  let line = document.getElementById('line-preloader');
+  if (!line) {
+    line = document.createElement('div');
+    line.id = 'line-preloader';
+    line.style.cssText = 'position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0%';
+    document.body ? document.body.prepend(line) : document.addEventListener('DOMContentLoaded', () => document.body.prepend(line));
   }
-  
-  // Force start at 0
-  line.style.width = '0%';
-  requestAnimationFrame(tick);
+
+  // Use global progress from inline script if exists, otherwise start fresh
+  let progress = window._p || 0;
+  let complete = false;
 
   function finish() {
     if (complete) return;
