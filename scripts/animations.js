@@ -1,4 +1,4 @@
-// Portfolio Animations v8.1 - Streamlined
+// Portfolio Animations v8.2 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
 // INSTANT PRELOADER - inject inline in <head> before body renders
@@ -7,17 +7,17 @@
   document.write(`
     <style id="preloader-css">
       #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:1!important;visibility:visible!important}
-      #preloader .counter{font-family:system-ui,-apple-system,sans-serif;font-size:0.75rem;letter-spacing:0.1em;opacity:1}
+      #preloader .counter{opacity:1!important;visibility:visible!important}
       html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
       .toggle,.yzy{opacity:0}
       .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
       .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
-      .reveal-wrap{opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
-      .reveal-wrap.img-visible{opacity:1!important}
-      img:not(.reveal-wrap img):not(#preloader img){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
-      img.img-visible{opacity:1!important}
+      .reveal-wrap{opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+      .reveal-wrap.img-visible{opacity:1}
+      img:not(.reveal-wrap img):not(#preloader img){opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+      img.img-visible{opacity:1}
     </style>
-    <div id="preloader"><span class="counter">001</span></div>
+    <div id="preloader"><p class="heading small link muted counter">001</p></div>
   `);
 })();
 
@@ -426,7 +426,7 @@ console.log('🚀 Portfolio animations v8.0 loading...');
           observer.unobserve(entry.target);
         });
         processQueue();
-      }, { rootMargin: '50px', threshold: 0.05 }); // Trigger 50px before entering viewport
+      }, { rootMargin: '100px', threshold: 0.1 }); // Trigger 100px before entering viewport
       
       belowFold.forEach(el => observer.observe(el));
     }
