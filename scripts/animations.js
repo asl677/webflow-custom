@@ -406,14 +406,9 @@ console.log('🚀 Portfolio animations v8.0 loading...');
     
     console.log(`🎭 Staggering ${viewportElements.length} viewport images`);
     
-    // Animate viewport elements - 100ms stagger like Webflow Tricks hero text
+    // Animate viewport elements - 150ms stagger for visible cascade
     viewportElements.forEach(({ el }, i) => {
-      const delay = i * 100;
-      console.log(`  Image ${i}: delay ${delay}ms`);
-    setTimeout(() => {
-        el.classList.add('img-visible');
-        console.log(`  Image ${i}: now visible`);
-      }, delay);
+      setTimeout(() => el.classList.add('img-visible'), i * 150);
     });
 
     // Scroll-triggered fade - same 100ms stagger
@@ -429,7 +424,7 @@ console.log('🚀 Portfolio animations v8.0 loading...');
     setTimeout(() => {
           isProcessing = false;
           processQueue();
-        }, 100); // 100ms stagger matching viewport
+        }, 150); // 150ms stagger matching viewport
       }
       
       const observer = new IntersectionObserver((entries) => {
