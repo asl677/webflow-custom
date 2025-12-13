@@ -1,21 +1,21 @@
-// Portfolio Animations v7.7
+// Portfolio Animations v7.8
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - hide until loaded, then force images visible (overrides Webflow opacity:0)
-    const style = document.createElement('style');
-    style.textContent = `
+  // Inject CSS - hide until loaded, then force all images visible (overrides Webflow opacity:0)
+  const style = document.createElement('style');
+  style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
     html:not(.loaded) .reveal-wrap:not(.w-lightbox-content *),
-    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.preview),
+    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image),
     html:not(.loaded) video{opacity:0!important}
-    html.loaded .reveal-wrap img:not(.preview),
+    html.loaded .reveal-wrap img,
     html.loaded .reveal-wrap video{opacity:1!important}
-    `;
-    document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
 
   // Create preloader
   const p = document.createElement('div');
@@ -259,10 +259,10 @@
 
   // Image fade-in using inline styles (no CSS class conflicts)
   function startImageFadeIn() {
-    // Exclude lightbox and preview class images (let Webflow handle those)
+    // Select reveal-wraps and standalone images/videos (not inside reveal-wrap)
     const elements = [
       ...document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)'), 
-      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not(.preview)'),
+      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image)'),
       ...document.querySelectorAll('video:not(.reveal-wrap video)')
     ];
     if (!elements.length) return;
