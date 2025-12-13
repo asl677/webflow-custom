@@ -1,10 +1,10 @@
-// Portfolio Animations v9.7 - Timer, Rotator, Stagger, Lenis, Real Preloader
+// Portfolio Animations v9.8 - Timer, Rotator, Stagger, Lenis, Real Preloader
 // Immediate CSS + preloader injection
 document.write(`
 <style id="pre-anim">
 .reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}
 .anim-visible{opacity:1!important}
-#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0;transition:width 0.3s ease-out}
+#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:5%;transition:width 0.5s ease-out}
 </style>
 <div id="line-preloader"></div>
 `);
@@ -14,14 +14,22 @@ document.write(`
   let loaded = 0;
   let total = 0;
   let complete = false;
+  let currentWidth = 5; // Start at 5%
 
   function updateProgress() {
     if (!line || complete) return;
-    const progress = total > 0 ? (loaded / total) * 100 : 0;
-    line.style.width = progress + '%';
+    
+    // Calculate target (reserve last 10% for completion)
+    const targetWidth = total > 0 ? 5 + (loaded / total) * 85 : 5;
+    
+    // Smoothly animate to target
+    if (targetWidth > currentWidth) {
+      currentWidth = targetWidth;
+      line.style.width = currentWidth + '%';
+    }
     
     if (loaded >= total && total > 0) {
-      completePreloader();
+      setTimeout(completePreloader, 300);
     }
   }
 
@@ -29,27 +37,40 @@ document.write(`
     if (complete) return;
     complete = true;
     line.style.width = '100%';
-        setTimeout(() => {
+          setTimeout(() => {
       line.style.transition = 'opacity 0.3s';
       line.style.opacity = '0';
       setTimeout(() => line.remove(), 300);
       startAnimations();
-    }, 200);
+      }, 400); 
   }
 
   function trackImages() {
     const images = document.querySelectorAll('img:not(.preview)');
     total = images.length;
     
+    // Show initial progress
+    line.style.width = '10%';
+    currentWidth = 10;
+    
     if (total === 0) {
-      completePreloader();
-          return;
+      // No images, animate line slowly then complete
+      let fakeProgress = 10;
+      const fakeInterval = setInterval(() => {
+        fakeProgress += 15;
+        line.style.width = Math.min(fakeProgress, 90) + '%';
+        if (fakeProgress >= 90) {
+          clearInterval(fakeInterval);
+          completePreloader();
         }
-        
+      }, 200);
+      return;
+    }
+    
+    // Check already loaded images
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
         loaded++;
-        updateProgress();
       } else {
         img.addEventListener('load', () => {
           loaded++;
@@ -58,10 +79,13 @@ document.write(`
         img.addEventListener('error', () => {
           loaded++;
           updateProgress();
+            });
+          }
         });
-      }
-    });
-    
+        
+    // Update for already loaded
+    updateProgress();
+
     // Fallback timeout
     setTimeout(() => {
       if (!complete) completePreloader();
