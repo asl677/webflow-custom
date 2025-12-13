@@ -1,18 +1,16 @@
-// Portfolio Animations v8.0
+// Portfolio Animations v8.2
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - only hide standalone images, let Webflow handle .reveal-wrap content
-    const style = document.createElement('style');
-    style.textContent = `
+  // Inject CSS - just preloader styles
+  const style = document.createElement('style');
+  style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
-    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.reveal-wrap img),
-    html:not(.loaded) video:not(.reveal-wrap video){opacity:0!important}
-    `;
-    document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
 
   // Create preloader
   const p = document.createElement('div');
@@ -267,62 +265,15 @@
     }
   }
 
-  // Image fade-in - animate reveal-wrap containers (expand height + fade images)
+  // Simple stagger fade for reveal-wrap elements
   function startImageFadeIn() {
-    // Get all reveal-wrap containers
-    const wraps = document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)');
-    if (!wraps.length) return;
-    
-    const viewport = [], below = [];
-    wraps.forEach(wrap => {
-      if (wrap.dataset.fadeSetup) return;
-      wrap.dataset.fadeSetup = 'true';
-      
-      // Set initial state - collapsed height, hidden images
-      wrap.style.height = 'auto';  // Let it size naturally
-      wrap.style.overflow = 'hidden';
-      
-      // Get all non-preview images inside and hide them
-      const imgs = wrap.querySelectorAll('img:not(.preview)');
-      imgs.forEach(img => {
-        img.style.opacity = '0';
-        img.style.transition = 'opacity 1.2s ease-out';
-      });
-      
-      const rect = wrap.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(wrap);
-      else below.push(wrap);
+    const wraps = Array.from(document.querySelectorAll('.reveal-wrap'));
+    wraps.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    wraps.forEach((wrap, i) => {
+      wrap.style.opacity = '0';
+      wrap.style.transition = 'opacity 0.8s ease-out';
+      setTimeout(() => { wrap.style.opacity = '1'; }, i * 100);
     });
-
-    // Force reflow
-    void document.body.offsetHeight;
-
-    // Animate viewport elements
-    viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    viewport.forEach((wrap, i) => setTimeout(() => {
-      wrap.querySelectorAll('img:not(.preview)').forEach(img => img.style.opacity = '1');
-    }, i * 150));
-
-    // Animate below-fold on scroll
-    if (below.length) {
-      let queue = [], processing = false;
-      const processQueue = () => {
-        if (processing || !queue.length) return;
-        processing = true;
-        const wrap = queue.shift();
-        wrap.querySelectorAll('img:not(.preview)').forEach(img => img.style.opacity = '1');
-        setTimeout(() => { processing = false; processQueue(); }, 150);
-      };
-      
-      const obs = new IntersectionObserver(entries => {
-        entries.filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-          .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
-        processQueue();
-      }, { rootMargin: '-50px', threshold: 0.1 });
-      
-      below.forEach(wrap => obs.observe(wrap));
-    }
   }
 
   // Draggable
