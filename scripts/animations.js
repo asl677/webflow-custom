@@ -1,15 +1,16 @@
-// Portfolio Animations v8.1
+// Portfolio Animations v8.2
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const rand = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // CSS
+  // CSS - hide images immediately on load
   const style = document.createElement('style');
   style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .digit{display:inline-block}
-    .img-fade{opacity:0;transition:opacity 0.8s ease-out}
-    .img-visible{opacity:1}
+    img:not(.w-preview-image):not([data-no-fade]),video,.reveal-wrap{opacity:0}
+    .img-ready{transition:opacity 0.6s ease-out}
+    .img-visible{opacity:1!important}
   `;
   document.head.appendChild(style);
   
@@ -85,20 +86,20 @@
   
   // Image stagger fade-in
   function initImageStagger() {
-    const images = document.querySelectorAll('img,video,.reveal-wrap');
+    const images = document.querySelectorAll('img:not(.w-preview-image):not([data-no-fade]),video,.reveal-wrap');
     const viewport = [], below = [];
     
     images.forEach(el => {
-      el.classList.add('img-fade');
+      el.classList.add('img-ready');
       const rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight) viewport.push(el);
       else below.push(el);
     });
     
-    // Stagger viewport images
+    // Stagger viewport images - fast
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     viewport.forEach((el, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 100);
+      setTimeout(() => el.classList.add('img-visible'), i * 80);
     });
     
     // Scroll-triggered below fold
