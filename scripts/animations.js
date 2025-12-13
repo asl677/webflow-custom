@@ -1,21 +1,23 @@
-// Portfolio Animations v9.0 - Clean & Simple
+// Portfolio Animations v9.1 - Clean & Simple
 (function() {
   // === STYLES ===
-  const style = document.createElement('style');
-  style.textContent = `
+    const style = document.createElement('style');
+    style.textContent = `
     #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s}
-    .fade-in{opacity:0;transition:opacity 0.8s ease-out}
-    .fade-in.visible{opacity:1}
+    .will-fade{opacity:0}
+    .will-fade.visible{opacity:1;transition:opacity 0.8s ease-out}
     .toggle,.yzy{opacity:0;transition:opacity 0.6s}
     .toggle.show,.yzy.show{opacity:1}
-  `;
-  document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
+
+  console.log('🚀 Animations v9.1 loaded');
 
   // === PRELOADER ===
-  const preloader = document.createElement('div');
-  preloader.id = 'preloader';
+    const preloader = document.createElement('div');
+    preloader.id = 'preloader';
   preloader.innerHTML = '<p class="heading small link muted" id="preloader-text">001</p>';
-  
+    
   function initPreloader() {
     if (!document.body) return requestAnimationFrame(initPreloader);
     document.body.prepend(preloader);
@@ -55,11 +57,11 @@
   }
   
   function finishPreloader() {
-    preloader.style.opacity = '0';
-    setTimeout(() => {
-      preloader.remove();
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
       startAnimations();
-    }, 400);
+      }, 400); 
   }
 
   // === MAIN ANIMATIONS ===
@@ -78,36 +80,45 @@
 
   // === TEXT SCRAMBLE ===
   function initTextScramble() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p:not(#preloader-text), a');
-    
-    elements.forEach((el, i) => {
-      if (el.children.length > 0 || !el.textContent.trim()) return;
-      if (el.closest('.label-wrap, #preloader')) return;
+    try {
+      const elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p:not(#preloader-text), a');
+      let count = 0;
       
-      const original = el.textContent;
-      const letters = original.split('').map(c => {
-        const span = document.createElement('span');
-        span.className = 'letter';
-        span.textContent = c;
-        span.dataset.original = c;
-        return span;
+      elements.forEach((el, i) => {
+        if (el.children.length > 0 || !el.textContent.trim()) return;
+        if (el.closest('.label-wrap, #preloader, .w-draggable')) return;
+        
+        const original = el.textContent;
+        if (original.length > 200) return; // Skip very long text
+        
+        const letters = original.split('').map(c => {
+          const span = document.createElement('span');
+          span.className = 'letter';
+          span.textContent = c;
+          span.dataset.original = c;
+          return span;
+        });
+        
+        el.textContent = '';
+        letters.forEach(s => el.appendChild(s));
+        count++;
+        
+        // Stagger scramble reveal
+        setTimeout(() => scrambleReveal(el), i * 60);
       });
       
-      el.textContent = '';
-      letters.forEach(s => el.appendChild(s));
-      
-      // Stagger scramble reveal
-      setTimeout(() => scrambleReveal(el), i * 60);
-    });
+      console.log(`📝 Scrambled ${count} text elements`);
+    } catch(err) {
+      console.error('Text scramble error:', err);
+    }
   }
   
   function scrambleReveal(el) {
     const letters = el.querySelectorAll('.letter');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let frame = 0;
-    
-    const interval = setInterval(() => {
+      
+      const interval = setInterval(() => {
       frame++;
       letters.forEach((span, i) => {
         const orig = span.dataset.original;
@@ -120,45 +131,56 @@
 
   // === IMAGE FADE ===
   function initImageFade() {
-    const elements = document.querySelectorAll('.reveal-wrap, img:not(.reveal-wrap img), video');
-    const viewport = [], below = [];
-    
-    elements.forEach(el => {
-      if (el.closest('#preloader')) return;
-      el.classList.add('fade-in');
+    try {
+      const elements = document.querySelectorAll('.reveal-wrap, img:not(.reveal-wrap img), video');
+      const viewport = [], below = [];
       
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
-      else below.push(el);
-    });
-    
-    // Sort by position, stagger viewport - delay to let opacity:0 render first
-    viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    
-    // Force reflow so opacity:0 is painted before transition starts
-    void document.body.offsetHeight;
-    
-    viewport.forEach((el, i) => setTimeout(() => el.classList.add('visible'), 50 + i * 120));
-    
-    // Scroll observer for below fold
-    if (below.length) {
-      let queue = [], processing = false;
+      console.log(`🎭 Found ${elements.length} images/videos`);
       
-      const processQueue = () => {
-        if (processing || !queue.length) return;
-        processing = true;
-        queue.shift().classList.add('visible');
-        setTimeout(() => { processing = false; processQueue(); }, 120);
-      };
+      elements.forEach(el => {
+        if (el.closest('#preloader')) return;
+        el.classList.add('will-fade');
+        
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
+        else below.push(el);
+      });
       
-      const obs = new IntersectionObserver(entries => {
-        entries.filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-          .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
-        processQueue();
-      }, { rootMargin: '100px', threshold: 0.1 });
+      // Force browser to render opacity:0 first
+      void document.body.offsetHeight;
       
-      below.forEach(el => obs.observe(el));
+      // Sort by position, stagger viewport
+      viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+      console.log(`🎭 Staggering ${viewport.length} viewport, ${below.length} below`);
+      
+      viewport.forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), 100 + i * 120);
+      });
+      
+      // Scroll observer for below fold
+      if (below.length) {
+        let queue = [], processing = false;
+        
+        const processQueue = () => {
+          if (processing || !queue.length) return;
+          processing = true;
+          queue.shift().classList.add('visible');
+          setTimeout(() => { processing = false; processQueue(); }, 120);
+        };
+        
+        const obs = new IntersectionObserver(entries => {
+          entries.filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+            .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
+          processQueue();
+        }, { rootMargin: '100px', threshold: 0.1 });
+        
+        below.forEach(el => obs.observe(el));
+      }
+    } catch(err) {
+      console.error('Image fade error:', err);
+      // Fallback: show all images
+      document.querySelectorAll('.will-fade').forEach(el => el.classList.add('visible'));
     }
   }
 
@@ -223,7 +245,7 @@
       setInterval(() => {
         const s = Math.floor((Date.now() - start) / 1000);
         counter.textContent = String(Math.floor(s / 60)).padStart(2, '0') + String(s % 60).padStart(2, '0');
-      }, 1000);
+    }, 1000);
     }
   }
 
@@ -260,7 +282,8 @@
   // === INIT ===
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPreloader);
-  } else {
-    initPreloader();
-  }
-})();
+    } else {
+      initPreloader();
+    }
+  })();
+  
