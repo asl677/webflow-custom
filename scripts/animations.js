@@ -1,537 +1,262 @@
-// Portfolio Animations v8.2 - Streamlined
-// REQUIRED: GSAP (loaded from Webflow or CDN)
-
-// INSTANT PRELOADER - inject inline in <head> before body renders
+// Portfolio Animations v9.0 - Clean & Simple
 (function() {
-  // Inject preloader CSS + HTML directly into document as it parses
-  document.write(`
-    <style id="preloader-css">
-      #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:1!important;visibility:visible!important}
-      #preloader .counter{opacity:1!important;visibility:visible!important}
-      html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
-      .toggle,.yzy{opacity:0}
-      .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
-      .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
-      .reveal-wrap:not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-      .reveal-wrap.img-visible{opacity:1!important}
-      img:not(.reveal-wrap img):not(#preloader img):not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-      img.img-visible{opacity:1!important}
-      video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-      video.img-visible{opacity:1!important}
-    </style>
-    <div id="preloader"><p class="heading small link muted counter">001</p></div>
-  `);
-})();
+  // === STYLES ===
+  const style = document.createElement('style');
+  style.textContent = `
+    #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s}
+    .fade-in{opacity:0;transition:opacity 0.8s ease-out}
+    .fade-in.visible{opacity:1}
+    .toggle,.yzy{opacity:0;transition:opacity 0.6s}
+    .toggle.show,.yzy.show{opacity:1}
+  `;
+  document.head.appendChild(style);
 
-console.log('🚀 Portfolio animations v8.0 loading...');
-
-(function() {
-  let preloaderComplete = false;
-
-  // Load GSAP if not available
-  function loadGSAP(callback) {
-    if (typeof window.gsap !== 'undefined') {
-      console.log('✅ GSAP available');
-      if (!window.gsap.ScrollTrigger) {
-        const st = document.createElement('script');
-        st.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
-        st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
-        document.head.appendChild(st);
-      } else callback();
-          return;
-        }
-    const gsap = document.createElement('script');
-    gsap.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
-    gsap.onload = () => {
-      const st = document.createElement('script');
-      st.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
-      st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
-      document.head.appendChild(st);
-    };
-    document.head.appendChild(gsap);
-  }
-
-  // Create preloader (or use existing one from immediate injection)
-  function createPreloader() {
-    let preloader = document.getElementById('preloader');
-    if (preloader) return preloader;
+  // === PRELOADER ===
+  const preloader = document.createElement('div');
+  preloader.id = 'preloader';
+  preloader.innerHTML = '<p class="heading small link muted" id="preloader-text">001</p>';
+  
+  function initPreloader() {
+    if (!document.body) return requestAnimationFrame(initPreloader);
+    document.body.prepend(preloader);
     
-    preloader = document.createElement('div');
-    preloader.id = 'preloader';
-    preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
-    document.body.appendChild(preloader);
-    return preloader;
-  }
-
-  // Run preloader with smooth counter and scramble
-  function runPreloader() {
-    const preloader = document.getElementById('preloader');
-    const counter = preloader?.querySelector('.counter');
-    if (!counter) { setTimeout(completePreloader, 500); return; }
-    
+    const text = document.getElementById('preloader-text');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+    const rand = () => chars[Math.floor(Math.random() * chars.length)];
     
-    // Phase 1: Smooth scramble intro (600ms)
-    let introFrame = 0;
-    const introInterval = setInterval(() => {
-      introFrame++;
-      const progress = introFrame / 15;
-      let text = '';
-      for (let i = 0; i < 3; i++) {
-        if (progress > (i + 1) / 4) text += '001'[i];
-        else text += randChar();
-      }
-      counter.textContent = text;
-      if (introFrame >= 15) {
-        clearInterval(introInterval);
-        counter.textContent = '001';
-        
-        // Phase 2: Count up smoothly
-        let count = 1;
-        const countInterval = setInterval(() => {
-          count = Math.min(100, count + Math.floor(Math.random() * 12) + 3);
-          counter.textContent = count.toString().padStart(3, '0');
-          if (count >= 100) {
-            clearInterval(countInterval);
-            // Phase 3: Scramble out
-            setTimeout(() => {
-              let outFrame = 0;
-              const outInterval = setInterval(() => {
-                outFrame++;
-                counter.textContent = randChar() + randChar() + randChar();
-                if (outFrame >= 8) {
-                  clearInterval(outInterval);
-                  completePreloader();
-                }
-              }, 50);
-            }, 200);
-          }
-        }, 60);
-      }
+    // Scramble in
+    let frame = 0;
+    const scrambleIn = setInterval(() => {
+      frame++;
+      text.textContent = frame > 3 ? '0' + rand() + rand() : rand() + rand() + rand();
+      if (frame > 6) text.textContent = '00' + rand();
+      if (frame > 9) { clearInterval(scrambleIn); text.textContent = '001'; countUp(); }
+    }, 50);
+    
+    // Count up
+    function countUp() {
+      let n = 1;
+      const counter = setInterval(() => {
+        n = Math.min(100, n + Math.floor(Math.random() * 10) + 3);
+        text.textContent = String(n).padStart(3, '0');
+        if (n >= 100) { clearInterval(counter); scrambleOut(); }
+      }, 50);
+    }
+    
+    // Scramble out
+    function scrambleOut() {
+      let frame = 0;
+      const out = setInterval(() => {
+        frame++;
+        text.textContent = rand() + rand() + rand();
+        if (frame > 6) { clearInterval(out); finishPreloader(); }
+      }, 50);
+    }
+  }
+  
+  function finishPreloader() {
+    preloader.style.opacity = '0';
+    setTimeout(() => {
+      preloader.remove();
+      startAnimations();
+    }, 400);
+  }
+
+  // === MAIN ANIMATIONS ===
+  function startAnimations() {
+    initTextScramble();
+    initImageFade();
+    initHoverEffects();
+    initSpecialElements();
+    initColumnToggle();
+    
+    // Show toggle/yzy elements
+    setTimeout(() => {
+      document.querySelectorAll('.toggle, .yzy').forEach(el => el.classList.add('show'));
+    }, 800);
+  }
+
+  // === TEXT SCRAMBLE ===
+  function initTextScramble() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p:not(#preloader-text), a');
+    
+    elements.forEach((el, i) => {
+      if (el.children.length > 0 || !el.textContent.trim()) return;
+      if (el.closest('.label-wrap, #preloader')) return;
+      
+      const original = el.textContent;
+      const letters = original.split('').map(c => {
+        const span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = c;
+        span.dataset.original = c;
+        return span;
+      });
+      
+      el.textContent = '';
+      letters.forEach(s => el.appendChild(s));
+      
+      // Stagger scramble reveal
+      setTimeout(() => scrambleReveal(el), i * 60);
+    });
+  }
+  
+  function scrambleReveal(el) {
+    const letters = el.querySelectorAll('.letter');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let frame = 0;
+    
+    const interval = setInterval(() => {
+      frame++;
+      letters.forEach((span, i) => {
+        const orig = span.dataset.original;
+        if (frame > i * 2) span.textContent = orig;
+        else if (/[a-zA-Z0-9]/.test(orig)) span.textContent = chars[Math.floor(Math.random() * chars.length)];
+      });
+      if (frame > letters.length * 2) clearInterval(interval);
     }, 40);
   }
 
-  // Complete preloader - fade out and start animations
-  function completePreloader() {
-    if (preloaderComplete) return;
-    preloaderComplete = true;
+  // === IMAGE FADE ===
+  function initImageFade() {
+    const elements = document.querySelectorAll('.reveal-wrap, img:not(.reveal-wrap img), video');
+    const viewport = [], below = [];
     
-    const preloader = document.getElementById('preloader');
-    const counter = preloader?.querySelector('.counter');
-    
-    if (counter) counter.style.opacity = '0';
-    
-          setTimeout(() => {
-      if (preloader) preloader.remove();
-      document.documentElement.classList.add('loaded');
-      startAnimations();
-      }, 400); 
-  }
-
-  // Start all animations
-  function startAnimations() {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    
-    // Animate nav
-    document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav)').forEach(nav => {
-      if (window.gsap) window.gsap.to(nav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" });
-      else { nav.style.transform = 'translateY(0)'; nav.style.opacity = '1'; }
-    });
-
-    // Start text scrambling
-    initTextAnimations();
-
-    // Start image fade-in shortly after text starts
-    setTimeout(() => startImageFadeIn(), isMobile ? 300 : 100);
-    
-    // Init draggable
-    setTimeout(() => initDraggable(), 1000);
-  }
-
-  // Text scrambling animations with stagger reveal
-  function initTextAnimations() {
-    const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, .heading, p, span, div, a'))
-      .filter(el => {
-      const text = el.textContent?.trim();
-        const noChildren = el.children.length === 0;
-        const visible = getComputedStyle(el).display !== 'none';
-        const inView = el.getBoundingClientRect().top < window.innerHeight + 200;
-        return text && text.length > 2 && text.length < 150 && noChildren && visible && inView;
-      });
-
-    console.log(`🔍 Found ${elements.length} text elements`);
-
-    elements.forEach((el, i) => {
-      if (el.dataset.animInit || el.closest('.label-wrap')) return;
-      // Skip draggable content - handle separately
-      if (el.closest('.w-draggable') || el.closest('[data-draggable]')) return;
+    elements.forEach(el => {
+      if (el.closest('#preloader')) return;
+      el.classList.add('fade-in');
       
-      el.dataset.animInit = 'true';
-      
-      // Start hidden for stagger effect
-      el.style.opacity = '0';
-      
-      wrapLetters(el);
-      
-      // Stagger reveal with scramble
-    setTimeout(() => {
-        el.style.transition = 'opacity 0.3s ease';
-        el.style.opacity = '1';
-        scrambleElement(el, 1000);
-      }, i * 80);
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
+      else below.push(el);
     });
     
-    // Wrap letters in draggable links for hover effects (same as other links)
-    document.querySelectorAll('.w-draggable a, [data-draggable] a, .menu-link, .shimmer, .accordion, .chip-link').forEach(link => {
-      if (link.dataset.animInit) return;
-      if (link.querySelector('.letter')) return; // Already wrapped
-      
-      // Get direct text content only (not from nested elements)
-      const directText = Array.from(link.childNodes)
-        .filter(node => node.nodeType === Node.TEXT_NODE)
-        .map(node => node.textContent)
-        .join('').trim();
-      
-      // If has direct text, wrap it; otherwise try full textContent for simple links
-      const text = directText || (link.children.length === 0 ? link.textContent?.trim() : '');
-      
-      if (text && text.length > 1 && text.length < 150) {
-        link.dataset.animInit = 'true';
-        // For links with children, only wrap direct text nodes
-        if (link.children.length > 0 && directText) {
-          link.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-              const wrapper = document.createElement('span');
-              wrapper.innerHTML = node.textContent.split('').map(c => c === ' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
-              node.replaceWith(...wrapper.childNodes);
-            }
-          });
-    } else {
-          wrapLetters(link);
-        }
-        console.log(`🔗 Wrapped draggable link: ${text.substring(0, 30)}`);
-      }
-    });
+    // Sort by position, stagger viewport
+    viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    viewport.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 120));
     
-    // Force draggable content to be visible
-    document.querySelectorAll('.w-draggable, [data-draggable]').forEach(el => {
-      el.style.visibility = 'visible';
-      el.style.opacity = '1';
-    });
-
-    // Setup hover effects AFTER all letters are wrapped (including draggable)
-    setTimeout(initHoverEffects, 800);
-
-    // Special elements
-    const counter = document.querySelector('.counter');
-    if (counter && !counter.closest('.label-wrap')) setTimeout(() => scrambleLine(counter, 800), 200);
-    
-    const rotating = document.getElementById('rotating-text');
-    if (rotating) setTimeout(() => scrambleLine(rotating, 800), 400);
-    
-    const timeText = document.getElementById('time-text');
-    if (timeText) setTimeout(() => scrambleLine(timeText, 800), 600);
-
-    // Fade in toggle and yzy
-    setTimeout(() => {
-      document.querySelectorAll('.toggle, .toggle.bottom').forEach(t => {
-        t.classList.add('show-toggle');
-        t.style.transition = 'opacity 0.6s ease';
-        t.style.opacity = '1';
-        setTimeout(() => t.style.transition = '', 600);
-      });
+    // Scroll observer for below fold
+    if (below.length) {
+      let queue = [], processing = false;
       
-      document.querySelectorAll('.yzy, .flex-grid.yzy').forEach(y => {
-        y.style.transition = 'opacity 0.6s ease';
-        y.style.visibility = 'visible';
-        y.style.opacity = '1';
-        setTimeout(() => y.style.transition = '', 600);
-      });
-    }, 1500);
+      const processQueue = () => {
+        if (processing || !queue.length) return;
+        processing = true;
+        queue.shift().classList.add('visible');
+        setTimeout(() => { processing = false; processQueue(); }, 120);
+      };
+      
+      const obs = new IntersectionObserver(entries => {
+        entries.filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+          .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
+        processQueue();
+      }, { rootMargin: '100px', threshold: 0.1 });
+      
+      below.forEach(el => obs.observe(el));
+    }
   }
 
-  // Wrap letters in spans - preserve layout
-  function wrapLetters(el) {
-    // Store original white-space setting
-    const originalWhiteSpace = getComputedStyle(el).whiteSpace;
-    
-    // Wrap each character including spaces in spans to maintain consistent spacing
-    el.innerHTML = el.textContent.split('').map(c => {
-      if (c === ' ') {
-        return '<span class="letter" style="display:inline-block;width:0.3em">&nbsp;</span>';
-      }
-      return `<span class="letter" style="display:inline-block">${c}</span>`;
-    }).join('');
-    
-    // Prevent wrapping during animation
-    el.style.whiteSpace = 'nowrap';
-    el.dataset.originalWhiteSpace = originalWhiteSpace;
-  }
-
-  // Scramble element with letter spans
-  function scrambleElement(el, duration) {
-    const spans = el.querySelectorAll('.letter');
-    if (!spans.length) return;
-    
-    const original = Array.from(spans).map(s => s.textContent === '\u00A0' ? ' ' : s.textContent);
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let frame = 0;
-    const totalFrames = duration / 60;
-      
-    const interval = setInterval(() => {
-      spans.forEach((span, i) => {
-        const reveal = (i / spans.length) * totalFrames * 0.8;
-        if (frame > reveal) {
-          span.textContent = original[i] === ' ' ? '\u00A0' : original[i];
-        } else if (/[a-zA-Z0-9]/.test(original[i])) {
-          span.textContent = chars[Math.floor(Math.random() * chars.length)];
-        }
-      });
-      frame++;
-      if (frame >= totalFrames) {
-        clearInterval(interval);
-        spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
-        
-        // Restore original white-space after animation
-        if (el.dataset.originalWhiteSpace) {
-          el.style.whiteSpace = el.dataset.originalWhiteSpace;
-        }
-      }
-    }, 60);
-  }
-
-  // Simple line scramble for special elements
-  function scrambleLine(el, duration) {
-    const original = el.textContent;
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let frame = 0;
-    const totalFrames = duration / 50;
-    const revealSpeed = original.length / (totalFrames * 0.7);
-    
-    const interval = setInterval(() => {
-      let text = '';
-      for (let i = 0; i < original.length; i++) {
-        if (frame > i * revealSpeed) text += original[i];
-        else if (/[a-zA-Z]/.test(original[i])) text += chars[Math.floor(Math.random() * chars.length)];
-        else text += original[i];
-      }
-      el.textContent = text;
-      frame++;
-      
-      if (frame >= totalFrames) {
-        clearInterval(interval);
-        el.textContent = original;
-        
-        // Start special functionality
-        if (el.classList.contains('counter')) startTimeCounter(el);
-        if (el.id === 'rotating-text') startRotatingText(el);
-        if (el.id === 'time-text') startMilitaryTime(el);
-      }
-    }, 50);
-  }
-
-  // Hover effects - same scramble as page load
+  // === HOVER EFFECTS ===
   function initHoverEffects() {
-    // Use event delegation on document for all links (catches dynamically added/moved elements)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    
     document.addEventListener('mouseenter', e => {
-      const link = e.target.closest('a');
-      if (!link) return;
+      const link = e.target?.closest?.('a');
+      if (!link || link._scrambling) return;
+      
       const letters = link.querySelectorAll('.letter');
-      if (letters.length) startLinkScramble(link);
+      if (!letters.length) return;
+      
+      link._originals = Array.from(letters).map(l => l.textContent);
+      link._scrambling = setInterval(() => {
+        letters.forEach(l => {
+          if (/[a-zA-Z0-9]/.test(l.dataset.original)) 
+            l.textContent = chars[Math.floor(Math.random() * chars.length)];
+        });
+      }, 60);
     }, true);
     
     document.addEventListener('mouseleave', e => {
-      const link = e.target.closest('a');
-      if (!link) return;
-      stopLinkScramble(link);
+      const link = e.target?.closest?.('a');
+      if (!link || !link._scrambling) return;
+      
+      clearInterval(link._scrambling);
+      link._scrambling = null;
+      link.querySelectorAll('.letter').forEach((l, i) => {
+        l.textContent = link._originals?.[i] || l.dataset.original;
+      });
     }, true);
   }
 
-  function startLinkScramble(link) {
-    if (link._scrambleInterval) return;
-    const letters = link.querySelectorAll('.letter');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    link._originalLetters = Array.from(letters).map(l => l.textContent);
-    link._scrambleInterval = setInterval(() => {
-      letters.forEach(l => {
-        if (/[a-zA-Z0-9]/.test(l.textContent)) l.textContent = chars[Math.floor(Math.random() * chars.length)];
-      });
-    }, 80);
-  }
-
-  function stopLinkScramble(link) {
-    if (link._scrambleInterval) {
-      clearInterval(link._scrambleInterval);
-      link._scrambleInterval = null;
-      const letters = link.querySelectorAll('.letter');
-      if (link._originalLetters) letters.forEach((l, i) => l.textContent = link._originalLetters[i]);
+  // === SPECIAL ELEMENTS ===
+  function initSpecialElements() {
+    // Military time
+    const timeEl = document.getElementById('time-text');
+    if (timeEl) {
+      const update = () => {
+        const now = new Date();
+        timeEl.textContent = [now.getHours(), now.getMinutes(), now.getSeconds()]
+          .map(n => String(n).padStart(2, '0')).join(':');
+      };
+      update();
+      setInterval(update, 1000);
+    }
+    
+    // Rotating text
+    const rotating = document.getElementById('rotating-text');
+    if (rotating) {
+      const texts = ['DC', 'SF', 'LA'];
+      let i = 0;
+      setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
+    }
+    
+    // Counter
+    const counter = document.querySelector('.counter:not(#preloader-text)');
+    if (counter) {
+      const start = Date.now();
+      setInterval(() => {
+        const s = Math.floor((Date.now() - start) / 1000);
+        counter.textContent = String(Math.floor(s / 60)).padStart(2, '0') + String(s % 60).padStart(2, '0');
+      }, 1000);
     }
   }
 
-  // Image fade-in with IntersectionObserver - optimized for scroll performance
-  function startImageFadeIn() {
-    // Only fade reveal-wrap containers OR standalone images (not images inside reveal-wrap)
-    const revealWraps = document.querySelectorAll('.reveal-wrap');
-    const standaloneImages = document.querySelectorAll('img:not(#preloader img):not(.reveal-wrap img), video:not(.reveal-wrap video)');
-    const elements = [...revealWraps, ...standaloneImages];
-    if (!elements.length) return;
+  // === COLUMN TOGGLE ===
+  function initColumnToggle() {
+    const toggle = document.querySelector('.fixed-sizer');
+    const grid = document.querySelector('.flex-grid.yzy');
+    if (!toggle || !grid) return;
     
-    console.log(`🎭 Setting up fade-in for ${revealWraps.length} reveal-wraps + ${standaloneImages.length} standalone images`);
-    
-    const viewportElements = [];
-    const belowFold = [];
-    
-    elements.forEach((el, i) => {
-      if (el.dataset.fadeSetup) return;
-      el.dataset.fadeSetup = 'true';
-      
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewportElements.push({ el, i });
-      else belowFold.push(el);
-    });
-
-    // Sort viewport elements by vertical position for sequential cascade
-    viewportElements.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top);
-    
-    console.log(`🎭 Staggering ${viewportElements.length} viewport images`);
-    
-    // Animate viewport elements - 150ms stagger for visible cascade
-    viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 150);
-    });
-
-    // Scroll-triggered fade - same 100ms stagger
-    if (belowFold.length) {
-      let scrollQueue = [];
-      let isProcessing = false;
-      
-      function processQueue() {
-        if (isProcessing || !scrollQueue.length) return;
-        isProcessing = true;
-        const el = scrollQueue.shift();
-        el.classList.add('img-visible');
-    setTimeout(() => {
-          isProcessing = false;
-          processQueue();
-        }, 150); // 150ms stagger matching viewport
-      }
-      
-      const observer = new IntersectionObserver((entries) => {
-        // Sort entries by vertical position
-        const sorted = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        
-        sorted.forEach(entry => {
-          scrollQueue.push(entry.target);
-          observer.unobserve(entry.target);
-        });
-        processQueue();
-      }, { rootMargin: '100px', threshold: 0.1 }); // Trigger 100px before entering viewport
-      
-      belowFold.forEach(el => observer.observe(el));
-    }
-  }
-
-  // Draggable optimization
-  function initDraggable() {
-    const draggables = document.querySelectorAll('.w-draggable, [data-draggable="true"]');
-    if (!draggables.length || typeof jQuery === 'undefined' || !jQuery.fn.draggable) return;
-    
-    draggables.forEach(el => {
-      const $el = jQuery(el);
-      if ($el.data('ui-draggable')) $el.draggable('destroy');
-      
-      $el.draggable({
-        scroll: false, delay: 0, distance: 0, cursor: 'move',
-        start: function(e, ui) {
-          const offset = $el.offset();
-          $el.data('clickOffsetX', e.pageX - offset.left);
-          $el.data('clickOffsetY', e.pageY - offset.top);
-        },
-        drag: function(e, ui) {
-          const ox = $el.data('clickOffsetX'), oy = $el.data('clickOffsetY');
-          if (ox !== undefined) {
-            ui.position.left = e.pageX - ox - ui.helper.parent().offset().left;
-            ui.position.top = e.pageY - oy - ui.helper.parent().offset().top;
-          }
-        }
-      });
+    let cols = 4;
+    toggle.addEventListener('click', () => {
+      cols = cols === 2 ? 4 : cols - 1;
+      grid.style.columnCount = cols;
+      toggle.textContent = cols === 2 ? '−' : '+';
     });
   }
 
-  // Special element functions
-  function startTimeCounter(el) {
-    el.textContent = '0000';
-    const start = Date.now();
-    setInterval(() => {
-      const s = Math.floor((Date.now() - start) / 1000);
-      el.textContent = String(Math.floor(s / 60)).padStart(2, '0') + String(s % 60).padStart(2, '0');
-    }, 1000);
-  }
-
-  function startRotatingText(el) {
-    const texts = ['DC', 'SF', 'LA'];
-    let i = 0;
-    setInterval(() => { i = (i + 1) % texts.length; el.textContent = texts[i]; }, 2000);
-  }
-
-  function startMilitaryTime(el) {
-    function update() {
-      const now = new Date();
-      el.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-    }
-    update();
-    setInterval(update, 1000);
-  }
-
-  // Page transition
+  // === PAGE TRANSITIONS ===
   document.addEventListener('click', e => {
-    const link = e.target.closest('a[href]');
+    const link = e.target?.closest?.('a[href]');
     if (!link) return;
+    
     const href = link.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') ||
-        link.hasAttribute('data-w-id') || link.closest('[data-w-id]') ||
-        !(href.startsWith('/') || href.startsWith(window.location.origin))) return;
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+    if (link.hasAttribute('data-w-id') || link.closest('[data-w-id]')) return;
+    if (!(href.startsWith('/') || href.startsWith(window.location.origin))) return;
     
     e.preventDefault();
-    if (window.gsap) {
-      window.gsap.to('body', { opacity: 0, duration: 0.5, ease: "power2.inOut", onComplete: () => window.location.href = href });
-    } else window.location.href = href;
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.4s';
+    setTimeout(() => window.location.href = href, 400);
   }, true);
 
-  // Initialize - show preloader IMMEDIATELY, load GSAP in parallel
-  function init() {
-    // Show preloader right away - don't wait for anything
-    runPreloader();
-    
-    // Load GSAP in parallel for animations later
-    loadGSAP(() => {
-      console.log('✅ GSAP ready for animations');
-    });
+  // === INIT ===
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPreloader);
+  } else {
+    initPreloader();
   }
-
-  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
-  })();
-  
-// Column toggle for .yzy grid
-  (function() {
-  const sizer = document.querySelector('.heading.small.link.muted.disabled.fixed-sizer');
-  const grid = document.querySelector('.flex-grid.yzy');
-  if (!sizer || !grid) return;
-  
-  let cols = parseInt(getComputedStyle(grid).columnCount) || 4;
-  let increasing = false;
-  sizer.textContent = '+';
-  
-  sizer.addEventListener('click', e => {
-    e.preventDefault();
-    if (increasing) { cols++; if (cols >= 4) { cols = 4; increasing = false; sizer.textContent = '+'; } }
-    else { cols--; if (cols <= 2) { cols = 2; increasing = true; sizer.textContent = '−'; } }
-    grid.style.columnCount = cols;
-  });
 })();
-  
-console.log('🚀 Portfolio animations v4.0 ready');
-  
