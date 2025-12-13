@@ -1,10 +1,10 @@
-// Portfolio Animations v9.3 - Timer, Rotator, Stagger, Lenis
+// Portfolio Animations v9.4 - Timer, Rotator, Stagger, Lenis
 (function() {
   // Inject CSS immediately to prevent flash
   const style = document.createElement('style');
   style.textContent = `
-    h1,h2,h3,h4,h5,h6,p,a,img:not(.preview),video:not(.preview),.reveal-wrap,.heading{opacity:0}
-    .stagger-visible{opacity:1;transition:opacity 0.6s ease}
+    .reveal-wrap{opacity:0}
+    .reveal-visible{opacity:1}
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
   `;
@@ -49,10 +49,10 @@
     }, 2000);
     }
 
-    // Stagger fade-in all elements (exclude .preview)
-    const elements = document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,a,img:not(.preview),video:not(.preview),.reveal-wrap,.heading');
-    elements.forEach((el, i) => {
-      setTimeout(() => el.classList.add('stagger-visible'), i * 50);
+    // Stagger reveal-wrap elements (instant 0 to 1, no transition)
+    const wraps = document.querySelectorAll('.reveal-wrap');
+    wraps.forEach((el, i) => {
+      setTimeout(() => el.classList.add('reveal-visible'), i * 50);
     });
   }
 
