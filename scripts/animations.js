@@ -1,4 +1,4 @@
-// Portfolio Animations v11.3 - Stagger text and links too
+// Portfolio Animations v11.4 - Instant segments, no fade
 (function() {
   const SEGMENTS = 40;
   
@@ -7,9 +7,9 @@
   css.textContent = `
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0}
-    #preloader-bar .seg{height:1px;background:#fff;opacity:0;flex:1}
-    #preloader-bar .seg.filled{opacity:1}
+    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
+    #preloader-bar .seg{height:1px;background:transparent;flex:1}
+    #preloader-bar .seg.filled{background:#fff}
     .reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0!important}
     .reveal-wrap.visible,h1.visible,h2.visible,h3.visible,h4.visible,h5.visible,h6.visible,p.visible,a.visible,.heading.visible{opacity:1!important}
   `;
@@ -27,10 +27,10 @@
 
   let filledCount = 0;
   let complete = false;
+  const segs = bar.querySelectorAll('.seg');
 
   function fillSegment() {
     if (filledCount >= SEGMENTS || complete) return;
-    const segs = bar.querySelectorAll('.seg');
     if (segs[filledCount]) {
       segs[filledCount].classList.add('filled');
       filledCount++;
@@ -38,22 +38,28 @@
   }
 
   function fillRemaining() {
-    while (filledCount < SEGMENTS) {
-      fillSegment();
-    }
+    while (filledCount < SEGMENTS) fillSegment();
   }
 
   function finish() {
     if (complete) return;
     complete = true;
     fillRemaining();
-    bar.remove(); // Instant removal, no fade
+    bar.remove();
     init();
   }
 
+  // Add bar immediately
+  function addBar() {
+    if (document.body) {
+      document.body.prepend(bar);
+      } else {
+      requestAnimationFrame(addBar);
+    }
+  }
+  addBar();
+
   function onReady() {
-    document.body.prepend(bar);
-    
     const images = document.querySelectorAll('img:not(.preview)');
     const total = images.length;
     
