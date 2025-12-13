@@ -1,44 +1,184 @@
-// Portfolio Animations v7.4 - No preloader, fast loading
+// Portfolio Animations v7.3 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-// Inject CSS for image fade
+// INSTANT: Add preloader with scramble effects
 (function() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+  
+  // Inject CSS immediately
   const style = document.createElement('style');
-  style.id = 'anim-styles';
+  style.id = 'preloader-styles';
   style.textContent = `
-    .img-fade{opacity:0;transition:opacity 0.6s ease-out}
-    .img-fade.visible{opacity:1}
-    .toggle,.yzy{opacity:0;transition:opacity 0.6s ease}
-    .toggle.show,.yzy.show{opacity:1}
+    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
+    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
+    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
+    #preloader .digit{display:inline-block}
+    html.loaded .toggle,html.loaded .toggle.bottom,html.loaded .yzy,html.loaded .flex-grid.yzy{opacity:0}
+    .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
+    .nav:not(.fake-nav){opacity:0}
+    .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
+    .reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
+    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    .reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1!important;visibility:visible!important}
+    img:not(.reveal-wrap img):not(#preloader img):not(.img-visible),video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;visibility:hidden!important}
+    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    .lenis.lenis-smooth{scroll-behavior:auto}
   `;
-  document.head.appendChild(style);
+  (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
+  
+  // Create preloader with scrambled initial text
+  const p = document.createElement('div');
+  p.id = 'preloader';
+  p.innerHTML = `<div class="counter"><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span></div>`;
+  
+  function injectAndStart() {
+    if (document.getElementById('preloader')) return;
+    if (!document.body) {
+      setTimeout(injectAndStart, 1);
+          return;
+        }
+    document.body.insertBefore(p, document.body.firstChild);
+    
+    const digits = p.querySelectorAll('.digit');
+    const target = ['0', '0', '1'];
+    
+    // Phase 1: Scramble-in to "001" (500ms)
+    let frame = 0;
+    const scrambleIn = setInterval(() => {
+      frame++;
+      digits.forEach((d, i) => {
+        // Reveal each digit progressively
+        if (frame > (i + 1) * 3) d.textContent = target[i];
+        else d.textContent = randChar();
+      });
+      if (frame >= 12) {
+        clearInterval(scrambleIn);
+        // Phase 2: Count up
+        let count = 1;
+        const countUp = setInterval(() => {
+          count += Math.floor(Math.random() * 15) + 5;
+          if (count > 100) count = 100;
+          const str = count.toString().padStart(3, '0');
+          digits[0].textContent = str[0];
+          digits[1].textContent = str[1];
+          digits[2].textContent = str[2];
+          if (count >= 100) {
+            clearInterval(countUp);
+            p.dataset.complete = 'true'; // Signal ready for scramble-out
+          }
+        }, 80);
+      }
+    }, 40);
+  }
+  injectAndStart();
 })();
 
-console.log('🚀 Portfolio animations v7.4 loading...');
+console.log('🚀 Portfolio animations v6.7 loading...');
 
 (function() {
-  // Start animations immediately on DOMContentLoaded
-  function startAnimations() {
-    try {
-      console.log('🎬 Starting animations');
-      initTextAnimations();
-      startImageFadeIn();
-      
-      // Show toggle/yzy
-        setTimeout(() => {
-        document.querySelectorAll('.toggle, .yzy').forEach(el => el.classList.add('show'));
-      }, 500);
-      
-      // Init draggable and hover
-    setTimeout(() => {
-        initHoverEffects();
-        initDraggable();
-      }, 800);
-    } catch(err) {
-      console.error('❌ Animation error:', err);
-      // Fallback: show all images
-      document.querySelectorAll('.img-fade').forEach(el => el.classList.add('visible'));
+  let preloaderComplete = false;
+
+  // Load GSAP if not available
+  function loadGSAP(callback) {
+    if (typeof window.gsap !== 'undefined') {
+      console.log('✅ GSAP available');
+      if (!window.gsap.ScrollTrigger) {
+        const st = document.createElement('script');
+        st.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
+        st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
+        document.head.appendChild(st);
+      } else callback();
+      return;
     }
+    const gsap = document.createElement('script');
+    gsap.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
+    gsap.onload = () => {
+      const st = document.createElement('script');
+      st.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
+      st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
+      document.head.appendChild(st);
+    };
+    document.head.appendChild(gsap);
+  }
+
+  // Create preloader (or use existing one from immediate injection)
+  function createPreloader() {
+    let preloader = document.getElementById('preloader');
+    if (preloader) return preloader;
+    
+    preloader = document.createElement('div');
+    preloader.id = 'preloader';
+    preloader.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
+    document.body.appendChild(preloader);
+    return preloader;
+  }
+
+  // Run preloader - simple timed completion (counter already animating from immediate IIFE)
+  function runPreloader() {
+    // Just complete after 1.5s - counter animation is already running
+    setTimeout(completePreloader, 1500);
+  }
+
+  // Complete preloader with scramble-out effect
+  function completePreloader() {
+    if (preloaderComplete) return;
+    preloaderComplete = true;
+    
+    const preloader = document.getElementById('preloader');
+    const digits = preloader?.querySelectorAll('.digit');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+    
+    // Phase 3: Scramble-out effect (400ms)
+    let frame = 0;
+    const scrambleOut = setInterval(() => {
+      frame++;
+      if (digits) {
+        digits.forEach(d => d.textContent = randChar());
+      }
+      if (frame >= 10) {
+        clearInterval(scrambleOut);
+        // Fade out
+        if (window.gsap) {
+          window.gsap.to(preloader, {
+            opacity: 0, duration: 0.3, ease: "power2.out",
+        onComplete: () => { 
+          preloader.remove(); 
+              document.documentElement.classList.add('loaded');
+              setTimeout(startAnimations, 200);
+        }
+      });
+    } else {
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
+            document.documentElement.classList.add('loaded');
+            startAnimations();
+          }, 300); 
+        }
+      }
+    }, 40);
+  }
+
+  // Start all animations
+  function startAnimations() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    // Animate nav
+    document.querySelectorAll('.nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom):not(.middle-nav):not(.bottom-nav)').forEach(nav => {
+      if (window.gsap) window.gsap.to(nav, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" });
+      else { nav.style.transform = 'translateY(0)'; nav.style.opacity = '1'; }
+    });
+
+    // Start text scrambling
+    initTextAnimations();
+
+    // Start image fade-in shortly after text starts
+    setTimeout(() => startImageFadeIn(), isMobile ? 300 : 100);
+    
+    // Init draggable
+    setTimeout(() => initDraggable(), 1000);
   }
 
   // Text scrambling animations with stagger reveal
@@ -67,7 +207,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
       wrapLetters(el);
       
       // Stagger reveal with scramble
-          setTimeout(() => {
+    setTimeout(() => {
         el.style.transition = 'opacity 0.3s ease';
         el.style.opacity = '1';
         scrambleElement(el, 1000);
@@ -99,7 +239,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
               node.replaceWith(...wrapper.childNodes);
             }
           });
-      } else {
+    } else {
           wrapLetters(link);
         }
         console.log(`🔗 Wrapped draggable link: ${text.substring(0, 30)}`);
@@ -171,7 +311,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
     let frame = 0;
     const totalFrames = duration / 60;
       
-      const interval = setInterval(() => {
+    const interval = setInterval(() => {
       spans.forEach((span, i) => {
         const reveal = (i / spans.length) * totalFrames * 0.8;
         if (frame > reveal) {
@@ -182,7 +322,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
       });
       frame++;
       if (frame >= totalFrames) {
-          clearInterval(interval);
+        clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
         
         // Restore original white-space after animation
@@ -227,7 +367,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
   function initHoverEffects() {
     // Use event delegation on document for all links
     document.addEventListener('mouseenter', e => {
-      if (!e.target?.closest) return; // Safety check
+      if (!e.target?.closest) return;
       const link = e.target.closest('a');
       if (!link) return;
       const letters = link.querySelectorAll('.letter');
@@ -235,7 +375,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
     }, true);
     
     document.addEventListener('mouseleave', e => {
-      if (!e.target?.closest) return; // Safety check
+      if (!e.target?.closest) return;
       const link = e.target.closest('a');
       if (!link) return;
       stopLinkScramble(link);
@@ -263,52 +403,66 @@ console.log('🚀 Portfolio animations v7.4 loading...');
     }
   }
 
-  // Image fade-in with stagger - SAME timing for viewport and scroll
+  // Image fade-in with IntersectionObserver - optimized for scroll performance
   function startImageFadeIn() {
-    const elements = document.querySelectorAll('.reveal-wrap, img:not(.reveal-wrap img), video');
-    const viewport = [], below = [];
+    // Only fade reveal-wrap containers OR standalone images (not images inside reveal-wrap)
+    const revealWraps = document.querySelectorAll('.reveal-wrap');
+    const standaloneImages = document.querySelectorAll('img:not(#preloader img):not(.reveal-wrap img), video:not(.reveal-wrap video)');
+    const elements = [...revealWraps, ...standaloneImages];
+    if (!elements.length) return;
     
-    elements.forEach(el => {
-      el.classList.add('img-fade'); // Start hidden
+    console.log(`🎭 Setting up fade-in for ${revealWraps.length} reveal-wraps + ${standaloneImages.length} standalone images`);
+    
+    const viewportElements = [];
+    const belowFold = [];
+    
+    elements.forEach((el, i) => {
+      if (el.dataset.fadeSetup) return;
+      el.dataset.fadeSetup = 'true';
+      
       const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
-      else below.push(el);
+      if (rect.top < window.innerHeight && rect.bottom > 0) viewportElements.push({ el, i });
+      else belowFold.push(el);
     });
+
+    // Sort viewport elements by vertical position for sequential cascade
+    viewportElements.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top);
     
-    // Force reflow so opacity:0 takes effect
-    void document.body.offsetHeight;
-    
-    // Sort by position
-    viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    console.log(`🎭 Staggering ${viewport.length} viewport + ${below.length} scroll images`);
-    
-    // SAME stagger for both: 100ms between each
-    const STAGGER = 100;
-    
-    // Viewport stagger
-    viewport.forEach((el, i) => {
-      setTimeout(() => el.classList.add('visible'), i * STAGGER);
+    // Animate viewport elements with consistent stagger
+    viewportElements.forEach(({ el }, i) => {
+      setTimeout(() => el.classList.add('img-visible'), i * 150);
     });
-    
-    // Scroll stagger - queue system with same timing
-    if (below.length) {
-      let queue = [], processing = false;
+
+    // Scroll-triggered fade - stagger matching viewport behavior
+    if (belowFold.length) {
+      let scrollQueue = [];
+      let isProcessing = false;
       
-      const processQueue = () => {
-        if (processing || !queue.length) return;
-        processing = true;
-        queue.shift().classList.add('visible');
-        setTimeout(() => { processing = false; processQueue(); }, STAGGER);
-      };
+      function processQueue() {
+        if (isProcessing || !scrollQueue.length) return;
+        isProcessing = true;
+        const el = scrollQueue.shift();
+        el.classList.add('img-visible');
+    setTimeout(() => {
+          isProcessing = false;
+          processQueue();
+        }, 150); // Same 150ms stagger as viewport
+      }
       
-      const obs = new IntersectionObserver(entries => {
-        entries.filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-          .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
+      const observer = new IntersectionObserver((entries) => {
+        // Sort entries by vertical position
+        const sorted = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        
+        sorted.forEach(entry => {
+          scrollQueue.push(entry.target);
+          observer.unobserve(entry.target);
+        });
         processQueue();
-      }, { rootMargin: '0px', threshold: 0 });
+      }, { rootMargin: '-50px', threshold: 0.1 });
       
-      below.forEach(el => obs.observe(el));
+      belowFold.forEach(el => observer.observe(el));
     }
   }
 
@@ -380,9 +534,15 @@ console.log('🚀 Portfolio animations v7.4 loading...');
     } else window.location.href = href;
   }, true);
 
-  // Initialize immediately
+  // Initialize - show preloader IMMEDIATELY, load GSAP in parallel
   function init() {
-    startAnimations();
+    // Show preloader right away - don't wait for anything
+    runPreloader();
+    
+    // Load GSAP in parallel for animations later
+    loadGSAP(() => {
+      console.log('✅ GSAP ready for animations');
+    });
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
