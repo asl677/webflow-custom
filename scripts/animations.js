@@ -1,4 +1,4 @@
-// Portfolio Animations v7.3 - Streamlined
+// Portfolio Animations v7.3++ - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
 // INSTANT: Add preloader with scramble effects
@@ -19,10 +19,10 @@
     .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
     .reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.2s ease-out,visibility 0s}
     .reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1!important;visibility:visible!important}
     img:not(.reveal-wrap img):not(#preloader img):not(.img-visible),video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;visibility:hidden!important}
-    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
+    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.2s ease-out,visibility 0s}
     .lenis.lenis-smooth{scroll-behavior:auto}
   `;
   (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
@@ -430,7 +430,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     
     // Animate viewport elements with consistent stagger
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 150);
+      setTimeout(() => el.classList.add('img-visible'), i * 250);
     });
 
     // Scroll-triggered fade - stagger matching viewport behavior
