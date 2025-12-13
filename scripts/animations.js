@@ -1,4 +1,4 @@
-// Portfolio Animations v10.9 - Segmented preloader (40 units)
+// Portfolio Animations v11.0 - Segmented preloader + stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -10,6 +10,8 @@
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0}
     #preloader-bar .seg{height:1px;background:#fff;opacity:0;flex:1}
     #preloader-bar .seg.filled{opacity:1}
+    .reveal-wrap{opacity:0}
+    .reveal-wrap.visible{opacity:1}
   `;
   document.head.appendChild(css);
 
@@ -61,7 +63,7 @@
     
     if (total === 0) {
       // No images - fill segments over time
-      const interval = setInterval(() => {
+    const interval = setInterval(() => {
         fillSegment();
         if (filledCount >= SEGMENTS) {
           clearInterval(interval);
@@ -70,7 +72,7 @@
       }, 30);
       return;
     }
-
+    
     let loaded = 0;
     const segsPerImage = SEGMENTS / total;
 
@@ -86,7 +88,7 @@
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
         onLoad();
-      } else {
+    } else {
         img.addEventListener('load', onLoad);
         img.addEventListener('error', onLoad);
       }
@@ -116,10 +118,16 @@
     // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-      const texts = ['DC', 'SF', 'LA'];
+    const texts = ['DC', 'SF', 'LA'];
       let i = 0;
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
+
+    // Stagger reveal-wrap elements
+    const wraps = document.querySelectorAll('.reveal-wrap');
+    wraps.forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 50);
+    });
   }
 
   if (document.readyState === 'loading') {
@@ -127,4 +135,5 @@
   } else {
     onReady();
   }
-})();
+  })();
+  
