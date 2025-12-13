@@ -1,80 +1,39 @@
-// Portfolio Animations v7.3 - Streamlined
+// Portfolio Animations v8.0 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-// INSTANT: Add preloader with scramble effects
+// INSTANT PRELOADER - inject before anything else
 (function() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const randChar = () => chars[Math.floor(Math.random() * chars.length)];
-  
-  // Inject CSS immediately
-  const style = document.createElement('style');
-  style.id = 'preloader-styles';
-  style.textContent = `
-    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
-    #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1!important;visibility:visible!important}
-    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
-    #preloader .digit{display:inline-block}
-    html.loaded .toggle,html.loaded .toggle.bottom,html.loaded .yzy,html.loaded .flex-grid.yzy{opacity:0}
-    .toggle.show-toggle,.toggle.bottom.show-toggle{transition:opacity 0.6s ease}
-    .nav:not(.fake-nav){opacity:0}
-    .nav-middle,.nav-bottom,.middle-nav,.bottom-nav,.nav[class*="middle"],.nav[class*="bottom"]{opacity:1!important}
-    .reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
-    .reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1!important;visibility:visible!important}
-    img:not(.reveal-wrap img):not(#preloader img):not(.img-visible),video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;visibility:hidden!important}
-    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 0.8s ease-out,visibility 0s}
-    .lenis.lenis-smooth{scroll-behavior:auto}
+  // Critical CSS - inject FIRST thing
+  const css = document.createElement('style');
+  css.id = 'preloader-css';
+  css.textContent = `
+    #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    #preloader .counter{opacity:1;transition:opacity 0.4s ease}
+    html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
+    html.loaded .toggle,html.loaded .yzy{opacity:0}
+    .toggle.show-toggle{transition:opacity 0.6s ease}
+    .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
+    .reveal-wrap,.reveal-wrap img,.reveal-wrap video{opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+    .reveal-wrap.img-visible,.reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1}
+    img:not(.reveal-wrap img):not(#preloader img),video:not(.reveal-wrap video){opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
+    img.img-visible,video.img-visible{opacity:1}
   `;
-  (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
+  document.documentElement.appendChild(css);
   
-  // Create preloader with scrambled initial text
-  const p = document.createElement('div');
-  p.id = 'preloader';
-  p.innerHTML = `<div class="counter"><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span></div>`;
+  // Create preloader element immediately  
+  const pre = document.createElement('div');
+  pre.id = 'preloader';
+  pre.innerHTML = '<p class="heading small link muted counter">001</p>';
   
-  function injectAndStart() {
-    if (document.getElementById('preloader')) return;
-    if (!document.body) {
-      setTimeout(injectAndStart, 1);
-      return;
-    }
-    document.body.insertBefore(p, document.body.firstChild);
-    
-    const digits = p.querySelectorAll('.digit');
-    const target = ['0', '0', '1'];
-    
-    // Phase 1: Scramble-in to "001" (500ms)
-    let frame = 0;
-    const scrambleIn = setInterval(() => {
-      frame++;
-      digits.forEach((d, i) => {
-        // Reveal each digit progressively
-        if (frame > (i + 1) * 3) d.textContent = target[i];
-        else d.textContent = randChar();
-      });
-      if (frame >= 12) {
-        clearInterval(scrambleIn);
-        // Phase 2: Count up
-        let count = 1;
-        const countUp = setInterval(() => {
-          count += Math.floor(Math.random() * 15) + 5;
-          if (count > 100) count = 100;
-          const str = count.toString().padStart(3, '0');
-          digits[0].textContent = str[0];
-          digits[1].textContent = str[1];
-          digits[2].textContent = str[2];
-          if (count >= 100) {
-            clearInterval(countUp);
-            p.dataset.complete = 'true'; // Signal ready for scramble-out
-          }
-        }, 80);
-      }
-    }, 40);
+  // Insert as soon as body exists
+  if (document.body) {
+    document.body.prepend(pre);
+      } else {
+    document.addEventListener('DOMContentLoaded', () => document.body.prepend(pre), { once: true });
   }
-  injectAndStart();
 })();
 
-console.log('🚀 Portfolio animations v6.7 loading...');
+console.log('🚀 Portfolio animations v8.0 loading...');
 
 (function() {
   let preloaderComplete = false;
@@ -114,51 +73,70 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     return preloader;
   }
 
-  // Run preloader - simple timed completion (counter already animating from immediate IIFE)
+  // Run preloader with smooth counter and scramble
   function runPreloader() {
-    // Just complete after 1.5s - counter animation is already running
-    setTimeout(completePreloader, 1500);
+    const preloader = document.getElementById('preloader');
+    const counter = preloader?.querySelector('.counter');
+    if (!counter) { setTimeout(completePreloader, 500); return; }
+    
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+    
+    // Phase 1: Smooth scramble intro (600ms)
+    let introFrame = 0;
+    const introInterval = setInterval(() => {
+      introFrame++;
+      const progress = introFrame / 15;
+      let text = '';
+      for (let i = 0; i < 3; i++) {
+        if (progress > (i + 1) / 4) text += '001'[i];
+        else text += randChar();
+      }
+      counter.textContent = text;
+      if (introFrame >= 15) {
+        clearInterval(introInterval);
+        counter.textContent = '001';
+        
+        // Phase 2: Count up smoothly
+        let count = 1;
+        const countInterval = setInterval(() => {
+          count = Math.min(100, count + Math.floor(Math.random() * 12) + 3);
+          counter.textContent = count.toString().padStart(3, '0');
+          if (count >= 100) {
+            clearInterval(countInterval);
+            // Phase 3: Scramble out
+            setTimeout(() => {
+              let outFrame = 0;
+              const outInterval = setInterval(() => {
+                outFrame++;
+                counter.textContent = randChar() + randChar() + randChar();
+                if (outFrame >= 8) {
+                  clearInterval(outInterval);
+                  completePreloader();
+                }
+              }, 50);
+            }, 200);
+          }
+        }, 60);
+      }
+    }, 40);
   }
 
-  // Complete preloader with scramble-out effect
+  // Complete preloader - fade out and start animations
   function completePreloader() {
     if (preloaderComplete) return;
     preloaderComplete = true;
     
     const preloader = document.getElementById('preloader');
-    const digits = preloader?.querySelectorAll('.digit');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+    const counter = preloader?.querySelector('.counter');
     
-    // Phase 3: Scramble-out effect (400ms)
-    let frame = 0;
-    const scrambleOut = setInterval(() => {
-      frame++;
-      if (digits) {
-        digits.forEach(d => d.textContent = randChar());
-      }
-      if (frame >= 10) {
-        clearInterval(scrambleOut);
-        // Fade out
-        if (window.gsap) {
-          window.gsap.to(preloader, {
-            opacity: 0, duration: 0.3, ease: "power2.out",
-            onComplete: () => { 
-              preloader.remove(); 
-              document.documentElement.classList.add('loaded');
-              setTimeout(startAnimations, 200);
-            }
-          });
-        } else {
-          preloader.style.opacity = '0'; 
-          setTimeout(() => { 
-            preloader.remove(); 
-            document.documentElement.classList.add('loaded');
-            startAnimations();
-          }, 300); 
-        }
-      }
-    }, 40);
+    if (counter) counter.style.opacity = '0';
+    
+          setTimeout(() => {
+      if (preloader) preloader.remove();
+      document.documentElement.classList.add('loaded');
+      startAnimations();
+      }, 400); 
   }
 
   // Start all animations
@@ -426,12 +404,12 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     // Sort viewport elements by vertical position for sequential cascade
     viewportElements.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top);
     
-    // Animate viewport elements with consistent stagger
+    // Animate viewport elements - 100ms stagger like Webflow Tricks hero text
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 150);
+      setTimeout(() => el.classList.add('img-visible'), i * 100);
     });
 
-    // Scroll-triggered fade - stagger matching viewport behavior
+    // Scroll-triggered fade - same 100ms stagger
     if (belowFold.length) {
       let scrollQueue = [];
       let isProcessing = false;
@@ -444,7 +422,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
         setTimeout(() => {
           isProcessing = false;
           processQueue();
-        }, 150); // Same 150ms stagger as viewport
+        }, 100); // 100ms stagger matching viewport
       }
       
       const observer = new IntersectionObserver((entries) => {
@@ -458,7 +436,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
           observer.unobserve(entry.target);
         });
         processQueue();
-      }, { rootMargin: '-50px', threshold: 0.1 });
+      }, { rootMargin: '50px', threshold: 0.05 }); // Trigger 50px before entering viewport
       
       belowFold.forEach(el => observer.observe(el));
     }
