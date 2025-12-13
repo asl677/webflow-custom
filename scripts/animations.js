@@ -1,10 +1,10 @@
-// Portfolio Animations v9.8 - Timer, Rotator, Stagger, Lenis, Real Preloader
+// Portfolio Animations v9.9 - Timer, Rotator, Stagger, Lenis, Choppy Preloader
 // Immediate CSS + preloader injection
 document.write(`
 <style id="pre-anim">
 .reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}
 .anim-visible{opacity:1!important}
-#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:5%;transition:width 0.5s ease-out}
+#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}
 </style>
 <div id="line-preloader"></div>
 `);
@@ -19,17 +19,18 @@ document.write(`
   function updateProgress() {
     if (!line || complete) return;
     
-    // Calculate target (reserve last 10% for completion)
-    const targetWidth = total > 0 ? 5 + (loaded / total) * 85 : 5;
+    // Calculate target as stepped segments (instant jumps)
+    const percent = total > 0 ? loaded / total : 0;
+    const targetWidth = Math.floor(percent * 10) * 9; // 0, 9, 18, 27... 90%
     
-    // Smoothly animate to target
+    // Instant jump to new segment
     if (targetWidth > currentWidth) {
       currentWidth = targetWidth;
       line.style.width = currentWidth + '%';
     }
     
     if (loaded >= total && total > 0) {
-      setTimeout(completePreloader, 300);
+      setTimeout(completePreloader, 100);
     }
   }
 
@@ -37,12 +38,11 @@ document.write(`
     if (complete) return;
     complete = true;
     line.style.width = '100%';
-          setTimeout(() => {
-      line.style.transition = 'opacity 0.3s';
+        setTimeout(() => {
       line.style.opacity = '0';
-      setTimeout(() => line.remove(), 300);
+      setTimeout(() => line.remove(), 100);
       startAnimations();
-      }, 400); 
+    }, 150);
   }
 
   function trackImages() {
@@ -54,19 +54,21 @@ document.write(`
     currentWidth = 10;
     
     if (total === 0) {
-      // No images, animate line slowly then complete
-      let fakeProgress = 10;
+      // No images, choppy segmented progress
+      let segment = 0;
+      const segments = [15, 35, 55, 70, 90];
       const fakeInterval = setInterval(() => {
-        fakeProgress += 15;
-        line.style.width = Math.min(fakeProgress, 90) + '%';
-        if (fakeProgress >= 90) {
+        if (segment < segments.length) {
+          line.style.width = segments[segment] + '%';
+          segment++;
+      } else {
           clearInterval(fakeInterval);
           completePreloader();
         }
-      }, 200);
-      return;
-    }
-    
+      }, 150);
+          return;
+        }
+        
     // Check already loaded images
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
