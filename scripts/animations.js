@@ -3,15 +3,15 @@
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS
+  // Inject CSS - exclude preview/lightbox images
   const style = document.createElement('style');
   style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
-    html:not(.loaded) .reveal-wrap,
-    html:not(.loaded) img:not(#preloader img),
-    html:not(.loaded) video{opacity:0}
+    html:not(.loaded) .reveal-wrap:not(.w-lightbox-content *),
+    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not([src*="preview"]):not(.yzy img),
+    html:not(.loaded) video:not(.yzy video){opacity:0}
   `;
   document.head.appendChild(style);
 
@@ -257,8 +257,12 @@
 
   // Image fade-in using inline styles (no CSS class conflicts)
   function startImageFadeIn() {
-    const elements = [...document.querySelectorAll('.reveal-wrap'), 
-                      ...document.querySelectorAll('img:not(.reveal-wrap img),video:not(.reveal-wrap video)')];
+    // Exclude lightbox, preview, and yzy images
+    const elements = [
+      ...document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)'), 
+      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not([src*="preview"]):not(.yzy img)'),
+      ...document.querySelectorAll('video:not(.reveal-wrap video):not(.yzy video)')
+    ];
     if (!elements.length) return;
     
     const viewport = [], below = [];
