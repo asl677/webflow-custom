@@ -119,11 +119,16 @@
       }, i * 80);
     });
     
-    // Draggable links
+    // Draggable links - only wrap direct text nodes, preserve children
     document.querySelectorAll('.w-draggable a,[data-draggable] a,.menu-link,.shimmer,.accordion,.chip-link').forEach(link => {
       if (link.dataset.animInit || link.querySelector('.letter')) return;
+      
+      // Only process if has direct text content
+      const hasDirectText = Array.from(link.childNodes).some(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+      if (!hasDirectText && link.children.length > 0) return; // Has children but no direct text
+      
       const text = link.textContent?.trim();
-      if (text && text.length > 1 && text.length < 150) {
+      if (text && text.length > 1 && text.length < 150 && link.children.length === 0) {
         link.dataset.animInit = 'true';
         wrapLetters(link);
       }
