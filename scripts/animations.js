@@ -15,10 +15,10 @@
     .toggle,.toggle:hover,.toggle:active,.toggle:focus,.fixed-sizer,.fixed-sizer:hover,.fixed-sizer:active,.fixed-sizer:focus{background:transparent!important;outline:none!important}
       .nav:not(.fake-nav){opacity:0}
     .nav-middle,.nav-bottom,.middle-nav,.bottom-nav{opacity:1!important}
-    .reveal-wrap:not(.img-visible){opacity:0!important;visibility:hidden!important}
-    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.2s ease-out}
-    img:not(.reveal-wrap img):not(.img-visible),video:not(.reveal-wrap video):not(.img-visible){opacity:0!important;visibility:hidden!important}
-    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important;transition:opacity 1.2s ease-out}
+    .reveal-wrap{opacity:0;visibility:hidden;transition:opacity 1.2s ease-out,visibility 0s}
+    .reveal-wrap.img-visible{opacity:1!important;visibility:visible!important}
+    img:not(.reveal-wrap img),video:not(.reveal-wrap video){opacity:0;visibility:hidden;transition:opacity 1.2s ease-out,visibility 0s}
+    img.img-visible,video.img-visible{opacity:1!important;visibility:visible!important}
     `;
     document.head.appendChild(style);
 
