@@ -1,36 +1,24 @@
-// Portfolio Animations v8.0 - Streamlined
+// Portfolio Animations v8.1 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-// INSTANT PRELOADER - inject before anything else
+// INSTANT PRELOADER - inject inline in <head> before body renders
 (function() {
-  // Critical CSS - inject FIRST thing
-  const css = document.createElement('style');
-  css.id = 'preloader-css';
-  css.textContent = `
-    #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none}
-    #preloader .counter{opacity:1;transition:opacity 0.4s ease}
-    html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
-    .toggle,.yzy{opacity:0}
-    .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
-    .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
-    .reveal-wrap{opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
-    .reveal-wrap.img-visible{opacity:1!important}
-    img:not(.reveal-wrap img):not(#preloader img){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
-    img.img-visible{opacity:1!important}
-  `;
-  document.documentElement.appendChild(css);
-  
-  // Create preloader element immediately  
-  const pre = document.createElement('div');
-  pre.id = 'preloader';
-  pre.innerHTML = '<p class="heading small link muted counter">001</p>';
-  
-  // Insert as soon as body exists
-  if (document.body) {
-    document.body.prepend(pre);
-      } else {
-    document.addEventListener('DOMContentLoaded', () => document.body.prepend(pre), { once: true });
-  }
+  // Inject preloader CSS + HTML directly into document as it parses
+  document.write(`
+    <style id="preloader-css">
+      #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:1!important;visibility:visible!important}
+      #preloader .counter{font-family:system-ui,-apple-system,sans-serif;font-size:0.75rem;letter-spacing:0.1em;opacity:1}
+      html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
+      .toggle,.yzy{opacity:0}
+      .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
+      .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
+      .reveal-wrap{opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
+      .reveal-wrap.img-visible{opacity:1!important}
+      img:not(.reveal-wrap img):not(#preloader img){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
+      img.img-visible{opacity:1!important}
+    </style>
+    <div id="preloader"><span class="counter">001</span></div>
+  `);
 })();
 
 console.log('🚀 Portfolio animations v8.0 loading...');
