@@ -19,20 +19,26 @@ console.log('🚀 Portfolio animations v7.4 loading...');
 (function() {
   // Start animations immediately on DOMContentLoaded
   function startAnimations() {
-    console.log('🎬 Starting animations');
-    initTextAnimations();
-    startImageFadeIn();
-    
-    // Show toggle/yzy
-        setTimeout(() => {
-      document.querySelectorAll('.toggle, .yzy').forEach(el => el.classList.add('show'));
-    }, 500);
-    
-    // Init draggable and hover
-    setTimeout(() => {
-      initHoverEffects();
-      initDraggable();
-    }, 800);
+    try {
+      console.log('🎬 Starting animations');
+      initTextAnimations();
+      startImageFadeIn();
+      
+      // Show toggle/yzy
+      setTimeout(() => {
+        document.querySelectorAll('.toggle, .yzy').forEach(el => el.classList.add('show'));
+      }, 500);
+      
+      // Init draggable and hover
+      setTimeout(() => {
+        initHoverEffects();
+        initDraggable();
+      }, 800);
+    } catch(err) {
+      console.error('❌ Animation error:', err);
+      // Fallback: show all images
+      document.querySelectorAll('.img-fade').forEach(el => el.classList.add('visible'));
+    }
   }
 
   // Text scrambling animations with stagger reveal
