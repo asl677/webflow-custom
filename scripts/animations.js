@@ -1,19 +1,16 @@
-// Portfolio Animations v7.9
+// Portfolio Animations v8.0
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - .preview stays at opacity 0 (Webflow controls), non-preview images fade in
+  // Inject CSS - only hide standalone images, let Webflow handle .reveal-wrap content
     const style = document.createElement('style');
     style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
-    html:not(.loaded) .reveal-wrap:not(.w-lightbox-content *),
-    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.preview),
-    html:not(.loaded) video{opacity:0!important}
-    html.loaded .reveal-wrap img:not(.preview),
-    html.loaded .reveal-wrap video{opacity:1!important}
+    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.reveal-wrap img),
+    html:not(.loaded) video:not(.reveal-wrap video){opacity:0!important}
     `;
     document.head.appendChild(style);
 
@@ -270,12 +267,11 @@
     }
   }
 
-  // Image fade-in using inline styles (no CSS class conflicts)
+  // Image fade-in - only animate standalone images (NOT inside reveal-wrap, Webflow handles those)
   function startImageFadeIn() {
-    // Select reveal-wraps and standalone images/videos (not inside reveal-wrap)
+    // Only animate images/videos NOT inside reveal-wrap (let Webflow handle reveal-wrap content)
     const elements = [
-      ...document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)'), 
-      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image)'),
+      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not(.preview)'),
       ...document.querySelectorAll('video:not(.reveal-wrap video)')
     ];
     if (!elements.length) return;
@@ -284,7 +280,6 @@
     elements.forEach(el => {
       if (el.dataset.fadeSetup) return;
       el.dataset.fadeSetup = 'true';
-      // Set initial state with inline styles
       el.style.opacity = '0';
       el.style.transition = 'opacity 1.2s ease-out';
       const rect = el.getBoundingClientRect();
