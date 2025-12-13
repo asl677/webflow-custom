@@ -35,23 +35,23 @@
     const digits = p.querySelectorAll('.digit');
     let frame = 0;
     
-    // Scramble in
+    // Scramble in - smoother timing
     const scrambleIn = setInterval(() => {
       frame++;
-      digits.forEach((d, i) => d.textContent = frame > (i + 1) * 3 ? '001'[i] : randChar());
-      if (frame >= 12) {
+      digits.forEach((d, i) => d.textContent = frame > (i + 1) * 4 ? '001'[i] : randChar());
+      if (frame >= 15) {
         clearInterval(scrambleIn);
         let count = 1;
         const countUp = setInterval(() => {
-          count = Math.min(100, count + Math.floor(Math.random() * 15) + 5);
+          count = Math.min(100, count + 8); // Consistent increment
           const str = count.toString().padStart(3, '0');
           digits[0].textContent = str[0];
           digits[1].textContent = str[1];
           digits[2].textContent = str[2];
           if (count >= 100) clearInterval(countUp);
-        }, 80);
+        }, 50);
       }
-    }, 40);
+    }, 50);
   }
   injectPreloader();
 })();
@@ -177,13 +177,14 @@
     const spans = el.querySelectorAll('.letter');
     if (!spans.length) return;
     const original = Array.from(spans).map(s => s.textContent === '\u00A0' ? ' ' : s.textContent);
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let frame = 0;
-    const totalFrames = duration / 60;
-      
-      const interval = setInterval(() => {
+    const totalFrames = duration / 30; // Smoother: 30ms intervals
+    
+    const interval = setInterval(() => {
+      const revealPoint = (frame / totalFrames) * spans.length * 1.2;
       spans.forEach((span, i) => {
-        if (frame > (i / spans.length) * totalFrames * 0.8) {
+        if (i < revealPoint) {
           span.textContent = original[i] === ' ' ? '\u00A0' : original[i];
         } else if (/[a-zA-Z0-9]/.test(original[i])) {
           span.textContent = chars[Math.floor(Math.random() * chars.length)];
@@ -191,10 +192,10 @@
       });
       frame++;
       if (frame >= totalFrames) {
-          clearInterval(interval);
+        clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
       }
-    }, 60);
+    }, 30);
   }
 
   function scrambleLine(el, duration) {
@@ -242,13 +243,15 @@
   function startLinkScramble(link) {
     if (link._scrambleInterval) return;
     const letters = link.querySelectorAll('.letter');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     link._originalLetters = Array.from(letters).map(l => l.textContent);
     link._scrambleInterval = setInterval(() => {
       letters.forEach(l => {
-        if (/[a-zA-Z0-9]/.test(l.textContent)) l.textContent = chars[Math.floor(Math.random() * chars.length)];
+        if (/[a-zA-Z0-9]/.test(link._originalLetters?.[Array.from(letters).indexOf(l)] || '')) {
+          l.textContent = chars[Math.floor(Math.random() * chars.length)];
+        }
       });
-    }, 80);
+    }, 50); // Faster, smoother
   }
 
   function stopLinkScramble(link) {
