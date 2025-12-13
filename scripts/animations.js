@@ -1,4 +1,4 @@
-// Portfolio Animations v8.6
+// Portfolio Animations v8.7
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
@@ -150,6 +150,11 @@
   }
 
   function wrapLetters(el) {
+    // Preserve original width before modifying
+    const originalWidth = el.offsetWidth;
+    el.style.width = originalWidth + 'px';
+    el.style.display = 'inline-block';
+    
     el.innerHTML = el.textContent.split('').map(c => 
       c === ' ' ? '<span class="letter" style="display:inline-block;width:0.3em">&nbsp;</span>' 
                 : `<span class="letter" style="display:inline-block">${c}</span>`
@@ -162,7 +167,7 @@
     const original = Array.from(spans).map(s => s.textContent === '\u00A0' ? ' ' : s.textContent);
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let frame = 0;
-    const totalFrames = duration / 30; // Smoother: 30ms intervals
+    const totalFrames = duration / 30;
       
       const interval = setInterval(() => {
       const revealPoint = (frame / totalFrames) * spans.length * 1.2;
@@ -177,6 +182,8 @@
       if (frame >= totalFrames) {
           clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
+        // Release fixed width after animation
+        el.style.width = '';
       }
     }, 30);
   }
