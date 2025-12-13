@@ -1,9 +1,9 @@
-// Portfolio Animations v7.6
+// Portfolio Animations v7.7
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - hide images until loaded (exclude preview class for Webflow interactions)
+  // Inject CSS - hide until loaded, then force images visible (overrides Webflow opacity:0)
     const style = document.createElement('style');
     style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
@@ -11,7 +11,9 @@
     #preloader .digit{display:inline-block}
     html:not(.loaded) .reveal-wrap:not(.w-lightbox-content *),
     html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.preview),
-    html:not(.loaded) video{opacity:0}
+    html:not(.loaded) video{opacity:0!important}
+    html.loaded .reveal-wrap img:not(.preview),
+    html.loaded .reveal-wrap video{opacity:1!important}
     `;
     document.head.appendChild(style);
 
