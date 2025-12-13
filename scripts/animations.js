@@ -8,7 +8,7 @@
     style.textContent = `
     html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0!important;visibility:hidden!important}
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
-    #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;letter-spacing:0.1em}
+    #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
     html.loaded .toggle,html.loaded .yzy{opacity:0}
     .toggle.show-toggle{transition:opacity 0.6s ease}
@@ -25,7 +25,7 @@
   // Create preloader
   const p = document.createElement('div');
   p.id = 'preloader';
-  p.innerHTML = `<div class="counter"><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span></div>`;
+  p.innerHTML = `<p class="heading small link muted counter"><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span></p>`;
   
   function injectPreloader() {
     if (document.getElementById('preloader')) return;
