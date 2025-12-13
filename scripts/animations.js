@@ -130,8 +130,8 @@ window.portfolioAnimations = window.portfolioAnimations || {};
   function createPreloader() {
     const style = document.createElement('style');
     style.textContent = `
-      #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1}
-      #preloader .counter{font-family:monospace;font-size:0.8rem;color:white;text-align:center;letter-spacing:0.1em;display:inline-block}
+      #preloader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1}
+      #preloader .counter{font-family:monospace;font-size:0.8rem;color:inherit;text-align:center;letter-spacing:0.1em;display:inline-block}
       #preloader .digit{display:inline-block;opacity:1;animation:pulse 2s ease-in-out infinite}
       #preloader.loading .digit{animation:pulse 2s ease-in-out infinite}
       #preloader.counting .digit{animation:none}
@@ -1126,7 +1126,7 @@ window.portfolioAnimations = window.portfolioAnimations || {};
             width: maskContainer.dataset.targetWidth + 'px', 
             duration: duration, 
             ease: easing, 
-            delay: staggerDelay,
+          delay: staggerDelay,
             onStart: () => {
               console.log(`🎭 Mask animation started for image ${index}`);
             },
@@ -1379,22 +1379,22 @@ window.portfolioAnimations = window.portfolioAnimations || {};
         
         // Let the main mask animation system handle cloned images naturally
         // Trigger mask animations for any new images that weren't processed yet
-        setTimeout(() => {
+          setTimeout(() => {
           console.log('🎭 Triggering mask animations for any unprocessed images...');
-          if (typeof window.gsap !== 'undefined') {
-            const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
+            if (typeof window.gsap !== 'undefined') {
+              const unprocessedImages = document.querySelectorAll('img:not([data-mask-setup]):not(#preloader img), video:not([data-mask-setup])');
             console.log(`🎭 Found ${unprocessedImages.length} unprocessed images for mask setup`);
-            
-            unprocessedImages.forEach((img, i) => {
+              
+              unprocessedImages.forEach((img, i) => {
               console.log(`🎭 Processing unprocessed image ${i}:`, img.src?.substring(0, 50) + '...');
-            });
-            
-            // Call the main mask animation function to process any new images
-            if (unprocessedImages.length > 0) {
-              startMaskedImageAnimations();
+              });
+              
+              // Call the main mask animation function to process any new images
+              if (unprocessedImages.length > 0) {
+                startMaskedImageAnimations();
+              }
             }
-          }
-        }, 500);
+          }, 500);
       });
       
       console.log(`✅ Added ${originalItems.length} more items with protected visibility`);
