@@ -1,18 +1,17 @@
-// Portfolio Animations v8.2
+// Portfolio Animations v8.3
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const rand = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // CSS - hide images immediately on load
-  const style = document.createElement('style');
-  style.textContent = `
-    #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
+  // Inject CSS immediately via document.write for FOUC prevention
+  document.write(`<style id="anim-css">
+    #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none}
     #preloader .digit{display:inline-block}
-    img:not(.w-preview-image):not([data-no-fade]),video,.reveal-wrap{opacity:0}
-    .img-ready{transition:opacity 0.6s ease-out}
-    .img-visible{opacity:1!important}
-  `;
-  document.head.appendChild(style);
+    body:not(.loaded) .reveal-wrap,
+    body:not(.loaded) img:not(.w-lightbox-image):not([src*="preview"]),
+    body:not(.loaded) video{opacity:0!important}
+    .stagger-fade{transition:opacity 0.6s ease-out}
+  </style>`);
   
   // Create preloader
   const preloader = document.createElement('div');
@@ -29,7 +28,6 @@
     const digits = preloader.querySelectorAll('.digit');
     let frame = 0;
     
-    // Scramble in
     const scrambleIn = setInterval(() => {
       frame++;
       digits.forEach((d, i) => d.textContent = frame > (i + 1) * 4 ? '001'[i] : rand());
@@ -68,6 +66,7 @@
   }
   
   function finishPreloader() {
+    document.body.classList.add('loaded');
     preloader.style.transition = 'opacity 0.3s';
     preloader.style.opacity = '0';
     setTimeout(() => {
@@ -78,36 +77,34 @@
   
   function startAnimations() {
     initTextScramble();
-    initHoverEffects();
     initTimer();
     initRotator();
     initImageStagger();
   }
   
-  // Image stagger fade-in
+  // Image stagger
   function initImageStagger() {
-    const images = document.querySelectorAll('img:not(.w-preview-image):not([data-no-fade]),video,.reveal-wrap');
+    const selector = '.reveal-wrap,img:not(.w-lightbox-image):not([src*="preview"]),video';
+    const images = document.querySelectorAll(selector);
     const viewport = [], below = [];
     
     images.forEach(el => {
-      el.classList.add('img-ready');
+      el.classList.add('stagger-fade');
       const rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight) viewport.push(el);
       else below.push(el);
     });
     
-    // Stagger viewport images - fast
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     viewport.forEach((el, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 80);
+      setTimeout(() => { el.style.opacity = '1'; }, i * 80);
     });
     
-    // Scroll-triggered below fold
     if (below.length) {
       const obs = new IntersectionObserver(entries => {
         entries.forEach(e => {
           if (e.isIntersecting) {
-            e.target.classList.add('img-visible');
+            e.target.style.opacity = '1';
             obs.unobserve(e.target);
           }
         });
@@ -116,24 +113,22 @@
     }
   }
   
-  // Military time clock
+  // Timer
   function initTimer() {
     const counter = document.querySelector('.counter');
     if (!counter) return;
     
     function update() {
       const now = new Date();
-      const h = now.getHours().toString().padStart(2, '0');
-      const m = now.getMinutes().toString().padStart(2, '0');
-      counter.textContent = `${h}:${m}`;
+      counter.textContent = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
     }
-    
     update();
     setInterval(update, 1000);
+    wrapLetters(counter);
     scrambleReveal(counter);
   }
   
-  // SF LA DC rotator
+  // Rotator
   function initRotator() {
     const el = document.getElementById('rotating-text');
     if (!el) return;
@@ -154,7 +149,7 @@
     setInterval(rotate, 3000);
   }
   
-  // Text scramble on load
+  // Text scramble
   function initTextScramble() {
     const elements = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,.heading,p,a'))
       .filter(el => {
@@ -163,7 +158,7 @@
                el.children.length === 0 && 
                getComputedStyle(el).display !== 'none' &&
                el.getBoundingClientRect().top < window.innerHeight + 200 &&
-               !el.closest('#preloader');
+               !el.closest('#preloader,.w-lightbox');
       });
 
     elements.forEach((el, i) => {
@@ -177,13 +172,15 @@
   }
   
   function wrapLetters(el) {
-    el.innerHTML = el.textContent.split('').map(c => 
+    const text = el.textContent;
+    el.innerHTML = text.split('').map(c => 
       c === ' ' ? ' ' : `<span class="letter" data-char="${c}">${c}</span>`
     ).join('');
   }
   
   function scrambleReveal(el) {
     const letters = el.querySelectorAll('.letter');
+    if (!letters.length) return;
     let frame = 0;
     const total = 30;
     
@@ -202,7 +199,7 @@
     }, 30);
   }
   
-  // Hover scramble
+  // Hover
   function initHoverEffects() {
     document.addEventListener('mouseenter', e => {
       if (!e.target?.closest) return;
@@ -230,5 +227,9 @@
   }
   
   // Start
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
