@@ -1,14 +1,32 @@
-// Portfolio Animations v9.1 - Timer, Rotator, Stagger
+// Portfolio Animations v9.2 - Timer, Rotator, Stagger, Lenis
 (function() {
   // Inject stagger CSS
     const style = document.createElement('style');
     style.textContent = `
     .stagger-fade{opacity:0;transform:translateY(10px);transition:opacity 0.6s ease,transform 0.6s ease}
     .stagger-fade.visible{opacity:1;transform:translateY(0)}
+    html.lenis{height:auto}
+    .lenis.lenis-smooth{scroll-behavior:auto}
     `;
     document.head.appendChild(style);
 
   function init() {
+    // Initialize Lenis smooth scroll
+    if (typeof Lenis !== 'undefined') {
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        smooth: true
+      });
+      
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    }
+
     // Military time
     const timeText = document.getElementById('time-text');
     if (timeText) {
