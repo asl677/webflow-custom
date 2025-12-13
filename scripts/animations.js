@@ -1,8 +1,11 @@
-// Portfolio Animations v7.1 - Streamlined
+// Portfolio Animations v7.3 - Streamlined
 // REQUIRED: GSAP (loaded from Webflow or CDN)
 
-// INSTANT: Add preloader and start counter IMMEDIATELY
+// INSTANT: Add preloader with scramble effects
 (function() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+  
   // Inject CSS immediately
   const style = document.createElement('style');
   style.id = 'preloader-styles';
@@ -24,10 +27,10 @@
   `;
   (document.head || document.documentElement).insertBefore(style, (document.head || document.documentElement).firstChild);
   
-  // Create and inject preloader immediately
+  // Create preloader with scrambled initial text
   const p = document.createElement('div');
   p.id = 'preloader';
-  p.innerHTML = '<div class="counter"><span class="digit">0</span><span class="digit">0</span><span class="digit">1</span></div>';
+  p.innerHTML = `<div class="counter"><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span><span class="digit">${randChar()}</span></div>`;
   
   function injectAndStart() {
     if (document.getElementById('preloader')) return;
@@ -37,19 +40,37 @@
     }
     document.body.insertBefore(p, document.body.firstChild);
     
-    // Start counter animation IMMEDIATELY
     const digits = p.querySelectorAll('.digit');
-    let count = 1;
-    const interval = setInterval(() => {
-      count += Math.floor(Math.random() * 15) + 5;
-      if (count > 100) count = 100;
-      const str = count.toString().padStart(3, '0');
-      digits[0].textContent = str[0];
-      digits[1].textContent = str[1];
-      digits[2].textContent = str[2];
-      if (count >= 100) clearInterval(interval);
-        }, 100);
+    const target = ['0', '0', '1'];
+    
+    // Phase 1: Scramble-in to "001" (500ms)
+    let frame = 0;
+    const scrambleIn = setInterval(() => {
+      frame++;
+      digits.forEach((d, i) => {
+        // Reveal each digit progressively
+        if (frame > (i + 1) * 3) d.textContent = target[i];
+        else d.textContent = randChar();
+      });
+      if (frame >= 12) {
+        clearInterval(scrambleIn);
+        // Phase 2: Count up
+        let count = 1;
+        const countUp = setInterval(() => {
+          count += Math.floor(Math.random() * 15) + 5;
+          if (count > 100) count = 100;
+          const str = count.toString().padStart(3, '0');
+          digits[0].textContent = str[0];
+          digits[1].textContent = str[1];
+          digits[2].textContent = str[2];
+          if (count >= 100) {
+            clearInterval(countUp);
+            p.dataset.complete = 'true'; // Signal ready for scramble-out
+          }
+        }, 80);
       }
+    }, 40);
+  }
   injectAndStart();
 })();
 
@@ -99,29 +120,45 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     setTimeout(completePreloader, 1500);
   }
 
-  // Complete preloader and start animations
+  // Complete preloader with scramble-out effect
   function completePreloader() {
     if (preloaderComplete) return;
     preloaderComplete = true;
     
     const preloader = document.getElementById('preloader');
-    if (window.gsap) {
-      window.gsap.to(preloader, {
-        opacity: 0, duration: 0.4, ease: "power2.out",
-        onComplete: () => { 
-          preloader.remove(); 
-          document.documentElement.classList.add('loaded');
-          setTimeout(startAnimations, 300);
+    const digits = preloader?.querySelectorAll('.digit');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+    
+    // Phase 3: Scramble-out effect (400ms)
+    let frame = 0;
+    const scrambleOut = setInterval(() => {
+      frame++;
+      if (digits) {
+        digits.forEach(d => d.textContent = randChar());
+      }
+      if (frame >= 10) {
+        clearInterval(scrambleOut);
+        // Fade out
+        if (window.gsap) {
+          window.gsap.to(preloader, {
+            opacity: 0, duration: 0.3, ease: "power2.out",
+            onComplete: () => { 
+              preloader.remove(); 
+              document.documentElement.classList.add('loaded');
+              setTimeout(startAnimations, 200);
+            }
+          });
+        } else {
+          preloader.style.opacity = '0'; 
+          setTimeout(() => { 
+            preloader.remove(); 
+            document.documentElement.classList.add('loaded');
+            startAnimations();
+          }, 300); 
         }
-      });
-    } else {
-        preloader.style.opacity = '0'; 
-        setTimeout(() => { 
-          preloader.remove(); 
-          document.documentElement.classList.add('loaded');
-        startAnimations();
-      }, 400); 
-    }
+      }
+    }, 40);
   }
 
   // Start all animations
