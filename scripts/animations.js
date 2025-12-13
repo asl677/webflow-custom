@@ -1,5 +1,13 @@
-// Portfolio Animations v9.0 - Minimal (Timer + Rotator only)
+// Portfolio Animations v9.1 - Timer, Rotator, Stagger
 (function() {
+  // Inject stagger CSS
+    const style = document.createElement('style');
+    style.textContent = `
+    .stagger-fade{opacity:0;transform:translateY(10px);transition:opacity 0.6s ease,transform 0.6s ease}
+    .stagger-fade.visible{opacity:1;transform:translateY(0)}
+    `;
+    document.head.appendChild(style);
+
   function init() {
     // Military time
     const timeText = document.getElementById('time-text');
@@ -15,13 +23,20 @@
     // SF/LA/DC rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-      const texts = ['DC', 'SF', 'LA'];
+    const texts = ['DC', 'SF', 'LA'];
       let i = 0;
-      setInterval(() => {
+    setInterval(() => {
         i = (i + 1) % texts.length;
         rotating.textContent = texts[i];
-      }, 2000);
+    }, 2000);
     }
+
+    // Stagger fade-in all elements
+    const elements = document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,a,img,video,.reveal-wrap,.heading');
+    elements.forEach((el, i) => {
+      el.classList.add('stagger-fade');
+      setTimeout(() => el.classList.add('visible'), i * 50);
+    });
   }
 
   if (document.readyState === 'loading') {
@@ -29,4 +44,5 @@
   } else {
     init();
   }
-})();
+  })();
+  
