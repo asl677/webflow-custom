@@ -1,4 +1,4 @@
-// Portfolio Animations v11.6 - Stagger restored
+// Portfolio Animations v11.7 - Works with inline preloader
 (function() {
   const SEGMENTS = 40;
   
@@ -24,19 +24,23 @@
   if (document.body) hideElements();
   else document.addEventListener('DOMContentLoaded', hideElements);
 
-  // Create segmented bar
-  const bar = document.createElement('div');
-  bar.id = 'preloader-bar';
-  bar.style.width = '100%';
-  for (let i = 0; i < SEGMENTS; i++) {
-    const seg = document.createElement('div');
-    seg.className = 'seg';
-    bar.appendChild(seg);
+  // Use existing bar from inline script OR create new one
+  let bar = document.getElementById('preloader-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'preloader-bar';
+    bar.style.width = '100%';
+    for (let i = 0; i < SEGMENTS; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'seg';
+      bar.appendChild(seg);
+    }
   }
 
-  let filledCount = 0;
+  // Use existing count from inline script OR start fresh
+  let filledCount = window._preloaderCount || 0;
   let complete = false;
-  const segs = bar.querySelectorAll('.seg');
+  const segs = window._preloaderSegs || bar.querySelectorAll('.seg');
 
   function fillSegment() {
     if (filledCount >= SEGMENTS || complete) return;
@@ -129,7 +133,7 @@
     // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-      const texts = ['DC', 'SF', 'LA'];
+    const texts = ['DC', 'SF', 'LA'];
       let i = 0;
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
@@ -137,7 +141,7 @@
     // Stagger reveal all elements
     const elements = document.querySelectorAll('.stagger-hide');
     elements.forEach((el, i) => {
-      setTimeout(() => {
+          setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, i * 50);
@@ -146,7 +150,7 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', onReady);
-  } else {
+      } else {
     onReady();
   }
   })();
