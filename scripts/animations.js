@@ -1,14 +1,15 @@
-// Portfolio Animations v8.4
+// Portfolio Animations v8.5
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - just preloader styles
+  // Inject CSS - preloader + reveal-wrap fix
   const style = document.createElement('style');
   style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
+    .reveal-wrap{height:auto!important;overflow:visible!important}
   `;
   document.head.appendChild(style);
 
