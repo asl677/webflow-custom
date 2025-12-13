@@ -1,4 +1,4 @@
-// Portfolio Animations v11.5 - Content visible, only preloader segments
+// Portfolio Animations v11.6 - Stagger restored
 (function() {
   const SEGMENTS = 40;
   
@@ -10,8 +10,19 @@
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
+    .stagger-hide{opacity:0!important}
+    .stagger-show{opacity:1!important}
   `;
   document.head.appendChild(css);
+  
+  // Hide elements immediately
+  function hideElements() {
+    document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading').forEach(el => {
+      el.classList.add('stagger-hide');
+    });
+  }
+  if (document.body) hideElements();
+  else document.addEventListener('DOMContentLoaded', hideElements);
 
   // Create segmented bar
   const bar = document.createElement('div');
@@ -118,11 +129,19 @@
     // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-    const texts = ['DC', 'SF', 'LA'];
+      const texts = ['DC', 'SF', 'LA'];
       let i = 0;
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
+    // Stagger reveal all elements
+    const elements = document.querySelectorAll('.stagger-hide');
+    elements.forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.remove('stagger-hide');
+        el.classList.add('stagger-show');
+      }, i * 50);
+    });
   }
 
   if (document.readyState === 'loading') {
