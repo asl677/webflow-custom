@@ -1,14 +1,14 @@
-// Portfolio Animations v9.2 - Timer, Rotator, Stagger, Lenis
+// Portfolio Animations v9.3 - Timer, Rotator, Stagger, Lenis
 (function() {
-  // Inject stagger CSS
-    const style = document.createElement('style');
-    style.textContent = `
-    .stagger-fade{opacity:0;transform:translateY(10px);transition:opacity 0.6s ease,transform 0.6s ease}
-    .stagger-fade.visible{opacity:1;transform:translateY(0)}
+  // Inject CSS immediately to prevent flash
+  const style = document.createElement('style');
+  style.textContent = `
+    h1,h2,h3,h4,h5,h6,p,a,img:not(.preview),video:not(.preview),.reveal-wrap,.heading{opacity:0}
+    .stagger-visible{opacity:1;transition:opacity 0.6s ease}
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    `;
-    document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
 
   function init() {
     // Initialize Lenis smooth scroll
@@ -49,11 +49,10 @@
     }, 2000);
     }
 
-    // Stagger fade-in all elements
-    const elements = document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,a,img,video,.reveal-wrap,.heading');
+    // Stagger fade-in all elements (exclude .preview)
+    const elements = document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,a,img:not(.preview),video:not(.preview),.reveal-wrap,.heading');
     elements.forEach((el, i) => {
-      el.classList.add('stagger-fade');
-      setTimeout(() => el.classList.add('visible'), i * 50);
+      setTimeout(() => el.classList.add('stagger-visible'), i * 50);
     });
   }
 
