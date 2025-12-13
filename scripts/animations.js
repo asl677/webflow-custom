@@ -1,4 +1,4 @@
-// Portfolio Animations v11.1 - No fade out
+// Portfolio Animations v11.2 - Fix stagger visibility
 (function() {
   const SEGMENTS = 40;
   
@@ -10,8 +10,8 @@
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0}
     #preloader-bar .seg{height:1px;background:#fff;opacity:0;flex:1}
     #preloader-bar .seg.filled{opacity:1}
-    .reveal-wrap{opacity:0}
-    .reveal-wrap.visible{opacity:1}
+    .reveal-wrap{opacity:0!important}
+    .reveal-wrap.visible{opacity:1!important}
   `;
   document.head.appendChild(css);
 
