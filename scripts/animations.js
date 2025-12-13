@@ -1,13 +1,15 @@
-// Portfolio Animations v8.0 - Minimal: Preloader + Scramble only
+// Portfolio Animations v8.1
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const rand = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // CSS for preloader only
+  // CSS
   const style = document.createElement('style');
   style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .digit{display:inline-block}
+    .img-fade{opacity:0;transition:opacity 0.8s ease-out}
+    .img-visible{opacity:1}
   `;
   document.head.appendChild(style);
   
@@ -78,6 +80,39 @@
     initHoverEffects();
     initTimer();
     initRotator();
+    initImageStagger();
+  }
+  
+  // Image stagger fade-in
+  function initImageStagger() {
+    const images = document.querySelectorAll('img,video,.reveal-wrap');
+    const viewport = [], below = [];
+    
+    images.forEach(el => {
+      el.classList.add('img-fade');
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) viewport.push(el);
+      else below.push(el);
+    });
+    
+    // Stagger viewport images
+    viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    viewport.forEach((el, i) => {
+      setTimeout(() => el.classList.add('img-visible'), i * 100);
+    });
+    
+    // Scroll-triggered below fold
+    if (below.length) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('img-visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '50px', threshold: 0.1 });
+      below.forEach(el => obs.observe(el));
+    }
   }
   
   // Military time clock
