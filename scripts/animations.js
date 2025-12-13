@@ -1,4 +1,4 @@
-// Portfolio Animations v8.3
+// Portfolio Animations v8.4
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
@@ -270,6 +270,7 @@
     const wraps = Array.from(document.querySelectorAll('.reveal-wrap'));
     wraps.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     wraps.forEach((wrap, i) => {
+      wrap.style.setProperty('height', 'auto', 'important');
       wrap.style.setProperty('opacity', '0', 'important');
       wrap.style.setProperty('transition', 'opacity 0.8s ease-out', 'important');
       setTimeout(() => wrap.style.setProperty('opacity', '1', 'important'), i * 100);
