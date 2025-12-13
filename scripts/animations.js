@@ -36,8 +36,8 @@
     if (document.getElementById('preloader')) return;
     if (!document.body) {
       setTimeout(injectAndStart, 1);
-      return;
-    }
+          return;
+        }
     document.body.insertBefore(p, document.body.firstChild);
     
     const digits = p.querySelectorAll('.digit');
@@ -89,8 +89,8 @@ console.log('🚀 Portfolio animations v6.7 loading...');
         st.onload = () => { window.gsap.registerPlugin(ScrollTrigger); callback(); };
         document.head.appendChild(st);
       } else callback();
-          return;
-        }
+      return;
+    }
     const gsap = document.createElement('script');
     gsap.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
     gsap.onload = () => {
@@ -143,16 +143,16 @@ console.log('🚀 Portfolio animations v6.7 loading...');
         if (window.gsap) {
           window.gsap.to(preloader, {
             opacity: 0, duration: 0.3, ease: "power2.out",
-            onComplete: () => { 
-              preloader.remove(); 
+        onComplete: () => { 
+          preloader.remove(); 
               document.documentElement.classList.add('loaded');
               setTimeout(startAnimations, 200);
-            }
-          });
-        } else {
-          preloader.style.opacity = '0'; 
-          setTimeout(() => { 
-            preloader.remove(); 
+        }
+      });
+    } else {
+        preloader.style.opacity = '0'; 
+        setTimeout(() => { 
+          preloader.remove(); 
             document.documentElement.classList.add('loaded');
             startAnimations();
           }, 300); 
@@ -441,7 +441,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
         isProcessing = true;
         const el = scrollQueue.shift();
         el.classList.add('img-visible');
-        setTimeout(() => {
+    setTimeout(() => {
           isProcessing = false;
           processQueue();
         }, 150); // Same 150ms stagger as viewport
@@ -458,7 +458,7 @@ console.log('🚀 Portfolio animations v6.7 loading...');
           observer.unobserve(entry.target);
         });
         processQueue();
-      }, { rootMargin: '-50px', threshold: 0.1 });
+      }, { rootMargin: '0px', threshold: 0 });
       
       belowFold.forEach(el => observer.observe(el));
     }
