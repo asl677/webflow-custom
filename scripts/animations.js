@@ -3,16 +3,12 @@
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - minimal, don't override Webflow
+  // Inject CSS - only preloader styles, let Webflow handle the rest
   const style = document.createElement('style');
   style.textContent = `
-    html:not(.loaded) body>*:not(#preloader):not(script):not(style){opacity:0;visibility:hidden}
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
-    .stagger-fade{opacity:0;transition:opacity 1.2s ease-out}
-    .stagger-fade.img-visible{opacity:1}
-    .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
   `;
   document.head.appendChild(style);
 
@@ -256,7 +252,7 @@
     }
   }
 
-  // Image fade-in
+  // Image fade-in using inline styles (no CSS class conflicts)
   function startImageFadeIn() {
     const elements = [...document.querySelectorAll('.reveal-wrap'), 
                       ...document.querySelectorAll('img:not(.reveal-wrap img),video:not(.reveal-wrap video)')];
@@ -266,24 +262,27 @@
     elements.forEach(el => {
       if (el.dataset.fadeSetup) return;
       el.dataset.fadeSetup = 'true';
-      el.classList.add('stagger-fade'); // Add base class for transition
+      // Set initial state with inline styles
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 1.2s ease-out';
       const rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) viewport.push(el);
       else below.push(el);
     });
 
-    // Force reflow so opacity:0 renders before transition
+    // Force reflow
     void document.body.offsetHeight;
 
     viewport.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    viewport.forEach((el, i) => setTimeout(() => el.classList.add('img-visible'), i * 250));
+    viewport.forEach((el, i) => setTimeout(() => { el.style.opacity = '1'; }, i * 250));
 
     if (below.length) {
       let queue = [], processing = false;
       const processQueue = () => {
         if (processing || !queue.length) return;
         processing = true;
-        queue.shift().classList.add('img-visible');
+        const el = queue.shift();
+        el.style.opacity = '1';
         setTimeout(() => { processing = false; processQueue(); }, 250);
       };
       
