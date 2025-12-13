@@ -1,17 +1,18 @@
-// Portfolio Animations v8.5
+// Portfolio Animations v8.6
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - preloader + reveal-wrap fix
-  const style = document.createElement('style');
-  style.textContent = `
+  // Inject CSS - preloader + reveal-wrap fix + keep preview images hidden
+    const style = document.createElement('style');
+    style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
     .reveal-wrap{height:auto!important;overflow:visible!important}
-  `;
-  document.head.appendChild(style);
+    .reveal-wrap .preview{opacity:0!important}
+    `;
+    document.head.appendChild(style);
 
   // Create preloader
   const p = document.createElement('div');
@@ -97,7 +98,7 @@
   function initTextAnimations() {
     const elements = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,.heading,p,span,div,a'))
       .filter(el => {
-        const text = el.textContent?.trim();
+      const text = el.textContent?.trim();
         return text && text.length > 2 && text.length < 150 && 
                el.children.length === 0 && 
                getComputedStyle(el).display !== 'none' &&
@@ -117,29 +118,7 @@
       }, i * 80);
     });
     
-    // Draggable links - only wrap text-only children, preserve Webflow structure
-    document.querySelectorAll('.draggable a,[data-draggable] a,.menu-link,.shimmer,.accordion,.chip-link').forEach(link => {
-      if (link.dataset.animInit) return;
-      link.dataset.animInit = 'true';
-      
-      // Find deepest text-only elements to wrap (preserve Webflow structure)
-      const textElements = link.querySelectorAll('p, span, h1, h2, h3, h4, h5, h6, .heading');
-      if (textElements.length > 0) {
-        // Has child elements - wrap letters inside each text-only child
-        textElements.forEach(el => {
-          if (el.children.length === 0 && el.textContent?.trim().length > 1) {
-            wrapLetters(el);
-          }
-        });
-      } else if (link.children.length === 0) {
-        // Simple text-only link - wrap directly
-        const text = link.textContent?.trim();
-        if (text && text.length > 1 && text.length < 150) {
-          wrapLetters(link);
-        }
-      }
-    });
-    
+    // Draggable - just ensure visibility, don't modify structure
     document.querySelectorAll('.w-draggable,[data-draggable]').forEach(el => {
       el.style.visibility = 'visible';
       el.style.opacity = '1';
@@ -268,13 +247,13 @@
 
   // Simple stagger fade for reveal-wrap elements
   function startImageFadeIn() {
-    const wraps = Array.from(document.querySelectorAll('.reveal-wrap'));
-    wraps.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    wraps.forEach((wrap, i) => {
-      wrap.style.setProperty('height', 'auto', 'important');
-      wrap.style.setProperty('opacity', '0', 'important');
-      wrap.style.setProperty('transition', 'opacity 0.8s ease-out', 'important');
-      setTimeout(() => wrap.style.setProperty('opacity', '1', 'important'), i * 100);
+    // Only fade non-preview images inside reveal-wrap
+    const imgs = Array.from(document.querySelectorAll('.reveal-wrap img:not(.preview)'));
+    imgs.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    imgs.forEach((img, i) => {
+      img.style.setProperty('opacity', '0', 'important');
+      img.style.setProperty('transition', 'opacity 0.8s ease-out', 'important');
+      setTimeout(() => img.style.setProperty('opacity', '1', 'important'), i * 100);
     });
   }
 
@@ -306,7 +285,7 @@
     setInterval(() => {
       const s = Math.floor((Date.now() - start) / 1000);
       el.textContent = String(Math.floor(s / 60)).padStart(2, '0') + String(s % 60).padStart(2, '0');
-  }, 1000);
+    }, 1000);
   }
 
   function startRotatingText(el) {
