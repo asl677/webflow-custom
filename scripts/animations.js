@@ -25,12 +25,12 @@ console.log('🚀 Portfolio animations v7.4 loading...');
       startImageFadeIn();
       
       // Show toggle/yzy
-      setTimeout(() => {
+        setTimeout(() => {
         document.querySelectorAll('.toggle, .yzy').forEach(el => el.classList.add('show'));
       }, 500);
       
       // Init draggable and hover
-      setTimeout(() => {
+    setTimeout(() => {
         initHoverEffects();
         initDraggable();
       }, 800);
@@ -225,8 +225,9 @@ console.log('🚀 Portfolio animations v7.4 loading...');
 
   // Hover effects - same scramble as page load
   function initHoverEffects() {
-    // Use event delegation on document for all links (catches dynamically added/moved elements)
+    // Use event delegation on document for all links
     document.addEventListener('mouseenter', e => {
+      if (!e.target?.closest) return; // Safety check
       const link = e.target.closest('a');
       if (!link) return;
       const letters = link.querySelectorAll('.letter');
@@ -234,6 +235,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
     }, true);
     
     document.addEventListener('mouseleave', e => {
+      if (!e.target?.closest) return; // Safety check
       const link = e.target.closest('a');
       if (!link) return;
       stopLinkScramble(link);
@@ -364,6 +366,7 @@ console.log('🚀 Portfolio animations v7.4 loading...');
 
   // Page transition
   document.addEventListener('click', e => {
+    if (!e.target?.closest) return;
     const link = e.target.closest('a[href]');
     if (!link) return;
     const href = link.getAttribute('href');
