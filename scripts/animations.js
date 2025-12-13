@@ -255,17 +255,18 @@
     }
   }
 
-  // Image fade-in using inline styles (no CSS class conflicts)
+  // Image fade-in using inline styles
   function startImageFadeIn() {
     const elements = [...document.querySelectorAll('.reveal-wrap'), 
                       ...document.querySelectorAll('img:not(.reveal-wrap img),video:not(.reveal-wrap video)')];
+    
+    console.log('🎭 startImageFadeIn:', elements.length, 'elements');
     if (!elements.length) return;
     
     const viewport = [], below = [];
     elements.forEach(el => {
       if (el.dataset.fadeSetup) return;
       el.dataset.fadeSetup = 'true';
-      // Set initial state with inline styles
       el.style.opacity = '0';
       el.style.transition = 'opacity 1.2s ease-out';
       const rect = el.getBoundingClientRect();
@@ -273,6 +274,8 @@
       else below.push(el);
     });
 
+    console.log('🎭 Viewport:', viewport.length, 'Below:', below.length);
+    
     // Force reflow
     void document.body.offsetHeight;
 
@@ -294,7 +297,7 @@
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
           .forEach(e => { queue.push(e.target); obs.unobserve(e.target); });
         processQueue();
-      }, { rootMargin: '-50px', threshold: 0.1 });
+      }, { rootMargin: '0px', threshold: 0.1 });
       
       below.forEach(el => obs.observe(el));
     }
