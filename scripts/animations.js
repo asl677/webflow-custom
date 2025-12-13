@@ -114,10 +114,10 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     return preloader;
   }
 
-  // Run preloader - simple timed completion (counter already animating from immediate IIFE)
+  // Run preloader - faster completion
   function runPreloader() {
-    // Just complete after 1.5s - counter animation is already running
-    setTimeout(completePreloader, 1500);
+    // Complete after 500ms for faster image loading
+    setTimeout(completePreloader, 500);
   }
 
   // Complete preloader with scramble-out effect
@@ -174,8 +174,8 @@ console.log('🚀 Portfolio animations v6.7 loading...');
     // Start text scrambling
     initTextAnimations();
 
-    // Start image fade-in shortly after text starts
-    setTimeout(() => startImageFadeIn(), isMobile ? 300 : 100);
+    // Start image fade-in immediately
+    startImageFadeIn();
     
     // Init draggable
     setTimeout(() => initDraggable(), 1000);
