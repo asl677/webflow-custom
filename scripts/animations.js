@@ -1,110 +1,105 @@
-// Portfolio Animations v10.1 - Timer, Rotator, Stagger, Lenis, Instant Preloader
-// Immediate CSS + preloader injection with initial progress
+// Portfolio Animations v10.2 - Timer, Rotator, Stagger, Lenis, Preloader
+// Immediate CSS + preloader
 document.write(`
 <style id="pre-anim">
-.reveal-wrap,h1,h2,h3,h4,h5,h6,p:not(#preloader p),a,.heading{opacity:0}
+.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0}
 .anim-visible{opacity:1!important}
-#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:5%}
+#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}
 </style>
 <div id="line-preloader"></div>
-<script>
-(function(){
-  var line = document.getElementById('line-preloader');
-  var p = 5;
-  var iv = setInterval(function(){
-    p += 2 + Math.floor(Math.random() * 3);
-    if (p > 40) { clearInterval(iv); return; }
-    line.style.width = p + '%';
-  }, 100);
-  window._preloaderInterval = iv;
-  window._preloaderProgress = function(){ return p; };
-})();
-</script>
 `);
 
 (function() {
   const line = document.getElementById('line-preloader');
-  let loaded = 0;
-  let total = 0;
+  if (!line) return;
+  
+  let progress = 0;
   let complete = false;
-  let currentWidth = window._preloaderProgress ? window._preloaderProgress() : 5;
+  let imagesLoaded = 0;
+  let totalImages = 0;
+  let domReady = false;
 
-  // Stop the initial animation
-  if (window._preloaderInterval) clearInterval(window._preloaderInterval);
+  // Start with slow initial progress immediately
+  function initialProgress() {
+    if (domReady || progress >= 30) return;
+    progress += 1;
+    line.style.width = progress + '%';
+    setTimeout(initialProgress, 50);
+  }
+  initialProgress();
 
-  function updateProgress() {
-    if (!line || complete) return;
+  function updateFromImages() {
+    if (complete) return;
     
-    // Map progress: 40% reserved for initial, 40-95% for images
-    const imageProgress = total > 0 ? (loaded / total) * 55 : 0;
-    const targetWidth = Math.floor(40 + imageProgress);
+    // Calculate progress: 30% initial + 65% from images
+    const imagePercent = totalImages > 0 ? (imagesLoaded / totalImages) * 65 : 65;
+    const target = Math.floor(30 + imagePercent);
     
-    if (targetWidth > currentWidth) {
-      currentWidth = targetWidth;
-      line.style.width = currentWidth + '%';
+    if (target > progress) {
+      progress = target;
+      line.style.width = progress + '%';
     }
     
-    if (loaded >= total && total > 0) {
-      setTimeout(completePreloader, 100);
+    if (imagesLoaded >= totalImages && totalImages > 0) {
+      finishPreloader();
     }
   }
 
-  function completePreloader() {
+  function finishPreloader() {
     if (complete) return;
     complete = true;
     line.style.width = '100%';
-    setTimeout(() => {
+        setTimeout(() => {
       line.style.opacity = '0';
-      setTimeout(() => line.remove(), 100);
-      startAnimations();
-    }, 150);
+    setTimeout(() => {
+        line.remove();
+        startAnimations();
+          }, 100);
+    }, 100);
   }
 
-  function trackImages() {
-    if (window._preloaderInterval) clearInterval(window._preloaderInterval);
+  function onDomReady() {
+    domReady = true;
+    
+    // Jump to at least 30%
+    if (progress < 30) {
+      progress = 30;
+      line.style.width = '30%';
+    }
     
     const images = document.querySelectorAll('img:not(.preview)');
-    total = images.length;
+    totalImages = images.length;
     
-    // Jump to 40% (initial phase done)
-    currentWidth = 40;
-    line.style.width = '40%';
-    
-    if (total === 0) {
-      // No images, quick fill to complete
-      let progress = 40;
-      const fakeInterval = setInterval(() => {
-        progress += 5 + Math.floor(Math.random() * 8);
+    if (totalImages === 0) {
+      // No images - animate to complete
+      const fillInterval = setInterval(() => {
+        progress += 5;
+        line.style.width = progress + '%';
         if (progress >= 95) {
-          clearInterval(fakeInterval);
-          completePreloader();
-        } else {
-          line.style.width = progress + '%';
+          clearInterval(fillInterval);
+          finishPreloader();
         }
-      }, 60);
+      }, 40);
       return;
     }
-
-    // Track image loading
+    
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
-        loaded++;
+        imagesLoaded++;
       } else {
-        img.addEventListener('load', () => { loaded++; updateProgress(); });
-        img.addEventListener('error', () => { loaded++; updateProgress(); });
+        img.addEventListener('load', () => { imagesLoaded++; updateFromImages(); });
+        img.addEventListener('error', () => { imagesLoaded++; updateFromImages(); });
       }
     });
     
-    updateProgress();
-
-    // Fallback timeout
-    setTimeout(() => {
-      if (!complete) completePreloader();
-    }, 8000);
+    updateFromImages();
+    
+    // Fallback
+    setTimeout(() => { if (!complete) finishPreloader(); }, 8000);
   }
 
   function startAnimations() {
-    // Initialize Lenis smooth scroll
+    // Lenis
     if (typeof Lenis !== 'undefined') {
       const lenis = new Lenis({
         duration: 1.2,
@@ -112,11 +107,7 @@ document.write(`
         direction: 'vertical',
         smooth: true
       });
-      
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
+      function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
       requestAnimationFrame(raf);
     }
 
@@ -131,35 +122,30 @@ document.write(`
       setInterval(update, 1000);
     }
 
-    // SF/LA/DC rotator
+    // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-      const texts = ['DC', 'SF', 'LA'];
+    const texts = ['DC', 'SF', 'LA'];
       let i = 0;
-      setInterval(() => {
-        i = (i + 1) % texts.length;
-        rotating.textContent = texts[i];
-      }, 2000);
+      setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
-    // Stagger all elements - instant opacity 0 to 1
+    // Stagger
     const elements = document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading');
     elements.forEach((el, i) => {
       setTimeout(() => el.classList.add('anim-visible'), i * 50);
     });
   }
 
-  // Additional CSS
+  // CSS
   const style = document.createElement('style');
-  style.textContent = `
-    html.lenis{height:auto}
-    .lenis.lenis-smooth{scroll-behavior:auto}
-  `;
+  style.textContent = 'html.lenis{height:auto}.lenis.lenis-smooth{scroll-behavior:auto}';
   document.head.appendChild(style);
-
+  
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', trackImages);
-  } else {
-    trackImages();
+    document.addEventListener('DOMContentLoaded', onDomReady);
+      } else {
+    onDomReady();
   }
-})();
+  })();
+  
