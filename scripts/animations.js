@@ -10,13 +10,13 @@
     #preloader{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none}
     #preloader .counter{opacity:1;transition:opacity 0.4s ease}
     html:not(.loaded) body>*:not(#preloader):not(script):not(style):not(link){opacity:0!important;visibility:hidden!important}
-    html.loaded .toggle,html.loaded .yzy{opacity:0}
-    .toggle.show-toggle{transition:opacity 0.6s ease}
+    .toggle,.yzy{opacity:0}
+    .toggle.show-toggle,.yzy.show-toggle{opacity:1;transition:opacity 0.6s ease}
     .nav:not(.fake-nav):not(.nav-middle):not(.nav-bottom){opacity:0}
-    .reveal-wrap,.reveal-wrap img,.reveal-wrap video{opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-    .reveal-wrap.img-visible,.reveal-wrap.img-visible img,.reveal-wrap.img-visible video{opacity:1}
-    img:not(.reveal-wrap img):not(#preloader img),video:not(.reveal-wrap video){opacity:0;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)}
-    img.img-visible,video.img-visible{opacity:1}
+    .reveal-wrap{opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
+    .reveal-wrap.img-visible{opacity:1!important}
+    img:not(.reveal-wrap img):not(#preloader img){opacity:0!important;transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1)!important}
+    img.img-visible{opacity:1!important}
   `;
   document.documentElement.appendChild(css);
   
