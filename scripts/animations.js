@@ -1,4 +1,4 @@
-// Portfolio Animations v10.4 - Simple & Clean
+// Portfolio Animations v10.5 - Slower preloader
 (function() {
   // Inject CSS and preloader immediately
   const css = document.createElement('style');
@@ -19,26 +19,33 @@
   let progress = 0;
   let complete = false;
 
-  // Animate progress
+  // Base animation - runs regardless of image loading
+  let baseProgress = 0;
   function tick() {
     if (complete) return;
-    if (progress < 90) {
-      progress += 2;
-      line.style.width = progress + '%';
-      setTimeout(tick, 50);
+    if (baseProgress < 70) {
+      baseProgress += 0.5;
+      if (baseProgress > progress) {
+        progress = baseProgress;
+        line.style.width = progress + '%';
+      }
+      setTimeout(tick, 20);
     }
   }
-  tick();
+  
+  // Force start at 0
+  line.style.width = '0%';
+  requestAnimationFrame(tick);
 
   function finish() {
     if (complete) return;
     complete = true;
     line.style.width = '100%';
-    setTimeout(() => {
+        setTimeout(() => {
       line.style.opacity = '0';
       setTimeout(() => line.remove(), 150);
       startAnimations();
-    }, 100);
+        }, 100);
   }
 
   function onReady() {
@@ -48,9 +55,9 @@
 
     if (total === 0) {
       setTimeout(finish, 500);
-      return;
-    }
-
+          return;
+        }
+        
     function checkComplete() {
       loaded++;
       const imgProgress = 30 + (loaded / total) * 60;
@@ -93,7 +100,7 @@
     // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-      const texts = ['DC', 'SF', 'LA'];
+    const texts = ['DC', 'SF', 'LA'];
       let i = 0;
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
@@ -109,4 +116,5 @@
   } else {
     onReady();
   }
-})();
+  })();
+  
