@@ -1,19 +1,19 @@
-// Portfolio Animations v7.5
+// Portfolio Animations v7.6
 (function() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const randChar = () => chars[Math.floor(Math.random() * chars.length)];
   
-  // Inject CSS - exclude preview/lightbox images
-  const style = document.createElement('style');
-  style.textContent = `
+  // Inject CSS - hide images until loaded (exclude preview class for Webflow interactions)
+    const style = document.createElement('style');
+    style.textContent = `
     #preloader{position:fixed;inset:0;background:transparent;z-index:99999;display:flex;align-items:center;justify-content:center}
     #preloader .counter{color:inherit;letter-spacing:0.1em}
     #preloader .digit{display:inline-block}
     html:not(.loaded) .reveal-wrap:not(.w-lightbox-content *),
-    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not([src*="preview"]):not(.yzy img),
-    html:not(.loaded) video:not(.yzy video){opacity:0}
-  `;
-  document.head.appendChild(style);
+    html:not(.loaded) img:not(#preloader img):not(.w-lightbox-image):not(.preview),
+    html:not(.loaded) video{opacity:0}
+    `;
+    document.head.appendChild(style);
 
   // Create preloader
   const p = document.createElement('div');
@@ -173,8 +173,8 @@
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let frame = 0;
     const totalFrames = duration / 30; // Smoother: 30ms intervals
-    
-    const interval = setInterval(() => {
+      
+      const interval = setInterval(() => {
       const revealPoint = (frame / totalFrames) * spans.length * 1.2;
       spans.forEach((span, i) => {
         if (i < revealPoint) {
@@ -185,7 +185,7 @@
       });
       frame++;
       if (frame >= totalFrames) {
-        clearInterval(interval);
+          clearInterval(interval);
         spans.forEach((s, i) => s.textContent = original[i] === ' ' ? '\u00A0' : original[i]);
       }
     }, 30);
@@ -257,11 +257,11 @@
 
   // Image fade-in using inline styles (no CSS class conflicts)
   function startImageFadeIn() {
-    // Exclude lightbox, preview, and yzy images
+    // Exclude lightbox and preview class images (let Webflow handle those)
     const elements = [
       ...document.querySelectorAll('.reveal-wrap:not(.w-lightbox-content *)'), 
-      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not([src*="preview"]):not(.yzy img)'),
-      ...document.querySelectorAll('video:not(.reveal-wrap video):not(.yzy video)')
+      ...document.querySelectorAll('img:not(.reveal-wrap img):not(.w-lightbox-image):not(.preview)'),
+      ...document.querySelectorAll('video:not(.reveal-wrap video)')
     ];
     if (!elements.length) return;
     
@@ -289,7 +289,7 @@
         if (processing || !queue.length) return;
         processing = true;
         const el = queue.shift();
-        el.style.opacity = '1';
+            el.style.opacity = '1';
         setTimeout(() => { processing = false; processQueue(); }, 250);
       };
       
@@ -332,7 +332,7 @@
     setInterval(() => {
       const s = Math.floor((Date.now() - start) / 1000);
       el.textContent = String(Math.floor(s / 60)).padStart(2, '0') + String(s % 60).padStart(2, '0');
-    }, 1000);
+  }, 1000);
   }
 
   function startRotatingText(el) {
