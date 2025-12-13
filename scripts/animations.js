@@ -404,9 +404,16 @@ console.log('🚀 Portfolio animations v8.0 loading...');
     // Sort viewport elements by vertical position for sequential cascade
     viewportElements.sort((a, b) => a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top);
     
+    console.log(`🎭 Staggering ${viewportElements.length} viewport images`);
+    
     // Animate viewport elements - 100ms stagger like Webflow Tricks hero text
     viewportElements.forEach(({ el }, i) => {
-      setTimeout(() => el.classList.add('img-visible'), i * 100);
+      const delay = i * 100;
+      console.log(`  Image ${i}: delay ${delay}ms`);
+    setTimeout(() => {
+        el.classList.add('img-visible');
+        console.log(`  Image ${i}: now visible`);
+      }, delay);
     });
 
     // Scroll-triggered fade - same 100ms stagger
@@ -419,7 +426,7 @@ console.log('🚀 Portfolio animations v8.0 loading...');
         isProcessing = true;
         const el = scrollQueue.shift();
         el.classList.add('img-visible');
-        setTimeout(() => {
+    setTimeout(() => {
           isProcessing = false;
           processQueue();
         }, 100); // 100ms stagger matching viewport
