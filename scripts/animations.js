@@ -1,104 +1,112 @@
-// Portfolio Animations v10.3 - Preloader starts immediately
-document.write('<style>#line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0}.anim-visible{opacity:1!important}</style><div id="line-preloader"></div><script>var _lp=document.getElementById("line-preloader"),_p=0;(function _f(){if(_p<30){_p++;_lp.style.width=_p+"%";setTimeout(_f,30)}})();<\/script>');
-
+// Portfolio Animations v10.4 - Simple & Clean
 (function() {
-  const line = document.getElementById('line-preloader');
-  if (!line) return;
-  
+  // Inject CSS and preloader immediately
+  const css = document.createElement('style');
+  css.textContent = `
+    .reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading{opacity:0}
+    .anim-visible{opacity:1!important}
+    #line-preloader{position:fixed;top:0;left:0;height:1px;background:#fff;z-index:99999;width:0}
+    html.lenis{height:auto}
+    .lenis.lenis-smooth{scroll-behavior:auto}
+  `;
+  document.head.appendChild(css);
+
+  // Create preloader line
+  const line = document.createElement('div');
+  line.id = 'line-preloader';
+  document.body ? document.body.prepend(line) : document.addEventListener('DOMContentLoaded', () => document.body.prepend(line));
+
+  let progress = 0;
   let complete = false;
-  let imagesLoaded = 0;
-  let totalImages = 0;
 
-  function getProgress() {
-    return parseInt(line.style.width) || 0;
-  }
-
-  function setProgress(p) {
-    line.style.width = p + '%';
-  }
-
-  function updateFromImages() {
+  // Animate progress
+  function tick() {
     if (complete) return;
-    const current = getProgress();
-    const imagePercent = totalImages > 0 ? (imagesLoaded / totalImages) * 65 : 65;
-    const target = Math.floor(30 + imagePercent);
-    if (target > current) setProgress(target);
-    if (imagesLoaded >= totalImages && totalImages > 0) finishPreloader();
+    if (progress < 90) {
+      progress += 2;
+      line.style.width = progress + '%';
+      setTimeout(tick, 50);
+    }
   }
+  tick();
 
-  function finishPreloader() {
+  function finish() {
     if (complete) return;
     complete = true;
-    setProgress(100);
-        setTimeout(() => {
+    line.style.width = '100%';
+    setTimeout(() => {
       line.style.opacity = '0';
-      setTimeout(() => { line.remove(); startAnimations(); }, 100);
-        }, 100);
+      setTimeout(() => line.remove(), 150);
+      startAnimations();
+    }, 100);
   }
 
   function onReady() {
-    const current = getProgress();
-    if (current < 30) setProgress(30);
-    
     const images = document.querySelectorAll('img:not(.preview)');
-    totalImages = images.length;
-    
-    if (totalImages === 0) {
-      let p = 30;
-      const iv = setInterval(() => {
-        p += 5;
-        setProgress(p);
-        if (p >= 95) { clearInterval(iv); finishPreloader(); }
-      }, 40);
+    let loaded = 0;
+    const total = images.length;
+
+    if (total === 0) {
+      setTimeout(finish, 500);
       return;
     }
-    
+
+    function checkComplete() {
+      loaded++;
+      const imgProgress = 30 + (loaded / total) * 60;
+      if (imgProgress > progress) {
+        progress = imgProgress;
+        line.style.width = progress + '%';
+      }
+      if (loaded >= total) finish();
+    }
+
     images.forEach(img => {
-      if (img.complete && img.naturalWidth > 0) imagesLoaded++;
+      if (img.complete) checkComplete();
       else {
-        img.addEventListener('load', () => { imagesLoaded++; updateFromImages(); });
-        img.addEventListener('error', () => { imagesLoaded++; updateFromImages(); });
+        img.addEventListener('load', checkComplete);
+        img.addEventListener('error', checkComplete);
       }
     });
-    updateFromImages();
-    setTimeout(() => { if (!complete) finishPreloader(); }, 8000);
+
+    setTimeout(finish, 8000); // Fallback
   }
 
   function startAnimations() {
+    // Lenis
     if (typeof Lenis !== 'undefined') {
-      const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), direction: 'vertical', smooth: true });
+      const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
       (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })();
     }
 
+    // Timer
     const timeText = document.getElementById('time-text');
     if (timeText) {
-      (function update() {
-        const now = new Date();
-        timeText.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-      })();
-      setInterval(() => {
-        const now = new Date();
-        timeText.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-    }, 1000);
+      const update = () => {
+        const n = new Date();
+        timeText.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+      };
+      update();
+      setInterval(update, 1000);
     }
 
+    // Rotator
     const rotating = document.getElementById('rotating-text');
     if (rotating) {
-    const texts = ['DC', 'SF', 'LA'];
+      const texts = ['DC', 'SF', 'LA'];
       let i = 0;
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
+    // Stagger
     document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading').forEach((el, i) => {
       setTimeout(() => el.classList.add('anim-visible'), i * 50);
     });
   }
 
-  const style = document.createElement('style');
-  style.textContent = 'html.lenis{height:auto}.lenis.lenis-smooth{scroll-behavior:auto}';
-  document.head.appendChild(style);
-  
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
-  else onReady();
-  })();
-  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady);
+  } else {
+    onReady();
+  }
+})();
