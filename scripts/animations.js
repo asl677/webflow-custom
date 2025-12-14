@@ -1,4 +1,4 @@
-// Portfolio Animations v14.2 - 1.5s stagger duration
+// Portfolio Animations v14.3 - Slower preloader and stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -79,7 +79,7 @@
           clearInterval(interval);
         finish();
       }
-    }, 8); // Fill all 40 segments in ~320ms
+    }, 25); // Fill all 40 segments in ~1000ms
   }
 
   function init() {
@@ -126,8 +126,8 @@
     textElements.sort(sortByPosition);
     imageElements.sort(sortByPosition);
     
-    // TEXT FIRST - all text appears in 1000ms (700 + 300 extra)
-    const textStaggerDuration = 1500;
+    // TEXT FIRST - all text appears in 2500ms
+    const textStaggerDuration = 2500;
     const textDelay = textElements.length > 1 ? textStaggerDuration / (textElements.length - 1) : 0;
     textElements.forEach((el, i) => {
           setTimeout(() => {
@@ -137,7 +137,7 @@
     });
     
     // IMAGES AFTER TEXT COMPLETES - starts after text is done
-    const imageStaggerDuration = 1500;
+    const imageStaggerDuration = 2500;
     const imageDelay = imageElements.length > 1 ? imageStaggerDuration / (imageElements.length - 1) : 0;
     const imageStartDelay = textStaggerDuration; // Start AFTER text is done
     imageElements.forEach((el, i) => {
