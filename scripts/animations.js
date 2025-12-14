@@ -1,4 +1,4 @@
-// Portfolio Animations v14.3 - Slower preloader and stagger
+// Portfolio Animations v14.4 - Lenis protection from editor
 (function() {
   const SEGMENTS = 40;
   
@@ -83,10 +83,22 @@
   }
 
   function init() {
-    // Lenis
-    if (typeof Lenis !== 'undefined') {
-      const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
+    // Lenis - skip in Webflow editor
+    const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
+    const isDesigner = document.documentElement.hasAttribute('data-wf-domain') === false && window.location.hostname.includes('webflow.io');
+    
+    if (typeof Lenis !== 'undefined' && !isEditor) {
+      const lenis = new Lenis({ 
+        duration: 1.2, 
+        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+        smooth: true,
+        smoothTouch: false,
+        touchMultiplier: 2
+      });
       (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })();
+      
+      // Expose globally for debugging
+      window.lenis = lenis;
     }
 
     // Timer
