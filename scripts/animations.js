@@ -1,4 +1,4 @@
-// Portfolio Animations v12.0 - Faster preloader, instant stagger
+// Portfolio Animations v12.1 - Fixed 1s preloader, no image waiting
 (function() {
   const SEGMENTS = 40;
   
@@ -89,43 +89,14 @@
   addBar();
 
   function onReady() {
-    const images = document.querySelectorAll('img:not(.preview)');
-    const total = images.length;
-    
-    if (total === 0) {
-      // No images - fill segments over time
+    // Just fill segments over time - don't wait for images
     const interval = setInterval(() => {
-        fillSegment();
-        if (filledCount >= SEGMENTS) {
-          clearInterval(interval);
-          finish();
-        }
-      }, 30);
-      return;
-    }
-    
-    let loaded = 0;
-    const segsPerImage = SEGMENTS / total;
-
-    function onLoad() {
-      loaded++;
-      const targetSegs = Math.floor(loaded * segsPerImage);
-      while (filledCount < targetSegs && filledCount < SEGMENTS) {
-        fillSegment();
+      fillSegment();
+      if (filledCount >= SEGMENTS) {
+        clearInterval(interval);
+        finish();
       }
-      if (loaded >= total) finish();
-    }
-
-    images.forEach(img => {
-      if (img.complete && img.naturalWidth > 0) {
-        onLoad();
-    } else {
-        img.addEventListener('load', onLoad);
-        img.addEventListener('error', onLoad);
-      }
-    });
-
-    setTimeout(finish, 3000); // Fallback - 3s max
+    }, 25); // Fill all 40 segments in ~1 second
   }
 
   function init() {
