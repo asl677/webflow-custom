@@ -1,12 +1,12 @@
-// Portfolio Animations v14.5 - Fix Lenis hover conflicts
+// Portfolio Animations v14.6 - Disable Lenis, use CSS smooth scroll
 (function() {
   const SEGMENTS = 40;
   
   // CSS
   const css = document.createElement('style');
   css.textContent = `
+    html{scroll-behavior:smooth}
     html.lenis{height:auto}
-    .lenis.lenis-smooth{scroll-behavior:auto}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -83,38 +83,8 @@
   }
 
   function init() {
-    // Lenis - skip in Webflow editor
-    const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
-    
-    if (typeof Lenis !== 'undefined' && !isEditor) {
-      const lenis = new Lenis({ 
-        duration: 1.0,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        smoothTouch: false,
-        wheelMultiplier: 1,
-        touchMultiplier: 2,
-        infinite: false,
-        autoResize: true
-      });
-      
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-      
-      // Stop lenis during interactions to prevent conflicts
-      document.querySelectorAll('a, button, [data-hover], .w-dropdown').forEach(el => {
-        el.addEventListener('mouseenter', () => lenis.stop());
-        el.addEventListener('mouseleave', () => lenis.start());
-      });
-      
-      // Expose globally
-      window.lenis = lenis;
-    }
+    // Lenis disabled - was causing hover/scroll conflicts
+    // Using CSS smooth scrolling instead via html.lenis styles
 
     // Timer
     const timeText = document.getElementById('time-text');
