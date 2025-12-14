@@ -1,12 +1,11 @@
-// Portfolio Animations v15.1 - Simplified
+// Portfolio Animations v15.2 - Preserve link behaviors
 (function() {
-  // CSS
+  // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
     .stagger-hide{opacity:0!important}
-    .stagger-show{opacity:1!important}
   </style>`);
 
   // Hide elements
@@ -45,8 +44,8 @@
     const txt = all.filter(e => !e.classList.contains('reveal-wrap')).sort(sort);
     const img = all.filter(e => e.classList.contains('reveal-wrap')).sort(sort);
     
-    // Text stagger (2.5s), then images (2.5s)
-    const show = el => { el.classList.remove('stagger-hide'); el.classList.add('stagger-show'); };
+    // Text stagger (2.5s), then images (2.5s) - just remove hide class to restore Webflow control
+    const show = el => el.classList.remove('stagger-hide');
     txt.forEach((el, i) => setTimeout(() => show(el), i * (2500 / Math.max(txt.length - 1, 1))));
     img.forEach((el, i) => setTimeout(() => show(el), 2500 + i * (2500 / Math.max(img.length - 1, 1))));
   }
