@@ -1,4 +1,4 @@
-// Portfolio Animations v12.4 - Slower text stagger
+// Portfolio Animations v12.5 - Fix image timing
 (function() {
   const SEGMENTS = 40;
   
@@ -137,26 +137,29 @@
     // Stagger text elements - slower for visibility
     let textDelay = 0;
     let lastTop = -1000;
+    const textDelays = [];
     textElements.forEach((el) => {
       const top = el.getBoundingClientRect().top;
       if (Math.abs(top - lastTop) < 20) {
-        textDelay += 30; // Same row - was 10
-      } else {
-        textDelay += 80; // New row - was 40
+        textDelay += 30;
+  } else {
+        textDelay += 80;
       }
       lastTop = top;
-      setTimeout(() => {
+      textDelays.push(textDelay);
+          setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, textDelay);
     });
     
-    // Calculate when text is 50% done
-    const textHalfwayDelay = textDelay / 2;
+    // Get delay when 50% of text elements have appeared
+    const halfIndex = Math.floor(textDelays.length / 2);
+    const textHalfwayDelay = textDelays[halfIndex] || textDelay;
     
-    // Stagger images starting at 50% of text completion
+    // Stagger images starting after 50% of text elements shown
     imageElements.forEach((el, i) => {
-      setTimeout(() => {
+  setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, textHalfwayDelay + (i * 50));
