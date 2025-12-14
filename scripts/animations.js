@@ -1,4 +1,4 @@
-// Portfolio Animations v14.1 - 1s stagger duration (+300ms)
+// Portfolio Animations v14.2 - 1.5s stagger duration
 (function() {
   const SEGMENTS = 40;
   
@@ -127,21 +127,21 @@
     imageElements.sort(sortByPosition);
     
     // TEXT FIRST - all text appears in 1000ms (700 + 300 extra)
-    const textStaggerDuration = 1000;
+    const textStaggerDuration = 1500;
     const textDelay = textElements.length > 1 ? textStaggerDuration / (textElements.length - 1) : 0;
     textElements.forEach((el, i) => {
-      setTimeout(() => {
+          setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, i * textDelay);
     });
     
     // IMAGES AFTER TEXT COMPLETES - starts after text is done
-    const imageStaggerDuration = 1000;
+    const imageStaggerDuration = 1500;
     const imageDelay = imageElements.length > 1 ? imageStaggerDuration / (imageElements.length - 1) : 0;
     const imageStartDelay = textStaggerDuration; // Start AFTER text is done
     imageElements.forEach((el, i) => {
-      setTimeout(() => {
+        setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, imageStartDelay + (i * imageDelay));
@@ -151,7 +151,7 @@
   // Start preloader
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { onReady(); init(); });
-  } else {
+      } else {
     onReady();
     init();
   }
