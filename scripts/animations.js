@@ -1,4 +1,4 @@
-// Portfolio Animations v12.1 - Fixed 1s preloader, no image waiting
+// Portfolio Animations v12.2 - Smoother row-based stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -93,7 +93,7 @@
     const interval = setInterval(() => {
       fillSegment();
       if (filledCount >= SEGMENTS) {
-        clearInterval(interval);
+          clearInterval(interval);
         finish();
       }
     }, 25); // Fill all 40 segments in ~1 second
@@ -128,11 +128,23 @@
     // Stagger reveal all elements - sorted by vertical position
     const elements = Array.from(document.querySelectorAll('.stagger-hide'));
     elements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    elements.forEach((el, i) => {
+    
+    // Reveal in batches based on vertical position
+    let delay = 0;
+    let lastTop = -1000;
+    elements.forEach((el) => {
+      const top = el.getBoundingClientRect().top;
+      // If same row (within 20px), use tiny delay; otherwise bigger delay
+      if (Math.abs(top - lastTop) < 20) {
+        delay += 10; // Same row - tiny gap
+  } else {
+        delay += 40; // New row - bigger gap
+      }
+      lastTop = top;
           setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 30);
+      }, delay);
     });
   }
 
