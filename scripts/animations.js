@@ -1,11 +1,11 @@
-// Portfolio Animations v15.5 - Faster preloader
+// Portfolio Animations v15.6 - Subtle fade on stagger
 (function() {
   // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
-    .stagger-hide{opacity:0!important}
+    .stagger-hide{opacity:0!important;transition:opacity .2s ease}
   </style>`);
 
   // Hide elements
