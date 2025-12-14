@@ -1,4 +1,4 @@
-// Portfolio Animations v13.2 - 600ms minimum image delay
+// Portfolio Animations v13.3 - Faster preloader and stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -80,7 +80,7 @@
           clearInterval(interval);
         finish();
       }
-    }, 12); // Fill all 40 segments in ~500ms
+    }, 8); // Fill all 40 segments in ~320ms
   }
 
   function init() {
@@ -118,16 +118,16 @@
     textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     
-    // TEXT FIRST - starts at 0ms
+    // TEXT FIRST - starts at 0ms, fast stagger
     textElements.forEach((el, i) => {
-          setTimeout(() => {
+      setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 30);
+      }, i * 15); // 15ms between each - faster
     });
     
-    // IMAGES AFTER - minimum 300ms delay, then start
-    const imageStartDelay = Math.max(600, Math.floor(textElements.length * 30 / 2));
+    // IMAGES AFTER - minimum 400ms delay, then start
+    const imageStartDelay = Math.max(400, Math.floor(textElements.length * 15 / 2));
     imageElements.forEach((el, i) => {
         setTimeout(() => {
         el.classList.remove('stagger-hide');
