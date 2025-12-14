@@ -1,12 +1,7 @@
-// Portfolio Animations v16.0 - Real image preloader
+// Portfolio Animations v16.1 - Fast preloader overlay
 (function() {
-  // Block everything until preloader done
-  document.documentElement.classList.add('loading');
-  
-  // CSS - hide content during load
+  // CSS - preloader overlay on top, content visible underneath
   document.head.insertAdjacentHTML('beforeend', `<style>
-    html.loading body>*:not(#preloader-bar){opacity:0!important}
-    html.loading *{animation-play-state:paused!important;transition:none!important}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -15,13 +10,18 @@
   const SEGMENTS = 40;
   let bar, segs, filled = 0, complete = false;
 
-  // Create bar
+  // Create and add bar immediately
   bar = document.createElement('div');
   bar.id = 'preloader-bar';
   for (let i = 0; i < SEGMENTS; i++) bar.appendChild(Object.assign(document.createElement('div'), {className: 'seg'}));
   segs = bar.querySelectorAll('.seg');
   
-  (function addBar() { document.body ? document.body.prepend(bar) : requestAnimationFrame(addBar); })();
+  // Add bar as soon as possible
+  if (document.body) {
+    document.body.prepend(bar);
+      } else {
+    document.addEventListener('DOMContentLoaded', () => document.body.prepend(bar));
+  }
 
   function fillTo(target) {
     while (filled < target && filled < SEGMENTS) {
@@ -33,8 +33,7 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
-    bar.remove();
-    document.documentElement.classList.remove('loading');
+    setTimeout(() => bar.remove(), 100);
     initTimerRotator();
   }
 
@@ -52,17 +51,17 @@
       if (loaded >= total) finish();
     };
     
-            images.forEach(img => {
+    images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
         onLoad();
-                  } else {
+      } else {
         img.addEventListener('load', onLoad, { once: true });
         img.addEventListener('error', onLoad, { once: true });
       }
     });
     
-    // Fallback - max 4 seconds
-    setTimeout(finish, 4000);
+    // Fallback - max 3 seconds
+    setTimeout(finish, 3000);
   }
 
   function initTimerRotator() {
@@ -75,6 +74,11 @@
     if (rot) { const t = ['DC','SF','LA']; let i = 0; setInterval(() => { i = (i+1) % 3; rot.textContent = t[i]; }, 2000); }
   }
 
-  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', trackImages) : trackImages();
+  // Start tracking immediately
+  if (document.readyState === 'complete') {
+    trackImages();
+      } else {
+    window.addEventListener('load', trackImages);
+  }
   })();
   
