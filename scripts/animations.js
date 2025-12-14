@@ -1,4 +1,4 @@
-// Portfolio Animations v14.8 - Lenis with wrapper/content config
+// Portfolio Animations v14.9 - Lenis handled by Webflow
 (function() {
   const SEGMENTS = 40;
   
@@ -83,34 +83,7 @@
   }
 
   function init() {
-    // Lenis smooth scrolling
-    try {
-      const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
-      
-      if (typeof Lenis !== 'undefined' && !isEditor) {
-        const lenis = new Lenis({
-          wrapper: window,
-          content: document.documentElement,
-          duration: 1.2,
-          easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          orientation: 'vertical',
-          gestureOrientation: 'vertical',
-          smoothWheel: true,
-          smoothTouch: false,
-          wheelMultiplier: 1
-        });
-        
-        function raf(time) {
-          lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
-        
-        window.lenis = lenis;
-      }
-    } catch(e) {
-      console.log('Lenis init failed:', e);
-    }
+    // Lenis is initialized in Webflow - don't touch it here
 
     // Timer
     const timeText = document.getElementById('time-text');
