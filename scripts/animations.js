@@ -1,4 +1,4 @@
-// Portfolio Animations v13.5 - Left column then right column stagger
+// Portfolio Animations v13.6 - Slower stagger +10ms
 (function() {
   const SEGMENTS = 40;
   
@@ -131,17 +131,17 @@
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 20);
+      }, i * 30); // +10ms
     });
     
     // IMAGES COLUMN AFTER - starts at 50% of text, top to bottom
-    const textTotalTime = textElements.length * 20;
+    const textTotalTime = textElements.length * 30;
     const imageStartDelay = Math.max(300, textTotalTime / 2);
     imageElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, imageStartDelay + (i * 40));
+      }, imageStartDelay + (i * 50)); // +10ms
     });
   }
 
