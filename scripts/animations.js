@@ -1,4 +1,4 @@
-// Portfolio Animations v13.7 - 100ms stagger delay
+// Portfolio Animations v13.8 - Reverted to working timing
 (function() {
   const SEGMENTS = 40;
   
@@ -131,17 +131,17 @@
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 100); // 100ms between each
+      }, i * 20); // 20ms between each
     });
     
     // IMAGES COLUMN AFTER - starts at 50% of text, top to bottom
-    const textTotalTime = textElements.length * 100;
+    const textTotalTime = textElements.length * 20;
     const imageStartDelay = Math.max(300, textTotalTime / 2);
     imageElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, imageStartDelay + (i * 100)); // 100ms between each
+      }, imageStartDelay + (i * 40)); // 40ms between each
     });
   }
 
