@@ -1,4 +1,4 @@
-// Portfolio Animations v14.0 - Images start AFTER text completes
+// Portfolio Animations v14.1 - 1s stagger duration (+300ms)
 (function() {
   const SEGMENTS = 40;
   
@@ -126,8 +126,8 @@
     textElements.sort(sortByPosition);
     imageElements.sort(sortByPosition);
     
-    // TEXT FIRST - all text appears in 700ms
-    const textStaggerDuration = 700;
+    // TEXT FIRST - all text appears in 1000ms (700 + 300 extra)
+    const textStaggerDuration = 1000;
     const textDelay = textElements.length > 1 ? textStaggerDuration / (textElements.length - 1) : 0;
     textElements.forEach((el, i) => {
       setTimeout(() => {
@@ -137,7 +137,7 @@
     });
     
     // IMAGES AFTER TEXT COMPLETES - starts after text is done
-    const imageStaggerDuration = 700;
+    const imageStaggerDuration = 1000;
     const imageDelay = imageElements.length > 1 ? imageStaggerDuration / (imageElements.length - 1) : 0;
     const imageStartDelay = textStaggerDuration; // Start AFTER text is done
     imageElements.forEach((el, i) => {
