@@ -1,4 +1,4 @@
-// Portfolio Animations v11.8 - Stagger sorted by position
+// Portfolio Animations v11.9 - Line-by-line paragraph stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -12,13 +12,29 @@
     #preloader-bar .seg.filled{background:#fff}
     .stagger-hide{opacity:0!important}
     .stagger-show{opacity:1!important}
+    .p-line{display:inline}
   `;
   document.head.appendChild(css);
   
-  // Hide elements immediately
+  // Split paragraphs into lines and hide all elements
   function hideElements() {
-    document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading').forEach(el => {
-      el.classList.add('stagger-hide');
+    // Split paragraphs with <br> into line spans
+    document.querySelectorAll('p').forEach(p => {
+      if (p.innerHTML.includes('<br>')) {
+        const lines = p.innerHTML.split(/<br\s*\/?>/gi);
+        p.innerHTML = lines.map(line => `<span class="p-line stagger-hide">${line}</span>`).join('<br>');
+      } else if (p.children.length === 0 && p.textContent.trim()) {
+        // Simple paragraph - wrap content
+        p.innerHTML = `<span class="p-line stagger-hide">${p.innerHTML}</span>`;
+      } else {
+        p.classList.add('stagger-hide');
+      }
+    });
+    // Hide other elements
+    document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,a,.heading').forEach(el => {
+      if (!el.closest('.stagger-hide') && !el.classList.contains('p-line')) {
+        el.classList.add('stagger-hide');
+      }
     });
   }
   if (document.body) hideElements();
