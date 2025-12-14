@@ -1,4 +1,4 @@
-// Portfolio Animations v12.3 - Images start at 50% text completion
+// Portfolio Animations v12.4 - Slower text stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -134,15 +134,15 @@
     textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     
-    // Stagger text elements
+    // Stagger text elements - slower for visibility
     let textDelay = 0;
     let lastTop = -1000;
     textElements.forEach((el) => {
       const top = el.getBoundingClientRect().top;
       if (Math.abs(top - lastTop) < 20) {
-        textDelay += 10;
+        textDelay += 30; // Same row - was 10
       } else {
-        textDelay += 40;
+        textDelay += 80; // New row - was 40
       }
       lastTop = top;
       setTimeout(() => {
