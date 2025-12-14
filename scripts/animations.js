@@ -1,7 +1,11 @@
-// Portfolio Animations v16.2 - Minimum 1s preloader duration
+// Portfolio Animations v16.3 - Hide content until preloader done
 (function() {
-  // CSS - preloader overlay on top, content visible underneath
+  // Hide content immediately
+  document.documentElement.classList.add('preloading');
+  
+  // CSS - hide content during preload
   document.head.insertAdjacentHTML('beforeend', `<style>
+    html.preloading body>*:not(#preloader-bar){opacity:0;visibility:hidden}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -34,6 +38,8 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
+    // Show content
+    document.documentElement.classList.remove('preloading');
     setTimeout(() => bar.remove(), 100);
     initTimerRotator();
   }
