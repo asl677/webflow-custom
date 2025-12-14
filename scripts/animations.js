@@ -1,4 +1,4 @@
-// Portfolio Animations v15.2 - Preserve link behaviors
+// Portfolio Animations v15.3 - Fix visibility
 (function() {
   // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
@@ -44,8 +44,8 @@
     const txt = all.filter(e => !e.classList.contains('reveal-wrap')).sort(sort);
     const img = all.filter(e => e.classList.contains('reveal-wrap')).sort(sort);
     
-    // Text stagger (2.5s), then images (2.5s) - just remove hide class to restore Webflow control
-    const show = el => el.classList.remove('stagger-hide');
+    // Text stagger (2.5s), then images (2.5s) - use inline style for opacity (allows hover override)
+    const show = el => { el.classList.remove('stagger-hide'); el.style.opacity = '1'; };
     txt.forEach((el, i) => setTimeout(() => show(el), i * (2500 / Math.max(txt.length - 1, 1))));
     img.forEach((el, i) => setTimeout(() => show(el), 2500 + i * (2500 / Math.max(img.length - 1, 1))));
   }
