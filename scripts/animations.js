@@ -1,4 +1,4 @@
-// Portfolio Animations v13.1 - Force text before images
+// Portfolio Animations v13.2 - 600ms minimum image delay
 (function() {
   const SEGMENTS = 40;
   
@@ -127,7 +127,7 @@
     });
     
     // IMAGES AFTER - minimum 300ms delay, then start
-    const imageStartDelay = Math.max(300, Math.floor(textElements.length * 30 / 2));
+    const imageStartDelay = Math.max(600, Math.floor(textElements.length * 30 / 2));
     imageElements.forEach((el, i) => {
         setTimeout(() => {
         el.classList.remove('stagger-hide');
