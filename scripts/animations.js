@@ -1,12 +1,10 @@
-// Portfolio Animations v14.9 - Lenis handled by Webflow
+// Portfolio Animations v15.0 - Removed scroll CSS interference
 (function() {
   const SEGMENTS = 40;
   
-  // CSS
+  // CSS - minimal, don't touch scroll behavior
   const css = document.createElement('style');
   css.textContent = `
-    html{scroll-behavior:smooth}
-    html.lenis{height:auto}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
