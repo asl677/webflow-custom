@@ -1,4 +1,4 @@
-// Portfolio Animations v12.8 - Image stagger matches text timing
+// Portfolio Animations v12.9 - Visible segmented preloader
 (function() {
   const SEGMENTS = 40;
   
@@ -7,8 +7,8 @@
   css.textContent = `
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
-    #preloader-bar .seg{height:1px;background:transparent;flex:1}
+    #preloader-bar{position:fixed;top:0;left:0;height:2px;z-index:99999;display:flex;gap:3px;width:100%}
+    #preloader-bar .seg{height:2px;background:rgba(255,255,255,0.1);flex:1}
     #preloader-bar .seg.filled{background:#fff}
     .stagger-hide{opacity:0!important}
     .stagger-show{opacity:1!important}
@@ -77,7 +77,7 @@
     const interval = setInterval(() => {
       fillSegment();
       if (filledCount >= SEGMENTS) {
-        clearInterval(interval);
+          clearInterval(interval);
         finish();
       }
     }, 12); // Fill all 40 segments in ~500ms
@@ -126,12 +126,12 @@
       const top = el.getBoundingClientRect().top;
       if (Math.abs(top - lastTop) < 20) {
         textDelay += 30;
-  } else {
+        } else {
         textDelay += 80;
       }
       lastTop = top;
       textDelays.push(textDelay);
-          setTimeout(() => {
+    setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
       }, textDelay);
@@ -148,7 +148,7 @@
       const top = el.getBoundingClientRect().top;
       if (Math.abs(top - imgLastTop) < 20) {
         imageDelay += 30; // Same row
-      } else {
+        } else {
         imageDelay += 80; // New row - match text timing
       }
       imgLastTop = top;
@@ -161,7 +161,7 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', onReady);
-      } else {
+          } else {
     onReady();
   }
   })();
