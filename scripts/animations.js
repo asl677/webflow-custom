@@ -1,4 +1,4 @@
-// Portfolio Animations v15.4 - Updated stagger timing
+// Portfolio Animations v15.5 - Faster preloader
 (function() {
   // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
@@ -26,7 +26,7 @@
   (function addBar() { document.body ? document.body.prepend(bar) : requestAnimationFrame(addBar); })();
   
   function ready() {
-    const interval = setInterval(() => { fill(); if (count >= 40) { clearInterval(interval); bar.remove(); stagger(); } }, 25);
+    const interval = setInterval(() => { fill(); if (count >= 40) { clearInterval(interval); bar.remove(); stagger(); } }, 10);
   }
 
   function stagger() {
@@ -46,8 +46,8 @@
     
     // Text stagger (2.5s), then images (2.5s) - use inline style for opacity (allows hover override)
     const show = el => { el.classList.remove('stagger-hide'); el.style.opacity = '1'; };
-    txt.forEach((el, i) => setTimeout(() => show(el), i * (1500 / Math.max(txt.length - 1, 1))));
-    img.forEach((el, i) => setTimeout(() => show(el), 1200 + i * (2500 / Math.max(img.length - 1, 1))));
+    txt.forEach((el, i) => setTimeout(() => show(el), i * (2500 / Math.max(txt.length - 1, 1))));
+    img.forEach((el, i) => setTimeout(() => show(el), 2500 + i * (2500 / Math.max(img.length - 1, 1))));
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready) : ready();
