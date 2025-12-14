@@ -1,4 +1,4 @@
-// Portfolio Animations v13.3 - Faster preloader and stagger
+// Portfolio Animations v13.4 - Stagger starts immediately with preloader
 (function() {
   const SEGMENTS = 40;
   
@@ -59,7 +59,6 @@
     complete = true;
     fillRemaining();
     bar.remove();
-    init();
   }
 
   // Add bar immediately
@@ -136,10 +135,12 @@
     });
   }
 
+  // Start preloader
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onReady);
-      } else {
+    document.addEventListener('DOMContentLoaded', () => { onReady(); init(); });
+  } else {
     onReady();
+    init();
   }
   })();
   
