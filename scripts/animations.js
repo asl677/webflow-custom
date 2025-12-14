@@ -1,7 +1,12 @@
-// Portfolio Animations v15.8 - No stagger
+// Portfolio Animations v15.9 - Block interactions during preload
 (function() {
-  // CSS - preloader only
+  // Block Webflow interactions until preloader done
+  document.documentElement.classList.add('loading');
+  
+  // CSS
   document.head.insertAdjacentHTML('beforeend', `<style>
+    html.loading *{animation-play-state:paused!important;transition:none!important}
+    html.loading [data-w-id]{pointer-events:none!important}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -25,6 +30,9 @@
   }
 
   function init() {
+    // Unblock Webflow interactions
+    document.documentElement.classList.remove('loading');
+    
     // Timer
     const time = document.getElementById('time-text');
     if (time) { const u = () => { const d = new Date(); time.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':'); }; u(); setInterval(u, 1000); }
