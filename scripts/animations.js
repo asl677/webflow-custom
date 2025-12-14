@@ -1,4 +1,4 @@
-// Portfolio Animations v13.9 - 700ms total stagger duration
+// Portfolio Animations v14.0 - Images start AFTER text completes
 (function() {
   const SEGMENTS = 40;
   
@@ -126,7 +126,7 @@
     textElements.sort(sortByPosition);
     imageElements.sort(sortByPosition);
     
-    // TEXT COLUMN FIRST - 700ms total stagger duration
+    // TEXT FIRST - all text appears in 700ms
     const textStaggerDuration = 700;
     const textDelay = textElements.length > 1 ? textStaggerDuration / (textElements.length - 1) : 0;
     textElements.forEach((el, i) => {
@@ -136,10 +136,10 @@
       }, i * textDelay);
     });
     
-    // IMAGES COLUMN AFTER - 700ms total, starts at 50% of text
+    // IMAGES AFTER TEXT COMPLETES - starts after text is done
     const imageStaggerDuration = 700;
     const imageDelay = imageElements.length > 1 ? imageStaggerDuration / (imageElements.length - 1) : 0;
-    const imageStartDelay = Math.max(300, textStaggerDuration / 2);
+    const imageStartDelay = textStaggerDuration; // Start AFTER text is done
     imageElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
