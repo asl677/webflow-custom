@@ -1,4 +1,4 @@
-// Portfolio Animations v12.9 - Visible segmented preloader
+// Portfolio Animations v13.0 - Fixed timing, text before images
 (function() {
   const SEGMENTS = 40;
   
@@ -7,8 +7,8 @@
   css.textContent = `
     html.lenis{height:auto}
     .lenis.lenis-smooth{scroll-behavior:auto}
-    #preloader-bar{position:fixed;top:0;left:0;height:2px;z-index:99999;display:flex;gap:3px;width:100%}
-    #preloader-bar .seg{height:2px;background:rgba(255,255,255,0.1);flex:1}
+    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;gap:0;width:100%}
+    #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
     .stagger-hide{opacity:0!important}
     .stagger-show{opacity:1!important}
@@ -118,44 +118,25 @@
     textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     
-    // Stagger text elements - slower for visibility
-    let textDelay = 0;
-    let lastTop = -1000;
+    // Text staggers first - starts at 0ms
     const textDelays = [];
-    textElements.forEach((el) => {
-      const top = el.getBoundingClientRect().top;
-      if (Math.abs(top - lastTop) < 20) {
-        textDelay += 30;
-        } else {
-        textDelay += 80;
-      }
-      lastTop = top;
-      textDelays.push(textDelay);
-    setTimeout(() => {
-        el.classList.remove('stagger-hide');
-        el.classList.add('stagger-show');
-      }, textDelay);
-    });
-    
-    // Get delay when 50% of text elements have appeared
-    const halfIndex = Math.floor(textDelays.length / 2);
-    const textHalfwayDelay = textDelays[halfIndex] || textDelay;
-    
-    // Stagger images starting after 50% of text - match text timing
-    let imageDelay = textHalfwayDelay;
-    let imgLastTop = -1000;
-    imageElements.forEach((el) => {
-      const top = el.getBoundingClientRect().top;
-      if (Math.abs(top - imgLastTop) < 20) {
-        imageDelay += 30; // Same row
-        } else {
-        imageDelay += 80; // New row - match text timing
-      }
-      imgLastTop = top;
+    textElements.forEach((el, i) => {
+      const delay = i * 40; // 40ms between each text element
+      textDelays.push(delay);
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, imageDelay);
+      }, delay);
+    });
+    
+    // Images start at 50% of text completion
+    const textHalfwayDelay = textDelays[Math.floor(textDelays.length / 2)] || 0;
+    
+    imageElements.forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.remove('stagger-hide');
+        el.classList.add('stagger-show');
+      }, textHalfwayDelay + (i * 60)); // 60ms between images
     });
   }
 
