@@ -1,4 +1,4 @@
-// Portfolio Animations v12.6 - Faster hideElements
+// Portfolio Animations v12.7 - 500ms preloader
 (function() {
   const SEGMENTS = 40;
   
@@ -73,14 +73,14 @@
   addBar();
 
   function onReady() {
-    // Just fill segments over time - don't wait for images
+    // Fill segments quickly - 500ms total
     const interval = setInterval(() => {
       fillSegment();
       if (filledCount >= SEGMENTS) {
-          clearInterval(interval);
+        clearInterval(interval);
         finish();
       }
-    }, 25); // Fill all 40 segments in ~1 second
+    }, 12); // Fill all 40 segments in ~500ms
   }
 
   function init() {
