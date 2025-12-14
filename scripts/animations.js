@@ -1,4 +1,4 @@
-// Portfolio Animations v16.1 - Fast preloader overlay
+// Portfolio Animations v16.2 - Minimum 1s preloader duration
 (function() {
   // CSS - preloader overlay on top, content visible underneath
   document.head.insertAdjacentHTML('beforeend', `<style>
@@ -8,7 +8,8 @@
   </style>`);
 
   const SEGMENTS = 40;
-  let bar, segs, filled = 0, complete = false;
+  const MIN_DURATION = 1000; // Minimum 1 second visible
+  let bar, segs, filled = 0, complete = false, startTime;
 
   // Create and add bar immediately
   bar = document.createElement('div');
@@ -38,30 +39,49 @@
   }
 
   function trackImages() {
+    startTime = Date.now();
     const images = Array.from(document.querySelectorAll('img'));
-    if (images.length === 0) { finish(); return; }
     
     let loaded = 0;
-    const total = images.length;
+    const total = images.length || 1;
+    let imagesReady = false;
+    
+    // Animate fill over minimum duration
+    const animateFill = () => {
+      if (complete) return;
+      const elapsed = Date.now() - startTime;
+      const timeProgress = Math.min(elapsed / MIN_DURATION, 1);
+      const imageProgress = loaded / total;
+      // Use the slower of time or image progress
+      const progress = Math.floor(Math.min(timeProgress, imageProgress) * SEGMENTS);
+      fillTo(progress);
+      
+      if (timeProgress >= 1 && imagesReady) {
+        finish();
+      } else {
+        requestAnimationFrame(animateFill);
+      }
+    };
     
     const onLoad = () => {
       loaded++;
-      const progress = Math.floor((loaded / total) * SEGMENTS);
-      fillTo(progress);
-      if (loaded >= total) finish();
+      if (loaded >= total) imagesReady = true;
     };
     
     images.forEach(img => {
       if (img.complete && img.naturalWidth > 0) {
         onLoad();
-      } else {
+          } else {
         img.addEventListener('load', onLoad, { once: true });
         img.addEventListener('error', onLoad, { once: true });
       }
     });
     
-    // Fallback - max 3 seconds
-    setTimeout(finish, 3000);
+    if (images.length === 0) imagesReady = true;
+    animateFill();
+    
+    // Fallback - max 4 seconds
+    setTimeout(finish, 4000);
   }
 
   function initTimerRotator() {
