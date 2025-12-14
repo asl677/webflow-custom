@@ -1,4 +1,4 @@
-// Portfolio Animations v13.8 - Reverted to working timing
+// Portfolio Animations v13.9 - 700ms total stagger duration
 (function() {
   const SEGMENTS = 40;
   
@@ -126,22 +126,25 @@
     textElements.sort(sortByPosition);
     imageElements.sort(sortByPosition);
     
-    // TEXT COLUMN FIRST - top to bottom
+    // TEXT COLUMN FIRST - 700ms total stagger duration
+    const textStaggerDuration = 700;
+    const textDelay = textElements.length > 1 ? textStaggerDuration / (textElements.length - 1) : 0;
     textElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 20); // 20ms between each
+      }, i * textDelay);
     });
     
-    // IMAGES COLUMN AFTER - starts at 50% of text, top to bottom
-    const textTotalTime = textElements.length * 20;
-    const imageStartDelay = Math.max(300, textTotalTime / 2);
+    // IMAGES COLUMN AFTER - 700ms total, starts at 50% of text
+    const imageStaggerDuration = 700;
+    const imageDelay = imageElements.length > 1 ? imageStaggerDuration / (imageElements.length - 1) : 0;
+    const imageStartDelay = Math.max(300, textStaggerDuration / 2);
     imageElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, imageStartDelay + (i * 40)); // 40ms between each
+      }, imageStartDelay + (i * imageDelay));
     });
   }
 
