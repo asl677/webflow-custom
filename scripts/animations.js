@@ -1,16 +1,11 @@
-// Portfolio Animations v15.7 - Fixed stagger timing
+// Portfolio Animations v15.8 - No stagger
 (function() {
-  // CSS - stagger-show without !important so Webflow hover states work
+  // CSS - preloader only
   document.head.insertAdjacentHTML('beforeend', `<style>
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
-    .stagger-hide{opacity:0!important;transition:opacity .2s ease}
   </style>`);
-
-  // Hide elements
-  const hideAll = () => document.querySelectorAll('.reveal-wrap,h1,h2,h3,h4,h5,h6,p,a,.heading').forEach(el => el.classList.add('stagger-hide'));
-  document.body ? hideAll() : document.addEventListener('DOMContentLoaded', hideAll);
 
   // Preloader bar
   let bar = document.getElementById('preloader-bar'), count = window._preloaderCount || 0;
@@ -26,10 +21,10 @@
   (function addBar() { document.body ? document.body.prepend(bar) : requestAnimationFrame(addBar); })();
   
   function ready() {
-    const interval = setInterval(() => { fill(); if (count >= 40) { clearInterval(interval); bar.remove(); stagger(); } }, 10);
+    const interval = setInterval(() => { fill(); if (count >= 40) { clearInterval(interval); bar.remove(); init(); } }, 10);
   }
 
-  function stagger() {
+  function init() {
     // Timer
     const time = document.getElementById('time-text');
     if (time) { const u = () => { const d = new Date(); time.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':'); }; u(); setInterval(u, 1000); }
@@ -37,18 +32,6 @@
     // Rotator
     const rot = document.getElementById('rotating-text');
     if (rot) { const t = ['DC','SF','LA']; let i = 0; setInterval(() => { i = (i+1) % 3; rot.textContent = t[i]; }, 2000); }
-    
-    // Sort elements by position
-    const sort = (a,b) => { const ar = a.getBoundingClientRect(), br = b.getBoundingClientRect(); return Math.abs(ar.top - br.top) < 10 ? ar.left - br.left : ar.top - br.top; };
-    const all = Array.from(document.querySelectorAll('.stagger-hide'));
-    const txt = all.filter(e => !e.classList.contains('reveal-wrap')).sort(sort);
-    const img = all.filter(e => e.classList.contains('reveal-wrap')).sort(sort);
-    
-    // Fixed delays: 30ms per text, images start at 50% of text, 50ms per image
-    const show = el => { el.classList.remove('stagger-hide'); el.style.opacity = '1'; };
-    txt.forEach((el, i) => setTimeout(() => show(el), i * 30));
-    const imgStart = Math.floor(txt.length * 30 / 2); // Start images at 50% through text
-    img.forEach((el, i) => setTimeout(() => show(el), imgStart + i * 50));
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready) : ready();
