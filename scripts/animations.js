@@ -1,4 +1,4 @@
-// Portfolio Animations v14.7 - Lenis restored (simple config)
+// Portfolio Animations v14.8 - Lenis with wrapper/content config
 (function() {
   const SEGMENTS = 40;
   
@@ -84,24 +84,32 @@
 
   function init() {
     // Lenis smooth scrolling
-    const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
-    
-    if (typeof Lenis !== 'undefined' && !isEditor) {
-      const lenis = new Lenis({ 
-        duration: 1.2,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: 'vertical',
-        smoothWheel: true,
-        smoothTouch: false
-      });
+    try {
+      const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
       
-      function raf(time) {
-        lenis.raf(time);
+      if (typeof Lenis !== 'undefined' && !isEditor) {
+        const lenis = new Lenis({
+          wrapper: window,
+          content: document.documentElement,
+          duration: 1.2,
+          easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          orientation: 'vertical',
+          gestureOrientation: 'vertical',
+          smoothWheel: true,
+          smoothTouch: false,
+          wheelMultiplier: 1
+        });
+        
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
         requestAnimationFrame(raf);
+        
+        window.lenis = lenis;
       }
-      requestAnimationFrame(raf);
-      
-      window.lenis = lenis;
+    } catch(e) {
+      console.log('Lenis init failed:', e);
     }
 
     // Timer
