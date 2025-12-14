@@ -1,4 +1,4 @@
-// Portfolio Animations v15.6 - Subtle fade on stagger
+// Portfolio Animations v15.7 - Fixed stagger timing
 (function() {
   // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
@@ -44,10 +44,11 @@
     const txt = all.filter(e => !e.classList.contains('reveal-wrap')).sort(sort);
     const img = all.filter(e => e.classList.contains('reveal-wrap')).sort(sort);
     
-    // Text stagger (2.5s), then images (2.5s) - use inline style for opacity (allows hover override)
+    // Fixed delays: 30ms per text, images start at 50% of text, 50ms per image
     const show = el => { el.classList.remove('stagger-hide'); el.style.opacity = '1'; };
-    txt.forEach((el, i) => setTimeout(() => show(el), i * (2500 / Math.max(txt.length - 1, 1))));
-    img.forEach((el, i) => setTimeout(() => show(el), 2500 + i * (2500 / Math.max(img.length - 1, 1))));
+    txt.forEach((el, i) => setTimeout(() => show(el), i * 30));
+    const imgStart = Math.floor(txt.length * 30 / 2); // Start images at 50% through text
+    img.forEach((el, i) => setTimeout(() => show(el), imgStart + i * 50));
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready) : ready();
