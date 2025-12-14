@@ -1,4 +1,4 @@
-// Portfolio Animations v12.2 - Smoother row-based stagger
+// Portfolio Animations v12.3 - Images start at 50% text completion
 (function() {
   const SEGMENTS = 40;
   
@@ -125,26 +125,41 @@
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
-    // Stagger reveal all elements - sorted by vertical position
-    const elements = Array.from(document.querySelectorAll('.stagger-hide'));
-    elements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    // Separate text and images
+    const allElements = Array.from(document.querySelectorAll('.stagger-hide'));
+    const textElements = allElements.filter(el => !el.classList.contains('reveal-wrap'));
+    const imageElements = allElements.filter(el => el.classList.contains('reveal-wrap'));
     
-    // Reveal in batches based on vertical position
-    let delay = 0;
+    // Sort both by vertical position
+    textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    
+    // Stagger text elements
+    let textDelay = 0;
     let lastTop = -1000;
-    elements.forEach((el) => {
+    textElements.forEach((el) => {
       const top = el.getBoundingClientRect().top;
-      // If same row (within 20px), use tiny delay; otherwise bigger delay
       if (Math.abs(top - lastTop) < 20) {
-        delay += 10; // Same row - tiny gap
-  } else {
-        delay += 40; // New row - bigger gap
+        textDelay += 10;
+      } else {
+        textDelay += 40;
       }
       lastTop = top;
-          setTimeout(() => {
+      setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, delay);
+      }, textDelay);
+    });
+    
+    // Calculate when text is 50% done
+    const textHalfwayDelay = textDelay / 2;
+    
+    // Stagger images starting at 50% of text completion
+    imageElements.forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.remove('stagger-hide');
+        el.classList.add('stagger-show');
+      }, textHalfwayDelay + (i * 50));
     });
   }
 
