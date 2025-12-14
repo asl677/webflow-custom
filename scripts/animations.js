@@ -1,4 +1,4 @@
-// Portfolio Animations v12.7 - 500ms preloader
+// Portfolio Animations v12.8 - Image stagger matches text timing
 (function() {
   const SEGMENTS = 40;
   
@@ -141,12 +141,21 @@
     const halfIndex = Math.floor(textDelays.length / 2);
     const textHalfwayDelay = textDelays[halfIndex] || textDelay;
     
-    // Stagger images starting after 50% of text elements shown
-    imageElements.forEach((el, i) => {
-  setTimeout(() => {
+    // Stagger images starting after 50% of text - match text timing
+    let imageDelay = textHalfwayDelay;
+    let imgLastTop = -1000;
+    imageElements.forEach((el) => {
+      const top = el.getBoundingClientRect().top;
+      if (Math.abs(top - imgLastTop) < 20) {
+        imageDelay += 30; // Same row
+      } else {
+        imageDelay += 80; // New row - match text timing
+      }
+      imgLastTop = top;
+      setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, textHalfwayDelay + (i * 50));
+      }, imageDelay);
     });
   }
 
