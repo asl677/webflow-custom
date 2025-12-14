@@ -1,4 +1,4 @@
-// Portfolio Animations v14.4 - Lenis protection from editor
+// Portfolio Animations v14.5 - Fix Lenis hover conflicts
 (function() {
   const SEGMENTS = 40;
   
@@ -85,19 +85,34 @@
   function init() {
     // Lenis - skip in Webflow editor
     const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
-    const isDesigner = document.documentElement.hasAttribute('data-wf-domain') === false && window.location.hostname.includes('webflow.io');
     
     if (typeof Lenis !== 'undefined' && !isEditor) {
       const lenis = new Lenis({ 
-        duration: 1.2, 
+        duration: 1.0,
         easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-        smooth: true,
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
         smoothTouch: false,
-        touchMultiplier: 2
+        wheelMultiplier: 1,
+        touchMultiplier: 2,
+        infinite: false,
+        autoResize: true
       });
-      (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })();
       
-      // Expose globally for debugging
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+      
+      // Stop lenis during interactions to prevent conflicts
+      document.querySelectorAll('a, button, [data-hover], .w-dropdown').forEach(el => {
+        el.addEventListener('mouseenter', () => lenis.stop());
+        el.addEventListener('mouseleave', () => lenis.start());
+      });
+      
+      // Expose globally
       window.lenis = lenis;
     }
 
