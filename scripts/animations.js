@@ -1,4 +1,4 @@
-// Portfolio Animations v13.4 - Stagger starts immediately with preloader
+// Portfolio Animations v13.5 - Left column then right column stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -108,30 +108,40 @@
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
-    // Separate text and images
+    // Separate text (left column) and images (right column)
     const allElements = Array.from(document.querySelectorAll('.stagger-hide'));
     const textElements = allElements.filter(el => !el.classList.contains('reveal-wrap'));
     const imageElements = allElements.filter(el => el.classList.contains('reveal-wrap'));
     
-    // Sort both by vertical position
-    textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    // Sort by top position, then left position (top-down, left-to-right)
+    const sortByPosition = (a, b) => {
+      const aRect = a.getBoundingClientRect();
+      const bRect = b.getBoundingClientRect();
+      if (Math.abs(aRect.top - bRect.top) < 10) {
+        return aRect.left - bRect.left; // Same row - sort by left
+      }
+      return aRect.top - bRect.top; // Different rows - sort by top
+    };
     
-    // TEXT FIRST - starts at 0ms, fast stagger
+    textElements.sort(sortByPosition);
+    imageElements.sort(sortByPosition);
+    
+    // TEXT COLUMN FIRST - top to bottom
     textElements.forEach((el, i) => {
       setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 15); // 15ms between each - faster
+      }, i * 20);
     });
     
-    // IMAGES AFTER - minimum 400ms delay, then start
-    const imageStartDelay = Math.max(400, Math.floor(textElements.length * 15 / 2));
+    // IMAGES COLUMN AFTER - starts at 50% of text, top to bottom
+    const textTotalTime = textElements.length * 20;
+    const imageStartDelay = Math.max(300, textTotalTime / 2);
     imageElements.forEach((el, i) => {
-        setTimeout(() => {
+      setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, imageStartDelay + (i * 50));
+      }, imageStartDelay + (i * 40));
     });
   }
 
