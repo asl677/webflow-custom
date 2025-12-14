@@ -1,4 +1,4 @@
-// Portfolio Animations v11.7 - Works with inline preloader
+// Portfolio Animations v11.8 - Stagger sorted by position
 (function() {
   const SEGMENTS = 40;
   
@@ -138,13 +138,14 @@
       setInterval(() => { i = (i + 1) % texts.length; rotating.textContent = texts[i]; }, 2000);
     }
 
-    // Stagger reveal all elements
-    const elements = document.querySelectorAll('.stagger-hide');
+    // Stagger reveal all elements - sorted by vertical position
+    const elements = Array.from(document.querySelectorAll('.stagger-hide'));
+    elements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     elements.forEach((el, i) => {
           setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, i * 50);
+      }, i * 30);
     });
   }
 
