@@ -1,4 +1,4 @@
-// Portfolio Animations v16.3 - Hide content until preloader done
+// Portfolio Animations v16.4 - 500ms delay after preloader
 (function() {
   // Hide content immediately
   document.documentElement.classList.add('preloading');
@@ -38,11 +38,13 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
-    // Show content
-    document.documentElement.classList.remove('preloading');
-    setTimeout(() => bar.remove(), 100);
-    initTimerRotator();
-  }
+    // Wait 500ms after preloader completes before showing content
+        setTimeout(() => {
+      document.documentElement.classList.remove('preloading');
+      bar.remove();
+      initTimerRotator();
+          }, 500);
+        }
 
   function trackImages() {
     startTime = Date.now();
