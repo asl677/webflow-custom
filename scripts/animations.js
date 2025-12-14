@@ -1,4 +1,4 @@
-// Portfolio Animations v14.6 - Disable Lenis, use CSS smooth scroll
+// Portfolio Animations v14.7 - Lenis restored (simple config)
 (function() {
   const SEGMENTS = 40;
   
@@ -83,8 +83,26 @@
   }
 
   function init() {
-    // Lenis disabled - was causing hover/scroll conflicts
-    // Using CSS smooth scrolling instead via html.lenis styles
+    // Lenis smooth scrolling
+    const isEditor = window.Webflow && window.Webflow.env && window.Webflow.env('editor');
+    
+    if (typeof Lenis !== 'undefined' && !isEditor) {
+      const lenis = new Lenis({ 
+        duration: 1.2,
+        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        smoothWheel: true,
+        smoothTouch: false
+      });
+      
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+      
+      window.lenis = lenis;
+    }
 
     // Timer
     const timeText = document.getElementById('time-text');
