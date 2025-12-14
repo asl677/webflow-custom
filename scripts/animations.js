@@ -1,4 +1,4 @@
-// Portfolio Animations v13.0 - Fixed timing, text before images
+// Portfolio Animations v13.1 - Force text before images
 (function() {
   const SEGMENTS = 40;
   
@@ -118,31 +118,27 @@
     textElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     imageElements.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     
-    // Text staggers first - starts at 0ms
-    const textDelays = [];
+    // TEXT FIRST - starts at 0ms
     textElements.forEach((el, i) => {
-      const delay = i * 40; // 40ms between each text element
-      textDelays.push(delay);
-      setTimeout(() => {
+          setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, delay);
+      }, i * 30);
     });
     
-    // Images start at 50% of text completion
-    const textHalfwayDelay = textDelays[Math.floor(textDelays.length / 2)] || 0;
-    
+    // IMAGES AFTER - minimum 300ms delay, then start
+    const imageStartDelay = Math.max(300, Math.floor(textElements.length * 30 / 2));
     imageElements.forEach((el, i) => {
-      setTimeout(() => {
+        setTimeout(() => {
         el.classList.remove('stagger-hide');
         el.classList.add('stagger-show');
-      }, textHalfwayDelay + (i * 60)); // 60ms between images
+      }, imageStartDelay + (i * 50));
     });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', onReady);
-          } else {
+      } else {
     onReady();
   }
   })();
