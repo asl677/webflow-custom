@@ -1,4 +1,4 @@
-// Portfolio Animations v11.9 - Line-by-line paragraph stagger
+// Portfolio Animations v12.0 - Faster preloader, instant stagger
 (function() {
   const SEGMENTS = 40;
   
@@ -125,7 +125,7 @@
       }
     });
 
-    setTimeout(finish, 10000); // Fallback
+    setTimeout(finish, 3000); // Fallback - 3s max
   }
 
   function init() {
