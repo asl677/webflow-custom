@@ -1,4 +1,4 @@
-// Portfolio Animations v15.3 - Fix visibility
+// Portfolio Animations v15.4 - Updated stagger timing
 (function() {
   // CSS - stagger-show without !important so Webflow hover states work
   document.head.insertAdjacentHTML('beforeend', `<style>
@@ -46,8 +46,8 @@
     
     // Text stagger (2.5s), then images (2.5s) - use inline style for opacity (allows hover override)
     const show = el => { el.classList.remove('stagger-hide'); el.style.opacity = '1'; };
-    txt.forEach((el, i) => setTimeout(() => show(el), i * (2500 / Math.max(txt.length - 1, 1))));
-    img.forEach((el, i) => setTimeout(() => show(el), 2500 + i * (2500 / Math.max(img.length - 1, 1))));
+    txt.forEach((el, i) => setTimeout(() => show(el), i * (1500 / Math.max(txt.length - 1, 1))));
+    img.forEach((el, i) => setTimeout(() => show(el), 1200 + i * (2500 / Math.max(img.length - 1, 1))));
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready) : ready();
