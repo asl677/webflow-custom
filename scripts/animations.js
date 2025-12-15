@@ -1,11 +1,11 @@
-// Portfolio Animations v16.4 - 500ms delay after preloader
+// Portfolio Animations v16.5 - Preserve Webflow IX2 animations
 (function() {
   // Hide content immediately
   document.documentElement.classList.add('preloading');
   
-  // CSS - hide content during preload
+  // CSS - hide content during preload (opacity only, not visibility - preserves Webflow IX2)
   document.head.insertAdjacentHTML('beforeend', `<style>
-    html.preloading body>*:not(#preloader-bar){opacity:0;visibility:hidden}
+    html.preloading body>*:not(#preloader-bar){opacity:0!important;pointer-events:none}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -39,12 +39,16 @@
     complete = true;
     fillTo(SEGMENTS);
     // Wait 500ms after preloader completes before showing content
-        setTimeout(() => {
+    setTimeout(() => {
       document.documentElement.classList.remove('preloading');
       bar.remove();
+      // Trigger Webflow IX2 page load animations
+      if (window.Webflow && window.Webflow.require) {
+        try { window.Webflow.require('ix2').init(); } catch(e) {}
+      }
       initTimerRotator();
-          }, 500);
-        }
+    }, 500);
+  }
 
   function trackImages() {
     startTime = Date.now();
