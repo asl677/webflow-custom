@@ -1,119 +1,48 @@
-// Portfolio Animations v16.8 - Delay Webflow content until after preloader
+// Portfolio Animations v17 - Simple
 (function() {
-  // Pause Webflow animations until preloader done
-  document.documentElement.classList.add('preloading');
-  
-  // CSS - pause animations during preload, hide IX2 animated elements
   document.head.insertAdjacentHTML('beforeend', `<style>
-    html.preloading [data-w-id]{opacity:0!important}
-    html.preloading *{animation-play-state:paused!important}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
-    #preloader-bar .seg{height:1px;background:transparent;flex:1}
+    #preloader-bar .seg{height:1px;flex:1;background:rgba(255,255,255,0.1)}
     #preloader-bar .seg.filled{background:#fff}
   </style>`);
 
-  const SEGMENTS = 40;
-  const MIN_DURATION = 1000;
-  let bar, segs, filled = 0, complete = false, startTime;
-
-  bar = document.createElement('div');
+  // Create bar
+  const bar = document.createElement('div');
   bar.id = 'preloader-bar';
-  for (let i = 0; i < SEGMENTS; i++) bar.appendChild(Object.assign(document.createElement('div'), {className: 'seg'}));
-  segs = bar.querySelectorAll('.seg');
+  for (let i = 0; i < 40; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    bar.appendChild(seg);
+  }
   
-  function addBar() {
-    if (document.body) {
-      document.body.prepend(bar);
-      } else {
-      requestAnimationFrame(addBar);
-    }
-  }
-  addBar();
+  // Add to page
+  const add = () => document.body ? document.body.prepend(bar) : requestAnimationFrame(add);
+  add();
 
-  function fillTo(target) {
-    while (filled < target && filled < SEGMENTS) {
-      segs[filled++].classList.add('filled');
-    }
-  }
+  // Fill segments over 1 second
+  let i = 0;
+  const fill = setInterval(() => {
+    if (i < 40) bar.children[i++].classList.add('filled');
+    else { clearInterval(fill); setTimeout(() => bar.remove(), 500); }
+  }, 25);
 
-  function finish() {
-    if (complete) return;
-    complete = true;
-    fillTo(SEGMENTS);
-    
-    // Wait 500ms THEN trigger content
-        setTimeout(() => {
-      bar.remove();
-      document.documentElement.classList.remove('preloading');
-      
-      // Re-trigger Webflow IX2 animations
-      if (window.Webflow) {
-        window.Webflow.destroy();
-                window.Webflow.ready();
-        if (window.Webflow.require) {
-          try { window.Webflow.require('ix2').init(); } catch(e) {}
-        }
-      }
-      
-      initTimerRotator();
-          }, 500);
-  }
-
-  function trackImages() {
-    startTime = Date.now();
-    const images = Array.from(document.querySelectorAll('img'));
-    
-    let loaded = 0;
-    const total = images.length || 1;
-    let imagesReady = false;
-    
-    const animateFill = () => {
-      if (complete) return;
-      const elapsed = Date.now() - startTime;
-      const timeProgress = Math.min(elapsed / MIN_DURATION, 1);
-      const imageProgress = loaded / total;
-      const progress = Math.floor(Math.min(timeProgress, imageProgress) * SEGMENTS);
-      fillTo(progress);
-      
-      if (timeProgress >= 1 && imagesReady) {
-        finish();
-      } else {
-        requestAnimationFrame(animateFill);
-      }
-    };
-    
-    const onLoad = () => {
-      loaded++;
-      if (loaded >= total) imagesReady = true;
-    };
-    
-    images.forEach(img => {
-      if (img.complete && img.naturalWidth > 0) {
-        onLoad();
-          } else {
-        img.addEventListener('load', onLoad, { once: true });
-        img.addEventListener('error', onLoad, { once: true });
-      }
-    });
-    
-    if (images.length === 0) imagesReady = true;
-    animateFill();
-    
-    setTimeout(finish, 4000);
-  }
-
-  function initTimerRotator() {
+  // Timer + Rotator
+  window.addEventListener('load', () => {
     const time = document.getElementById('time-text');
-    if (time) { const u = () => { const d = new Date(); time.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':'); }; u(); setInterval(u, 1000); }
-    
-    const rot = document.getElementById('rotating-text');
-    if (rot) { const t = ['DC','SF','LA']; let i = 0; setInterval(() => { i = (i+1) % 3; rot.textContent = t[i]; }, 2000); }
-  }
+    if (time) {
+      const tick = () => {
+        const d = new Date();
+        time.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, '0')).join(':');
+      };
+      tick();
+      setInterval(tick, 1000);
+    }
 
-  if (document.readyState === 'complete') {
-    trackImages();
-      } else {
-    window.addEventListener('load', trackImages);
-  }
-  })();
-  
+    const rot = document.getElementById('rotating-text');
+    if (rot) {
+      const cities = ['DC', 'SF', 'LA'];
+      let j = 0;
+      setInterval(() => { j = (j + 1) % 3; rot.textContent = cities[j]; }, 2000);
+    }
+  });
+})();
