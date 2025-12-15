@@ -1,5 +1,28 @@
-// Portfolio Animations v19 - Simple preloader + timer + rotator
+// Portfolio Animations v19.1 - LCP optimization
 (function() {
+  // Optimize LCP - find and prioritize .img-parallax
+  const preloadLCP = () => {
+    const lcp = document.querySelector('.img-parallax');
+    if (lcp && lcp.src) {
+      // Preload the image
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = lcp.src;
+      link.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(link);
+      
+      // Set high priority on the image itself
+      lcp.setAttribute('fetchpriority', 'high');
+      lcp.loading = 'eager';
+    }
+  };
+  
+  // Run immediately
+  if (document.body) preloadLCP();
+  else document.addEventListener('DOMContentLoaded', preloadLCP);
+
+  // Preloader bar CSS
   document.head.insertAdjacentHTML('afterbegin', `<style>
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;flex:1;background:rgba(255,255,255,0.1)}
@@ -23,10 +46,10 @@
   window.addEventListener('load', () => {
     const time = document.getElementById('time-text');
     if (time) {
-      setInterval(() => {
+    setInterval(() => {
         const d = new Date();
         time.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
-      }, 1000);
+  }, 1000);
     }
 
     const rot = document.getElementById('rotating-text');
@@ -35,5 +58,6 @@
       let j = 0;
       setInterval(() => { rot.textContent = cities[j = (j + 1) % 3]; }, 2000);
     }
-  });
-})();
+    });
+  })();
+  
