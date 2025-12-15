@@ -1,7 +1,12 @@
-// Portfolio Animations v16.7 - Minimal, no Webflow interference
+// Portfolio Animations v16.8 - Delay Webflow content until after preloader
 (function() {
-  // CSS - just the preloader bar
+  // Pause Webflow animations until preloader done
+  document.documentElement.classList.add('preloading');
+  
+  // CSS - pause animations during preload, hide IX2 animated elements
   document.head.insertAdjacentHTML('beforeend', `<style>
+    html.preloading [data-w-id]{opacity:0!important}
+    html.preloading *{animation-play-state:paused!important}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -11,7 +16,6 @@
   const MIN_DURATION = 1000;
   let bar, segs, filled = 0, complete = false, startTime;
 
-  // Create bar
   bar = document.createElement('div');
   bar.id = 'preloader-bar';
   for (let i = 0; i < SEGMENTS; i++) bar.appendChild(Object.assign(document.createElement('div'), {className: 'seg'}));
@@ -36,8 +40,23 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
-    setTimeout(() => bar.remove(), 200);
-    initTimerRotator();
+    
+    // Wait 500ms THEN trigger content
+        setTimeout(() => {
+      bar.remove();
+      document.documentElement.classList.remove('preloading');
+      
+      // Re-trigger Webflow IX2 animations
+      if (window.Webflow) {
+        window.Webflow.destroy();
+                window.Webflow.ready();
+        if (window.Webflow.require) {
+          try { window.Webflow.require('ix2').init(); } catch(e) {}
+        }
+      }
+      
+      initTimerRotator();
+          }, 500);
   }
 
   function trackImages() {
