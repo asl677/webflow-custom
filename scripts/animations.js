@@ -1,15 +1,12 @@
-// Portfolio Animations v18.1 - Delay content until preloader done
+// Portfolio Animations v18.2 - Preloader visible, content hidden
 (function() {
-  // Hide body until preloader done
-  document.head.insertAdjacentHTML('afterbegin', '<style>body{opacity:0}</style>');
-
-    const style = document.createElement('style');
-    style.textContent = `
-    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
+  // CSS - hide body content but show preloader
+  document.head.insertAdjacentHTML('afterbegin', `<style>
+    body>*:not(#preloader-bar){opacity:0}
+    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%;opacity:1}
     #preloader-bar .seg{height:1px;flex:1;background:rgba(255,255,255,0.1)}
     #preloader-bar .seg.filled{background:#fff}
-    `;
-    document.head.appendChild(style);
+  </style>`);
 
   const bar = document.createElement('div');
   bar.id = 'preloader-bar';
@@ -24,8 +21,8 @@
     else {
       clearInterval(fill);
       bar.remove();
-      // Show content
-      document.body.style.opacity = '1';
+      // Show all content
+      document.querySelectorAll('body>*').forEach(el => el.style.opacity = '1');
       initExtras();
     }
   }, 25);
@@ -33,10 +30,10 @@
   function initExtras() {
     const time = document.getElementById('time-text');
     if (time) {
-    setInterval(() => {
+      setInterval(() => {
         const d = new Date();
         time.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
-  }, 1000);
+      }, 1000);
     }
 
     const rot = document.getElementById('rotating-text');
@@ -46,5 +43,4 @@
       setInterval(() => { rot.textContent = cities[j = (j + 1) % 3]; }, 2000);
     }
   }
-  })();
-  
+})();
