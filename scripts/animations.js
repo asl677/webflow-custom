@@ -1,9 +1,11 @@
-// Portfolio Animations v18.2 - Preloader visible, content hidden
+// Portfolio Animations v18.3 - Pause Webflow animations during preload
 (function() {
-  // CSS - hide body content but show preloader
+  document.documentElement.classList.add('preloading');
+  
   document.head.insertAdjacentHTML('afterbegin', `<style>
-    body>*:not(#preloader-bar){opacity:0}
-    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%;opacity:1}
+    html.preloading body>*:not(#preloader-bar){opacity:0!important;visibility:hidden!important}
+    html.preloading *{animation:none!important;transition:none!important}
+    #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;flex:1;background:rgba(255,255,255,0.1)}
     #preloader-bar .seg.filled{background:#fff}
   </style>`);
@@ -21,8 +23,21 @@
     else {
       clearInterval(fill);
       bar.remove();
-      // Show all content
-      document.querySelectorAll('body>*').forEach(el => el.style.opacity = '1');
+      
+      // Enable content and restart Webflow
+      document.documentElement.classList.remove('preloading');
+      
+      // Re-init Webflow IX2 to restart animations fresh
+      setTimeout(() => {
+        if (window.Webflow && window.Webflow.require) {
+          try { 
+            window.Webflow.destroy();
+            window.Webflow.ready();
+            window.Webflow.require('ix2').init();
+          } catch(e) {}
+        }
+      }, 50);
+      
       initExtras();
     }
   }, 25);
