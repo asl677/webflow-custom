@@ -1,8 +1,7 @@
-// Portfolio Animations v16.6 - Overlay approach for Webflow IX2
+// Portfolio Animations v16.7 - Minimal, no Webflow interference
 (function() {
-  // CSS
+  // CSS - just the preloader bar
   document.head.insertAdjacentHTML('beforeend', `<style>
-    #preloader-overlay{position:fixed;inset:0;background:#000;z-index:99998}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
@@ -10,27 +9,22 @@
 
   const SEGMENTS = 40;
   const MIN_DURATION = 1000;
-  let bar, overlay, segs, filled = 0, complete = false, startTime;
+  let bar, segs, filled = 0, complete = false, startTime;
 
-  // Create overlay and bar
-  overlay = document.createElement('div');
-  overlay.id = 'preloader-overlay';
-  
+  // Create bar
   bar = document.createElement('div');
   bar.id = 'preloader-bar';
   for (let i = 0; i < SEGMENTS; i++) bar.appendChild(Object.assign(document.createElement('div'), {className: 'seg'}));
   segs = bar.querySelectorAll('.seg');
   
-  // Add immediately
-  function addElements() {
+  function addBar() {
     if (document.body) {
       document.body.prepend(bar);
-      document.body.prepend(overlay);
       } else {
-      requestAnimationFrame(addElements);
+      requestAnimationFrame(addBar);
     }
   }
-  addElements();
+  addBar();
 
   function fillTo(target) {
     while (filled < target && filled < SEGMENTS) {
@@ -42,13 +36,9 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
-    // Wait 500ms then remove overlay
-        setTimeout(() => {
-      overlay.remove();
-      bar.remove();
-      initTimerRotator();
-          }, 500);
-        }
+    setTimeout(() => bar.remove(), 200);
+    initTimerRotator();
+  }
 
   function trackImages() {
     startTime = Date.now();
