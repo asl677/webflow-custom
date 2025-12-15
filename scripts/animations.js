@@ -1,32 +1,36 @@
-// Portfolio Animations v16.5 - Preserve Webflow IX2 animations
+// Portfolio Animations v16.6 - Overlay approach for Webflow IX2
 (function() {
-  // Hide content immediately
-  document.documentElement.classList.add('preloading');
-  
-  // CSS - hide content during preload (opacity only, not visibility - preserves Webflow IX2)
+  // CSS
   document.head.insertAdjacentHTML('beforeend', `<style>
-    html.preloading body>*:not(#preloader-bar){opacity:0!important;pointer-events:none}
+    #preloader-overlay{position:fixed;inset:0;background:#000;z-index:99998}
     #preloader-bar{position:fixed;top:0;left:0;height:1px;z-index:99999;display:flex;width:100%}
     #preloader-bar .seg{height:1px;background:transparent;flex:1}
     #preloader-bar .seg.filled{background:#fff}
   </style>`);
 
   const SEGMENTS = 40;
-  const MIN_DURATION = 1000; // Minimum 1 second visible
-  let bar, segs, filled = 0, complete = false, startTime;
+  const MIN_DURATION = 1000;
+  let bar, overlay, segs, filled = 0, complete = false, startTime;
 
-  // Create and add bar immediately
+  // Create overlay and bar
+  overlay = document.createElement('div');
+  overlay.id = 'preloader-overlay';
+  
   bar = document.createElement('div');
   bar.id = 'preloader-bar';
   for (let i = 0; i < SEGMENTS; i++) bar.appendChild(Object.assign(document.createElement('div'), {className: 'seg'}));
   segs = bar.querySelectorAll('.seg');
   
-  // Add bar as soon as possible
-  if (document.body) {
-    document.body.prepend(bar);
+  // Add immediately
+  function addElements() {
+    if (document.body) {
+      document.body.prepend(bar);
+      document.body.prepend(overlay);
       } else {
-    document.addEventListener('DOMContentLoaded', () => document.body.prepend(bar));
+      requestAnimationFrame(addElements);
+    }
   }
+  addElements();
 
   function fillTo(target) {
     while (filled < target && filled < SEGMENTS) {
@@ -38,17 +42,13 @@
     if (complete) return;
     complete = true;
     fillTo(SEGMENTS);
-    // Wait 500ms after preloader completes before showing content
-    setTimeout(() => {
-      document.documentElement.classList.remove('preloading');
+    // Wait 500ms then remove overlay
+        setTimeout(() => {
+      overlay.remove();
       bar.remove();
-      // Trigger Webflow IX2 page load animations
-      if (window.Webflow && window.Webflow.require) {
-        try { window.Webflow.require('ix2').init(); } catch(e) {}
-      }
       initTimerRotator();
-    }, 500);
-  }
+          }, 500);
+        }
 
   function trackImages() {
     startTime = Date.now();
@@ -58,13 +58,11 @@
     const total = images.length || 1;
     let imagesReady = false;
     
-    // Animate fill over minimum duration
     const animateFill = () => {
       if (complete) return;
       const elapsed = Date.now() - startTime;
       const timeProgress = Math.min(elapsed / MIN_DURATION, 1);
       const imageProgress = loaded / total;
-      // Use the slower of time or image progress
       const progress = Math.floor(Math.min(timeProgress, imageProgress) * SEGMENTS);
       fillTo(progress);
       
@@ -92,21 +90,17 @@
     if (images.length === 0) imagesReady = true;
     animateFill();
     
-    // Fallback - max 4 seconds
     setTimeout(finish, 4000);
   }
 
   function initTimerRotator() {
-    // Timer
     const time = document.getElementById('time-text');
     if (time) { const u = () => { const d = new Date(); time.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':'); }; u(); setInterval(u, 1000); }
     
-    // Rotator
     const rot = document.getElementById('rotating-text');
     if (rot) { const t = ['DC','SF','LA']; let i = 0; setInterval(() => { i = (i+1) % 3; rot.textContent = t[i]; }, 2000); }
   }
 
-  // Start tracking immediately
   if (document.readyState === 'complete') {
     trackImages();
       } else {
